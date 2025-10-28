@@ -631,7 +631,9 @@ function resetGameState() {
 /* --- Init --- */
 document.addEventListener('DOMContentLoaded', ()=>{
   showTab('equipment');
-  document.getElementById('playerName').value = 'Adventurer';
+  // *** CHANGE #2 (Refresh Bug Fix): Removed the pre-filled 'Adventurer' name ***
+  // document.getElementById('playerName').value = 'Adventurer'; 
+  
   // *** EXPOSE resetGameState FUNCTION ***
   window.resetGameState = resetGameState;
 });
@@ -645,7 +647,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
   import {
     getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where
-  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js"; // <-- CHANGE #1: Added 'where'
+  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
   
   // --- Your Firebase config (provided) ---
   const firebaseConfig = {
@@ -675,20 +677,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
     try {
       const user = auth.currentUser;
       if (!user) return;
+      
+      // *** CHANGE #1 (Refresh Bug Fix): ***
+      // *** Only save the actual game.name. Do not default to "Adventurer". ***
+      // If the name hasn't been set, nameToSave will be ""
+      const nameToSave = game.name || ""; 
+            
       const payload = {
-        name: game.name || "Adventurer",
-        name_lowercase: (game.name || "Adventurer").toLowerCase(), // <-- CHANGE #2: Add lowercase name
+        name: nameToSave,
+        name_lowercase: nameToSave.toLowerCase(),
         hp: game.hp,
         maxHP: game.maxHP,
         inventory: game.inventory || {},
         mining: {
           level: game.mining.level,
           xp: game.mining.xp,
-          // MODIFIED: Save totalXP
           totalXP: game.mining.totalXP 
         },
         updatedAt: new Date().toISOString()
       };
+      
       // Use the uid as the document ID in the 'players' collection
       await setDoc(doc(db, "players", user.uid), payload, { merge: true });
       // console.log("Saved player data");
@@ -770,7 +778,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       // create initial player doc
       await setDoc(doc(db, "players", uc.user.uid), {
         name: "",
-        name_lowercase: "", // <-- CHANGE #3: Add lowercase field
+        name_lowercase: "",
         hp: 10,
         maxHP: 10,
         inventory: {},
@@ -825,8 +833,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   });
 
-  // *** CHANGE #4: REPLACE createCharacter PATCH ***
-  // Monkey-patch original createCharacter to FIRST check for unique name, then save
+  // *** createCharacter PATCH (with unique name check) ***
   (function(){
     const originalCreate = window.createCharacter;
     if (typeof originalCreate === "function") {
