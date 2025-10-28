@@ -539,6 +539,10 @@ function addXP(skill, amount){
   }
   updateSkillUI();
 
+  // --- MODIFIED: SAVE DATA, BUT REMOVED LEADERBOARD REFRESH ---
+  // Data is saved immediately, but the leaderboard is no longer updated here.
+  if(window.savePlayerData) {
+      window.savePlayerData().catch(e => console.error("Instant save failed:", e));
   }
   // ----------------------------------------------
 
