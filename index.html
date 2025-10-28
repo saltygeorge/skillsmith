@@ -159,31 +159,20 @@ body {
   max-width: 240px;
 }
 
-/* --- Main area (MODIFIED) --- */
+/* --- Main area --- */
 .main {
-  /* flex: 1; */ /* <-- REMOVED */
+  flex: 1;
   background: var(--panel-bg);
   padding: 18px;
   border-radius: 10px; /* Slightly less rounded */
+  /* Worn/Sturdy Shadow: Inner shadow for depth, outer shadow for lift */
   box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
+  /* Strong, dark border for a rustic frame look */
   border: 4px solid #453625;
-  /* min-height: 500px; */ /* <-- REMOVED */
+  min-height: 500px;
   position: relative;
 }
 .main h2 { margin-top: 0; }
-
-/* --- NEW CHAT PANEL STYLE --- */
-.chat-panel {
-  background: var(--panel-bg);
-  padding: 18px;
-  border-radius: 10px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
-  border: 4px solid #453625;
-  display: flex; 
-  flex-direction: column;
-  min-height: 200px; /* Give it a minimum height */
-  flex-shrink: 0;
-}
 
 .progress-container {
   background: #3f2b21;
@@ -222,9 +211,6 @@ button.primary:hover { background: var(--accent-hover); }
 @media(max-width:900px) {
   .container { flex-direction: column; align-items: center; }
   .sidebar, .main { width: 95%; }
-  /* Make sure the new wrapper and chat panel also go full width */
-  div[style*="flex: 1"] { width: 95%; } 
-  .chat-panel { width: 100%; box-sizing: border-box; }
 }
 
 </style>
@@ -258,7 +244,6 @@ button.primary:hover { background: var(--accent-hover); }
 
 <div id="gameScreen">
   <div class="container">
-    
     <div class="sidebar">
       <div class="char-header">
         <h2 id="charName">Player</h2>
@@ -315,36 +300,24 @@ button.primary:hover { background: var(--accent-hover); }
           <div style="font-size:14px; margin-bottom:8px;">Skills</div>
           <div>Mining: <span id="miningLevel">1</span> — XP: <span id="miningXP">0</span> / <span id="nextXP">100</span> (Total: <span id="miningTotalXP">0</span>)</div>
         </div>
+
       </div>
     </div>
 
-    <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
-    
-      <div class="main" id="mainArea">
-        <div id="mainContentWrapper">
-          <h2>Actions</h2>
-          <div id="actionScreen">
-            <button class="primary" onclick="openMine()">Beginner Mine</button>
-            <div style="margin-top:14px; color:#efe3cf; font-size:13px;">
-              Interact with the world on the right. Inventory and equipment share the left space.
-            </div>
-          </div>
-        </div>
-        <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
-      </div>
+    <div class="main" id="mainArea">
       
-      <div class="chat-panel" id="chatPanel">
-        <h3 style="margin: 0 0 8px 0;">Global Chat</h3>
-        
-        <div id="chatMessages" style="flex-grow: 1; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; overflow-y: auto; height: 150px; display: flex; flex-direction: column-reverse;">
+      <div id="mainContentWrapper">
+        <h2>Actions</h2>
+        <div id="actionScreen">
+          <button class="primary" onclick="openMine()">Beginner Mine</button>
+          <div style="margin-top:14px; color:#efe3cf; font-size:13px;">
+            Interact with the world on the right. Inventory and equipment share the left space.
           </div>
-        
-        <div id="chatInputContainer" style="display: flex; gap: 8px; margin-top: 10px;">
-          <input id="chatInput" type="text" placeholder="Type message..." style="flex-grow: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--accent); background: #3f2b21; color: #fff;">
-          <button id="chatSendBtn" class="primary" style="padding: 8px 12px;">Send</button>
         </div>
       </div>
-      </div>
+      <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
+    </div>
+    
     <div class="sidebar" id="leaderboardPanel">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
         <h2 style="margin: 0;">LEADERBOARDS</h2>
@@ -734,8 +707,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
   import {
-    getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where,
-    addDoc, serverTimestamp, onSnapshot, orderBy, limit // <-- +++ CHAT IMPORTS ADDED
+    getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
   
   // --- Your Firebase config (provided) ---
@@ -899,13 +871,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Auth state listener: show auth -> create char -> or load game
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // Try loading existing player data.
+      // Try loading existing player data. If none (fresh account with empty name), show create-char.
       const started = await loadPlayerDataAndStart(user);
-      if (started) {
-        // +++ START CHAT LISTENER +++
-        initChatListener(); // Start listening for chat messages
-      } else {
-        // Show create-character screen
+      if (!started) {
+        // Show create-character screen (startScreen) so user can name the char
         startScreen.style.display = 'block';
         gameScreen.style.display = 'none';
         authScreen.style.display = 'none';
@@ -952,15 +921,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
         }
         
         // 3. If we are here, the name is unique.
+        // Call the original function (which sets game.name and updates UI)
         originalCreate();
         
         // 4. Save data and refresh leaderboards
         const user = auth.currentUser;
         if (user) {
+          // We can use await now since the function is async
           await window.savePlayerData();
           window.renderLeaderboards();
-          // +++ START CHAT LISTENER FOR NEW PLAYER +++
-          initChatListener(); 
         }
       };
     }
@@ -1036,120 +1005,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
   
-  // +++ CHAT FUNCTIONS START +++
-  
-  /**
-   * Sends a new chat message to the 'messages' collection in Firestore.
-   */
-  async function sendChatMessage() {
-    const chatInput = document.getElementById('chatInput');
-    const messageText = chatInput.value.trim();
-
-    if (messageText.length === 0) return; // Don't send empty messages
-    if (messageText.length > 256) {
-      alert("Message is too long (max 256 chars).");
-      return;
-    }
-
-    const user = auth.currentUser;
-    if (!user || !game.name) {
-      alert("You must be logged in and have a character to chat.");
-      return;
-    }
-
-    try {
-      // Add a new document to the 'messages' collection
-      await addDoc(collection(db, "messages"), {
-        senderUid: user.uid,
-        senderName: game.name,
-        text: messageText,
-        timestamp: serverTimestamp() // Uses the server's time
-      });
-      
-      // Clear the input field
-      chatInput.value = '';
-
-    } catch (e) {
-      console.error("Error sending message: ", e);
-      alert("Failed to send message. Please try again.");
-    }
-  }
-
-  /**
-   * Initializes the real-time listener for the chat.
-   */
-  function initChatListener() {
-    const chatMessagesContainer = document.getElementById('chatMessages');
-    if (!chatMessagesContainer) return;
-
-    // Create a query to get the last 25 messages, ordered by time
-    const q = query(
-      collection(db, "messages"), 
-      orderBy("timestamp", "desc"), 
-      limit(25)
-    );
-
-    // onSnapshot creates a real-time listener
-    onSnapshot(q, (querySnapshot) => {
-      // Clear the existing messages
-      chatMessagesContainer.innerHTML = '';
-      
-      // Loop through the messages (which are in reverse order)
-      querySnapshot.forEach((doc) => {
-        const msg = doc.data();
-        
-        // Create a new div for the message
-        const msgElement = document.createElement('div');
-        msgElement.style.marginBottom = '6px';
-        msgElement.style.lineHeight = '1.3';
-        msgElement.style.wordBreak = 'break-word';
-
-        // Format the message
-        const sender = document.createElement('strong');
-        sender.style.color = 'var(--gold)'; // Use your game's gold color
-        sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
-        
-        const text = document.createTextNode(msg.text);
-
-        msgElement.appendChild(sender);
-        msgElement.appendChild(text);
-        
-        // Add the message to the top of the container
-        // (since we used column-reverse, appendChild adds to the bottom visually)
-        chatMessagesContainer.appendChild(msgElement);
-      });
-
-    }, (error) => {
-      console.error("Chat listener error: ", error);
-      chatMessagesContainer.innerHTML = '<div style="color: red;">Error loading chat.</div>';
-    });
-  }
-  // +++ CHAT FUNCTIONS END +++
-  
-  
   // Attach event listener for the new refresh button
   document.addEventListener('DOMContentLoaded', () => {
     if (refreshLeaderboardBtn) {
         refreshLeaderboardBtn.onclick = window.renderLeaderboards;
     }
-    
-    // +++ ADD CHAT EVENT LISTENERS +++
-    const chatSendBtn = document.getElementById('chatSendBtn');
-    const chatInput = document.getElementById('chatInput');
-
-    if (chatSendBtn) {
-      chatSendBtn.onclick = sendChatMessage;
-    }
-    if (chatInput) {
-      // Optional: Allow sending by pressing 'Enter'
-      chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault(); // Prevents a line break
-          sendChatMessage();
-        }
-      });
-    }
-    // +++ END CHAT LISTENERS +++
   });
 
 
