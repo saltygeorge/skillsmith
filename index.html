@@ -328,12 +328,12 @@ button.primary:hover { background: var(--accent-hover); }
     
     <!-- LEADERBOARD PANEL - MODIFIED FOR SEAMLESS REFRESH -->
     <div class="sidebar" id="leaderboardPanel">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
         <h2 style="margin: 0;">LEADERBOARDS</h2>
         <button id="refreshLeaderboardBtn" class="primary" style="padding: 6px 10px; font-size: 12px;">Refresh</button>
       </div>
       <!-- Leaderboard Header (XP and Name labels) -->
-      <div style="display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid var(--accent); margin-bottom: 5px;">
+      <div style="display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid var(--accent); margin-bottom: 2px;">
         <span style="font-weight: bold;">TOTAL XP</span>
         <span style="font-weight: bold;">NAME</span>
       </div>
@@ -821,7 +821,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const isCurrentPlayer = (auth.currentUser && game.name === player.name); 
 
         leaderboardHtml += `
-          <div style="display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); background: ${isCurrentPlayer ? 'rgba(181, 166, 66, 0.1)' : 'transparent'};">
+          <div style="display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); background: ${isCurrentPlayer ? 'rgba(181, 166, 66, 0.1)' : 'transparent'};">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="width: 20px; text-align: right; font-weight: bold; color: ${rank <= 3 ? 'var(--gold)' : '#fff'};">${rank}.</span>
               <span>${xpFormatted}</span>
