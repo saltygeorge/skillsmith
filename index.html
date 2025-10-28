@@ -50,6 +50,7 @@ body {
   padding: 24px;
   box-sizing: border-box;
   margin: 0 auto;
+  align-items: flex-start; /* <-- ADD THIS LINE */
 }
 
 /* --- Sidebar --- */
@@ -330,7 +331,6 @@ button.primary:hover { background: var(--accent-hover); }
       </div>
       
       <div class="chat-panel" id="chatPanel">
-        <h3 style="margin: 0 0 8px 0;">Global Chat</h3>
         
         <div id="chatMessages" style="flex-grow: 1; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; overflow-y: auto; height: 150px; display: flex; flex-direction: column-reverse;">
           </div>
