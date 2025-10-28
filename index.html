@@ -590,10 +590,48 @@ function backToActions(){
   `;
 }
 
+// *** CHANGE #1: ADD resetGameState FUNCTION ***
+function resetGameState() {
+  // Stop any active mining loops first
+  if (game.miningActive) {
+    stopMining(); 
+  }
+  
+  // Reset the game data object
+  game.name = '';
+  game.hp = 10;
+  game.maxHP = 10;
+  game.inventory = {};
+  game.mining = { level: 1, xp: 0, totalXP: 0 };
+  game.miningActive = false;
+  
+  if (game.progressFrame) {
+    cancelAnimationFrame(game.progressFrame);
+    game.progressFrame = null;
+  }
+
+  // Also reset the UI to match the cleared state
+  setText('charName', 'Player');
+  updateHPUI();
+  renderInventoryGrid();
+  updateSkillUI();
+  
+  // Ensure the main panel is reset to default actions
+  // and the default tab is showing.
+  if (typeof backToActions === 'function') {
+    backToActions();
+  }
+  if (typeof showTab === 'function') {
+    showTab('equipment');
+  }
+}
+
 /* --- Init --- */
 document.addEventListener('DOMContentLoaded', ()=>{
   showTab('equipment');
   document.getElementById('playerName').value = 'Adventurer';
+  // *** CHANGE #2: EXPOSE resetGameState FUNCTION ***
+  window.resetGameState = resetGameState;
 });
 </script>
 
@@ -774,6 +812,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
       authScreen.style.display = 'flex';
       startScreen.style.display = 'none';
       gameScreen.style.display = 'none';
+      
+      // *** CHANGE #4: CALL resetGameState ON LOGOUT ***
+      if (window.resetGameState) {
+        window.resetGameState();
+      }
     }
   });
 
@@ -896,6 +939,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     try {
       await window.savePlayerData();
       await signOut(auth);
+      
+      // *** CHANGE #3: CALL resetGameState ON LOGOUT ***
+      if (window.resetGameState) {
+        window.resetGameState();
+      }
+      
       // NOTE: In a production environment, this should be a modal, not alert().
       alert("Logged out."); 
     } catch (e) {
