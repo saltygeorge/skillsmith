@@ -441,6 +441,27 @@ function renderInventoryGrid(){
       amt.innerText = formatAmount(item.qty); 
       // --- END MODIFICATION ---
       slot.appendChild(amt);
+      
+      // --- *** NEW TOOLTIP CODE START *** ---
+      // Get the exact, unformatted amount and add commas
+      const exactAmount = item.qty.toLocaleString(); 
+      const itemName = item.name;
+      
+      // Build the HTML content for the tooltip
+      const tooltipContent = `
+        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${itemName}</div>
+        <div style="color:#fff;">Amount: ${exactAmount}</div>
+      `;
+      
+      // Add event listeners to this specific slot
+      slot.onmouseenter = (evt) => {
+        // Pass the event (evt) to position the tooltip
+        showTooltip(evt, tooltipContent);
+      };
+      slot.onmouseleave = () => {
+        hideTooltip();
+      };
+      // --- *** NEW TOOLTIP CODE END *** ---
     }
     grid.appendChild(slot);
   }
@@ -450,6 +471,48 @@ function addItem(name, qty=1){
   game.inventory[name]+=qty;
   renderInventoryGrid();
 }
+
+// --- *** NEW TOOLTIP FUNCTIONS START *** ---
+/* --- Tooltip --- */
+const tooltip = document.getElementById('tooltip');
+
+function showTooltip(evt, content) {
+  if (!tooltip) return;
+  tooltip.innerHTML = content;
+  tooltip.style.display = 'block';
+  moveTooltip(evt); // Position it immediately
+}
+
+function hideTooltip() {
+  if (!tooltip) return;
+  tooltip.style.display = 'none';
+}
+
+function moveTooltip(evt) {
+  if (!tooltip || tooltip.style.display === 'none') return;
+  
+  // Get tooltip dimensions
+  const tooltipRect = tooltip.getBoundingClientRect();
+  
+  // Basic positioning: 10px below and to the right of the cursor
+  let x = evt.clientX + 10;
+  let y = evt.clientY + 10;
+  
+  // Screen boundary collision detection
+  // If it goes off the right, move it to the left of the cursor
+  if (x + tooltipRect.width > window.innerWidth) {
+    x = evt.clientX - tooltipRect.width - 10;
+  }
+  // If it goes off the bottom, move it above the cursor
+  if (y + tooltipRect.height > window.innerHeight) {
+    y = evt.clientY - tooltipRect.height - 10;
+  }
+  
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+// --- *** NEW TOOLTIP FUNCTIONS END *** ---
+
 
 /* --- Skills --- */
 function getNextXP(level){ return Math.floor(100 * Math.pow(1.15, level-1)); }
@@ -631,11 +694,11 @@ function resetGameState() {
 /* --- Init --- */
 document.addEventListener('DOMContentLoaded', ()=>{
   showTab('equipment');
-  // *** CHANGE #2 (Refresh Bug Fix): Removed the pre-filled 'Adventurer' name ***
-  // document.getElementById('playerName').value = 'Adventurer'; 
-  
-  // *** EXPOSE resetGameState FUNCTION ***
+  // document.getElementById('playerName').value = 'Adventurer'; // Removed this
   window.resetGameState = resetGameState;
+  
+  // --- *** NEW TOOLTIP MOVER *** ---
+  document.addEventListener('mousemove', moveTooltip);
 });
 </script>
 
@@ -678,9 +741,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const user = auth.currentUser;
       if (!user) return;
       
-      // *** CHANGE #1 (Refresh Bug Fix): ***
-      // *** Only save the actual game.name. Do not default to "Adventurer". ***
-      // If the name hasn't been set, nameToSave will be ""
+      // *** FIX: Only save the actual game.name. Do not default to "Adventurer". ***
       const nameToSave = game.name || ""; 
             
       const payload = {
