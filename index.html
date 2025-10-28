@@ -339,7 +339,7 @@ button.primary:hover { background: var(--accent-hover); }
       </div>
       <!-- Leaderboard Content Container (Only this part will be refreshed) -->
       <div id="leaderboardContent">
-        <div style="text-align:center; margin-top: 20px; color: #fff; opacity: 0.7;">Loading leaderboard...</div>
+        <div style="text-align:center; margin-top: 10px; color: #fff; opacity: 0.7;">Loading leaderboard...</div>
       </div>
     </div>
 
@@ -840,7 +840,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     } catch (e) {
       console.error("Failed to load leaderboards:", e);
-      contentContainer.innerHTML = `<div style="text-align:center; margin-top: 20px; color: red;">Failed to load data.</div>`;
+      contentContainer.innerHTML = `<div style="text-align:center; margin-top: 0px; color: red;">Failed to load data.</div>`;
     }
   }
   
