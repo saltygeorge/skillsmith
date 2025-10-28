@@ -138,7 +138,11 @@ body {
   height: calc((var(--slot-size) + var(--slot-gap)) * 4);
   overflow-y: auto;
   overflow-x: hidden; /* prevent side scroll */
-  padding-right: 6px;
+  padding-right: 0; /* <-- MODIFIED: Removed 6px padding */
+  
+  /* --- NEW: For Firefox --- */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--panel-bg);
 }
 .inventory-grid {
   display: grid;
@@ -182,6 +186,28 @@ body {
   max-width: 240px;
 }
 
+/* --- +++ NEW: Custom Scrollbar for WebKit (Chrome, Safari) +++ --- */
+.inventory-grid-wrap::-webkit-scrollbar,
+#chatMessages::-webkit-scrollbar {
+  width: 8px; /* Sets the width of the scrollbar */
+}
+.inventory-grid-wrap::-webkit-scrollbar-track,
+#chatMessages::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2); /* Dark, subtle track background */
+  border-radius: 4px;
+}
+.inventory-grid-wrap::-webkit-scrollbar-thumb,
+#chatMessages::-webkit-scrollbar-thumb {
+  background: var(--accent); /* Uses your game's accent color for the handle */
+  border-radius: 4px;
+}
+.inventory-grid-wrap::-webkit-scrollbar-thumb:hover,
+#chatMessages::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover); /* Uses your hover color */
+}
+/* --- +++ END: Custom Scrollbar +++ --- */
+
+
 /* --- Main area (MODIFIED) --- */
 .main {
   flex: 1; /* <-- RE-ADDED: To fill the middle space */
@@ -210,6 +236,39 @@ body {
   flex-shrink: 0;
   flex: 1; /* <-- ADDED: To fill the middle space in its row */
 }
+
+/* --- THIS IS THE CHAT MESSAGES DIV --- */
+#chatMessages {
+  flex-grow: 1; 
+  background: rgba(0,0,0,0.2); 
+  border-radius: 6px; 
+  padding: 8px; 
+  overflow-y: auto; 
+  height: 150px; 
+  display: flex; 
+  flex-direction: column-reverse;
+  
+  /* --- NEW: For Firefox --- */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--panel-bg);
+}
+
+#chatInputContainer { 
+  display: flex; 
+  gap: 8px; 
+  margin-top: 10px;
+}
+
+#chatInput { 
+  flex-grow: 1; 
+  padding: 8px; 
+  border-radius: 6px; 
+  border: 1px solid var(--accent); 
+  background: #3f2b21; 
+  color: #fff;
+}
+/* --- END CHAT STYLES --- */
+
 
 .progress-container {
   background: #3f2b21;
@@ -383,11 +442,11 @@ button.primary:hover { background: var(--accent-hover); }
       <div class="sidebar-spacer"></div>
 
       <div class="chat-panel" id="chatPanel">
-        <div id="chatMessages" style="flex-grow: 1; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; overflow-y: auto; height: 150px; display: flex; flex-direction: column-reverse;">
+        <div id="chatMessages">
           </div>
         
-        <div id="chatInputContainer" style="display: flex; gap: 8px; margin-top: 10px;">
-          <input id="chatInput" type="text" placeholder="Type message..." style="flex-grow: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--accent); background: #3f2b21; color: #fff;">
+        <div id="chatInputContainer">
+          <input id="chatInput" type="text" placeholder="Type message...">
           <button id="chatSendBtn" class="primary" style="padding: 8px 12px;">Send</button>
         </div>
       </div>
@@ -1021,6 +1080,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (chatSendBtn) {
       chatSendBtn.onclick = sendChatMessage;
     }
+
     if (chatInput) {
       // Optional: Allow sending by pressing 'Enter'
       chatInput.addEventListener('keypress', (e) => {
