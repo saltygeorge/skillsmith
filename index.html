@@ -539,10 +539,10 @@ function addXP(skill, amount){
   }
   updateSkillUI();
 
-  // --- FIX: REMOVED THE if(window.savePlayerData) BLOCK ---
-  // The 30-second autosave in the firebase module
-  // will handle saving. This stops the 1.5s save.
-  // --------------------------------------------------------
+  // --- *** MODIFICATION: SAVE CALL REMOVED *** ---
+  // Data is no longer saved on every action.
+  // It will be saved by the 30-second interval timer.
+  // ----------------------------------------------
 
   // --- XP Popup (unchanged) ---
   const main = document.getElementById('mainArea');
@@ -723,8 +723,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-  
-  let gameIsLoaded = false; // <-- FIX: Prevents autosave race condition
 
   // DOM refs for auth UI
   const authScreen = document.getElementById('authScreen');
@@ -808,7 +806,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       // Keep: Load and display the leaderboards on initial load
       window.renderLeaderboards(); 
 
-      gameIsLoaded = true; // <-- FIX: Flag that game is loaded
       return true;
     } catch (e) {
       console.error("Load failed:", e);
@@ -888,7 +885,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       startScreen.style.display = 'none';
       gameScreen.style.display = 'none';
       
-      gameIsLoaded = false; // <-- FIX: Reset flag on logout
       // *** CALL resetGameState ON LOGOUT ***
       if (window.resetGameState) {
         window.resetGameState();
@@ -934,7 +930,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
           // We can use await now since the function is async
           await window.savePlayerData();
           window.renderLeaderboards();
-          gameIsLoaded = true; // <-- FIX: Flag that new game is loaded
         }
       };
     }
@@ -1021,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Autosave every 30 seconds (as requested)
   setInterval(() => {
     const user = auth.currentUser;
-    if (user && gameIsLoaded) { // <-- FIX: Check flag
+    if (user) {
       window.savePlayerData();
     }
   }, 30000);
@@ -1044,7 +1039,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       await window.savePlayerData();
       await signOut(auth);
       
-      gameIsLoaded = false; // <-- FIX: Reset flag on logout
       // *** CALL resetGameState ON LOGOUT ***
       if (window.resetGameState) {
         window.resetGameState();
