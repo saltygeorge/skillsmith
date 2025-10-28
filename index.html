@@ -383,8 +383,10 @@ function formatAmount(n) {
 
 function createCharacter(){
   const name = document.getElementById('playerName').value.trim();
-  // NOTE: In a production environment, this should be a modal, not alert().
-  if(!name) return alert('Enter a name first.'); 
+  // NOTE: This function is now ONLY called *after* the name is validated for uniqueness
+  // The original alert('Enter a name first.') is now handled in the new async wrapper
+  if(!name) return; // Still, good to keep a safeguard
+  
   game.name = name;
   document.getElementById('charName').innerText = name;
   document.getElementById('startScreen').style.display = 'none';
@@ -590,7 +592,7 @@ function backToActions(){
   `;
 }
 
-// *** CHANGE #1: ADD resetGameState FUNCTION ***
+// *** ADD resetGameState FUNCTION ***
 function resetGameState() {
   // Stop any active mining loops first
   if (game.miningActive) {
@@ -630,7 +632,7 @@ function resetGameState() {
 document.addEventListener('DOMContentLoaded', ()=>{
   showTab('equipment');
   document.getElementById('playerName').value = 'Adventurer';
-  // *** CHANGE #2: EXPOSE resetGameState FUNCTION ***
+  // *** EXPOSE resetGameState FUNCTION ***
   window.resetGameState = resetGameState;
 });
 </script>
@@ -640,10 +642,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut
-  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js"; // <-- FIXED TYPO HERE
+  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
   import {
-    getFirestore, doc, setDoc, getDoc, collection, query, getDocs
-  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where
+  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js"; // <-- CHANGE #1: Added 'where'
+  
   // --- Your Firebase config (provided) ---
   const firebaseConfig = {
     apiKey: "AIzaSyD6sIi0SbPUUjJFJsJB22xBOF7ZD0H7utw",
@@ -674,6 +677,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (!user) return;
       const payload = {
         name: game.name || "Adventurer",
+        name_lowercase: (game.name || "Adventurer").toLowerCase(), // <-- CHANGE #2: Add lowercase name
         hp: game.hp,
         maxHP: game.maxHP,
         inventory: game.inventory || {},
@@ -766,6 +770,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       // create initial player doc
       await setDoc(doc(db, "players", uc.user.uid), {
         name: "",
+        name_lowercase: "", // <-- CHANGE #3: Add lowercase field
         hp: 10,
         maxHP: 10,
         inventory: {},
@@ -813,29 +818,57 @@ document.addEventListener('DOMContentLoaded', ()=>{
       startScreen.style.display = 'none';
       gameScreen.style.display = 'none';
       
-      // *** CHANGE #4: CALL resetGameState ON LOGOUT ***
+      // *** CALL resetGameState ON LOGOUT ***
       if (window.resetGameState) {
         window.resetGameState();
       }
     }
   });
 
-  // Monkey-patch original createCharacter to save initial character name
+  // *** CHANGE #4: REPLACE createCharacter PATCH ***
+  // Monkey-patch original createCharacter to FIRST check for unique name, then save
   (function(){
     const originalCreate = window.createCharacter;
     if (typeof originalCreate === "function") {
-      window.createCharacter = function() {
-        // call the original function (preserves all original behavior)
+      
+      // Make the new function async to await the query
+      window.createCharacter = async function() {
+        
+        // 1. Manually get and validate the name from the input
+        const name = document.getElementById('playerName').value.trim();
+        if(!name) return alert('Enter a name first.');
+        
+        // 2. Check for uniqueness
+        try {
+          const nameLower = name.toLowerCase();
+          const q = query(collection(db, "players"), where("name_lowercase", "==", nameLower));
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            // Name is taken
+            return alert("That name is already taken. Please choose another.");
+          }
+        
+        } catch (e) {
+          console.error("Name check failed:", e);
+          return alert("Error checking name. Please try again.");
+        }
+        
+        // 3. If we are here, the name is unique.
+        // Call the original function (which sets game.name and updates UI)
         originalCreate();
-        // after creating the character in the client, if user is logged in, persist to Firestore
+        
+        // 4. Save data and refresh leaderboards
         const user = auth.currentUser;
         if (user) {
-          window.savePlayerData().catch(e => console.error("Initial save failed:", e));
-          window.renderLeaderboards(); // Also refresh after character creation
+          // We can use await now since the function is async
+          await window.savePlayerData();
+          window.renderLeaderboards();
         }
       };
     }
   })();
+  
 // --- LEADERBOARD FUNCTIONS ---
 
   // Made globally accessible via window.renderLeaderboards
@@ -940,7 +973,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       await window.savePlayerData();
       await signOut(auth);
       
-      // *** CHANGE #3: CALL resetGameState ON LOGOUT ***
+      // *** CALL resetGameState ON LOGOUT ***
       if (window.resetGameState) {
         window.resetGameState();
       }
