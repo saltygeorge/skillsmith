@@ -41,16 +41,39 @@ body {
 }
 #gameScreen { display: none; }
 
-/* --- Layout container --- */
+/* --- Layout container (MODIFIED) --- */
 .container {
   width: 100%;
   max-width: 1240px;
   display: flex;
+  flex-direction: column; /* <-- CHANGED: Now a column layout */
   gap: 20px;
   padding: 24px;
   box-sizing: border-box;
   margin: 0 auto;
 }
+
+/* --- +++ NEW: Panel Row Wrappers +++ --- */
+#top-row-panels {
+  display: flex;
+  gap: 20px;
+  align-items: stretch; /* <-- This makes all 3 panels the same height */
+  width: 100%;
+}
+
+#bottom-row-chat {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+/* --- +++ NEW: Spacer for Chat Panel +++ --- */
+.sidebar-spacer {
+  /* This width MUST match the .sidebar width */
+  width: calc((var(--slot-size) * 4) + (var(--slot-gap) * 3) + 32px + 8px);
+  flex-shrink: 0; /* Prevents it from shrinking */
+}
+
 
 /* --- Sidebar --- */
 .sidebar {
@@ -161,7 +184,7 @@ body {
 
 /* --- Main area (MODIFIED) --- */
 .main {
-  /* flex: 1; */ /* <-- REMOVED */
+  flex: 1; /* <-- RE-ADDED: To fill the middle space */
   background: var(--panel-bg);
   padding: 18px;
   border-radius: 10px; /* Slightly less rounded */
@@ -169,12 +192,12 @@ body {
   box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
   /* Strong, dark border for a rustic frame look */
   border: 4px solid #453625;
-  min-height: 500px; /* <-- **** CHANGE 1: RE-ADDED to increase height **** */
+  min-height: 500px; 
   position: relative;
 }
 .main h2 { margin-top: 0; }
 
-/* +++ NEW CHAT PANEL STYLE +++ */
+/* +++ NEW CHAT PANEL STYLE (MODIFIED) +++ */
 .chat-panel {
   background: var(--panel-bg);
   padding: 18px;
@@ -185,6 +208,7 @@ body {
   flex-direction: column;
   min-height: 200px; /* Give it a minimum height */
   flex-shrink: 0;
+  flex: 1; /* <-- ADDED: To fill the middle space in its row */
 }
 
 .progress-container {
@@ -222,11 +246,22 @@ button.primary:hover { background: var(--accent-hover); }
 }
 
 @media(max-width:900px) {
+  /* MODIFIED for new structure */
   .container { flex-direction: column; align-items: center; }
-  .sidebar, .main { width: 95%; }
-  /* +++ NEW +++ Make sure the new wrapper and chat panel also go full width */
-  div[style*="flex: 1"] { width: 95%; } 
-  .chat-panel { width: 100%; box-sizing: border-box; }
+  
+  /* Make all panels full width and stack */
+  #top-row-panels, #bottom-row-chat {
+      flex-direction: column;
+      width: 95%;
+  }
+  .sidebar, .main, .chat-panel { 
+      width: 100%; /* Make them fill the 95% wrapper */
+      box-sizing: border-box;
+  }
+  /* Hide the spacers on mobile */
+  .sidebar-spacer {
+      display: none;
+  }
 }
 
 </style>
@@ -262,59 +297,59 @@ button.primary:hover { background: var(--accent-hover); }
 <div id="gameScreen">
   <div class="container">
     
-    <div class="sidebar">
-      <div class="char-header">
-        <h2 id="charName">Player</h2>
-        <div style="font-size:12px; opacity:0.9;">Lvl UI</div>
-      </div>
-      <div class="hp-bar">
-        <div class="hp-fill" id="hpFill" style="width:100%"></div>
-        <div class="hp-text" id="hpText">10 / 10 HP</div>
-      </div>
-      <div class="tabs">
-        <button onclick="showTab('equipment')" id="tabEquipmentBtn">Equipment</button>
-        <button onclick="showTab('inventory')" id="tabInventoryBtn">Inventory</button>
-        <button onclick="showTab('skills')" id="tabSkillsBtn">Skills</button>
-      </div>
-      <div class="tab-content">
-        <div id="equipmentTab">
-          <div class="equipment-character">
-            <div class="character-frame">
-              <div class="equipment-row">
-                <div class="equipment-slot" id="helmet">
-                  <img src="images/helmet.png" alt="Helmet">
+    <div id="top-row-panels">
+      
+      <div class="sidebar">
+        <div class="char-header">
+          <h2 id="charName">Player</h2>
+          <div style="font-size:12px; opacity:0.9;">Lvl UI</div>
+        </div>
+        <div class="hp-bar">
+          <div class="hp-fill" id="hpFill" style="width:100%"></div>
+          <div class="hp-text" id="hpText">10 / 10 HP</div>
+        </div>
+        <div class="tabs">
+          <button onclick="showTab('equipment')" id="tabEquipmentBtn">Equipment</button>
+          <button onclick="showTab('inventory')" id="tabInventoryBtn">Inventory</button>
+          <button onclick="showTab('skills')" id="tabSkillsBtn">Skills</button>
+        </div>
+        <div class="tab-content">
+          <div id="equipmentTab">
+            <div class="equipment-character">
+              <div class="character-frame">
+                <div class="equipment-row">
+                  <div class="equipment-slot" id="helmet">
+                    <img src="images/helmet.png" alt="Helmet">
+                  </div>
                 </div>
-              </div>
-              <div class="equipment-row" style="align-items:center;">
-                <div class="equipment-slot" id="weapon">
-                  <img src="images/weapon.png" alt="Weapon">
+                <div class="equipment-row" style="align-items:center;">
+                  <div class="equipment-slot" id="weapon">
+                    <img src="images/weapon.png" alt="Weapon">
+                  </div>
+                  <div class="equipment-slot" id="chest">
+                    <img src="images/chestplate.png" alt="Chest">
+                  </div>
                 </div>
-                <div class="equipment-slot" id="chest">
-                  <img src="images/chestplate.png" alt="Chest">
-                </div>
-              </div>
-              <div class="equipment-row">
-                <div class="equipment-slot" id="boots">
-                  <img src="images/boots.png" alt="Boots">
+                <div class="equipment-row">
+                  <div class="equipment-slot" id="boots">
+                    <img src="images/boots.png" alt="Boots">
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div id="inventoryTab" style="display:none;">
-          <div style="margin-bottom:8px; font-size:13px; color:#efe3cf;">Inventory</div>
-          <div class="inventory-grid-wrap" id="inventoryGridWrap">
-            <div class="inventory-grid" id="inventoryGrid"></div>
+          <div id="inventoryTab" style="display:none;">
+            <div style="margin-bottom:8px; font-size:13px; color:#efe3cf;">Inventory</div>
+            <div class="inventory-grid-wrap" id="inventoryGridWrap">
+              <div class="inventory-grid" id="inventoryGrid"></div>
+            </div>
+          </div>
+          <div id="skillsTab" style="display:none;">
+            <div style="font-size:14px; margin-bottom:8px;">Skills</div>
+            <div>Mining: <span id="miningLevel">1</span> — XP: <span id="miningXP">0</span> / <span id="nextXP">100</span> (Total: <span id="miningTotalXP">0</span>)</div>
           </div>
         </div>
-        <div id="skillsTab" style="display:none;">
-          <div style="font-size:14px; margin-bottom:8px;">Skills</div>
-          <div>Mining: <span id="miningLevel">1</span> — XP: <span id="miningXP">0</span> / <span id="nextXP">100</span> (Total: <span id="miningTotalXP">0</span>)</div>
-        </div>
       </div>
-    </div>
-
-    <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
 
       <div class="main" id="mainArea">
         <div id="mainContentWrapper">
@@ -328,7 +363,25 @@ button.primary:hover { background: var(--accent-hover); }
         </div>
         <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
       </div>
-      
+
+      <div class="sidebar" id="leaderboardPanel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+          <h2 style="margin: 0;">LEADERBOARDS</h2>
+          <button id="refreshLeaderboardBtn" class="primary" style="padding: 6px 10px; font-size: 12px;">Refresh</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid var(--accent); margin-bottom: 2px;">
+          <span style="font-weight: bold;">TOTAL XP</span>
+          <span style="font-weight: bold;">NAME</span>
+        </div>
+        <div id="leaderboardContent">
+          <div style="text-align:center; margin-top: 10px; color: #fff; opacity: 0.7;">Loading leaderboard...</div>
+        </div>
+      </div>
+
+    </div> <div id="bottom-row-chat">
+
+      <div class="sidebar-spacer"></div>
+
       <div class="chat-panel" id="chatPanel">
         <div id="chatMessages" style="flex-grow: 1; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; overflow-y: auto; height: 150px; display: flex; flex-direction: column-reverse;">
           </div>
@@ -338,23 +391,10 @@ button.primary:hover { background: var(--accent-hover); }
           <button id="chatSendBtn" class="primary" style="padding: 8px 12px;">Send</button>
         </div>
       </div>
-      </div>
-    <div class="sidebar" id="leaderboardPanel">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-        <h2 style="margin: 0;">LEADERBOARDS</h2>
-        <button id="refreshLeaderboardBtn" class="primary" style="padding: 6px 10px; font-size: 12px;">Refresh</button>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid var(--accent); margin-bottom: 2px;">
-        <span style="font-weight: bold;">TOTAL XP</span>
-        <span style="font-weight: bold;">NAME</span>
-      </div>
-      <div id="leaderboardContent">
-        <div style="text-align:center; margin-top: 10px; color: #fff; opacity: 0.7;">Loading leaderboard...</div>
-      </div>
-    </div>
 
-  </div>
-</div>
+      <div class="sidebar-spacer"></div>
+
+    </div> </div> </div>
 <div id="tooltip" class="tooltip" style="display:none;"></div>
 
 <script>
