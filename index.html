@@ -159,9 +159,9 @@ body {
   max-width: 240px;
 }
 
-/* --- Main area --- */
+/* --- Main area (MODIFIED) --- */
 .main {
-  flex: 1;
+  /* flex: 1; */ /* <-- REMOVED */
   background: var(--panel-bg);
   padding: 18px;
   border-radius: 10px; /* Slightly less rounded */
@@ -169,10 +169,23 @@ body {
   box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
   /* Strong, dark border for a rustic frame look */
   border: 4px solid #453625;
-  min-height: 500px;
+  /* min-height: 500px; */ /* <-- REMOVED */
   position: relative;
 }
 .main h2 { margin-top: 0; }
+
+/* +++ NEW CHAT PANEL STYLE +++ */
+.chat-panel {
+  background: var(--panel-bg);
+  padding: 18px;
+  border-radius: 10px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
+  border: 4px solid #453625;
+  display: flex; 
+  flex-direction: column;
+  min-height: 200px; /* Give it a minimum height */
+  flex-shrink: 0;
+}
 
 .progress-container {
   background: #3f2b21;
@@ -211,6 +224,9 @@ button.primary:hover { background: var(--accent-hover); }
 @media(max-width:900px) {
   .container { flex-direction: column; align-items: center; }
   .sidebar, .main { width: 95%; }
+  /* +++ NEW +++ Make sure the new wrapper and chat panel also go full width */
+  div[style*="flex: 1"] { width: 95%; } 
+  .chat-panel { width: 100%; box-sizing: border-box; }
 }
 
 </style>
@@ -242,25 +258,24 @@ button.primary:hover { background: var(--accent-hover); }
   </div>
 </div>
 
+
 <div id="gameScreen">
   <div class="container">
+    
     <div class="sidebar">
       <div class="char-header">
         <h2 id="charName">Player</h2>
         <div style="font-size:12px; opacity:0.9;">Lvl UI</div>
       </div>
-
       <div class="hp-bar">
         <div class="hp-fill" id="hpFill" style="width:100%"></div>
         <div class="hp-text" id="hpText">10 / 10 HP</div>
       </div>
-
       <div class="tabs">
         <button onclick="showTab('equipment')" id="tabEquipmentBtn">Equipment</button>
         <button onclick="showTab('inventory')" id="tabInventoryBtn">Inventory</button>
         <button onclick="showTab('skills')" id="tabSkillsBtn">Skills</button>
       </div>
-
       <div class="tab-content">
         <div id="equipmentTab">
           <div class="equipment-character">
@@ -270,7 +285,6 @@ button.primary:hover { background: var(--accent-hover); }
                   <img src="images/helmet.png" alt="Helmet">
                 </div>
               </div>
-
               <div class="equipment-row" style="align-items:center;">
                 <div class="equipment-slot" id="weapon">
                   <img src="images/weapon.png" alt="Weapon">
@@ -279,7 +293,6 @@ button.primary:hover { background: var(--accent-hover); }
                   <img src="images/chestplate.png" alt="Chest">
                 </div>
               </div>
-
               <div class="equipment-row">
                 <div class="equipment-slot" id="boots">
                   <img src="images/boots.png" alt="Boots">
@@ -288,36 +301,46 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
           </div>
         </div>
-
         <div id="inventoryTab" style="display:none;">
           <div style="margin-bottom:8px; font-size:13px; color:#efe3cf;">Inventory</div>
           <div class="inventory-grid-wrap" id="inventoryGridWrap">
             <div class="inventory-grid" id="inventoryGrid"></div>
           </div>
         </div>
-
         <div id="skillsTab" style="display:none;">
           <div style="font-size:14px; margin-bottom:8px;">Skills</div>
           <div>Mining: <span id="miningLevel">1</span> — XP: <span id="miningXP">0</span> / <span id="nextXP">100</span> (Total: <span id="miningTotalXP">0</span>)</div>
         </div>
-
       </div>
     </div>
 
-    <div class="main" id="mainArea">
-      
-      <div id="mainContentWrapper">
-        <h2>Actions</h2>
-        <div id="actionScreen">
-          <button class="primary" onclick="openMine()">Beginner Mine</button>
-          <div style="margin-top:14px; color:#efe3cf; font-size:13px;">
-            Interact with the world on the right. Inventory and equipment share the left space.
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+
+      <div class="main" id="mainArea">
+        <div id="mainContentWrapper">
+          <h2>Actions</h2>
+          <div id="actionScreen">
+            <button class="primary" onclick="openMine()">Beginner Mine</button>
+            <div style="margin-top:14px; color:#efe3cf; font-size:13px;">
+              Interact with the world on the right. Inventory and equipment share the left space.
+            </div>
           </div>
         </div>
+        <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
       </div>
-      <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
-    </div>
-    
+      
+      <div class="chat-panel" id="chatPanel">
+        <h3 style="margin: 0 0 8px 0;">Global Chat</h3>
+        
+        <div id="chatMessages" style="flex-grow: 1; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; overflow-y: auto; height: 150px; display: flex; flex-direction: column-reverse;">
+          </div>
+        
+        <div id="chatInputContainer" style="display: flex; gap: 8px; margin-top: 10px;">
+          <input id="chatInput" type="text" placeholder="Type message..." style="flex-grow: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--accent); background: #3f2b21; color: #fff;">
+          <button id="chatSendBtn" class="primary" style="padding: 8px 12px;">Send</button>
+        </div>
+      </div>
+      </div>
     <div class="sidebar" id="leaderboardPanel">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
         <h2 style="margin: 0;">LEADERBOARDS</h2>
@@ -334,11 +357,10 @@ button.primary:hover { background: var(--accent-hover); }
 
   </div>
 </div>
-
 <div id="tooltip" class="tooltip" style="display:none;"></div>
 
 <script>
-// --- Game State ---
+// --- Game State (Unchanged) ---
 const game = {
   name: '',
   hp: 10,
@@ -351,42 +373,24 @@ const game = {
   progressFrame: null
 };
 
+// --- All your original game functions (setText, formatAmount, etc.) are unchanged ---
 function setText(id, text){ const el=document.getElementById(id); if(el) el.innerText=text; }
 
-/**
- * --- NEW FUNCTION ---
- * Formats large numbers into k (thousands) or M (millions).
- * 999 -> 999
- * 1000 -> 1k
- * 1010 -> 1.01k
- * 10100 -> 10.1k
- * 1000000 -> 1M
- * 1010000 -> 1.01M
- */
 function formatAmount(n) {
   if (n < 1000) {
     return n.toString();
   }
   if (n < 1000000) {
-    // e.g., 1010 / 1000 = 1.01. toFixed(2) -> "1.01"
-    // e.g., 1000 / 1000 = 1. toFixed(2) -> "1.00"
-    // e.g., 10100 / 1000 = 10.1. toFixed(2) -> "10.10"
     const val = (n / 1000).toFixed(2);
-    // parseFloat strips trailing zeros: "1.01" -> 1.01, "1.00" -> 1, "10.10" -> 10.1
     return parseFloat(val) + 'k';
   }
-  
-  // Millions
   const val = (n / 1000000).toFixed(2);
   return parseFloat(val) + 'M';
 }
 
 function createCharacter(){
   const name = document.getElementById('playerName').value.trim();
-  // NOTE: This function is now ONLY called *after* the name is validated for uniqueness
-  // The original alert('Enter a name first.') is now handled in the new async wrapper
-  if(!name) return; // Still, good to keep a safeguard
-  
+  if(!name) return; 
   game.name = name;
   document.getElementById('charName').innerText = name;
   document.getElementById('startScreen').style.display = 'none';
@@ -396,14 +400,12 @@ function createCharacter(){
   updateSkillUI();
 }
 
-/* --- HP --- */
 function updateHPUI(){
   const percent = Math.min(100, Math.round((game.hp / game.maxHP) * 100));
   document.getElementById('hpFill').style.width = percent + '%';
   setText('hpText', `${game.hp} / ${game.maxHP} HP`);
 }
 
-/* --- Tabs --- */
 function showTab(tab){
   document.getElementById('equipmentTab').style.display = 'none';
   document.getElementById('inventoryTab').style.display = 'none';
@@ -411,7 +413,6 @@ function showTab(tab){
   document.getElementById(tab + 'Tab').style.display = 'block';
 }
 
-/* --- Inventory --- */
 function renderInventoryGrid(){
   const grid = document.getElementById('inventoryGrid');
   grid.innerHTML = '';
@@ -436,32 +437,20 @@ function renderInventoryGrid(){
       slot.appendChild(img);
       const amt = document.createElement('div');
       amt.className = 'inv-amount';
-      // --- MODIFIED LINE ---
-      // Uses the new formatter function
       amt.innerText = formatAmount(item.qty); 
-      // --- END MODIFICATION ---
       slot.appendChild(amt);
-      
-      // --- *** NEW TOOLTIP CODE START *** ---
-      // Get the exact, unformatted amount and add commas
       const exactAmount = item.qty.toLocaleString(); 
       const itemName = item.name;
-      
-      // Build the HTML content for the tooltip
       const tooltipContent = `
         <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${itemName}</div>
         <div style="color:#fff;">Amount: ${exactAmount}</div>
       `;
-      
-      // Add event listeners to this specific slot
       slot.onmouseenter = (evt) => {
-        // Pass the event (evt) to position the tooltip
         showTooltip(evt, tooltipContent);
       };
       slot.onmouseleave = () => {
         hideTooltip();
       };
-      // --- *** NEW TOOLTIP CODE END *** ---
     }
     grid.appendChild(slot);
   }
@@ -472,15 +461,13 @@ function addItem(name, qty=1){
   renderInventoryGrid();
 }
 
-// --- *** NEW TOOLTIP FUNCTIONS START *** ---
-/* --- Tooltip --- */
 const tooltip = document.getElementById('tooltip');
 
 function showTooltip(evt, content) {
   if (!tooltip) return;
   tooltip.innerHTML = content;
   tooltip.style.display = 'block';
-  moveTooltip(evt); // Position it immediately
+  moveTooltip(evt);
 }
 
 function hideTooltip() {
@@ -490,67 +477,39 @@ function hideTooltip() {
 
 function moveTooltip(evt) {
   if (!tooltip || tooltip.style.display === 'none') return;
-  
-  // Get tooltip dimensions
   const tooltipRect = tooltip.getBoundingClientRect();
-  
-  // Basic positioning: 10px below and to the right of the cursor
   let x = evt.clientX + 10;
   let y = evt.clientY + 10;
-  
-  // Screen boundary collision detection
-  // If it goes off the right, move it to the left of the cursor
   if (x + tooltipRect.width > window.innerWidth) {
     x = evt.clientX - tooltipRect.width - 10;
   }
-  // If it goes off the bottom, move it above the cursor
   if (y + tooltipRect.height > window.innerHeight) {
     y = evt.clientY - tooltipRect.height - 10;
   }
-  
   tooltip.style.left = x + 'px';
   tooltip.style.top = y + 'px';
 }
-// --- *** NEW TOOLTIP FUNCTIONS END *** ---
 
-
-/* --- Skills --- */
 function getNextXP(level){ return Math.floor(100 * Math.pow(1.15, level-1)); }
 function updateSkillUI(){
   setText('miningLevel', game.mining.level);
   setText('miningXP', game.mining.xp);
   setText('nextXP', getNextXP(game.mining.level));
-  // MODIFIED: Update Total XP UI
   setText('miningTotalXP', game.mining.totalXP); 
 }
 
-/**
- * Adds XP, updates player skill UI, saves data, but DOES NOT refresh the leaderboard.
- * Leaderboard refresh is now manual via the button.
- */
 function addXP(skill, amount){
-  // MODIFIED: Always add to totalXP
   game[skill].totalXP += amount; 
-
   game[skill].xp += amount;
   while(game[skill].xp >= getNextXP(game[skill].level)){
     game[skill].xp -= getNextXP(game[skill].level);
     game[skill].level++;
   }
   updateSkillUI();
-
-  // --- *** MODIFICATION: SAVE CALL REMOVED *** ---
-  // Data is no longer saved on every action.
-  // It will be saved by the 30-second interval timer.
-  // ----------------------------------------------
-
-  // --- XP Popup (unchanged) ---
   const main = document.getElementById('mainArea');
   const popup = document.createElement('div');
   popup.className = 'xp-popup';
   popup.innerText = `+${amount} ${skill.toUpperCase()} XP`;
-
-  // ✅ Correct positioning relative to the main game area
   const bar = document.getElementById('mineProgress');
   if (bar) {
     const barRect = bar.getBoundingClientRect();
@@ -564,19 +523,15 @@ function addXP(skill, amount){
     popup.style.top = '120px';
     popup.style.transform = 'translateX(-50%)';
   }
-
   main.appendChild(popup);
   setTimeout(()=>popup.remove(), 900);
 }
 
-
-/* --- Mining Logic (infinite until stop) --- */
 const MINE_TIME_MS = 1500;
 const MINE_XP = 15;
 const MINE_ITEM = 'Copper Ore';
 
 function openMine(){
-  // NOTE THE CHANGE: Targeting 'mainContentWrapper' now!
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <h2>Beginner Mine — Copper vein</h2>
@@ -640,7 +595,6 @@ function stopMining(){
 
 function backToActions(){
   stopMining();
-  // NOTE THE CHANGE: Targeting 'mainContentWrapper' now!
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <h2>Actions</h2>
@@ -653,34 +607,24 @@ function backToActions(){
   `;
 }
 
-// *** ADD resetGameState FUNCTION ***
 function resetGameState() {
-  // Stop any active mining loops first
   if (game.miningActive) {
     stopMining(); 
   }
-  
-  // Reset the game data object
   game.name = '';
   game.hp = 10;
   game.maxHP = 10;
   game.inventory = {};
   game.mining = { level: 1, xp: 0, totalXP: 0 };
   game.miningActive = false;
-  
   if (game.progressFrame) {
     cancelAnimationFrame(game.progressFrame);
     game.progressFrame = null;
   }
-
-  // Also reset the UI to match the cleared state
   setText('charName', 'Player');
   updateHPUI();
   renderInventoryGrid();
   updateSkillUI();
-  
-  // Ensure the main panel is reset to default actions
-  // and the default tab is showing.
   if (typeof backToActions === 'function') {
     backToActions();
   }
@@ -689,13 +633,9 @@ function resetGameState() {
   }
 }
 
-/* --- Init --- */
 document.addEventListener('DOMContentLoaded', ()=>{
   showTab('equipment');
-  // document.getElementById('playerName').value = 'Adventurer'; // Removed this
   window.resetGameState = resetGameState;
-  
-  // --- *** NEW TOOLTIP MOVER *** ---
   document.addEventListener('mousemove', moveTooltip);
 });
 </script>
@@ -706,11 +646,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  // +++ ADDED CHAT IMPORTS +++
   import {
-    getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where
+    getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where,
+    addDoc, serverTimestamp, onSnapshot, orderBy, limit
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
   
-  // --- Your Firebase config (provided) ---
+  // --- Your Firebase config (Unchanged) ---
   const firebaseConfig = {
     apiKey: "AIzaSyD6sIi0SbPUUjJFJsJB22xBOF7ZD0H7utw",
     authDomain: "skill-3d8e1.firebaseapp.com",
@@ -724,24 +666,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // DOM refs for auth UI
+  // DOM refs (Unchanged)
   const authScreen = document.getElementById('authScreen');
   const startScreen = document.getElementById('startScreen');
   const gameScreen = document.getElementById('gameScreen');
   const registerBtn = document.getElementById('registerBtn');
   const loginBtn = document.getElementById('loginBtn');
-  const refreshLeaderboardBtn = document.getElementById('refreshLeaderboardBtn'); // NEW: Get refresh button
+  const refreshLeaderboardBtn = document.getElementById('refreshLeaderboardBtn'); 
 
-  // Helper: save current game state for the logged-in user
-  // Made globally accessible via window.savePlayerData
+  // --- All helper functions (save, load, etc.) are unchanged ---
   window.savePlayerData = async function() {
     try {
       const user = auth.currentUser;
       if (!user) return;
-      
-      // *** FIX: Only save the actual game.name. Do not default to "Adventurer". ***
       const nameToSave = game.name || ""; 
-            
       const payload = {
         name: nameToSave,
         name_lowercase: nameToSave.toLowerCase(),
@@ -755,33 +693,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
         },
         updatedAt: new Date().toISOString()
       };
-      
-      // Use the uid as the document ID in the 'players' collection
       await setDoc(doc(db, "players", user.uid), payload, { merge: true });
-      // console.log("Saved player data");
     } catch (e) {
       console.error("Save failed:", e);
     }
   }
 
-  // Helper: load player data (returns true if loaded and started game)
   async function loadPlayerDataAndStart(user) {
     try {
       const ref = doc(db, "players", user.uid);
       const snap = await getDoc(ref);
-      
-      // Check if the document exists AND if it has a character name saved
       if (!snap.exists() || !snap.data().name) {
-        // Doc doesn't exist OR Doc exists but character name is empty ("")
-        // -> Show the create-character screen
         authScreen.style.display = 'none';
         startScreen.style.display = 'block';
         gameScreen.style.display = 'none';
         return false;
       }
-
       const data = snap.data();
-      // apply to your game state
       game.name = data.name || game.name || "Adventurer";
       game.hp = (typeof data.hp === 'number') ? data.hp : game.hp;
       game.maxHP = (typeof data.maxHP === 'number') ? data.maxHP : game.maxHP;
@@ -789,23 +717,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (data.mining) {
         game.mining.level = data.mining.level || game.mining.level;
         game.mining.xp = data.mining.xp || game.mining.xp;
-        // MODIFIED: Load totalXP, defaulting to current level/xp if missing for old data
         game.mining.totalXP = data.mining.totalXP || 
                               (data.mining.level > 1 ? estimateTotalXP(data.mining.level - 1) + data.mining.xp : data.mining.xp) || 0; 
       }
-      // show game screen (skip create)
       document.getElementById('charName').innerText = game.name;
       startScreen.style.display = 'none';
       authScreen.style.display = 'none';
       gameScreen.style.display = 'block';
-      // Render UI
       updateHPUI();
       renderInventoryGrid();
       updateSkillUI();
-      
-      // Keep: Load and display the leaderboards on initial load
       window.renderLeaderboards(); 
-
       return true;
     } catch (e) {
       console.error("Load failed:", e);
@@ -813,68 +735,60 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
 
-  /**
-   * Estimates the total XP required to reach a specific level (L), 
-   * assuming all previous levels (1 to L-1) were completed.
-   */
   function estimateTotalXP(level) {
     let total = 0;
-    // NOTE: getNextXP is in the global scope (main <script> block)
     for(let i = 1; i < level; i++) {
         total += getNextXP(i);
     }
     return total;
   }
 
-
-  // Register handler
+  // Auth handlers (register, login) are unchanged
   registerBtn.onclick = async function() {
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
     if (!email || !password) return alert("Enter email and password.");
     try {
       const uc = await createUserWithEmailAndPassword(auth, email, password);
-      // create initial player doc
       await setDoc(doc(db, "players", uc.user.uid), {
         name: "",
         name_lowercase: "",
         hp: 10,
         maxHP: 10,
         inventory: {},
-        mining: { level: 1, xp: 0, totalXP: 0 }, // Initialize totalXP
+        mining: { level: 1, xp: 0, totalXP: 0 },
         createdAt: new Date().toISOString()
       });
-      // NOTE: In a production environment, this should be a modal, not alert().
       alert("Account created. Now create your character."); 
     } catch (err) {
-      // NOTE: In a production environment, this should be a modal, not alert().
       alert(err.message || "Registration failed.");
       console.error(err);
     }
   };
 
-  // Login handler
   loginBtn.onclick = async function() {
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
     if (!email || !password) return alert("Enter email and password.");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged will handle the UI change + load
     } catch (err) {
-      // NOTE: In a production environment, this should be a modal, not alert().
       alert(err.message || "Login failed."); 
       console.error(err);
     }
   };
 
-  // Auth state listener: show auth -> create char -> or load game
+  // +++ MODIFIED Auth state listener +++
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // Try loading existing player data. If none (fresh account with empty name), show create-char.
       const started = await loadPlayerDataAndStart(user);
-      if (!started) {
-        // Show create-character screen (startScreen) so user can name the char
+      
+      // +++ ADDED THIS CHECK +++
+      if (started) {
+        // If game data was loaded, start the chat
+        initChatListener();
+      } else {
+        // Show create-character screen
         startScreen.style.display = 'block';
         gameScreen.style.display = 'none';
         authScreen.style.display = 'none';
@@ -884,103 +798,158 @@ document.addEventListener('DOMContentLoaded', ()=>{
       authScreen.style.display = 'flex';
       startScreen.style.display = 'none';
       gameScreen.style.display = 'none';
-      
-      // *** CALL resetGameState ON LOGOUT ***
       if (window.resetGameState) {
         window.resetGameState();
       }
     }
   });
 
-  // *** createCharacter PATCH (with unique name check) ***
+  // +++ MODIFIED createCharacter PATCH +++
   (function(){
     const originalCreate = window.createCharacter;
     if (typeof originalCreate === "function") {
-      
-      // Make the new function async to await the query
       window.createCharacter = async function() {
-        
-        // 1. Manually get and validate the name from the input
         const name = document.getElementById('playerName').value.trim();
         if(!name) return alert('Enter a name first.');
-        
-        // 2. Check for uniqueness
         try {
           const nameLower = name.toLowerCase();
           const q = query(collection(db, "players"), where("name_lowercase", "==", nameLower));
           const querySnapshot = await getDocs(q);
-
           if (!querySnapshot.empty) {
-            // Name is taken
             return alert("That name is already taken. Please choose another.");
           }
-        
         } catch (e) {
           console.error("Name check failed:", e);
           return alert("Error checking name. Please try again.");
         }
         
-        // 3. If we are here, the name is unique.
-        // Call the original function (which sets game.name and updates UI)
         originalCreate();
         
-        // 4. Save data and refresh leaderboards
         const user = auth.currentUser;
         if (user) {
-          // We can use await now since the function is async
           await window.savePlayerData();
           window.renderLeaderboards();
+          // +++ ADDED THIS LINE +++
+          initChatListener(); // Start chat for new player
         }
       };
     }
   })();
   
-// --- LEADERBOARD FUNCTIONS ---
+  // +++ NEW CHAT FUNCTIONS START +++
+  
+  /**
+   * Sends a new chat message to the 'messages' collection in Firestore.
+   */
+  async function sendChatMessage() {
+    const chatInput = document.getElementById('chatInput');
+    const messageText = chatInput.value.trim();
 
-  // Made globally accessible via window.renderLeaderboards
+    if (messageText.length === 0) return; // Don't send empty messages
+    if (messageText.length > 256) {
+      alert("Message is too long (max 256 chars).");
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user || !game.name) {
+      alert("You must be logged in and have a character to chat.");
+      return;
+    }
+
+    try {
+      // Add a new document to the 'messages' collection
+      await addDoc(collection(db, "messages"), {
+        senderUid: user.uid,
+        senderName: game.name,
+        text: messageText,
+        timestamp: serverTimestamp() // Uses the server's time
+      });
+      
+      // Clear the input field
+      chatInput.value = '';
+
+    } catch (e) {
+      console.error("Error sending message: ", e);
+      alert("Failed to send message. Please try again.");
+    }
+  }
+
+  /**
+   * Initializes the real-time listener for the chat.
+   */
+  function initChatListener() {
+    const chatMessagesContainer = document.getElementById('chatMessages');
+    if (!chatMessagesContainer) return;
+
+    // Create a query to get the last 25 messages, ordered by time
+    const q = query(
+      collection(db, "messages"), 
+      orderBy("timestamp", "desc"), 
+      limit(25)
+    );
+
+    // onSnapshot creates a real-time listener
+    onSnapshot(q, (querySnapshot) => {
+      // Clear the existing messages
+      chatMessagesContainer.innerHTML = '';
+      
+      // Loop through the messages (which are in reverse order)
+      querySnapshot.forEach((doc) => {
+        const msg = doc.data();
+        
+        const msgElement = document.createElement('div');
+        msgElement.style.marginBottom = '6px';
+        msgElement.style.lineHeight = '1.3';
+        msgElement.style.wordBreak = 'break-word';
+
+        const sender = document.createElement('strong');
+        sender.style.color = 'var(--gold)'; 
+        sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
+        
+        const text = document.createTextNode(msg.text);
+
+        msgElement.appendChild(sender);
+        msgElement.appendChild(text);
+        
+        chatMessagesContainer.appendChild(msgElement);
+      });
+
+    }, (error) => {
+      console.error("Chat listener error: ", error);
+      chatMessagesContainer.innerHTML = '<div style="color: red;">Error loading chat.</div>';
+    });
+  }
+  // +++ NEW CHAT FUNCTIONS END +++
+
+
+  // --- LEADERBOARD FUNCTION (Unchanged) ---
   window.renderLeaderboards = async function() {
-    // TARGET CHANGED to only update the content area, not the whole panel
     const contentContainer = document.getElementById('leaderboardContent'); 
     if (!contentContainer) return;
-
-    // Set a loading state only in the content container
     contentContainer.innerHTML = `
       <div style="text-align:center; margin-top: 20px; color: #fff; opacity: 0.7;">Refreshing...</div>
     `;
-
     try {
-      // 1. Fetch all player documents
       const playersCol = collection(db, "players");
       const q = query(playersCol);
       const querySnapshot = await getDocs(q);
-      
       let players = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        // Only include players with a name
         if (!data.name || data.name === "") return;
-        
-        // 2. Get Total XP
         const totalXp = data.mining?.totalXP || 0; 
-
         players.push({
           name: data.name,
           totalXp: totalXp,
         });
       });
-
-      // 3. Sort players by Total XP (descending)
       players.sort((a, b) => b.totalXp - a.totalXp);
-      
-      // 4. Generate the HTML Leaderboard list (no title or column headers needed)
       let leaderboardHtml = '';
-      
-      players.slice(0, 10).forEach((player, index) => { // Show top 10
+      players.slice(0, 10).forEach((player, index) => {
         const rank = index + 1;
-        const xpFormatted = player.totalXp.toLocaleString(); // Add commas
-        // Highlight the current player
+        const xpFormatted = player.totalXp.toLocaleString();
         const isCurrentPlayer = (auth.currentUser && game.name === player.name); 
-
         leaderboardHtml += `
           <div style="display: flex; justify-content: space-between; padding: 2px 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); background: ${isCurrentPlayer ? 'rgba(181, 166, 66, 0.1)' : 'transparent'};">
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -991,29 +960,41 @@ document.addEventListener('DOMContentLoaded', ()=>{
           </div>
         `;
       });
-      
       if(players.length === 0){
         leaderboardHtml += `<div style="text-align:center; padding: 20px; opacity: 0.7;">No players found. Start playing to get on the board!</div>`;
       }
-
-      // Update *only* the content area
       contentContainer.innerHTML = leaderboardHtml;
-
     } catch (e) {
       console.error("Failed to load leaderboards:", e);
       contentContainer.innerHTML = `<div style="text-align:center; margin-top: 0px; color: red;">Failed to load data.</div>`;
     }
   }
   
-  // Attach event listener for the new refresh button
+  // +++ MODIFIED DOMContentLoaded +++
   document.addEventListener('DOMContentLoaded', () => {
     if (refreshLeaderboardBtn) {
         refreshLeaderboardBtn.onclick = window.renderLeaderboards;
     }
+
+    // +++ ADDED CHAT LISTENERS +++
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const chatInput = document.getElementById('chatInput');
+
+    if (chatSendBtn) {
+      chatSendBtn.onclick = sendChatMessage;
+    }
+    if (chatInput) {
+      // Optional: Allow sending by pressing 'Enter'
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault(); // Prevents a line break
+          sendChatMessage();
+        }
+      });
+    }
   });
 
-
-  // Autosave every 30 seconds (as requested)
+  // --- Autosave and Logout functions (Unchanged) ---
   setInterval(() => {
     const user = auth.currentUser;
     if (user) {
@@ -1021,37 +1002,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }, 30000);
 
-  // Also save when the page is being closed or unloaded
   window.addEventListener('beforeunload', (e) => {
-    // fire and hope the browser sends it; can't await here reliably
     try {
       const user = auth.currentUser;
       if (user) {
-        // We'll do a quick non-blocking save (fire-and-forget).
         window.savePlayerData();
       }
     } catch (err) { /* ignore */ }
   });
 
-  // Optional: expose a logout function
   window.firebaseLogout = async function() {
     try {
       await window.savePlayerData();
       await signOut(auth);
-      
-      // *** CALL resetGameState ON LOGOUT ***
       if (window.resetGameState) {
         window.resetGameState();
       }
-      
-      // NOTE: In a production environment, this should be a modal, not alert().
       alert("Logged out."); 
     } catch (e) {
       console.error("Logout failed:", e);
     }
   };
-
-  // End of Firebase module
 </script>
 </body>
 </html>
