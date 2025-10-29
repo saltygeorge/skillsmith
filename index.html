@@ -687,6 +687,7 @@ function stopMining(){
 
 // 1. This is your OLD "openMine" function, but RENAMED and with one small change.
 function openCopperMine(){
+  hideTooltip();
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <h2>Beginner Mine - Copper vein</h2>
@@ -710,13 +711,15 @@ function openMineHub() {
   hideTooltip();
   stopMining(); // Stop any mining action when leaving the mine
   const wrapper = document.getElementById('mainContentWrapper');
+  
+  // 1. Set the simple HTML, giving the buttons unique IDs
   wrapper.innerHTML = `
     <h2>Mines</h2>
     <div style="margin-top:8px; color:#efe3cf;">Choose a mine to enter.</div>
     
     <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
       
-      <button onclick="openCopperMine()" 
+      <button id="copperVeinBtn" 
               class="primary" 
               style="display: flex; align-items: center; gap: 10px;">
         
@@ -726,9 +729,29 @@ function openMineHub() {
              
         <span>Copper Vein</span>
       </button>
-      <button onclick="backToActions()" class="primary" style="background:#666; margin-top: 30px;">Return</button>
+      
+      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
     </div>
   `;
+  
+  // 2. Find the new buttons you just created
+  const copperBtn = document.getElementById('copperVeinBtn');
+  const returnBtn = document.getElementById('returnToActionsBtn');
+
+  // 3. Attach all events directly using JavaScript
+  if (copperBtn) {
+    copperBtn.onclick = openCopperMine;
+    
+    // --- THIS IS THE NEW TOOLTIP YOU REQUESTED ---
+    copperBtn.onmouseenter = (event) => {
+      showTooltip(event, 'Lvl Required: 1');
+    };
+    copperBtn.onmouseleave = hideTooltip;
+  }
+  
+  if (returnBtn) {
+    returnBtn.onclick = backToActions;
+  }
 }
 
 
