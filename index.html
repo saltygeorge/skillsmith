@@ -415,7 +415,13 @@ button.primary:hover { background: var(--accent-hover); }
       <div class="main" id="mainArea">
         <div id="mainContentWrapper">
           <div id="actionScreen">
-  <button class="primary" onclick="openMineHub()" style="margin-top: 10px;">Mines</button> </div>
+  <img src="images/mines.png" 
+       alt="Mines" 
+       onclick="openMineHub()" 
+       onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Mines</div>')" 
+       onmouseleave="hideTooltip()" 
+       style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+</div>
         </div>
         <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
       </div>
@@ -701,6 +707,7 @@ function openCopperMine(){
 
 // 2. This is the NEW function for the mine selection screen.
 function openMineHub() {
+  hideTooltip();
   stopMining(); // Stop any mining action when leaving the mine
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
@@ -715,14 +722,35 @@ function openMineHub() {
   `;
 }
 
-// 3. This is your UPDATED backToActions function.
+
 function backToActions(){
+  hideTooltip();
   stopMining();
   const wrapper = document.getElementById('mainContentWrapper');
+
+  // 1. Set the simple HTML, giving the image a unique ID
   wrapper.innerHTML = `
     <div id="actionScreen">
-      <button class="primary" onclick="openMineHub()" style="margin-top: 10px;">Mines</button> </div>
+      <img id="minesActionIcon" 
+           src="images/mines.png" 
+           alt="Mines" 
+           style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+    </div>
   `;
+
+  // 2. Find the new element you just created
+  const minesIcon = document.getElementById('minesActionIcon');
+
+  // 3. Attach the events directly using JavaScript
+  if (minesIcon) {
+    minesIcon.onclick = openMineHub;
+    
+    minesIcon.onmouseenter = (event) => {
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Mines</div>');
+    };
+    
+    minesIcon.onmouseleave = hideTooltip;
+  }
 }
 
 function resetGameState() {
