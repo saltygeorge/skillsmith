@@ -146,9 +146,11 @@ body {
 }
 .inventory-grid {
   display: grid;
-  grid-template-columns: repeat(4, var(--slot-size)); /* max 4 horizontally */
+  /* --- FIX: Use auto-fit to force 4 columns within the space. --- */
+  grid-template-columns: repeat(auto-fit, minmax(var(--slot-size), 1fr));
   gap: var(--slot-gap);
-  padding: 4px;
+  /* Ensure padding is uniform and matches the gap */
+  padding: var(--slot-gap); 
   align-content: start;
 }
 .inv-slot {
