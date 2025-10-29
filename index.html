@@ -1402,8 +1402,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const user = auth.currentUser;
     if (!user) return false;
 
-    if (messageText.startsWith('/trade ')) {
-      const targetName = messageText.substring(7).trim();
+    // --- NEW: Define commands as constants ---
+    const tradeCmd = '/trade ';
+    const acceptCmd = '/accepttrade ';
+
+    if (messageText.startsWith(tradeCmd)) {
+      // --- FIX: Using tradeCmd.length (which is 7) ---
+      const targetName = messageText.substring(tradeCmd.length).trim();
+      
       if (targetName.toLowerCase() === game.name.toLowerCase()) {
         addLocalChatMessage("You cannot trade with yourself.", 'error');
         return true;
@@ -1416,6 +1422,22 @@ document.addEventListener('DOMContentLoaded', ()=>{
       await initiateTradeRequest(targetName);
       return true;
     }
+
+    if (messageText.startsWith(acceptCmd)) {
+      // --- FIX: Using acceptCmd.length (which is 13, not 14) ---
+      const requesterName = messageText.substring(acceptCmd.length).trim();
+      
+      if (game.inTrade) {
+        addLocalChatMessage("You are already in a trade.", 'error');
+        return true;
+      }
+      addLocalChatMessage(`Attempting to accept trade from ${requesterName}...`, 'system');
+      await acceptTradeRequest(requesterName);
+      return true;
+    }
+    
+    return false; // Not a command
+  }
 
     if (messageText.startsWith('/accepttrade ')) {
       const requesterName = messageText.substring(14).trim();
