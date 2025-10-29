@@ -415,8 +415,7 @@ button.primary:hover { background: var(--accent-hover); }
       <div class="main" id="mainArea">
         <div id="mainContentWrapper">
           <div id="actionScreen">
-  <button class="primary" onclick="openMine()" style="margin-top: 10px;">Beginner Mine</button>
-          </div>
+  <button class="primary" onclick="openMineHub()" style="margin-top: 10px;">Mines</button> </div>
         </div>
         <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
       </div>
@@ -626,7 +625,62 @@ const MINE_TIME_MS = 1500;
 const MINE_XP = 15;
 const MINE_ITEM = 'Copper Ore';
 
-function openMine(){
+// --- PASTE THIS ENTIRE BLOCK ---
+
+function startMining() {
+  if (game.miningActive) return; // Don't start if already mining
+  game.miningActive = true;
+  
+  // Hide start, show stop
+  const startBtn = document.getElementById('startMineBtn');
+  const stopBtn = document.getElementById('stopMineBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+
+  // Start the loop
+  game.progressFrame = requestAnimationFrame((now) => miningLoop(now, now));
+}
+
+function miningLoop(timestamp, startTime) {
+  if (!game.miningActive) return; // Stop the loop if flag is false
+
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / MINE_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    // --- Action Complete ---
+    addItem(MINE_ITEM, 1);
+    addXP('mining', MINE_XP);
+    
+    // Reset for next loop
+    const bar = document.getElementById('mineProgress');
+    if (bar) bar.style.width = '0%';
+    game.progressFrame = requestAnimationFrame((now) => miningLoop(now, now)); // Loop
+  } else {
+    // --- In Progress ---
+    const bar = document.getElementById('mineProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => miningLoop(now, startTime)); // Continue
+  }
+}
+
+function stopMining(){
+  game.miningActive = false;
+  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+
+  const bar = document.getElementById('mineProgress');
+  if(bar) bar.style.width = '0%';
+
+  // --- This is the fix: Check if buttons exist first ---
+  const startBtn = document.getElementById('startMineBtn');
+  if(startBtn) startBtn.style.display = 'inline-block';
+  
+  const stopBtn = document.getElementById('stopMineBtn');
+  if(stopBtn) stopBtn.style.display = 'none';
+}
+
+// 1. This is your OLD "openMine" function, but RENAMED and with one small change.
+function openCopperMine(){
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <h2>Beginner Mine - Copper vein</h2>
@@ -639,62 +693,35 @@ function openMine(){
     <div class="action-buttons" style="margin-top:14px;">
       <button id="startMineBtn" class="primary">Start Mining</button>
       <button id="stopMineBtn" class="primary" style="background:#555; display:none;">Stop Mining</button>
-      <button onclick="backToActions()" class="primary" style="background:#666;">Return</button>
-    </div>
+      <button onclick="openMineHub()" class="primary" style="background:#666;">Return</button> </div>
   `;
   document.getElementById('startMineBtn').onclick = startMining;
   document.getElementById('stopMineBtn').onclick = stopMining;
 }
 
-function startMining(){
-  if(game.miningActive) return;
-  game.miningActive = true;
-  document.getElementById('startMineBtn').style.display = 'none';
-  document.getElementById('stopMineBtn').style.display = 'inline-block';
-  miningLoop();
+// 2. This is the NEW function for the mine selection screen.
+function openMineHub() {
+  stopMining(); // Stop any mining action when leaving the mine
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Mines</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Choose a mine to enter.</div>
+    
+    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
+      <button onclick="openCopperMine()" class="primary">Beginner Mine (Copper)</button>
+      
+      <button onclick="backToActions()" class="primary" style="background:#666; margin-top: 30px;">Return</button>
+    </div>
+  `;
 }
 
-function miningLoop(){
-  const bar = document.getElementById('mineProgress');
-  if(!bar || !game.miningActive) return;
-
-  let start = performance.now();
-  function animate(now){
-    const elapsed = now - start;
-    const progress = Math.min(100, (elapsed / MINE_TIME_MS) * 100);
-    bar.style.width = progress + '%';
-
-    if(progress >= 100){
-      addItem(MINE_ITEM, 1);
-      addXP('mining', MINE_XP);
-      bar.style.width = '0%';
-      if(game.miningActive){
-        start = performance.now();
-        requestAnimationFrame(animate);
-      }
-      return;
-    }
-    if(game.miningActive) game.progressFrame = requestAnimationFrame(animate);
-  }
-  game.progressFrame = requestAnimationFrame(animate);
-}
-
-function stopMining(){
-  game.miningActive = false;
-  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
-  const bar = document.getElementById('mineProgress');
-  if(bar) bar.style.width = '0%';
-  document.getElementById('startMineBtn').style.display = 'inline-block';
-  document.getElementById('stopMineBtn').style.display = 'none';
-}
-
+// 3. This is your UPDATED backToActions function.
 function backToActions(){
   stopMining();
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <div id="actionScreen">
-      <button class="primary" onclick="openMine()" style="margin-top: 10px;">Beginner Mine</button>
-    </div>
+      <button class="primary" onclick="openMineHub()" style="margin-top: 10px;">Mines</button> </div>
   `;
 }
 
