@@ -1612,7 +1612,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   /**
    * (4) Opens the trade modal and attaches the main session listener.
    */
-  function openTradeWindow(sessionId, sessionData) {
+function openTradeWindow(sessionId, sessionData) {
     if (game.inTrade) return; // Should not happen, but a good check
 
     game.inTrade = true;
@@ -1649,15 +1649,57 @@ document.addEventListener('DOMContentLoaded', ()=>{
       
       const data = doc.data();
       
-      // Check status
+      // --- Check status ---
       if (data.status === 'cancelled') {
+        // Show the error message if one exists
+        const errorMsg = data.errorMessage ? `: ${data.errorMessage}` : '.';
+        addLocalChatMessage(`Trade was cancelled${errorMsg}`, 'trade');
         closeTradeWindow();
-        addLocalChatMessage("Trade was cancelled.", 'trade');
         return;
       }
+      
       if (data.status === 'completed') {
+        // --- +++ THIS IS THE NEW LOGIC +++ ---
+        // The trade was verified by executeTrade. Now we apply it.
+        
+        try {
+          // 1. Get final offers
+          const myOffer = data[myRole];
+          const theirOffer = data[theirRole];
+
+          // 2. Apply changes to local game state
+          
+          // Apply Gold
+          game.gold = (game.gold - myOffer.offerGold) + theirOffer.offerGold;
+          if (game.gold < 0) game.gold = 0; // Safety check
+
+          // Remove my offered items
+          for (const [item, qty] of Object.entries(myOffer.offerItems)) {
+            if (game.inventory[item]) {
+              game.inventory[item] -= qty;
+              if (game.inventory[item] <= 0) {
+                delete game.inventory[item];
+              }
+            }
+          }
+          
+          // Add their offered items
+          for (const [item, qty] of Object.entries(theirOffer.offerItems)) {
+            game.inventory[item] = (game.inventory[item] || 0) + qty;
+          }
+
+          // 3. Save *my* data (this is allowed by security rules)
+          window.savePlayerData();
+          
+          addLocalChatMessage("Trade complete!", 'trade');
+          
+        } catch (e) {
+          console.error("Error applying trade results:", e);
+          addLocalChatMessage("Trade complete, but an error occurred updating your inventory. Please reload.", 'error');
+        }
+        
+        // 4. Close window (this also refreshes UI)
         closeTradeWindow();
-        addLocalChatMessage("Trade complete!", 'trade');
         return;
       }
       
@@ -1670,7 +1712,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
       renderOfferGrid('tradeTheirOfferGrid', game.theirTradeOffer.offerItems);
       
       // Update gold
-      document.getElementById('tradeMyGoldOffer').value = game.myTradeOffer.offerGold;
+      // Don't update the input if the user is currently typing in it
+      if (document.activeElement !== document.getElementById('tradeMyGoldOffer')) {
+         document.getElementById('tradeMyGoldOffer').value = game.myTradeOffer.offerGold;
+      }
       setText('tradeTheirGoldOffer', formatAmount(game.theirTradeOffer.offerGold));
       
       // --- Update Accept Status ---
@@ -1997,59 +2042,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if (p1Data.gold < p1Offer.offerGold) throw new Error(`${p1Data.name} does not have enough gold.`);
         if (p2Data.gold < p2Offer.offerGold) throw new Error(`${p2Data.name} does not have enough gold.`);
         
-        const newP1Inv = { ...p1Data.inventory };
-        const newP2Inv = { ...p2Data.inventory };
-
-        // --- Remove items from Player 1, give to Player 2 ---
+        // Check if players have enough items
         for (const [item, qty] of Object.entries(p1Offer.offerItems)) {
-          if (!newP1Inv[item] || newP1Inv[item] < qty) throw new Error(`${p1Data.name} does not have ${qty} ${item}.`);
-          newP1Inv[item] -= qty;
-          if (newP1Inv[item] <= 0) delete newP1Inv[item];
-          
-          newP2Inv[item] = (newP2Inv[item] || 0) + qty;
+          if (!p1Data.inventory[item] || p1Data.inventory[item] < qty) {
+            throw new Error(`${p1Data.name} does not have ${qty} ${item}.`);
+          }
         }
-        
-        // --- Remove items from Player 2, give to Player 1 ---
         for (const [item, qty] of Object.entries(p2Offer.offerItems)) {
-          if (!newP2Inv[item] || newP2Inv[item] < qty) throw new Error(`${p2Data.name} does not have ${qty} ${item}.`);
-          newP2Inv[item] -= qty;
-          if (newP2Inv[item] <= 0) delete newP2Inv[item];
-          
-          newP1Inv[item] = (newP1Inv[item] || 0) + qty;
+          if (!p2Data.inventory[item] || p2Data.inventory[item] < qty) {
+            throw new Error(`${p2Data.name} does not have ${qty} ${item}.`);
+          }
         }
 
-        // --- Swap Gold ---
-        const newP1Gold = p1Data.gold - p1Offer.offerGold + p2Offer.offerGold;
-        const newP2Gold = p2Data.gold - p2Offer.offerGold + p1Offer.offerGold;
-        
         // --- All checks passed, commit the changes ---
-        transaction.update(player1Ref, { inventory: newP1Inv, gold: newP1Gold });
-        transaction.update(player2Ref, { inventory: newP2Inv, gold: newP2Gold });
+        // We ONLY update the session. The listener will handle the rest.
         transaction.update(sessionRef, { status: 'completed' });
         
-        // Update local game state for the player running this
-        if(auth.currentUser.uid === sessionData.player1.uid) { // Corrected: p1Data.uid to sessionData.player1.uid
-           game.inventory = newP1Inv;
-           game.gold = newP1Gold;
-        } else {
-           game.inventory = newP2Inv;
-           game.gold = newP2Gold;
-        }
-        
+        // NO player data is written here.
       });
       
-      // Transaction successful! The listener will close the window.
-      // We need to manually update the local game state for player2
-      if(auth.currentUser.uid === sessionData.player2.uid) {
-         // This is tricky, we need to re-fetch our own data
-         await loadPlayerDataAndStart(auth.currentUser);
-      }
-
+      // Transaction successful! The listener will take over.
+      
     } catch (e) {
       console.error("TRADE FAILED:", e);
-      addLocalChatMessage(`TRADE FAILED: ${e.message}`, 'error');
-      // Set trade to cancelled
-      await updateDoc(doc(db, "tradeSessions", sessionId), { status: 'cancelled' });
+      // Set trade to cancelled AND add the error message
+      // so both players can see why it failed.
+      await updateDoc(doc(db, "tradeSessions", sessionId), { 
+        status: 'cancelled',
+        errorMessage: e.message
+      });
     }
   }
 
