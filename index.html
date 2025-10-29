@@ -1557,31 +1557,36 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (tradeSessionUnsubscribe) tradeSessionUnsubscribe();
 
     // --- Listener 1: For new incoming trade requests ---
-    const sixtySecondsAgo = new Date(Date.now() - 60000);
+    
+    // +++ THIS QUERY IS SIMPLIFIED to prevent clock issues +++
+    // It no longer uses the 'createdAt' field in the query
     const requestQuery = query(
       collection(db, "tradeRequests"),
       where("toUid", "==", myUid),
-      where("status", "==", "pending"),
-      where("createdAt", ">", sixtySecondsAgo)
+      where("status", "==", "pending")
     );
+    // +++ END OF CHANGE +++
     
     tradeRequestUnsubscribe = onSnapshot(requestQuery, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
+          // Verify age *here* (in your code) instead of in the query
           const request = change.doc.data();
-          addLocalChatMessage(
-            `${request.fromName} sent you a trade request. Type '/accepttrade ${request.fromName}' to accept.`,
-            'trade'
-          );
+          const requestTime = request.createdAt?.toDate() || new Date(0);
+          const sixtySecondsAgo = new Date(Date.now() - 60000);
+          
+          if (requestTime > sixtySecondsAgo) {
+            addLocalChatMessage(
+              `${request.fromName} sent you a trade request. Type '/accepttrade ${request.fromName}' to accept.`,
+              'trade'
+            );
+          }
         }
       });
-    }, (error) => console.error("Trade request listener error:", error));
+    }, (error) => console.error("Trade request listener error:", error)); // This error will be gone now
 
     // --- Listener 2: For active trade SESSIONS I am part of ---
-    // We query for *both* player1 or player2 being me.
-    // NOTE: Firestore doesn't support OR queries on different fields.
-    // This is a workaround: we'll have two listeners.
-    
+    // (This part is unchanged)
     const sessionQuery1 = query(
       collection(db, "tradeSessions"),
       where("player1.uid", "==", myUid),
@@ -1603,9 +1608,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       });
     };
     
-    // We combine the listeners. This is slightly inefficient but works.
     tradeSessionUnsubscribe = onSnapshot(sessionQuery1, handleSessionStart, (e) => console.error("Session listener 1:", e));
-    // We'll just re-assign the unsubscribe function
     tradeSessionUnsubscribe = onSnapshot(sessionQuery2, handleSessionStart, (e) => console.error("Session listener 2:", e));
   }
   
