@@ -148,7 +148,7 @@ body {
   display: grid;
   grid-template-columns: repeat(4, var(--slot-size)); /* max 4 horizontally */
   gap: var(--slot-gap);
-  padding: 4px;
+  padding: 4px 0; /* <-- THE FIX: 4px top/bottom, 0px left/right */
   align-content: start;
 }
 .inv-slot {
