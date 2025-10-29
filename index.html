@@ -275,7 +275,7 @@ body {
 
 
 .progress-container {
-  background: #3f2b21;
+  background: #7c644c; /* NEW: Lighter, muted tan/brown */
   border-radius: 10px;
   height: 24px;
   overflow: hidden;
@@ -417,7 +417,7 @@ button.primary:hover { background: var(--accent-hover); }
         <div id="mainContentWrapper">
           <h2>Actions</h2>
           <div id="actionScreen">
-            <button class="primary" onclick="openMine()">Beginner Mine</button>
+  <button class="primary" onclick="openMine()" style="margin-top: 10px;">Beginner Mine</button>
           </div>
         </div>
         <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
@@ -631,7 +631,7 @@ const MINE_ITEM = 'Copper Ore';
 function openMine(){
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
-    <h2>Beginner Mine — Copper vein</h2>
+    <h2>Beginner Mine - Copper vein</h2>
     <div style="margin-top:8px; color:#efe3cf;">A low level copper vein.</div>
     <div style="margin-top:16px;">
       <div class="progress-container">
@@ -696,7 +696,7 @@ function backToActions(){
   wrapper.innerHTML = `
     <h2>Actions</h2>
     <div id="actionScreen">
-      <button class="primary" onclick="openMine()">Beginner Mine</button>
+      <button class="primary" onclick="openMine()" style="margin-top: 10px;">Beginner Mine</button>
     </div>
   `;
 }
