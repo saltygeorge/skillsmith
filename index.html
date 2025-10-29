@@ -327,6 +327,148 @@ button.primary:hover { background: var(--accent-hover); }
   }
 }
 
+/* --- +++ NEW TRADE MODAL STYLES +++ --- */
+#tradeModal {
+  display: none; /* Changed by JS */
+}
+
+.trade-content {
+  background: var(--panel-bg);
+  border: 4px solid #453625;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 1300px;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.trade-main-area {
+  display: flex;
+  gap: 20px;
+  flex: 1; /* Make it fill the vertical space */
+}
+
+.trade-panel {
+  background: rgba(0,0,0,0.15);
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.trade-gold-display {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+.trade-gold-display img {
+  width: 30px;
+  height: 30px;
+}
+
+/* Make trade inventory scrollable */
+#tradeInventoryGridWrap {
+  flex: 1; /* This makes it fill the panel's height */
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  
+  /* --- NEW: For Firefox --- */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--panel-bg);
+}
+
+/* Make trade offer grids fixed size */
+#tradeMyOfferGrid, #tradeTheirOfferGrid {
+  display: grid;
+  grid-template-columns: repeat(4, var(--slot-size));
+  grid-template-rows: repeat(4, var(--slot-size));
+  gap: var(--slot-gap);
+  padding: var(--slot-gap);
+  align-content: start;
+  height: calc((var(--slot-size) + var(--slot-gap)) * 4 + var(--slot-gap));
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+}
+
+/* This makes empty offer slots visible */
+.inv-slot.offer-slot-placeholder {
+  background: rgba(120,90,50,0.1);
+  border-style: dashed;
+}
+
+.trade-offer-layout {
+  display: flex;
+  gap: 20px;
+}
+
+.trade-offer-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.trade-gold-input {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: bold;
+}
+#tradeMyGoldOffer {
+  width: 100px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: #3f2b21;
+  color: #fff;
+  font-size: 14px;
+}
+
+#tradeAcceptBtn {
+  margin-top: 15px;
+  background: var(--accent);
+  font-size: 16px;
+}
+#tradeAcceptBtn:disabled {
+  background: #555;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.trade-status-indicator {
+  margin-top: 10px;
+  text-align: center;
+  font-weight: bold;
+  padding: 8px;
+  border-radius: 6px;
+}
+#myTradeStatus {
+  background: rgba(150,0,0,0.3);
+  color: #ffaaaa;
+}
+#myTradeStatus.accepted {
+  background: rgba(0,150,0,0.3);
+  color: #aaffaa;
+}
+#theirTradeStatus {
+  background: rgba(150,0,0,0.3);
+  color: #ffaaaa;
+}
+#theirTradeStatus.accepted {
+  background: rgba(0,150,0,0.3);
+  color: #aaffaa;
+}
+/* --- +++ END TRADE MODAL STYLES +++ --- */
 </style>
 </head>
 <body>
@@ -470,6 +612,62 @@ button.primary:hover { background: var(--accent-hover); }
     </div> </div> </div>
 <div id="tooltip" class="tooltip" style="display:none;"></div>
 
+<div id="tradeModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center;">
+  
+  <div class="trade-content">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 10px;">
+      <h2 style="margin: 0;">Trade with <span id="tradePartnerName">Player</span></h2>
+      <button id="tradeCancelBtn" class="primary" style="background:#900;">Cancel</button>
+    </div>
+
+    <div class="trade-main-area">
+
+      <div class="trade-panel">
+        <h3>Your Inventory</h3>
+        <div class="trade-gold-display">
+          My Gold: 
+          <img src="images/goldpouch.png" alt="Gold">
+          <span id="tradeMyGold">0</span>
+        </div>
+        <div class="inventory-grid-wrap" id="tradeInventoryGridWrap">
+          <div class="inventory-grid" id="tradeInventoryGrid">
+            </div>
+        </div>
+      </div>
+
+      <div class="trade-panel" style="flex-grow: 1.5;">
+        <div class="trade-offer-layout">
+
+          <div class="trade-offer-box">
+            <h4>Your Offer</h4>
+            <div class="inventory-grid" id="tradeMyOfferGrid" data-grid-type="my-offer">
+              </div>
+            <div class="trade-gold-input">
+              <label for="tradeMyGoldOffer">Gold:</label>
+              <input type="number" id="tradeMyGoldOffer" min="0" value="0">
+            </div>
+            <button id="tradeAcceptBtn" class="primary">Accept</button>
+            <div id="myTradeStatus" class="trade-status-indicator">Not Accepted</div>
+          </div>
+
+          <div class="trade-offer-box">
+            <h4>Their Offer</h4>
+            <div class="inventory-grid" id="tradeTheirOfferGrid">
+              </div>
+            <div class="trade-gold-input">
+              <span>Gold:</span>
+              <span id="tradeTheirGoldOffer">0</span>
+            </div>
+            <div id="theirTradeStatus" class="trade-status-indicator">Not Accepted</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 <script>
 // --- Game State (MODIFIED) ---
 const game = {
@@ -482,7 +680,14 @@ const game = {
   // MODIFIED: Added totalXP
   mining: { level: 1, xp: 0, totalXP: 0 },
   miningActive: false,
-  progressFrame: null
+  progressFrame: null,
+  
+  // +++ ADDED FOR TRADE +++
+  inTrade: false,
+  activeTradeSessionId: null,
+  activeTradeListener: null, // To unsubscribe later
+  myTradeOffer: { items: {}, gold: 0 },
+  theirTradeOffer: { items: {}, gold: 0 }
 };
 
 // --- All your original game functions (setText, formatAmount, etc.) are unchanged ---
@@ -852,10 +1057,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  // +++ ADDED CHAT IMPORTS +++
+  // +++ MODIFIED CHAT/TRADE IMPORTS +++
   import {
     getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where,
-    addDoc, serverTimestamp, onSnapshot, orderBy, limit
+    addDoc, serverTimestamp, onSnapshot, orderBy, limit, runTransaction, writeBatch, updateDoc
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
   
   // --- Your Firebase config (Unchanged) ---
@@ -989,15 +1194,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   };
 
-  // +++ MODIFIED Auth state listener +++
+  // +++ MODIFIED Auth state listener (FOR TRADE) +++
   onAuthStateChanged(auth, async (user) => {
     if (user) {
+      // --- Detach old trade listeners ---
+      if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
+      if (tradeSessionUnsubscribe) tradeSessionUnsubscribe();
+
       const started = await loadPlayerDataAndStart(user);
       
-      // +++ ADDED THIS CHECK +++
       if (started) {
-        // If game data was loaded, start the chat
         initChatListener();
+        initTradeListeners(); // <--- +++ ADDED THIS LINE +++
       } else {
         // Show create-character screen
         startScreen.style.display = 'block';
@@ -1012,10 +1220,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (window.resetGameState) {
         window.resetGameState();
       }
+      // --- Detach listeners on logout ---
+      if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
+      if (tradeSessionUnsubscribe) tradeSessionUnsubscribe();
     }
   });
 
-  // +++ MODIFIED createCharacter PATCH +++
+  // +++ MODIFIED createCharacter PATCH (FOR TRADE) +++
   (function(){
     const originalCreate = window.createCharacter;
     if (typeof originalCreate === "function") {
@@ -1040,8 +1251,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if (user) {
           await window.savePlayerData();
           window.renderLeaderboards();
-          // +++ ADDED THIS LINE +++
           initChatListener(); // Start chat for new player
+          initTradeListeners(); // <--- +++ ADDED THIS LINE +++
         }
       };
     }
@@ -1050,36 +1261,41 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // +++ NEW CHAT FUNCTIONS START +++
   
   /**
-   * Sends a new chat message to the 'messages' collection in Firestore.
+   * Sends a new chat message OR handles a chat command.
    */
   async function sendChatMessage() {
     const chatInput = document.getElementById('chatInput');
     const messageText = chatInput.value.trim();
+    const user = auth.currentUser;
 
     if (messageText.length === 0) return; // Don't send empty messages
+
+    // Clear the input field *first*
+    chatInput.value = '';
+
+    // --- COMMAND HANDLING ---
+    if (messageText.startsWith('/')) {
+      const isCommand = await handleChatCommand(messageText);
+      if (isCommand) return; // Command was handled (or failed)
+    }
+
+    // --- REGULAR CHAT MESSAGE ---
     if (messageText.length > 256) {
       alert("Message is too long (max 256 chars).");
       return;
     }
-
-    const user = auth.currentUser;
     if (!user || !game.name) {
       alert("You must be logged in and have a character to chat.");
       return;
     }
 
     try {
-      // Add a new document to the 'messages' collection
       await addDoc(collection(db, "messages"), {
         senderUid: user.uid,
         senderName: game.name,
         text: messageText,
-        timestamp: serverTimestamp() // Uses the server's time
+        timestamp: serverTimestamp()
       });
-      
-      // Clear the input field
-      chatInput.value = '';
-
     } catch (e) {
       console.error("Error sending message: ", e);
       alert("Failed to send message. Please try again.");
@@ -1103,27 +1319,34 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // onSnapshot creates a real-time listener
     onSnapshot(q, (querySnapshot) => {
       // Clear the existing messages
-      chatMessagesContainer.innerHTML = '';
+      // chatMessagesContainer.innerHTML = ''; // <-- We prepend now
       
-      // Loop through the messages (which are in reverse order)
-      querySnapshot.forEach((doc) => {
-        const msg = doc.data();
-        
-        const msgElement = document.createElement('div');
-        msgElement.style.marginBottom = '6px';
-        msgElement.style.lineHeight = '1.3';
-        msgElement.style.wordBreak = 'break-word';
+      querySnapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const msg = change.doc.data();
+          
+          const msgElement = document.createElement('div');
+          msgElement.style.marginBottom = '6px';
+          msgElement.style.lineHeight = '1.3';
+          msgElement.style.wordBreak = 'break-word';
 
-        const sender = document.createElement('strong');
-        sender.style.color = 'var(--gold)'; 
-        sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
-        
-        const text = document.createTextNode(msg.text);
+          const sender = document.createElement('strong');
+          sender.style.color = 'var(--gold)'; 
+          sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
+          
+          const text = document.createTextNode(msg.text);
 
-        msgElement.appendChild(sender);
-        msgElement.appendChild(text);
-        
-        chatMessagesContainer.appendChild(msgElement);
+          msgElement.appendChild(sender);
+          msgElement.appendChild(text);
+          
+          // Prepend to show new messages at the top (since container is column-reverse)
+          chatMessagesContainer.prepend(msgElement);
+          
+          // Keep it to ~25 messages
+          while (chatMessagesContainer.childElementCount > 30) {
+            chatMessagesContainer.lastChild.remove();
+          }
+        }
       });
 
     }, (error) => {
@@ -1132,6 +1355,705 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
   }
   // +++ NEW CHAT FUNCTIONS END +++
+
+
+  // +++ NEW TRADE FUNCTIONS START +++
+
+  // --- State variables for trade ---
+  let tradeRequestUnsubscribe = null;
+  let tradeSessionUnsubscribe = null;
+
+  /**
+   * Adds a message to the local chat UI (not to Firestore).
+   * Used for system messages, whispers, and trade notifications.
+   */
+  function addLocalChatMessage(text, type = 'system') {
+    const chatMessagesContainer = document.getElementById('chatMessages');
+    if (!chatMessagesContainer) return;
+
+    const msgElement = document.createElement('div');
+    msgElement.style.marginBottom = '6px';
+    msgElement.style.lineHeight = '1.3';
+    msgElement.style.wordBreak = 'break-word';
+
+    if (type === 'system') {
+      msgElement.style.color = '#aaffaa'; // Green for system
+      msgElement.style.fontStyle = 'italic';
+      msgElement.textContent = text;
+    } else if (type === 'trade') {
+      msgElement.style.color = 'var(--gold)'; // Gold for trade
+      msgElement.style.fontWeight = 'bold';
+      msgElement.textContent = text;
+    } else if (type === 'error') {
+      msgElement.style.color = '#ff8888'; // Red for errors
+      msgElement.style.fontStyle = 'italic';
+      msgElement.textContent = text;
+    }
+    
+    chatMessagesContainer.prepend(msgElement); // Add to top
+  }
+
+
+  /**
+   * Handles chat commands (messages starting with '/')
+   * Returns true if it was a command, false otherwise
+   */
+  async function handleChatCommand(messageText) {
+    const user = auth.currentUser;
+    if (!user) return false;
+
+    if (messageText.startsWith('/trade ')) {
+      const targetName = messageText.substring(7).trim();
+      if (targetName.toLowerCase() === game.name.toLowerCase()) {
+        addLocalChatMessage("You cannot trade with yourself.", 'error');
+        return true;
+      }
+      if (game.inTrade) {
+        addLocalChatMessage("You are already in a trade.", 'error');
+        return true;
+      }
+      addLocalChatMessage(`Sending trade request to ${targetName}...`, 'system');
+      await initiateTradeRequest(targetName);
+      return true;
+    }
+
+    if (messageText.startsWith('/accepttrade ')) {
+      const requesterName = messageText.substring(14).trim();
+      if (game.inTrade) {
+        addLocalChatMessage("You are already in a trade.", 'error');
+        return true;
+      }
+      addLocalChatMessage(`Attempting to accept trade from ${requesterName}...`, 'system');
+      await acceptTradeRequest(requesterName);
+      return true;
+    }
+    
+    return false; // Not a command
+  }
+
+  /**
+   * (1) Initiator: Finds a player and creates a 'tradeRequest' doc.
+   */
+  async function initiateTradeRequest(targetName) {
+    try {
+      const targetNameLower = targetName.toLowerCase();
+      const q = query(collection(db, "players"), where("name_lowercase", "==", targetNameLower));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        addLocalChatMessage(`Player not found: ${targetName}`, 'error');
+        return;
+      }
+
+      const targetDoc = querySnapshot.docs[0];
+      const targetUid = targetDoc.id;
+      const targetData = targetDoc.data();
+
+      // Create the request
+      await addDoc(collection(db, "tradeRequests"), {
+        fromUid: auth.currentUser.uid,
+        fromName: game.name,
+        toUid: targetUid,
+        toName: targetData.name,
+        status: 'pending',
+        createdAt: serverTimestamp()
+      });
+
+      addLocalChatMessage(`Trade request sent to ${targetData.name}. It will expire in 60 seconds.`, 'trade');
+
+    } catch (e) {
+      console.error("Error sending trade request:", e);
+      addLocalChatMessage("Error sending trade request.", 'error');
+    }
+  }
+
+  /**
+   * (2) Accepter: Finds a pending request and creates the 'tradeSession'.
+   */
+  async function acceptTradeRequest(requesterName) {
+    try {
+      const myUid = auth.currentUser.uid;
+      const requesterNameLower = requesterName.toLowerCase();
+      
+      // Find the player doc for the requester to get their name_lowercase and UID
+      const playerQuery = query(collection(db, "players"), where("name_lowercase", "==", requesterNameLower));
+      const playerSnapshot = await getDocs(playerQuery);
+
+      if (playerSnapshot.empty) {
+        addLocalChatMessage(`Player not found: ${requesterName}`, 'error');
+        return;
+      }
+      
+      const requesterUid = playerSnapshot.docs[0].id;
+      const requesterData = playerSnapshot.docs[0].data();
+
+      // Now find the pending request
+      const sixtySecondsAgo = new Date(Date.now() - 60000);
+      const requestQuery = query(
+        collection(db, "tradeRequests"),
+        where("fromUid", "==", requesterUid),
+        where("toUid", "==", myUid),
+        where("status", "==", "pending"),
+        where("createdAt", ">", sixtySecondsAgo)
+      );
+      
+      const requestSnapshot = await getDocs(requestQuery);
+
+      if (requestSnapshot.empty) {
+        addLocalChatMessage(`No pending trade request found from ${requesterData.name}. It may have expired.`, 'error');
+        return;
+      }
+
+      const requestDoc = requestSnapshot.docs[0]; // Get the first valid request
+
+      // --- Create the Trade Session ---
+      const tradeSessionRef = doc(collection(db, "tradeSessions"));
+      const tradeSessionData = {
+        status: 'active',
+        createdAt: serverTimestamp(),
+        player1: {
+          uid: requesterUid,
+          name: requesterData.name,
+          offerItems: {},
+          offerGold: 0,
+          accepted: false
+        },
+        player2: {
+          uid: myUid,
+          name: game.name,
+          offerItems: {},
+          offerGold: 0,
+          accepted: false
+        }
+      };
+
+      // Use a batch write to create the session AND update the request
+      const batch = writeBatch(db);
+      batch.set(tradeSessionRef, tradeSessionData);
+      batch.update(requestDoc.ref, { status: 'accepted', sessionId: tradeSessionRef.id });
+      
+      await batch.commit();
+
+      // State is now 'active', the listeners will pick it up and open the window
+      // The openTradeWindow() call is handled by the initTradeListeners
+      
+    } catch (e) {
+      console.error("Error accepting trade:", e);
+      addLocalChatMessage("Error accepting trade. Are they busy?", 'error');
+    }
+  }
+
+
+  /**
+   * (3) Listens for new trade requests AND active trade sessions.
+   * This is called once on successful login.
+   */
+  function initTradeListeners() {
+    const myUid = auth.currentUser.uid;
+    if (!myUid) return;
+
+    // --- Unsubscribe from old listeners if they exist ---
+    if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
+    if (tradeSessionUnsubscribe) tradeSessionUnsubscribe();
+
+    // --- Listener 1: For new incoming trade requests ---
+    const sixtySecondsAgo = new Date(Date.now() - 60000);
+    const requestQuery = query(
+      collection(db, "tradeRequests"),
+      where("toUid", "==", myUid),
+      where("status", "==", "pending"),
+      where("createdAt", ">", sixtySecondsAgo)
+    );
+    
+    tradeRequestUnsubscribe = onSnapshot(requestQuery, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const request = change.doc.data();
+          addLocalChatMessage(
+            `${request.fromName} sent you a trade request. Type '/accepttrade ${request.fromName}' to accept.`,
+            'trade'
+          );
+        }
+      });
+    }, (error) => console.error("Trade request listener error:", error));
+
+    // --- Listener 2: For active trade SESSIONS I am part of ---
+    // We query for *both* player1 or player2 being me.
+    // NOTE: Firestore doesn't support OR queries on different fields.
+    // This is a workaround: we'll have two listeners.
+    
+    const sessionQuery1 = query(
+      collection(db, "tradeSessions"),
+      where("player1.uid", "==", myUid),
+      where("status", "==", "active")
+    );
+    const sessionQuery2 = query(
+      collection(db, "tradeSessions"),
+      where("player2.uid", "==", myUid),
+      where("status", "==", "active")
+    );
+    
+    const handleSessionStart = (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added" && !game.inTrade) {
+          const sessionData = change.doc.data();
+          const sessionId = change.doc.id;
+          openTradeWindow(sessionId, sessionData);
+        }
+      });
+    };
+    
+    // We combine the listeners. This is slightly inefficient but works.
+    tradeSessionUnsubscribe = onSnapshot(sessionQuery1, handleSessionStart, (e) => console.error("Session listener 1:", e));
+    // We'll just re-assign the unsubscribe function
+    tradeSessionUnsubscribe = onSnapshot(sessionQuery2, handleSessionStart, (e) => console.error("Session listener 2:", e));
+  }
+  
+  /**
+   * (4) Opens the trade modal and attaches the main session listener.
+   */
+  function openTradeWindow(sessionId, sessionData) {
+    if (game.inTrade) return; // Should not happen, but a good check
+
+    game.inTrade = true;
+    game.activeTradeSessionId = sessionId;
+    game.myTradeOffer = { items: {}, gold: 0 };
+    game.theirTradeOffer = { items: {}, gold: 0 };
+
+    const myUid = auth.currentUser.uid;
+    const myRole = (sessionData.player1.uid === myUid) ? 'player1' : 'player2';
+    const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
+    
+    // Set UI elements
+    const modal = document.getElementById('tradeModal');
+    setText('tradePartnerName', sessionData[theirRole].name);
+    setText('tradeMyGold', formatAmount(game.gold));
+    document.getElementById('tradeMyGoldOffer').value = 0;
+    document.getElementById('tradeMyGoldOffer').max = game.gold;
+
+    renderTradeInventory(); // Render my inventory
+    renderOfferGrid('tradeMyOfferGrid', {}); // Clear my offer
+    renderOfferGrid('tradeTheirOfferGrid', {}); // Clear their offer
+    
+    modal.style.display = 'flex'; // Show the modal
+
+    // --- Attach the one, powerful listener for this session ---
+    if (game.activeTradeListener) game.activeTradeListener(); // Unsub from old one
+    
+    game.activeTradeListener = onSnapshot(doc(db, "tradeSessions", sessionId), (doc) => {
+      if (!doc.exists()) {
+        closeTradeWindow();
+        addLocalChatMessage("Trade session was deleted.", 'error');
+        return;
+      }
+      
+      const data = doc.data();
+      
+      // Check status
+      if (data.status === 'cancelled') {
+        closeTradeWindow();
+        addLocalChatMessage("Trade was cancelled.", 'trade');
+        return;
+      }
+      if (data.status === 'completed') {
+        closeTradeWindow();
+        addLocalChatMessage("Trade complete!", 'trade');
+        return;
+      }
+      
+      // --- Update Offers ---
+      game.myTradeOffer = data[myRole];
+      game.theirTradeOffer = data[theirRole];
+
+      // Re-render both offer grids
+      renderOfferGrid('tradeMyOfferGrid', game.myTradeOffer.offerItems);
+      renderOfferGrid('tradeTheirOfferGrid', game.theirTradeOffer.offerItems);
+      
+      // Update gold
+      document.getElementById('tradeMyGoldOffer').value = game.myTradeOffer.offerGold;
+      setText('tradeTheirGoldOffer', formatAmount(game.theirTradeOffer.offerGold));
+      
+      // --- Update Accept Status ---
+      updateTradeAcceptStatus('myTradeStatus', game.myTradeOffer.accepted);
+      updateTradeAcceptStatus('theirTradeStatus', game.theirTradeOffer.accepted);
+
+      // --- Check for Trade Completion ---
+      if (game.myTradeOffer.accepted && game.theirTradeOffer.accepted) {
+        // Both accepted! Disable buttons
+        document.getElementById('tradeAcceptBtn').disabled = true;
+        document.getElementById('tradeCancelBtn').disabled = true;
+        
+        // Only one player (player1) should execute the trade to prevent conflicts
+        if (myRole === 'player1') {
+          executeTrade(sessionId, data);
+        }
+      } else {
+         document.getElementById('tradeAcceptBtn').disabled = false;
+         document.getElementById('tradeCancelBtn').disabled = false;
+      }
+    });
+
+    // --- Attach button click handlers ---
+    document.getElementById('tradeCancelBtn').onclick = cancelTrade;
+    document.getElementById('tradeAcceptBtn').onclick = setTradeAccepted;
+    document.getElementById('tradeMyGoldOffer').onchange = updateMyGoldOffer;
+  }
+  
+  /**
+   * (5) Helper: Renders the player's inventory into the trade modal.
+   */
+  function renderTradeInventory() {
+    const grid = document.getElementById('tradeInventoryGrid');
+    grid.innerHTML = '';
+    
+    Object.entries(game.inventory).forEach(([name, qty]) => {
+      const itemInOffer = game.myTradeOffer.items[name] || 0;
+      const qtyAvailable = qty - itemInOffer;
+      
+      if (qtyAvailable <= 0) return; // All are in the offer
+
+      const slot = document.createElement('div');
+      slot.className = 'inv-slot';
+      slot.onclick = () => addItemToOffer(name, qtyAvailable); // Pass full available qty
+      
+      const img = document.createElement('img');
+      const imgName = name.toLowerCase().replace(/\s+/g,'_');
+      img.src = `images/${imgName}.png`;
+      img.alt = name;
+      slot.appendChild(img);
+      
+      const amt = document.createElement('div');
+      amt.className = 'inv-amount';
+      amt.innerText = formatAmount(qtyAvailable);
+      slot.appendChild(amt);
+      
+      const tooltipContent = `
+        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${name}</div>
+        <div>Amount: ${qtyAvailable.toLocaleString()}</div>
+        <div style="color:#aaffaa; margin-top: 5px;">Click to offer...</div>
+      `;
+      slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+      slot.onmouseleave = hideTooltip;
+      
+      grid.appendChild(slot);
+    });
+  }
+
+  /**
+   * (6) Helper: Renders an offer grid (4x4).
+   */
+  function renderOfferGrid(gridId, items) {
+    const grid = document.getElementById(gridId);
+    const isMyOffer = (gridId === 'tradeMyOfferGrid');
+    grid.innerHTML = '';
+    
+    const itemEntries = Object.entries(items);
+
+    for (let i = 0; i < 16; i++) {
+      const slot = document.createElement('div');
+      
+      if (itemEntries[i]) {
+        const [name, qty] = itemEntries[i];
+        slot.className = 'inv-slot';
+        
+        if (isMyOffer) {
+          slot.onclick = () => removeItemFromOffer(name);
+        }
+        
+        const img = document.createElement('img');
+        const imgName = name.toLowerCase().replace(/\s+/g,'_');
+        img.src = `images/${imgName}.png`;
+        img.alt = name;
+        slot.appendChild(img);
+        
+        const amt = document.createElement('div');
+        amt.className = 'inv-amount';
+        amt.innerText = formatAmount(qty);
+        slot.appendChild(amt);
+        
+        const tooltipContent = `
+          <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${name}</div>
+          <div>Amount: ${qty.toLocaleString()}</div>
+          ${isMyOffer ? '<div style="color:#ffaaaa; margin-top: 5px;">Click to remove...</div>' : ''}
+        `;
+        slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+        slot.onmouseleave = hideTooltip;
+        
+      } else {
+        slot.className = 'inv-slot offer-slot-placeholder';
+      }
+      grid.appendChild(slot);
+    }
+  }
+  
+  /**
+   * (7) Helper: Updates the 'accepted' text and color.
+   */
+  function updateTradeAcceptStatus(elementId, isAccepted) {
+    const el = document.getElementById(elementId);
+    if (isAccepted) {
+      el.textContent = 'Accepted';
+      el.classList.add('accepted');
+    } else {
+      el.textContent = 'Not Accepted';
+      el.classList.remove('accepted');
+    }
+  }
+
+  /**
+   * (8) Action: Player clicks to add an item to their offer.
+   */
+  async function addItemToOffer(itemName, maxQty) {
+    const currentOfferQty = game.myTradeOffer.items[itemName] || 0;
+    
+    let qtyToOffer = 0;
+    if (maxQty === 1) {
+      qtyToOffer = 1;
+    } else {
+      const input = prompt(`How many ${itemName} do you want to offer? (Max: ${maxQty})`, maxQty);
+      if (input === null) return; // User cancelled
+      qtyToOffer = parseInt(input);
+    }
+    
+    if (isNaN(qtyToOffer) || qtyToOffer <= 0) return;
+    if (qtyToOffer > maxQty) {
+      alert(`You can only offer up to ${maxQty} of this item.`);
+      qtyToOffer = maxQty;
+    }
+
+    // Check if offer grid is full
+    const offerItemCount = Object.keys(game.myTradeOffer.items).length;
+    if (!game.myTradeOffer.items[itemName] && offerItemCount >= 16) {
+      alert("Your trade offer grid is full (16 unique items).");
+      return;
+    }
+
+    const newOfferItems = { ...game.myTradeOffer.items };
+    newOfferItems[itemName] = (newOfferItems[itemName] || 0) + qtyToOffer;
+    
+    // Update the trade session in Firestore
+    const myUid = auth.currentUser.uid;
+    const myRole = (game.myTradeOffer.uid === myUid) ? 'player1' : 'player2';
+    
+    const updatePayload = {};
+    updatePayload[`${myRole}.offerItems`] = newOfferItems;
+    updatePayload['player1.accepted'] = false; // Reset accept on any change
+    updatePayload['player2.accepted'] = false;
+    
+    try {
+      await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
+      renderTradeInventory(); // Re-render inventory locally
+    } catch (e) {
+      console.error("Error updating offer:", e);
+      addLocalChatMessage("Error updating offer.", 'error');
+    }
+  }
+
+  /**
+   * (9) Action: Player clicks to remove an item from their offer.
+   */
+  async function removeItemFromOffer(itemName) {
+    const newOfferItems = { ...game.myTradeOffer.items };
+    delete newOfferItems[itemName]; // Remove the entire stack
+    
+    const myUid = auth.currentUser.uid;
+    const myRole = (game.myTradeOffer.uid === myUid) ? 'player1' : 'player2';
+    
+    const updatePayload = {};
+    updatePayload[`${myRole}.offerItems`] = newOfferItems;
+    updatePayload['player1.accepted'] = false; // Reset accept
+    updatePayload['player2.accepted'] = false;
+    
+    try {
+      await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
+      renderTradeInventory(); // Re-render inventory locally
+    } catch (e) {
+      console.error("Error updating offer:", e);
+    }
+  }
+
+  /**
+   * (10) Action: Player changes their gold offer.
+   */
+  async function updateMyGoldOffer(event) {
+    let gold = parseInt(event.target.value);
+    if (isNaN(gold) || gold < 0) gold = 0;
+    if (gold > game.gold) {
+      gold = game.gold;
+      event.target.value = gold;
+    }
+    
+    const myUid = auth.currentUser.uid;
+    const myRole = (game.myTradeOffer.uid === myUid) ? 'player1' : 'player2';
+    
+    const updatePayload = {};
+    updatePayload[`${myRole}.offerGold`] = gold;
+    updatePayload['player1.accepted'] = false; // Reset accept
+    updatePayload['player2.accepted'] = false;
+    
+    try {
+      await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
+    } catch (e) {
+      console.error("Error updating gold offer:", e);
+    }
+  }
+
+  /**
+   * (11) Action: Player clicks the 'Accept' button.
+   */
+  async function setTradeAccepted() {
+    document.getElementById('tradeAcceptBtn').disabled = true; // Prevent double-click
+    
+    const myUid = auth.currentUser.uid;
+    const myRole = (game.myTradeOffer.uid === myUid) ? 'player1' : 'player2';
+    
+    const updatePayload = {};
+    updatePayload[`${myRole}.accepted`] = true;
+    
+    try {
+      await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
+    } catch (e) {
+      console.error("Error accepting trade:", e);
+      document.getElementById('tradeAcceptBtn').disabled = false;
+    }
+  }
+
+  /**
+   * (12) Action: Player clicks the 'Cancel' button.
+   */
+  async function cancelTrade() {
+    try {
+      await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), {
+        status: 'cancelled'
+      });
+      // The listener will handle closing the window
+    } catch (e) {
+      console.error("Error cancelling trade:", e);
+      addLocalChatMessage("Error cancelling trade. Please reload.", 'error');
+      closeTradeWindow(); // Force close
+    }
+  }
+
+  /**
+   * (13) Action: Closes the trade window and resets state.
+   */
+  function closeTradeWindow() {
+    if (game.activeTradeListener) {
+      game.activeTradeListener(); // Unsubscribe
+      game.activeTradeListener = null;
+    }
+    game.inTrade = false;
+    game.activeTradeSessionId = null;
+    game.myTradeOffer = { items: {}, gold: 0 };
+    game.theirTradeOffer = { items: {}, gold: 0 };
+    
+    document.getElementById('tradeModal').style.display = 'none';
+    hideTooltip();
+    
+    // Refresh main game UI
+    renderInventoryGrid();
+    updateGoldUI();
+  }
+
+  /**
+   * (14) The Final Step: Execute the trade using a secure transaction.
+   * This is called by the onSnapshot listener when both players have accepted.
+   * Only player1 runs this.
+   */
+  async function executeTrade(sessionId, sessionData) {
+    try {
+      await runTransaction(db, async (transaction) => {
+        const sessionRef = doc(db, "tradeSessions", sessionId);
+        const player1Ref = doc(db, "players", sessionData.player1.uid);
+        const player2Ref = doc(db, "players", sessionData.player2.uid);
+
+        // Read all docs *inside* the transaction
+        const [sessionSnap, p1Snap, p2Snap] = await Promise.all([
+          transaction.get(sessionRef),
+          transaction.get(player1Ref),
+          transaction.get(player2Ref)
+        ]);
+
+        if (!sessionSnap.exists() || !p1Snap.exists() || !p2Snap.exists()) {
+          throw new Error("A player or session does not exist.");
+        }
+
+        const trade = sessionSnap.data();
+        const p1Data = p1Snap.data();
+        const p2Data = p2Snap.data();
+
+        // --- Final safety checks ---
+        if (trade.status !== 'active') {
+          throw new Error("Trade is no longer active.");
+        }
+        if (!trade.player1.accepted || !trade.player2.accepted) {
+          throw new Error("Both players have not accepted.");
+        }
+        
+        const p1Offer = trade.player1;
+        const p2Offer = trade.player2;
+
+        // Check if players have enough gold
+        if (p1Data.gold < p1Offer.offerGold) throw new Error(`${p1Data.name} does not have enough gold.`);
+        if (p2Data.gold < p2Offer.offerGold) throw new Error(`${p2Data.name} does not have enough gold.`);
+        
+        const newP1Inv = { ...p1Data.inventory };
+        const newP2Inv = { ...p2Data.inventory };
+
+        // --- Remove items from Player 1, give to Player 2 ---
+        for (const [item, qty] of Object.entries(p1Offer.offerItems)) {
+          if (!newP1Inv[item] || newP1Inv[item] < qty) throw new Error(`${p1Data.name} does not have ${qty} ${item}.`);
+          newP1Inv[item] -= qty;
+          if (newP1Inv[item] <= 0) delete newP1Inv[item];
+          
+          newP2Inv[item] = (newP2Inv[item] || 0) + qty;
+        }
+        
+        // --- Remove items from Player 2, give to Player 1 ---
+        for (const [item, qty] of Object.entries(p2Offer.offerItems)) {
+          if (!newP2Inv[item] || newP2Inv[item] < qty) throw new Error(`${p2Data.name} does not have ${qty} ${item}.`);
+          newP2Inv[item] -= qty;
+          if (newP2Inv[item] <= 0) delete newP2Inv[item];
+          
+          newP1Inv[item] = (newP1Inv[item] || 0) + qty;
+        }
+
+        // --- Swap Gold ---
+        const newP1Gold = p1Data.gold - p1Offer.offerGold + p2Offer.offerGold;
+        const newP2Gold = p2Data.gold - p2Offer.offerGold + p1Offer.offerGold;
+        
+        // --- All checks passed, commit the changes ---
+        transaction.update(player1Ref, { inventory: newP1Inv, gold: newP1Gold });
+        transaction.update(player2Ref, { inventory: newP2Inv, gold: newP2Gold });
+        transaction.update(sessionRef, { status: 'completed' });
+        
+        // Update local game state for the player running this
+        if(auth.currentUser.uid === sessionData.player1.uid) { // Corrected: p1Data.uid to sessionData.player1.uid
+           game.inventory = newP1Inv;
+           game.gold = newP1Gold;
+        } else {
+           game.inventory = newP2Inv;
+           game.gold = newP2Gold;
+        }
+        
+      });
+      
+      // Transaction successful! The listener will close the window.
+      // We need to manually update the local game state for player2
+      if(auth.currentUser.uid === sessionData.player2.uid) {
+         // This is tricky, we need to re-fetch our own data
+         await loadPlayerDataAndStart(auth.currentUser);
+      }
+
+    } catch (e) {
+      console.error("TRADE FAILED:", e);
+      addLocalChatMessage(`TRADE FAILED: ${e.message}`, 'error');
+      // Set trade to cancelled
+      await updateDoc(doc(db, "tradeSessions", sessionId), { status: 'cancelled' });
+    }
+  }
+
+  // --- END OF NEW TRADE FUNCTIONS ---
 
 
   // --- LEADERBOARD FUNCTION (Unchanged) ---
@@ -1223,13 +2145,28 @@ document.addEventListener('DOMContentLoaded', ()=>{
     } catch (err) { /* ignore */ }
   });
 
+  // +++ MODIFIED LOGOUT FUNCTION (FOR TRADE) +++
   window.firebaseLogout = async function() {
     try {
+      // --- +++ NEW: Cancel active trade on logout +++ ---
+      if (game.inTrade && game.activeTradeSessionId) {
+        try {
+          await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), {
+            status: 'cancelled'
+          });
+        } catch (e) {
+          console.warn("Could not cancel active trade on logout:", e);
+        }
+        closeTradeWindow();
+      }
+      // --- +++ End new block +++ ---
+      
       await window.savePlayerData();
       await signOut(auth);
-      if (window.resetGameState) {
-        window.resetGameState();
-      }
+      
+      // Note: The onAuthStateChanged listener will handle
+      // state reset and unsubscribing from listeners.
+      
       alert("Logged out."); 
     } catch (e) {
       console.error("Logout failed:", e);
