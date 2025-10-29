@@ -92,7 +92,10 @@ body {
 }
 
 .char-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.char-header h2 { margin: 0; font-size: 18px; }
+.char-header h2, .main h2, #leaderboardPanel h2 { 
+  margin: 0; 
+  font-size: 20px; /* <-- GUARANTEED: Sets all main h2s to 20px */
+}
 
 .hp-bar { background: #772222; border-radius: 6px; overflow: hidden; margin-bottom: 12px; position: relative; height: 28px; }
 .hp-fill { height: 100%; background: #d22; width: 100%; transition: width 0.25s; }
@@ -223,7 +226,6 @@ body {
   min-height: 500px; 
   position: relative;
 }
-.main h2 { margin-top: 0; }
 
 /* +++ NEW CHAT PANEL STYLE (MODIFIED) +++ */
 .chat-panel {
@@ -426,7 +428,7 @@ button.primary:hover { background: var(--accent-hover); }
 
       <div class="sidebar" id="leaderboardPanel">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-          <h2 style="margin: 0;">LEADERBOARDS</h2>
+          <h2>Leaderboard</h2>
           <button id="refreshLeaderboardBtn" class="primary" style="padding: 6px 10px; font-size: 12px;">Refresh</button>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid var(--accent); margin-bottom: 2px;">
