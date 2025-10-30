@@ -1601,20 +1601,32 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const sessionQuery1 = query(
       collection(db, "tradeSessions"),
       where("player1.uid", "==", myUid),
-      where("status", "==", "active")
+      where("status", "in", ["active", "cancelled"]) // <-- CHANGED
     );
     const sessionQuery2 = query(
       collection(db, "tradeSessions"),
       where("player2.uid", "==", myUid),
-      where("status", "==", "active")
+      where("status", "in", ["active", "cancelled"]) // <-- CHANGED
     );
     
     const handleSessionStart = (snapshot) => {
       snapshot.docChanges().forEach((change) => {
-        if (change.type === "added" && !game.inTrade) {
-          const sessionData = change.doc.data();
-          const sessionId = change.doc.id;
+        const sessionData = change.doc.data();
+        const sessionId = change.doc.id;
+        
+        if (change.type === "added" && sessionData.status === "active" && !game.inTrade) {
+          // --- This is the original logic for starting a new trade ---
           openTradeWindow(sessionId, sessionData);
+        } 
+        else if (change.type === "modified" && sessionData.status === "cancelled" && game.inTrade) {
+          // --- +++ THIS IS THE NEW FIX +++ ---
+          // This creates a second, more reliable check for a cancellation.
+          
+          // Check if this cancellation is for the trade we are *currently* in
+          if (sessionId === game.activeTradeSessionId) {
+            addLocalChatMessage(`Trade was cancelled.`, 'trade');
+            closeTradeWindow();
+          }
         }
       });
     };
