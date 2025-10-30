@@ -687,8 +687,8 @@ const game = {
   activeTradeSessionId: null,
   activeTradeListener: null, // To unsubscribe later
   myTradeRole: null, // <-- +++ FIX 1: ADDED THIS +++
-  myTradeOffer: { items: {}, gold: 0 },
-  theirTradeOffer: { items: {}, gold: 0 }
+  myTradeOffer: { offerItems: {}, offerGold: 0, accepted: false },
+  theirTradeOffer: { offerItems: {}, offerGold: 0, accepted: false }
 };
 
 // --- All your original game functions (setText, formatAmount, etc.) are unchanged ---
@@ -1648,8 +1648,8 @@ function openTradeWindow(sessionId, sessionData) {
 
     game.inTrade = true;
     game.activeTradeSessionId = sessionId;
-    game.myTradeOffer = { items: {}, gold: 0 };
-    game.theirTradeOffer = { items: {}, gold: 0 };
+    game.myTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
+    game.theirTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
 
     const myUid = auth.currentUser.uid;
     const myRole = (sessionData.player1.uid === myUid) ? 'player1' : 'player2';
@@ -1785,7 +1785,7 @@ function openTradeWindow(sessionId, sessionData) {
     grid.innerHTML = '';
     
     Object.entries(game.inventory).forEach(([name, qty]) => {
-      const itemInOffer = game.myTradeOffer.items[name] || 0;
+      const itemInOffer = game.myTradeOffer.offerItems[name] || 0;
       const qtyAvailable = qty - itemInOffer;
       
       if (qtyAvailable <= 0) return; // All are in the offer
@@ -1883,7 +1883,7 @@ function openTradeWindow(sessionId, sessionData) {
    */
   async function addItemToOffer(itemName, maxQty) {
   console.log(`addItemToOffer CALLED: item=${itemName}, maxQty=${maxQty}`);
-    const currentOfferQty = game.myTradeOffer.items[itemName] || 0;
+    const currentOfferQty = game.myTradeOffer.offerItems[itemName] || 0;
     
     let qtyToOffer = 0;
     if (maxQty === 1) {
@@ -1901,13 +1901,13 @@ function openTradeWindow(sessionId, sessionData) {
     }
 
     // Check if offer grid is full
-    const offerItemCount = Object.keys(game.myTradeOffer.items).length;
-    if (!game.myTradeOffer.items[itemName] && offerItemCount >= 16) {
+    const offerItemCount = Object.keys(game.myTradeOffer.offerItems).length;
+    if (!game.myTradeOffer.offerItems[itemName] && offerItemCount >= 16) {
       alert("Your trade offer grid is full (16 unique items).");
       return;
     }
 
-    const newOfferItems = { ...game.myTradeOffer.items };
+    const newOfferItems = { ...game.myTradeOffer.offerItems };
     newOfferItems[itemName] = (newOfferItems[itemName] || 0) + qtyToOffer;
     
     // --- +++ FIX 3: USE THE SAVED ROLE +++ ---
@@ -1932,9 +1932,9 @@ function openTradeWindow(sessionId, sessionData) {
    * (9) Action: Player clicks to remove an item from their offer.
    */
   async function removeItemFromOffer(itemName) {
-    const newOfferItems = { ...game.myTradeOffer.items };
+    const newOfferItems = { ...game.myHTradeOffer.offerItems };
     delete newOfferItems[itemName]; // Remove the entire stack
-    
+
     // --- +++ FIX 4: USE THE SAVED ROLE +++ ---
     const myRole = game.myTradeRole;
     if (!myRole) return; // Safety check
@@ -2046,8 +2046,8 @@ function openTradeWindow(sessionId, sessionData) {
     game.inTrade = false;
     game.activeTradeSessionId = null;
     game.myTradeRole = null; // <-- +++ FIX 7: CLEAR THE ROLE +++
-    game.myTradeOffer = { items: {}, gold: 0 };
-    game.theirTradeOffer = { items: {}, gold: 0 };
+    game.myTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
+    game.theirTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
     
     document.getElementById('tradeModal').style.display = 'none';
     hideTooltip();
