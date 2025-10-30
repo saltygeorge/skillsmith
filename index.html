@@ -1940,6 +1940,9 @@ function openTradeWindow(sessionId, sessionData) {
   /**
    * (9) Action: Player clicks to remove an item from their offer.
    */
+  /**
+   * (9) Action: Player clicks to remove an item from their offer.
+   */
   async function removeItemFromOffer(itemName) {
     const newOfferItems = { ...game.myTradeOffer.offerItems }; // <-- TYPO FIXED
     delete newOfferItems[itemName]; // Remove the entire stack
@@ -1982,7 +1985,7 @@ function openTradeWindow(sessionId, sessionData) {
     }
     
     // --- +++ FIX 5: USE THE SAVED ROLE +++ ---
-    const myRole = game.myGTradeRole;
+    const myRole = game.myTradeRole;
     if (!myRole) return; // Safety check
     
     // --- Create a new *full* offer object ---
