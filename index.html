@@ -1199,7 +1199,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (user) {
       // --- Detach old trade listeners ---
       if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
-      if (tradeSessionUnsubscribe) tradeSessionUnsubscribe();
+      tradeSessionUnsubscribes.forEach(unsub => unsub()); // <-- Changed
+      tradeSessionUnsubscribes = []; // <-- Changed
 
       const started = await loadPlayerDataAndStart(user);
       
@@ -1222,7 +1223,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }
       // --- Detach listeners on logout ---
       if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
-      if (tradeSessionUnsubscribe) tradeSessionUnsubscribe();
+      tradeSessionUnsubscribes.forEach(unsub => unsub()); // <-- Changed
+      tradeSessionUnsubscribes = []; // <-- Changed
     }
   });
 
@@ -1361,7 +1363,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // --- State variables for trade ---
   let tradeRequestUnsubscribe = null;
-  let tradeSessionUnsubscribe = null;
+  let tradeSessionUnsubscribes = []; // <-- Changed to an array
 
   /**
    * Adds a message to the local chat UI (not to Firestore).
@@ -1562,7 +1564,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     // --- Unsubscribe from old listeners if they exist ---
     if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
-    if (tradeSessionUnsubscribe) tradeSessionUnsubscribe();
+    tradeSessionUnsubscribes.forEach(unsub => unsub()); // <-- Changed
+    tradeSessionUnsubscribes = []; // <-- Changed
 
     // --- Listener 1: For new incoming trade requests ---
     
@@ -1616,8 +1619,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
       });
     };
     
-    tradeSessionUnsubscribe = onSnapshot(sessionQuery1, handleSessionStart, (e) => console.error("Session listener 1:", e));
-    tradeSessionUnsubscribe = onSnapshot(sessionQuery2, handleSessionStart, (e) => console.error("Session listener 2:", e));
+    tradeSessionUnsubscribes.push( // <-- Changed
+      onSnapshot(sessionQuery1, handleSessionStart, (e) => console.error("Session listener 1:", e))
+    );
+    tradeSessionUnsubscribes.push( // <-- Changed
+      onSnapshot(sessionQuery2, handleSessionStart, (e) => console.error("Session listener 2:", e))
+    );
   }
   
   /**
