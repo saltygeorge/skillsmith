@@ -1985,24 +1985,33 @@ function openTradeWindow(sessionId, sessionData) {
    * (12) Action: Player clicks the 'Cancel' button.
    */
   async function cancelTrade() {
-    // --- NEW: Disable buttons immediately to prevent double-clicks ---
+    // --- Disable buttons immediately ---
     document.getElementById('tradeCancelBtn').disabled = true;
     document.getElementById('tradeAcceptBtn').disabled = true;
 
-    try {
-      await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), {
-        status: 'cancelled'
-      });
-      
-      // --- CHANGED: Don't wait for the listener. ---
-      // We know we cancelled, so close our *own* window now.
-      // The *other* player's listener will still fire and close theirs.
-      closeTradeWindow(); 
-      
-    } catch (e) {
-      console.error("Error cancelling trade:", e);
-      addLocalChatMessage("Error cancelling trade. Please reload.", 'error');
-      closeTradeWindow(); // Force close (this was already correct)
+    // --- NEW LOGIC: Close locally *first* ---
+
+    // 1. Get the session ID *before* we clear it
+    const sessionId = game.activeTradeSessionId;
+    
+    // 2. Close our *own* window immediately.
+    // This is synchronous. It MUST happen *before* any await.
+    // This sets game.inTrade = false and unsubscribes the listener.
+    closeTradeWindow(); 
+    
+    // 3. *Now*, tell the server to cancel the trade.
+    // The *other* player's listener will pick this up.
+    // Our own listener is already detached, so no race condition.
+    if (sessionId) {
+      try {
+        await updateDoc(doc(db, "tradeSessions", sessionId), {
+          status: 'cancelled'
+        });
+      } catch (e) {
+        console.error("Error updating cancelled trade:", e);
+        // We don't need to call closeTradeWindow() here,
+        // because it was already called.
+      }
     }
   }
 
@@ -2010,6 +2019,7 @@ function openTradeWindow(sessionId, sessionData) {
    * (13) Action: Closes the trade window and resets state.
    */
   function closeTradeWindow() {
+    if (!game.inTrade) return; // <-- +++ ADD THIS LINE +++
     if (game.activeTradeListener) {
       game.activeTradeListener(); // Unsubscribe
       game.activeTradeListener = null;
