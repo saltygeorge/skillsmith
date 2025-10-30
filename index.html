@@ -1985,15 +1985,24 @@ function openTradeWindow(sessionId, sessionData) {
    * (12) Action: Player clicks the 'Cancel' button.
    */
   async function cancelTrade() {
+    // --- NEW: Disable buttons immediately to prevent double-clicks ---
+    document.getElementById('tradeCancelBtn').disabled = true;
+    document.getElementById('tradeAcceptBtn').disabled = true;
+
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), {
         status: 'cancelled'
       });
-      // The listener will handle closing the window
+      
+      // --- CHANGED: Don't wait for the listener. ---
+      // We know we cancelled, so close our *own* window now.
+      // The *other* player's listener will still fire and close theirs.
+      closeTradeWindow(); 
+      
     } catch (e) {
       console.error("Error cancelling trade:", e);
       addLocalChatMessage("Error cancelling trade. Please reload.", 'error');
-      closeTradeWindow(); // Force close
+      closeTradeWindow(); // Force close (this was already correct)
     }
   }
 
