@@ -1882,6 +1882,7 @@ function openTradeWindow(sessionId, sessionData) {
    * (8) Action: Player clicks to add an item to their offer.
    */
   async function addItemToOffer(itemName, maxQty) {
+  console.log(`addItemToOffer CALLED: item=${itemName}, maxQty=${maxQty}`);
     const currentOfferQty = game.myTradeOffer.items[itemName] || 0;
     
     let qtyToOffer = 0;
