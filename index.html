@@ -1418,7 +1418,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
 
     if (messageText.startsWith('/accepttrade ')) {
-      const requesterName = messageText.substring(14).trim();
+      const requesterName = messageText.substring(13).trim(); // <-- FIX: Changed 14 to 13
       if (game.inTrade) {
         addLocalChatMessage("You are already in a trade.", 'error');
         return true;
@@ -1487,24 +1487,32 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const requesterUid = playerSnapshot.docs[0].id;
       const requesterData = playerSnapshot.docs[0].data();
 
-      // Now find the pending request
       const sixtySecondsAgo = new Date(Date.now() - 60000);
+
+      // 1. Query only on fields validated by security rules (toUid) and status.
       const requestQuery = query(
         collection(db, "tradeRequests"),
-        where("fromUid", "==", requesterUid),
         where("toUid", "==", myUid),
-        where("status", "==", "pending"),
-        where("createdAt", ">", sixtySecondsAgo)
+        where("status", "==", "pending")
       );
       
       const requestSnapshot = await getDocs(requestQuery);
 
-      if (requestSnapshot.empty) {
+      // 2. Filter the results in JavaScript to find the specific request
+      const validRequests = requestSnapshot.docs.filter(doc => {
+          const data = doc.data();
+          const requestTime = data.createdAt?.toDate() || new Date(0);
+          
+          return data.fromUid === requesterUid && // Check if it's from the right person
+                 requestTime > sixtySecondsAgo;     // Check if it's not expired
+      });
+
+      if (validRequests.length === 0) {
         addLocalChatMessage(`No pending trade request found from ${requesterData.name}. It may have expired.`, 'error');
         return;
       }
 
-      const requestDoc = requestSnapshot.docs[0]; // Get the first valid request
+      const requestDoc = validRequests[0]; // Get the first valid request
 
       // --- Create the Trade Session ---
       const tradeSessionRef = doc(collection(db, "tradeSessions"));
