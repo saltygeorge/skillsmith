@@ -1914,10 +1914,19 @@ function openTradeWindow(sessionId, sessionData) {
     const myRole = game.myTradeRole;
     if (!myRole) return; // Safety check
     
+    // --- Create a new *full* offer object ---
+    const newOfferObject = {
+        ...game.myTradeOffer,
+        offerItems: newOfferItems,
+        accepted: false
+    };
+
     const updatePayload = {};
-    updatePayload[`${myRole}.offerItems`] = newOfferItems;
-    updatePayload['player1.accepted'] = false; // Reset accept on any change
-    updatePayload['player2.accepted'] = false;
+    updatePayload[myRole] = newOfferObject; // Send the full object
+    
+    // Reset the *other* player's accepted status too
+    const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
+    updatePayload[`${theirRole}.accepted`] = false;
     
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
@@ -1932,17 +1941,26 @@ function openTradeWindow(sessionId, sessionData) {
    * (9) Action: Player clicks to remove an item from their offer.
    */
   async function removeItemFromOffer(itemName) {
-    const newOfferItems = { ...game.myHTradeOffer.offerItems };
+    const newOfferItems = { ...game.myTradeOffer.offerItems }; // <-- TYPO FIXED
     delete newOfferItems[itemName]; // Remove the entire stack
-
+    
     // --- +++ FIX 4: USE THE SAVED ROLE +++ ---
     const myRole = game.myTradeRole;
     if (!myRole) return; // Safety check
     
+    // --- Create a new *full* offer object ---
+    const newOfferObject = {
+        ...game.myTradeOffer,
+        offerItems: newOfferItems,
+        accepted: false
+    };
+
     const updatePayload = {};
-    updatePayload[`${myRole}.offerItems`] = newOfferItems;
-    updatePayload['player1.accepted'] = false; // Reset accept
-    updatePayload['player2.accepted'] = false;
+    updatePayload[myRole] = newOfferObject; // Send the full object
+
+    // Reset the *other* player's accepted status too
+    const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
+    updatePayload[`${theirRole}.accepted`] = false;
     
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
@@ -1964,13 +1982,22 @@ function openTradeWindow(sessionId, sessionData) {
     }
     
     // --- +++ FIX 5: USE THE SAVED ROLE +++ ---
-    const myRole = game.myTradeRole;
+    const myRole = game.myGTradeRole;
     if (!myRole) return; // Safety check
     
+    // --- Create a new *full* offer object ---
+    const newOfferObject = {
+        ...game.myTradeOffer,
+        offerGold: gold,
+        accepted: false
+    };
+
     const updatePayload = {};
-    updatePayload[`${myRole}.offerGold`] = gold;
-    updatePayload['player1.accepted'] = false; // Reset accept
-    updatePayload['player2.accepted'] = false;
+    updatePayload[myRole] = newOfferObject; // Send the full object
+    
+    // Reset the *other* player's accepted status too
+    const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
+    updatePayload[`${theirRole}.accepted`] = false;
     
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
@@ -1989,8 +2016,14 @@ function openTradeWindow(sessionId, sessionData) {
     const myRole = game.myTradeRole;
     if (!myRole) return; // Safety check
     
+    // --- Create a new *full* offer object ---
+    const newOfferObject = {
+        ...game.myTradeOffer,
+        accepted: true // Set this player as accepted
+    };
+
     const updatePayload = {};
-    updatePayload[`${myRole}.accepted`] = true;
+    updatePayload[myRole] = newOfferObject; // Send the full object
     
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
