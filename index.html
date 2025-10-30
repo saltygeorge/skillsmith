@@ -686,6 +686,7 @@ const game = {
   inTrade: false,
   activeTradeSessionId: null,
   activeTradeListener: null, // To unsubscribe later
+  myTradeRole: null, // <-- +++ FIX 1: ADDED THIS +++
   myTradeOffer: { items: {}, gold: 0 },
   theirTradeOffer: { items: {}, gold: 0 }
 };
@@ -1654,6 +1655,8 @@ function openTradeWindow(sessionId, sessionData) {
     const myRole = (sessionData.player1.uid === myUid) ? 'player1' : 'player2';
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     
+    game.myTradeRole = myRole; // <-- +++ FIX 2: SAVE THE ROLE +++
+    
     // Set UI elements
     const modal = document.getElementById('tradeModal');
     setText('tradePartnerName', sessionData[theirRole].name);
@@ -1906,9 +1909,9 @@ function openTradeWindow(sessionId, sessionData) {
     const newOfferItems = { ...game.myTradeOffer.items };
     newOfferItems[itemName] = (newOfferItems[itemName] || 0) + qtyToOffer;
     
-    // Update the trade session in Firestore
-    const myUid = auth.currentUser.uid;
-    const myRole = (game.myTradeOffer.uid === myUid) ? 'player1' : 'player2';
+    // --- +++ FIX 3: USE THE SAVED ROLE +++ ---
+    const myRole = game.myTradeRole;
+    if (!myRole) return; // Safety check
     
     const updatePayload = {};
     updatePayload[`${myRole}.offerItems`] = newOfferItems;
@@ -1931,8 +1934,9 @@ function openTradeWindow(sessionId, sessionData) {
     const newOfferItems = { ...game.myTradeOffer.items };
     delete newOfferItems[itemName]; // Remove the entire stack
     
-    const myUid = auth.currentUser.uid;
-    const myRole = (game.myTradeOffer.uid === myUid) ? 'player1' : 'player2';
+    // --- +++ FIX 4: USE THE SAVED ROLE +++ ---
+    const myRole = game.myTradeRole;
+    if (!myRole) return; // Safety check
     
     const updatePayload = {};
     updatePayload[`${myRole}.offerItems`] = newOfferItems;
@@ -1958,8 +1962,9 @@ function openTradeWindow(sessionId, sessionData) {
       event.target.value = gold;
     }
     
-    const myUid = auth.currentUser.uid;
-    const myRole = (game.myTradeOffer.uid === myUid) ? 'player1' : 'player2';
+    // --- +++ FIX 5: USE THE SAVED ROLE +++ ---
+    const myRole = game.myTradeRole;
+    if (!myRole) return; // Safety check
     
     const updatePayload = {};
     updatePayload[`${myRole}.offerGold`] = gold;
@@ -1979,8 +1984,9 @@ function openTradeWindow(sessionId, sessionData) {
   async function setTradeAccepted() {
     document.getElementById('tradeAcceptBtn').disabled = true; // Prevent double-click
     
-    const myUid = auth.currentUser.uid;
-    const myRole = (game.myTradeOffer.uid === myUid) ? 'player1' : 'player2';
+    // --- +++ FIX 6: USE THE SAVED ROLE +++ ---
+    const myRole = game.myTradeRole;
+    if (!myRole) return; // Safety check
     
     const updatePayload = {};
     updatePayload[`${myRole}.accepted`] = true;
@@ -2038,6 +2044,7 @@ function openTradeWindow(sessionId, sessionData) {
     }
     game.inTrade = false;
     game.activeTradeSessionId = null;
+    game.myTradeRole = null; // <-- +++ FIX 7: CLEAR THE ROLE +++
     game.myTradeOffer = { items: {}, gold: 0 };
     game.theirTradeOffer = { items: {}, gold: 0 };
     
