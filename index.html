@@ -1321,11 +1321,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     // onSnapshot creates a real-time listener
     onSnapshot(q, (querySnapshot) => {
-      // Clear the existing messages
-      // chatMessagesContainer.innerHTML = ''; // <-- We prepend now
       
+      let hasAdds = false; // <-- This is one of the new lines
+
       querySnapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
+          
+          hasAdds = true; // <-- This is another new line
+          
           const msg = change.doc.data();
           
           const msgElement = document.createElement('div');
@@ -1351,6 +1354,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
           }
         }
       });
+
+      // --- THIS IS THE FIX ---
+      // This new block checks if messages were added (which they are on a refresh)
+      // and then forces the scrollbar to the top (which is the bottom 
+      // of your reversed-column chat).
+      if (hasAdds) {
+        chatMessagesContainer.scrollTop = 0;
+      }
+      // --- END OF FIX ---
+
+    }, (error) => {
+      console.error("Chat listener error: ", error);
+      chatMessagesContainer.innerHTML = '<div style="color: red;">Error loading chat.</div>';
+    });
 
     }, (error) => {
       console.error("Chat listener error: ", error);
