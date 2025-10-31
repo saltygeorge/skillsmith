@@ -1322,12 +1322,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // onSnapshot creates a real-time listener
     onSnapshot(q, (querySnapshot) => {
       
-      let hasAdds = false; // <-- This tracks if new messages were added
+      let hasAdds = false; 
 
-      querySnapshot.docChanges().forEach((change) => {
+      // --- THIS IS THE FIX ---
+      // .reverse() is added here.
+      // This iterates from OLDEST to NEWEST,
+      // so prepending them puts them in the correct order.
+      querySnapshot.docChanges().reverse().forEach((change) => {
+      // --- END OF FIX ---
+
         if (change.type === "added") {
           
-          hasAdds = true; // <-- Flag that a message was added
+          hasAdds = true; 
           
           const msg = change.doc.data();
           
@@ -1355,17 +1361,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
         }
       });
 
-      // --- THIS IS THE REAL FIX ---
-      // This checks if messages were added (which they are on a refresh)
-      // and then forces the scrollbar to the top using a 0ms timeout.
-      // The timeout makes our code run *after* the browser finishes
-      // its own scroll-restoration logic.
+      // --- THIS PART IS ALSO NEEDED ---
+      // This forces the scroll to the bottom (scrollTop = 0)
+      // after the browser tries to restore its own scroll position.
       if (hasAdds) {
         setTimeout(() => {
           chatMessagesContainer.scrollTop = 0;
         }, 0);
       }
-      // --- END OF FIX ---
+      // --- END OF SCROLL FIX ---
 
     }, (error) => {
       console.error("Chat listener error: ", error);
