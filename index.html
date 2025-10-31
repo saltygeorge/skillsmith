@@ -1406,6 +1406,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
     
     chatMessagesContainer.prepend(msgElement); // Add to top
+    
+    // --- THIS IS THE FIX ---
+    // Force the scrollbar to the top (which is the bottom for column-reverse)
+    // This ensures *all* new messages (chat, system, or trade) reset the scroll.
+    chatMessagesContainer.scrollTop = 0;
   }
 
 
