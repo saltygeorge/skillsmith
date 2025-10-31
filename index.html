@@ -1060,8 +1060,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
   // +++ MODIFIED CHAT/TRADE IMPORTS +++
   import {
-    getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where,
-    addDoc, serverTimestamp, onSnapshot, orderBy, limit, runTransaction, writeBatch, updateDoc
+
+  getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where,
+    addDoc, serverTimestamp, onSnapshot, orderBy, limit, limitToLast, runTransaction, writeBatch, updateDoc
+    
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
   
   // --- Your Firebase config (Unchanged) ---
@@ -1313,10 +1315,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (!chatMessagesContainer) return;
 
     // Create a query to get the last 25 messages, ordered by time
-    const q = query(
+   const q = query(
       collection(db, "messages"), 
-      orderBy("timestamp", "desc"), 
-      limit(25)
+      orderBy("timestamp", "asc"), // <-- CHANGED
+      limitToLast(25)             // <-- CHANGED
     );
 
     // onSnapshot creates a real-time listener
@@ -1406,11 +1408,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
     
     chatMessagesContainer.prepend(msgElement); // Add to top
-    
-    // --- THIS IS THE FIX ---
-    // Force the scrollbar to the top (which is the bottom for column-reverse)
-    // This ensures *all* new messages (chat, system, or trade) reset the scroll.
-    chatMessagesContainer.scrollTop = 0;
   }
 
 
