@@ -1080,6 +1080,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  let chatListenerUnsubscribe = null;
+  let isChatHistoryLoaded = false;
+
   // DOM refs (Unchanged)
   const authScreen = document.getElementById('authScreen');
   const startScreen = document.getElementById('startScreen');
@@ -1204,6 +1207,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
       tradeSessionUnsubscribes.forEach(unsub => unsub()); // <-- Changed
       tradeSessionUnsubscribes = []; // <-- Changed
+      
+      // +++ NEW: Clear chatbox and reset flag on login +++
+      const chatMessagesContainer = document.getElementById('chatMessages');
+      if (chatMessagesContainer) chatMessagesContainer.innerHTML = '';
+      isChatHistoryLoaded = false; 
+      // +++ END NEW +++
 
       const started = await loadPlayerDataAndStart(user);
       
@@ -1224,6 +1233,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (window.resetGameState) {
         window.resetGameState();
       }
+      
+      // +++ NEW: Also clear/reset on logout +++
+      const chatMessagesContainer = document.getElementById('chatMessages');
+      if (chatMessagesContainer) chatMessagesContainer.innerHTML = '';
+      isChatHistoryLoaded = false; 
+      // +++ END NEW +++
+      
       // --- Detach listeners on logout ---
       if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
       tradeSessionUnsubscribes.forEach(unsub => unsub()); // <-- Changed
@@ -1254,6 +1270,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
         
         const user = auth.currentUser;
         if (user) {
+        
+          // +++ NEW: Clear chatbox and reset flag on char create +++
+          const chatMessagesContainer = document.getElementById('chatMessages');
+          if (chatMessagesContainer) chatMessagesContainer.innerHTML = '';
+          isChatHistoryLoaded = false; 
+          // +++ END NEW +++
+          
           await window.savePlayerData();
           window.renderLeaderboards();
           initChatListener(); // Start chat for new player
@@ -1311,25 +1334,34 @@ document.addEventListener('DOMContentLoaded', ()=>{
    * Initializes the real-time listener for the chat.
    */
   function initChatListener() {
+    // --- NEW: Unsubscribe from old listener if it exists ---
+    if (chatListenerUnsubscribe) {
+      chatListenerUnsubscribe();
+      chatListenerUnsubscribe = null;
+    }
+    // Flag is reset on auth change, not here
+
     const chatMessagesContainer = document.getElementById('chatMessages');
     if (!chatMessagesContainer) return;
 
     // Create a query to get the last 25 messages, ordered by time
-   const q = query(
+    const q = query(
       collection(db, "messages"), 
-      orderBy("timestamp", "asc"), // <-- CHANGED
-      limitToLast(25)             // <-- CHANGED
+      orderBy("timestamp", "asc"),
+      limitToLast(25)
     );
 
     // onSnapshot creates a real-time listener
-    onSnapshot(q, (querySnapshot) => {
+    // --- NEW: Store the unsubscribe function ---
+    chatListenerUnsubscribe = onSnapshot(q, (querySnapshot) => {
       
-      let hasAdds = false; // <-- This is one of the new lines
+      let hasAdds = false; 
+      let didScroll = false; // Flag to ensure we only scroll once
 
       querySnapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
           
-          hasAdds = true; // <-- This is another new line
+          hasAdds = true; // Mark that we are adding messages
           
           const msg = change.doc.data();
           
@@ -1358,13 +1390,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
       });
 
       // --- THIS IS THE FIX ---
-      // This new block checks if messages were added (which they are on a refresh)
-      // and then forces the scrollbar to the top (which is the bottom 
-      // of your reversed-column chat).
       if (hasAdds) {
-        chatMessagesContainer.scrollTop = 0;
+        // Only scroll to bottom if this is the *first* batch of messages
+        if (!isChatHistoryLoaded) {
+          chatMessagesContainer.scrollTop = 0;
+          didScroll = true; // Mark that we performed the initial scroll
+        }
       }
-      // --- END OF FIX ---
+      
+      // --- NEW: Set the flag *after* processing the first batch ---
+      // We set this flag only *after* the first scroll.
+      if (didScroll) {
+        isChatHistoryLoaded = true;
+      }
 
     }, (error) => {
       console.error("Chat listener error: ", error);
