@@ -1228,6 +1228,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
       tradeSessionUnsubscribes.forEach(unsub => unsub()); // <-- Changed
       tradeSessionUnsubscribes = []; // <-- Changed
+      
+      isTradeRequestsLoaded = false; // <--- +++ THIS IS THE FIX +++
     }
   });
 
@@ -1264,7 +1266,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   })();
   
   // +++ NEW CHAT FUNCTIONS START +++
-  
+  let isChatHistoryLoaded = false;
+  let localMessageQueue = [];
+  let chatListenerUnsubscribe = null;
+  let isTradeRequestsLoaded = false;
   /**
    * Sends a new chat message OR handles a chat command.
    */
@@ -1307,64 +1312,143 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
 
+function _addLocalMessageToDOM(text, type = 'system') {
+    const chatMessagesContainer = document.getElementById('chatMessages');
+    if (!chatMessagesContainer) return;
+
+    const msgElement = document.createElement('div');
+    msgElement.style.marginBottom = '6px';
+    msgElement.style.lineHeight = '1.3';
+    msgElement.style.wordBreak = 'break-word';
+
+    if (type === 'system') {
+      msgElement.style.color = '#aaffaa'; // Green for system
+      msgElement.style.fontStyle = 'italic';
+      msgElement.textContent = text;
+    } else if (type === 'trade') {
+      msgElement.style.color = 'var(--gold)'; // Gold for trade
+      msgElement.style.fontWeight = 'bold';
+      msgElement.textContent = text;
+    } else if (type === 'error') {
+      msgElement.style.color = '#ff8888'; // Red for errors
+      msgElement.style.fontStyle = 'italic';
+      msgElement.textContent = text;
+    }
+    
+    chatMessagesContainer.prepend(msgElement); // Add to top (which is the visual bottom)
+  }
+
   /**
    * Initializes the real-time listener for the chat.
    */
   function initChatListener() {
+    // --- Unsubscribe from old listener if it exists ---
+    if (chatListenerUnsubscribe) {
+      chatListenerUnsubscribe();
+      chatListenerUnsubscribe = null;
+    }
+
     const chatMessagesContainer = document.getElementById('chatMessages');
     if (!chatMessagesContainer) return;
 
     // Create a query to get the last 25 messages, ordered by time
-   const q = query(
+    const q = query(
       collection(db, "messages"), 
-      orderBy("timestamp", "asc"), // <-- CHANGED
-      limitToLast(25)             // <-- CHANGED
+      orderBy("timestamp", "asc"),
+      limitToLast(25)
     );
 
     // onSnapshot creates a real-time listener
-    onSnapshot(q, (querySnapshot) => {
+    chatListenerUnsubscribe = onSnapshot(q, (querySnapshot) => {
       
-      let hasAdds = false; // <-- This is one of the new lines
+      let hasAdds = false; // Flag for messages *in this snapshot*
 
       querySnapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
           
-          hasAdds = true; // <-- This is another new line
-          
-          const msg = change.doc.data();
-          
-          const msgElement = document.createElement('div');
-          msgElement.style.marginBottom = '6px';
-          msgElement.style.lineHeight = '1.3';
-          msgElement.style.wordBreak = 'break-word';
+          // Only add messages if this is *after* the initial load.
+          // The initial load is handled by the 'if (!isChatHistoryLoaded)' block.
+          if (isChatHistoryLoaded) {
+            hasAdds = true; // Mark that we are adding messages
+            
+            const msg = change.doc.data();
+            const msgElement = document.createElement('div');
+            msgElement.style.marginBottom = '6px';
+            msgElement.style.lineHeight = '1.3';
+            msgElement.style.wordBreak = 'break-word';
 
-          const sender = document.createElement('strong');
-          sender.style.color = 'var(--gold)'; 
-          sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
-          
-          const text = document.createTextNode(msg.text);
+            const sender = document.createElement('strong');
+            sender.style.color = 'var(--gold)'; 
+            sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
+            
+            const text = document.createTextNode(msg.text);
 
-          msgElement.appendChild(sender);
-          msgElement.appendChild(text);
-          
-          // Prepend to show new messages at the top (since container is column-reverse)
-          chatMessagesContainer.prepend(msgElement);
-          
-          // Keep it to ~25 messages
-          while (chatMessagesContainer.childElementCount > 30) {
-            chatMessagesContainer.lastChild.remove();
+            msgElement.appendChild(sender);
+            msgElement.appendChild(text);
+            
+            // Prepend to show new messages at the top (since container is column-reverse)
+            chatMessagesContainer.prepend(msgElement);
           }
         }
       });
 
-      // --- THIS IS THE FIX ---
-      // This new block checks if messages were added (which they are on a refresh)
-      // and then forces the scrollbar to the top (which is the bottom 
-      // of your reversed-column chat).
-      if (hasAdds) {
+      // --- THIS IS THE NEW FIX ---
+      // This block runs *only once* on the initial load.
+      if (!isChatHistoryLoaded) {
+        
+        // 1. Mark as loaded *immediately*. This is the critical fix.
+        isChatHistoryLoaded = true;
+        
+        let hadHistoryMessages = false;
+        
+        // 2. Process the *full snapshot* for the initial history.
+        querySnapshot.docs.forEach(doc => {
+            hadHistoryMessages = true;
+            const msg = doc.data();
+            const msgElement = document.createElement('div');
+            msgElement.style.marginBottom = '6px';
+            msgElement.style.lineHeight = '1.3';
+            msgElement.style.wordBreak = 'break-word';
+
+            const sender = document.createElement('strong');
+            sender.style.color = 'var(--gold)'; 
+            sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
+            
+            const text = document.createTextNode(msg.text);
+
+            msgElement.appendChild(sender);
+            msgElement.appendChild(text);
+            
+            chatMessagesContainer.prepend(msgElement);
+        });
+
+        // 3. Process the queue.
+        let hadQueuedMessages = localMessageQueue.length > 0;
+        localMessageQueue.forEach(msg => {
+          _addLocalMessageToDOM(msg.text, msg.type);
+        });
+        localMessageQueue = []; // Clear the queue
+        
+        // 4. Scroll to bottom (visual top) *once* after all loading.
+        if (hadHistoryMessages || hadQueuedMessages) {
+          chatMessagesContainer.scrollTop = 0;
+        }
+        
+        // 5. Clean up DOM to prevent overflow from history + queue
+        while (chatMessagesContainer.childElementCount > 30) {
+          chatMessagesContainer.lastChild.remove();
+        }
+      } 
+      // After the first load, if new messages came in (`hasAdds` is true)
+      // we'll just let them prepend.
+      else if (hasAdds) {
+        // This is a new message, keep the chatbox trimmed
+        while (chatMessagesContainer.childElementCount > 30) {
+          chatMessagesContainer.lastChild.remove();
+        }
+        // And scroll to the bottom
         chatMessagesContainer.scrollTop = 0;
       }
-      // --- END OF FIX ---
 
     }, (error) => {
       console.error("Chat listener error: ", error);
@@ -1388,26 +1472,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const chatMessagesContainer = document.getElementById('chatMessages');
     if (!chatMessagesContainer) return;
 
-    const msgElement = document.createElement('div');
-    msgElement.style.marginBottom = '6px';
-    msgElement.style.lineHeight = '1.3';
-    msgElement.style.wordBreak = 'break-word';
-
-    if (type === 'system') {
-      msgElement.style.color = '#aaffaa'; // Green for system
-      msgElement.style.fontStyle = 'italic';
-      msgElement.textContent = text;
-    } else if (type === 'trade') {
-      msgElement.style.color = 'var(--gold)'; // Gold for trade
-      msgElement.style.fontWeight = 'bold';
-      msgElement.textContent = text;
-    } else if (type === 'error') {
-      msgElement.style.color = '#ff8888'; // Red for errors
-      msgElement.style.fontStyle = 'italic';
-      msgElement.textContent = text;
+    if (!isChatHistoryLoaded) {
+      // History hasn't loaded, add to queue
+      localMessageQueue.push({ text, type });
+    } else {
+      // History is loaded, add directly to DOM
+      _addLocalMessageToDOM(text, type);
+      
+      // Keep it trimmed
+      while (chatMessagesContainer.childElementCount > 30) {
+        chatMessagesContainer.lastChild.remove();
+      }
+      // Scroll to bottom (which is visual top for column-reverse)
+      chatMessagesContainer.scrollTop = 0;
     }
-    
-    chatMessagesContainer.prepend(msgElement); // Add to top
   }
 
 
@@ -1581,29 +1659,39 @@ document.addEventListener('DOMContentLoaded', ()=>{
     tradeSessionUnsubscribes.forEach(unsub => unsub()); // <-- Changed
     tradeSessionUnsubscribes = []; // <-- Changed
 
+    isTradeRequestsLoaded = false; // <--- +++ 1. RESET THE FLAG
+
     // --- Listener 1: For new incoming trade requests ---
-    
-    // +++ THIS QUERY IS SIMPLIFIED to prevent clock issues +++
-    // It no longer uses the 'createdAt' field in the query
     const requestQuery = query(
       collection(db, "tradeRequests"),
       where("toUid", "==", myUid),
       where("status", "==", "pending")
     );
-    // +++ END OF CHANGE +++
     
     tradeRequestUnsubscribe = onSnapshot(requestQuery, (snapshot) => {
+      
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-          // Time check removed to fix clock-sync bug
-          const request = change.doc.data();
-
-          addLocalChatMessage(
-            `${request.fromName} sent you a trade request. Type '/accepttrade ${request.fromName}' to accept.`,
-            'trade'
-          );
+          
+          // --- THIS IS THE FIX ---
+          // Only show messages if this is *NOT* part of the initial load.
+          if (isTradeRequestsLoaded) {
+            const request = change.doc.data();
+            addLocalChatMessage(
+              `${request.fromName} sent you a trade request. Type '/accepttrade ${request.fromName}' to accept.`,
+              'trade'
+            );
+          }
+          // --- END OF FIX ---
         }
       });
+
+      // --- THIS IS THE SECOND PART OF THE FIX ---
+      // After the *first* snapshot has been processed, set the flag to true.
+      // Any *future* 'added' events will now be displayed.
+      isTradeRequestsLoaded = true;
+      // --- END OF FIX ---
+
     }, (error) => console.error("Trade request listener error:", error));
 
     // --- Listener 2: For active trade SESSIONS I am part of ---
