@@ -1308,86 +1308,66 @@ document.addEventListener('DOMContentLoaded', ()=>{
   /**
    * Initializes the real-time listener for the chat.
    */
-  function initTradeListeners() {
-    const myUid = auth.currentUser.uid;
-    if (!myUid) return;
+  function initChatListener() {
+    const chatMessagesContainer = document.getElementById('chatMessages');
+    if (!chatMessagesContainer) return;
 
-    // --- Unsubscribe from old listeners if they exist ---
-    if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
-    tradeSessionUnsubscribes.forEach(unsub => unsub()); 
-    tradeSessionUnsubscribes = []; 
-
-    // --- Listener 1: For new incoming trade requests ---
-    
-    // --- THIS IS THE FIX ---
-    // We get the time the page loaded.
-    const listenerStartTime = new Date();
-    
-    // This query now *only* looks for requests created *after* the page loaded.
-    // This stops old, "pending" requests from appearing on every refresh.
-    const requestQuery = query(
-      collection(db, "tradeRequests"),
-      where("toUid", "==", myUid),
-      where("status", "==", "pending"),
-      where("createdAt", ">", listenerStartTime) // <-- THIS IS THE NEW LINE
+    // Create a query to get the last 25 messages, ordered by time
+    const q = query(
+      collection(db, "messages"), 
+      orderBy("timestamp", "desc"), 
+      limit(25)
     );
-    // --- END OF FIX ---
-    
-    tradeRequestUnsubscribe = onSnapshot(requestQuery, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
+
+    // onSnapshot creates a real-time listener
+    onSnapshot(q, (querySnapshot) => {
+      
+      let hasAdds = false; // <-- This is one of the new lines
+
+      querySnapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-          // This will now ONLY fire for *genuinely new* requests.
-          const request = change.doc.data();
-
-          addLocalChatMessage(
-            `${request.fromName} sent you a trade request. Type '/accepttrade ${request.fromName}' to accept.`,
-            'trade'
-          );
-        }
-      });
-    }, (error) => console.error("Trade request listener error:", error));
-
-    // --- Listener 2: For active trade SESSIONS I am part of ---
-    // (This part is unchanged)
-    const sessionQuery1 = query(
-      collection(db, "tradeSessions"),
-      where("player1.uid", "==", myUid),
-      where("status", "in", ["active", "cancelled"]) 
-    );
-    const sessionQuery2 = query(
-      collection(db, "tradeSessions"),
-      where("player2.uid", "==", myUid),
-      where("status", "in", ["active", "cancelled"]) 
-    );
-    
-    const handleSessionStart = (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        const sessionData = change.doc.data();
-        const sessionId = change.doc.id;
-        
-        if (change.type === "added" && sessionData.status === "active" && !game.inTrade) {
-          // --- This is the original logic for starting a new trade ---
-          openTradeWindow(sessionId, sessionData);
-        } 
-        else if (change.type === "modified" && sessionData.status === "cancelled" && game.inTrade) {
-          // --- +++ THIS IS THE NEW FIX +++ ---
-          // This creates a second, more reliable check for a cancellation.
           
-          // Check if this cancellation is for the trade we are *currently* in
-          if (sessionId === game.activeTradeSessionId) {
-            addLocalChatMessage(`Trade was cancelled.`, 'trade');
-            closeTradeWindow();
+          hasAdds = true; // <-- This is another new line
+          
+          const msg = change.doc.data();
+          
+          const msgElement = document.createElement('div');
+          msgElement.style.marginBottom = '6px';
+          msgElement.style.lineHeight = '1.3';
+          msgElement.style.wordBreak = 'break-word';
+
+          const sender = document.createElement('strong');
+          sender.style.color = 'var(--gold)'; 
+          sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
+          
+          const text = document.createTextNode(msg.text);
+
+          msgElement.appendChild(sender);
+          msgElement.appendChild(text);
+          
+          // Prepend to show new messages at the top (since container is column-reverse)
+          chatMessagesContainer.prepend(msgElement);
+          
+          // Keep it to ~25 messages
+          while (chatMessagesContainer.childElementCount > 30) {
+            chatMessagesContainer.lastChild.remove();
           }
         }
       });
-    };
-    
-    tradeSessionUnsubscribes.push( 
-      onSnapshot(sessionQuery1, handleSessionStart, (e) => console.error("Session listener 1:", e))
-    );
-    tradeSessionUnsubscribes.push( 
-      onSnapshot(sessionQuery2, handleSessionStart, (e) => console.error("Session listener 2:", e))
-    );
+
+      // --- THIS IS THE FIX ---
+      // This new block checks if messages were added (which they are on a refresh)
+      // and then forces the scrollbar to the top (which is the bottom 
+      // of your reversed-column chat).
+      if (hasAdds) {
+        chatMessagesContainer.scrollTop = 0;
+      }
+      // --- END OF FIX ---
+
+    }, (error) => {
+      console.error("Chat listener error: ", error);
+      chatMessagesContainer.innerHTML = '<div style="color: red;">Error loading chat.</div>';
+    });
   }
   // +++ NEW CHAT FUNCTIONS END +++
 
