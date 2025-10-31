@@ -1504,10 +1504,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
       // 2. Filter the results in JavaScript to find the specific request
       const validRequests = requestSnapshot.docs.filter(doc => {
           const data = doc.data();
-          const requestTime = data.createdAt?.toDate() || new Date(0);
           
-          return data.fromUid === requesterUid && // Check if it's from the right person
-                 requestTime > sixtySecondsAgo;     // Check if it's not expired
+          // Time check removed to fix clock-sync bug
+          return data.fromUid === requesterUid; // Just check if it's from the right person
       });
 
       if (validRequests.length === 0) {
@@ -1582,20 +1581,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
     tradeRequestUnsubscribe = onSnapshot(requestQuery, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-          // Verify age *here* (in your code) instead of in the query
+          // Time check removed to fix clock-sync bug
           const request = change.doc.data();
-          const requestTime = request.createdAt?.toDate() || new Date(0);
-          const sixtySecondsAgo = new Date(Date.now() - 60000);
-          
-          if (requestTime > sixtySecondsAgo) {
-            addLocalChatMessage(
-              `${request.fromName} sent you a trade request. Type '/accepttrade ${request.fromName}' to accept.`,
-              'trade'
-            );
-          }
+
+          addLocalChatMessage(
+            `${request.fromName} sent you a trade request. Type '/accepttrade ${request.fromName}' to accept.`,
+            'trade'
+          );
         }
       });
-    }, (error) => console.error("Trade request listener error:", error)); // This error will be gone now
+    }, (error) => console.error("Trade request listener error:", error));
 
     // --- Listener 2: For active trade SESSIONS I am part of ---
     // (This part is unchanged)
