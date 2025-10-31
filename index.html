@@ -1322,12 +1322,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // onSnapshot creates a real-time listener
     onSnapshot(q, (querySnapshot) => {
       
-      let hasAdds = false; // <-- This is one of the new lines
+      let hasAdds = false; // <-- This tracks if new messages were added
 
       querySnapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
           
-          hasAdds = true; // <-- This is another new line
+          hasAdds = true; // <-- Flag that a message was added
           
           const msg = change.doc.data();
           
@@ -1355,12 +1355,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
         }
       });
 
-      // --- THIS IS THE FIX ---
-      // This new block checks if messages were added (which they are on a refresh)
-      // and then forces the scrollbar to the top (which is the bottom 
-      // of your reversed-column chat).
+      // --- THIS IS THE REAL FIX ---
+      // This checks if messages were added (which they are on a refresh)
+      // and then forces the scrollbar to the top using a 0ms timeout.
+      // The timeout makes our code run *after* the browser finishes
+      // its own scroll-restoration logic.
       if (hasAdds) {
-        chatMessagesContainer.scrollTop = 0;
+        setTimeout(() => {
+          chatMessagesContainer.scrollTop = 0;
+        }, 0);
       }
       // --- END OF FIX ---
 
