@@ -163,6 +163,8 @@ body {
   border: 2px solid rgba(120,90,50,0.25);
   position: relative;
   display: flex; align-items: center; justify-content: center; overflow: hidden;
+  /* +++ NEW: Add cursor pointer for items +++ */
+  cursor: pointer;
 }
 .inv-slot img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
 .inv-amount {
@@ -676,12 +678,13 @@ const game = {
   maxHP: 10,
   inventory: {},
   inventoryCapacity: 39,
-  gold: 0, // <-- ADDED
+  gold: 0, 
   // MODIFIED: Added totalXP
   mining: { level: 1, xp: 0, totalXP: 0 },
   miningActive: false,
   progressFrame: null,
   wasMiningBeforeTrade: false,
+  shopOpen: false, // <-- +++ NEW: For Shop
   
   // +++ ADDED FOR TRADE +++
   inTrade: false,
@@ -718,7 +721,8 @@ function createCharacter(){
   updateHPUI();
   renderInventoryGrid();
   updateSkillUI();
-  updateGoldUI(); // <-- ADDED
+  updateGoldUI();
+  backToActions(); 
 }
 
 function updateHPUI(){
@@ -783,6 +787,12 @@ function renderInventoryGrid(){
       slot.onmouseleave = () => {
         hideTooltip();
       };
+      
+      // +++ NEW: Add click handler for selling +++
+      slot.onclick = () => {
+        handleSellItemClick(item.name, item.qty);
+      };
+      
     }
     grid.appendChild(slot);
   }
@@ -792,6 +802,76 @@ function addItem(name, qty=1){
   game.inventory[name]+=qty;
   renderInventoryGrid();
 }
+
+// +++ NEW: removeItem function +++
+function removeItem(name, qty = 1) {
+  if (!game.inventory[name]) {
+    console.warn(`Tried to remove item not in inventory: ${name}`);
+    return;
+  }
+  game.inventory[name] -= qty;
+  if (game.inventory[name] <= 0) {
+    delete game.inventory[name];
+  }
+}
+
+// +++ NEW: handleSellItemClick function +++
+function handleSellItemClick(itemName, currentQty) {
+  // 1. Check if shop is open
+  if (!game.shopOpen) {
+    return; // Do nothing if shop isn't open
+  }
+  
+  // 2. Define prices
+  let sellPrice = 0;
+  if (itemName === 'Copper Ore') {
+    sellPrice = 1;
+  } else {
+    alert("This shop doesn't buy that item.");
+    return;
+  }
+  
+  // 3. Get quantity
+  let qtyToSell = 0;
+  if (currentQty === 1) {
+    qtyToSell = 1;
+  } else {
+    const input = prompt(`How many ${itemName} do you want to sell? (You have: ${currentQty})`, currentQty);
+    if (input === null) return; // User cancelled
+    qtyToSell = parseInt(input);
+  }
+  
+  // 4. Validate quantity
+  if (isNaN(qtyToSell) || qtyToSell <= 0) {
+    return; // Invalid number
+  }
+  if (qtyToSell > currentQty) {
+    alert("You don't have that many to sell.");
+    return;
+  }
+  
+  // 5. Confirm sale
+  const totalGold = qtyToSell * sellPrice;
+  const confirmed = confirm(`Are you sure you want to sell ${qtyToSell} ${itemName} for ${totalGold} Gold?`);
+  
+  // 6. Execute sale
+  if (confirmed) {
+    removeItem(itemName, qtyToSell);
+    addGold(totalGold); // This already updates the gold UI
+    
+    hideTooltip(); // <-- +++ THIS IS THE FIX +++
+    
+    renderInventoryGrid(); // Manually re-render inventory UI
+    
+    // Also re-render trade inventory if it's open (it shouldn't be)
+    if (game.inTrade) {
+      renderTradeInventory();
+    }
+    
+    alert(`You sold ${qtyToSell} ${itemName} for ${totalGold} Gold.`);
+  }
+}
+
 
 const tooltip = document.getElementById('tooltip');
 
@@ -919,6 +999,7 @@ function stopMining(){
 
 // 1. This is your OLD "openMine" function, but RENAMED and with one small change.
 function openCopperMine(){
+  game.shopOpen = false; // <-- +++ NEW: Reset shop state
   hideTooltip();
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
@@ -940,6 +1021,7 @@ function openCopperMine(){
 
 // 2. This is the NEW function for the mine selection screen.
 function openMineHub() {
+  game.shopOpen = false; // <-- +++ NEW: Reset shop state
   hideTooltip();
   stopMining(); // Stop any mining action when leaving the mine
   const wrapper = document.getElementById('mainContentWrapper');
@@ -988,34 +1070,80 @@ function openMineHub() {
 
 
 function backToActions(){
+  game.shopOpen = false; // <-- +++ NEW: Reset shop state
   hideTooltip();
   stopMining();
   const wrapper = document.getElementById('mainContentWrapper');
 
   // 1. Set the simple HTML, giving the image a unique ID
+  // +++ MODIFIED: Added shop button +++
   wrapper.innerHTML = `
-    <div id="actionScreen">
+    <div id="actionScreen" style="display: flex; gap: 10px;">
       <img id="minesActionIcon" 
            src="images/mines.png" 
            alt="Mines" 
+           style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+           
+      <img id="shopActionIcon" 
+           src="images/shopbutton.png" 
+           alt="Shop" 
            style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
     </div>
   `;
 
   // 2. Find the new element you just created
   const minesIcon = document.getElementById('minesActionIcon');
+  const shopIcon = document.getElementById('shopActionIcon'); // <-- +++ NEW
 
   // 3. Attach the events directly using JavaScript
   if (minesIcon) {
     minesIcon.onclick = openMineHub;
-    
     minesIcon.onmouseenter = (event) => {
       showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Mines</div>');
     };
-    
     minesIcon.onmouseleave = hideTooltip;
   }
+  
+  // +++ NEW: Attach shop icon events +++
+  if (shopIcon) {
+    shopIcon.onclick = openShop; // <-- New function
+    shopIcon.onmouseenter = (event) => {
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Shop</div>');
+    };
+    shopIcon.onmouseleave = hideTooltip;
+  }
 }
+
+// +++ NEW: openShop function +++
+function openShop() {
+  hideTooltip();
+  stopMining();
+  game.shopOpen = true; // <-- SET STATE
+  const wrapper = document.getElementById('mainContentWrapper');
+  
+  wrapper.innerHTML = `
+    <h2>General Store</h2>
+    <div style="margin-top:8px; color:#efe3cf;">
+      Click an item in your inventory to sell it.
+    </div>
+    <div style="margin-top:16px; padding:10px; background:rgba(0,0,0,0.1); border-radius:6px;">
+      <strong>Items you can sell:</strong>
+      <ul style="margin: 5px 0 0 20px; padding: 0;">
+        <li style="margin-top:5px;">Copper Ore - 1 Gold each</li>
+      </ul>
+    </div>
+    
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="returnToActionsBtn" class="primary" style="background:#666;">Return</button>
+    </div>
+  `;
+  
+  const returnBtn = document.getElementById('returnToActionsBtn');
+  if (returnBtn) {
+    returnBtn.onclick = backToActions;
+  }
+}
+
 
 // --- MODIFIED resetGameState ---
 function resetGameState() {
@@ -1026,9 +1154,10 @@ function resetGameState() {
   game.hp = 10;
   game.maxHP = 10;
   game.inventory = {};
-  game.gold = 0; // <-- ADDED
+  game.gold = 0; 
   game.mining = { level: 1, xp: 0, totalXP: 0 };
   game.miningActive = false;
+  game.shopOpen = false; // <-- +++ NEW
   if (game.progressFrame) {
     cancelAnimationFrame(game.progressFrame);
     game.progressFrame = null;
@@ -1037,7 +1166,7 @@ function resetGameState() {
   updateHPUI();
   renderInventoryGrid();
   updateSkillUI();
-  updateGoldUI(); // <-- ADDED
+  updateGoldUI(); 
   if (typeof backToActions === 'function') {
     backToActions();
   }
@@ -1147,6 +1276,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       updateSkillUI();
       updateGoldUI(); // <-- ADDED
       window.renderLeaderboards(); 
+      backToActions();
       return true;
     } catch (e) {
       console.error("Load failed:", e);
