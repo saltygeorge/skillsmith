@@ -802,39 +802,78 @@ function renderInventoryGrid(){
   }
 }
 
-function addItem(name, qty=1){
-  let existingSlot = game.inventory.find(slot => slot && slot.name === name);
-  if (existingSlot) {
-    existingSlot.qty += qty;
-  } else {
-    let emptySlotIndex = game.inventory.findIndex(slot => slot === null);
-    if (emptySlotIndex > -1) {
-      game.inventory[emptySlotIndex] = { name: name, qty: qty };
-    } else {
-      console.warn(`Inventory full! Could not add ${name}`);
-      return; 
+// =================================================================
+// --- 1. REPLACED 'addItem' FUNCTION (non-module script) ---
+// This function now correctly handles multiple stacks.
+// =================================================================
+function addItem(name, qty = 1) {
+  let amountToAdd = qty;
+
+  // 1. Try to stack in existing slots first
+  for (const slot of game.inventory) {
+    if (slot && slot.name === name) {
+      slot.qty += amountToAdd;
+      amountToAdd = 0;
+      break; // Found a stack, stop looking
     }
   }
+
+  // 2. If items are left (no existing stack found), find an empty slot
+  if (amountToAdd > 0) {
+    let emptySlotIndex = game.inventory.findIndex(slot => slot === null);
+    if (emptySlotIndex > -1) {
+      game.inventory[emptySlotIndex] = { name: name, qty: amountToAdd };
+      amountToAdd = 0;
+    } else {
+      console.warn(`Inventory full! Could not add ${amountToAdd} ${name}`);
+      // Note: We don't return, so the inventory still renders
+    }
+  }
+
   renderInventoryGrid();
 }
 
+// =================================================================
+// --- 2. REPLACED 'removeItem' FUNCTION (non-module script) ---
+// This function now correctly removes from multiple stacks.
+// =================================================================
 function removeItem(name, qty = 1) {
-  let slotIndex = game.inventory.findIndex(slot => slot && slot.name === name);
-  if (slotIndex === -1) {
-    console.warn(`Tried to remove item not in inventory: ${name}`);
-    return false;
+  let amountToRemove = qty;
+  let totalAvailable = 0;
+
+  // 1. First, check if we even have enough across ALL stacks
+  for (const slot of game.inventory) {
+    if (slot && slot.name === name) {
+      totalAvailable += slot.qty;
+    }
   }
-  const slot = game.inventory[slotIndex];
-  if (slot.qty < qty) {
-    console.warn(`Tried to remove ${qty} ${name}, but only have ${slot.qty}`);
-    return false; 
+
+  if (totalAvailable < amountToRemove) {
+    console.warn(`Tried to remove ${qty} ${name}, but only have ${totalAvailable}`);
+    return false; // Not enough items
   }
-  slot.qty -= qty;
-  if (slot.qty <= 0) {
-    game.inventory[slotIndex] = null;
+
+  // 2. If we have enough, remove them. Iterate backwards is safer.
+  for (let i = game.inventory.length - 1; i >= 0; i--) {
+    const slot = game.inventory[i];
+    if (slot && slot.name === name) {
+      if (slot.qty > amountToRemove) {
+        // This stack has more than we need
+        slot.qty -= amountToRemove;
+        amountToRemove = 0;
+      } else {
+        // This stack will be emptied
+        amountToRemove -= slot.qty;
+        game.inventory[i] = null; // Empty the slot
+      }
+    }
+    if (amountToRemove === 0) break; // We're done
   }
-  return true;
+  return true; // Successfully removed
 }
+// =================================================================
+// --- END OF REPLACEMENTS IN THIS SCRIPT BLOCK ---
+// =================================================================
 
 function handleSellItemClick(itemName, currentQty) {
   if (!game.shopOpen) return;
@@ -845,23 +884,36 @@ function handleSellItemClick(itemName, currentQty) {
     alert("This shop doesn't buy that item.");
     return;
   }
+  
+  // --- This logic needs to be updated to check total quantity ---
+  let totalQty = 0;
+  for (const slot of game.inventory) {
+      if(slot && slot.name === itemName) {
+          totalQty += slot.qty;
+      }
+  }
+
   let qtyToSell = 0;
-  if (currentQty === 1) {
+  if (totalQty === 1) {
     qtyToSell = 1;
   } else {
-    const input = prompt(`How many ${itemName} do you want to sell? (You have: ${currentQty})`, currentQty);
+    const input = prompt(`How many ${itemName} do you want to sell? (You have: ${totalQty})`, totalQty);
     if (input === null) return;
     qtyToSell = parseInt(input);
   }
+
   if (isNaN(qtyToSell) || qtyToSell <= 0) return;
-  if (qtyToSell > currentQty) {
+  if (qtyToSell > totalQty) {
     alert("You don't have that many to sell.");
     return;
   }
+  
   const totalGold = qtyToSell * sellPrice;
+  // NOTE: Using alert/confirm is bad practice, but we'll leave it for now.
   const confirmed = confirm(`Are you sure you want to sell ${qtyToSell} ${itemName} for ${totalGold} Gold?`);
   
   if (confirmed) {
+    // We use the NEW removeItem function which works correctly
     if (removeItem(itemName, qtyToSell)) {
         addGold(totalGold);
         hideTooltip(); 
@@ -1062,7 +1114,7 @@ function miningLoop(timestamp, startTime) {
   let progress = (elapsed / MINE_TIME_MS) * 100;
 
   if (progress >= 100) {
-    addItem(MINE_ITEM, 1);
+    addItem(MINE_ITEM, 1); // Uses new addItem
     addXP('mining', MINE_XP); // This now adds XP without a popup
 
     // Create the new combined popup
@@ -1104,8 +1156,15 @@ function startBlacksmithing() {
   }
   if (game.blacksmithingActive) return;
 
-  const copperSlot = game.inventory.find(slot => slot && slot.name === 'Copper Ore');
-  if (!copperSlot || copperSlot.qty < SMITH_ORE_COST) {
+  // --- Check total ore across all stacks ---
+  let totalOre = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Copper Ore') {
+          totalOre += slot.qty;
+      }
+  }
+
+  if (totalOre < SMITH_ORE_COST) {
       alert(`You need at least ${SMITH_ORE_COST} Copper Ore to smith a bar.`);
       return;
   }
@@ -1124,14 +1183,21 @@ function blacksmithingLoop(timestamp, startTime) {
   let progress = (elapsed / SMITH_TIME_MS) * 100;
 
   if (progress >= 100) {
-    const copperSlot = game.inventory.find(slot => slot && slot.name === 'Copper Ore');
-    if (!copperSlot || copperSlot.qty < SMITH_ORE_COST) {
+    // --- Check total ore again ---
+    let totalOre = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Ore') {
+            totalOre += slot.qty;
+        }
+    }
+    if (totalOre < SMITH_ORE_COST) {
         alert("You've run out of Copper Ore.");
         stopBlacksmithing();
         return;
     }
-    removeItem('Copper Ore', SMITH_ORE_COST);
-    addItem(SMITH_BAR_ITEM, 1);
+    
+    removeItem('Copper Ore', SMITH_ORE_COST); // Uses new removeItem
+    addItem(SMITH_BAR_ITEM, 1); // Uses new addItem
     addXP('blacksmith', SMITH_XP); // This now adds XP without a popup
     
     // Create the new combined popup
@@ -1141,8 +1207,14 @@ function blacksmithingLoop(timestamp, startTime) {
     const bar = document.getElementById('smithProgress');
     if (bar) bar.style.width = '0%';
     
-    const copperSlotAgain = game.inventory.find(slot => slot && slot.name === 'Copper Ore');
-    if (!copperSlotAgain || copperSlotAgain.qty < SMITH_ORE_COST) {
+    // --- Check *again* for next loop ---
+    let totalOreAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Ore') {
+            totalOreAfter += slot.qty;
+        }
+    }
+    if (totalOreAfter < SMITH_ORE_COST) {
         alert("You don't have enough ore to smith another bar.");
         stopBlacksmithing();
         return;
@@ -1430,9 +1502,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (dropSlot && draggedItemIndex !== null) {
       const dropIndex = parseInt(dropSlot.dataset.slotIndex);
       if (draggedItemIndex !== dropIndex) {
-        const temp = game.inventory[draggedItemIndex];
-        game.inventory[draggedItemIndex] = game.inventory[dropIndex];
-        game.inventory[dropIndex] = temp;
+        
+        // --- This logic needs to be stack-aware ---
+        const dragItem = game.inventory[draggedItemIndex];
+        const dropItem = game.inventory[dropIndex];
+        
+        if (dragItem && dropItem && dragItem.name === dropItem.name) {
+            // Stacking items
+            dropItem.qty += dragItem.qty;
+            game.inventory[draggedItemIndex] = null;
+        } else {
+            // Swapping items
+            game.inventory[draggedItemIndex] = dropItem;
+            game.inventory[dropIndex] = dragItem;
+        }
+        
         renderInventoryGrid();
         // +++ NEW: Save immediately after a successful drag/drop +++
         if (typeof window.savePlayerData === 'function') {
@@ -2161,30 +2245,81 @@ document.addEventListener('DOMContentLoaded', ()=>{
       });
       return inventoryToSave;
   }
+
+  // =================================================================
+  // --- 3. REPLACED 'checkItem' FUNCTION (module script) ---
+  // This function now correctly SUMS all stacks.
+  // =================================================================
   function checkItem(localInvArray, itemName, qty) {
-      const item = localInvArray.find(slot => slot && slot.name === itemName);
-      return item && item.qty >= qty;
-  }
-  function modifyInventory(localInvArray, itemName, qtyChange) {
-      const newInv = [...localInvArray];
-      let slotIndex = newInv.findIndex(slot => slot && slot.name === itemName);
-      if (slotIndex > -1) {
-          const newQty = newInv[slotIndex].qty + qtyChange;
-          if (newQty <= 0) {
-              newInv[slotIndex] = null;
-          } else {
-              newInv[slotIndex] = { ...newInv[slotIndex], qty: newQty };
+      let totalQty = 0;
+      for (const slot of localInvArray) {
+          if (slot && slot.name === itemName) {
+              totalQty += slot.qty;
           }
-      } else if (qtyChange > 0) {
-          let emptySlotIndex = newInv.findIndex(slot => slot === null);
-          if (emptySlotIndex > -1) {
-              newInv[emptySlotIndex] = { name: itemName, qty: qtyChange };
-          } else {
-              throw new Error(`Inventory full, cannot add ${itemName}.`);
+      }
+      return totalQty >= qty;
+  }
+
+  // =================================================================
+  // --- 4. REPLACED 'modifyInventory' FUNCTION (module script) ---
+  // This function now correctly adds/removes from multiple stacks.
+  // =================================================================
+  function modifyInventory(localInvArray, itemName, qtyChange) {
+      // Deep copy the array to avoid modifying the original
+      const newInv = JSON.parse(JSON.stringify(localInvArray)); 
+      
+      if (qtyChange > 0) { // Adding items
+          let amountToAdd = qtyChange;
+          
+          // 1. Try to stack first
+          for (const slot of newInv) {
+              if (slot && slot.name === itemName) {
+                  slot.qty += amountToAdd;
+                  amountToAdd = 0;
+                  break; 
+              }
+          }
+          
+          // 2. If still items left, find an empty slot
+          if (amountToAdd > 0) {
+              let emptySlotIndex = newInv.findIndex(slot => slot === null);
+              if (emptySlotIndex > -1) {
+                  newInv[emptySlotIndex] = { name: itemName, qty: amountToAdd };
+              } else {
+                  // This should be caught by the transaction, but good to have
+                  throw new Error(`Inventory full, cannot add ${itemName}.`);
+              }
+          }
+      } else if (qtyChange < 0) { // Removing items
+          let amountToRemove = Math.abs(qtyChange);
+          
+          // 1. Iterate backwards to empty smaller/later stacks first
+          for (let i = newInv.length - 1; i >= 0; i--) {
+              const slot = newInv[i];
+              if (slot && slot.name === itemName) {
+                  if (slot.qty > amountToRemove) {
+                      // This stack has more than we need
+                      slot.qty -= amountToRemove;
+                      amountToRemove = 0;
+                  } else {
+                      // This stack will be emptied
+                      amountToRemove -= slot.qty;
+                      newInv[i] = null; // Empty the slot
+                  }
+              }
+              if (amountToRemove === 0) break; // We're done
+          }
+          if (amountToRemove > 0) {
+              // This should be impossible if checkItem was called first
+              throw new Error(`Tried to remove more ${itemName} than available.`);
           }
       }
       return newInv;
   }
+  // =================================================================
+  // --- END OF REPLACEMENTS IN THIS SCRIPT BLOCK ---
+  // =================================================================
+
   async function handleChatCommand(messageText) {
     const user = auth.currentUser;
     if (!user) return false;
@@ -2242,7 +2377,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             }
             if (targetName === game.name.toLowerCase()) {
                 try {
-                    addItem(formattedName, qty);
+                    addItem(formattedName, qty); // Uses new addItem
                     await window.savePlayerData(); 
                     addLocalChatMessage(`Admin: Gave self ${qty}x ${formattedName}.`, 'system');
                 } catch (e) {
@@ -2250,6 +2385,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 }
                 return true;
             }
+            // This command now uses the NEW modifyInventory, so it will work
             try {
                 const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
                 const querySnapshot = await getDocs(q);
@@ -2260,7 +2396,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 const playerDoc = querySnapshot.docs[0];
                 const playerData = playerDoc.data();
                 let currentLocalInv = convertSavedInvToLocal(playerData.inventory || []);
-                const newLocalInv = modifyInventory(currentLocalInv, formattedName, qty);
+                const newLocalInv = modifyInventory(currentLocalInv, formattedName, qty); // Uses new modifyInventory
                 const newSavedInv = convertLocalInvToSaved(newLocalInv);
                 await updateDoc(doc(db, "players", playerDoc.id), { inventory: newSavedInv });
                 addLocalChatMessage(`Admin: Gave ${qty}x ${formattedName} to ${playerData.name}.`, 'system');
@@ -2581,13 +2717,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function renderTradeInventory() {
     const grid = document.getElementById('tradeInventoryGrid');
     grid.innerHTML = '';
-    game.inventory.forEach(slot => {
-      if (!slot) return; 
-      const name = slot.name;
-      const qty = slot.qty;
-      const itemInOffer = game.myTradeOffer.offerItems[name] || 0;
-      const qtyAvailable = qty - itemInOffer;
+
+    // --- Create a map of available items from all stacks ---
+    const availableItems = new Map();
+    for (const slot of game.inventory) {
+        if (slot) {
+            const currentQty = availableItems.get(slot.name) || 0;
+            availableItems.set(slot.name, currentQty + slot.qty);
+        }
+    }
+    
+    // --- Subtract offered items ---
+    for (const [name, qty] of Object.entries(game.myTradeOffer.offerItems)) {
+        if (availableItems.has(name)) {
+            availableItems.set(name, availableItems.get(name) - qty);
+        }
+    }
+
+    // --- Render the grid based on the calculated map ---
+    availableItems.forEach((qtyAvailable, name) => {
       if (qtyAvailable <= 0) return; 
+
       const slotEl = document.createElement('div');
       slotEl.className = 'inv-slot';
       slotEl.onclick = () => addItemToOffer(name, qtyAvailable); 
@@ -2858,18 +3008,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const p2LocalInv = convertSavedInvToLocal(p2Data.inventory || []);
         if (p1Data.gold < p1Offer.offerGold) throw new Error(`${p1Data.name} does not have enough gold.`);
         if (p2Data.gold < p2Offer.offerGold) throw new Error(`${p2Data.name} does not have enough gold.`);
+        
+        // --- This loop now uses the NEW 'checkItem' ---
         for (const [item, qty] of Object.entries(p1Offer.offerItems)) {
           if (!checkItem(p1LocalInv, item, qty)) {
             throw new Error(`${p1Data.name} does not have ${qty} ${item}.`);
           }
         }
+        // --- This loop now uses the NEW 'checkItem' ---
         for (const [item, qty] of Object.entries(p2Offer.offerItems)) {
           if (!checkItem(p2LocalInv, item, qty)) {
             throw new Error(`${p2Data.name} does not have ${qty} ${item}.`);
           }
         }
+
         let newP1LocalInv = [...p1LocalInv];
         let newP2LocalInv = [...p2LocalInv];
+
+        // --- These loops now use the NEW 'modifyInventory' ---
         for (const [item, qty] of Object.entries(p1Offer.offerItems)) {
             newP1LocalInv = modifyInventory(newP1LocalInv, item, -qty);
             newP2LocalInv = modifyInventory(newP2LocalInv, item, +qty);
@@ -2878,6 +3034,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
             newP2LocalInv = modifyInventory(newP2LocalInv, item, -qty);
             newP1LocalInv = modifyInventory(newP1LocalInv, item, +qty);
         }
+        // --- End of new function usage ---
+
         const newP1SavedInv = convertLocalInvToSaved(newP1LocalInv);
         const newP2SavedInv = convertLocalInvToSaved(newP2LocalInv);
         transaction.update(sessionRef, { status: 'completed' });
@@ -2998,7 +3156,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       // If we are the active session, release the lock
       if (game.isSessionActive) {
         if (typeof window.releaseSessionLock === 'function') {
-          // Fire-and-forget, we can't await this
+          // Fire-and-forget, we can't wait for the update
           window.releaseSessionLock(false); 
         }
       }
