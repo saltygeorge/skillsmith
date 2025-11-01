@@ -1274,6 +1274,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
       const ref = doc(db, "players", user.uid);
       
+      // +++ ADD THIS FLAG +++
+      let isFirstLoad = true; 
+      
       // --- This is the new part: onSnapshot ---
       // This function now just *starts* the listener
       playerDocListener = onSnapshot(ref, (snap) => {
@@ -1312,7 +1315,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
         renderInventoryGrid();
         updateSkillUI();
         updateGoldUI(); 
-        window.renderLeaderboards(); // Optionally refresh leaderboards
+        
+        // +++ THIS IS THE NEW LOGIC +++
+        if (isFirstLoad) {
+          window.renderLeaderboards(); // Load it once
+          isFirstLoad = false;         // Set the flag
+        }
+        // +++ END OF NEW LOGIC +++
         
         // Ensure game screen is visible
         startScreen.style.display = 'none';
