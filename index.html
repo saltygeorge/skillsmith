@@ -1953,7 +1953,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
           if (typeof window.acquireSessionLock === 'function') {
             await window.acquireSessionLock();
           }
-          // --- END FIX ---
+
+          game.isSessionActive = true;
+         
 
           await window.savePlayerData(); // This will now succeed
           window.renderLeaderboards();
