@@ -685,6 +685,7 @@ const game = {
   progressFrame: null,
   wasMiningBeforeTrade: false,
   shopOpen: false, // <-- +++ NEW: For Shop
+  isAdmin: false,
   
   // +++ ADDED FOR TRADE +++
   inTrade: false,
@@ -694,6 +695,12 @@ const game = {
   myTradeOffer: { offerItems: {}, offerGold: 0, accepted: false },
   theirTradeOffer: { offerItems: {}, offerGold: 0, accepted: false }
 };
+
+// +++ ADD THIS NEW ARRAY +++
+const VALID_ITEMS = [
+  'Copper Ore'
+  // As you add more items, add their exact names here
+];
 
 // --- All your original game functions (setText, formatAmount, etc.) are unchanged ---
 function setText(id, text){ const el=document.getElementById(id); if(el) el.innerText=text; }
@@ -903,6 +910,15 @@ function moveTooltip(evt) {
 }
 
 function getNextXP(level){ return Math.floor(100 * Math.pow(1.15, level-1)); }
+
+function getTotalXPForLevel(level) {
+    let total = 0;
+    for(let i = 1; i < level; i++) {
+        total += getNextXP(i);
+    }
+    return total;
+  }
+
 function updateSkillUI(){
   setText('miningLevel', game.mining.level);
   setText('miningXP', game.mining.xp);
@@ -1158,6 +1174,7 @@ function resetGameState() {
   game.mining = { level: 1, xp: 0, totalXP: 0 };
   game.miningActive = false;
   game.shopOpen = false; // <-- +++ NEW
+  game.isAdmin = false;
   if (game.progressFrame) {
     cancelAnimationFrame(game.progressFrame);
     game.progressFrame = null;
@@ -1195,6 +1212,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     addDoc, serverTimestamp, onSnapshot, orderBy, limit, limitToLast, runTransaction, writeBatch, updateDoc
     
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  const ADMIN_UID = "qHclRuNSFTTrE19xYd7ilqIPFVe2";
   
   // --- Your Firebase config (Unchanged) ---
   const firebaseConfig = {
@@ -1265,7 +1284,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         game.mining.level = data.mining.level || game.mining.level;
         game.mining.xp = data.mining.xp || game.mining.xp;
         game.mining.totalXP = data.mining.totalXP || 
-                              (data.mining.level > 1 ? estimateTotalXP(data.mining.level - 1) + data.mining.xp : data.mining.xp) || 0; 
+                              (data.mining.level > 1 ? getTotalXPForLevel(data.mining.level - 1) + data.mining.xp : data.mining.xp) || 0; 
       }
       document.getElementById('charName').innerText = game.name;
       startScreen.style.display = 'none';
@@ -1284,13 +1303,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
 
-  function estimateTotalXP(level) {
-    let total = 0;
-    for(let i = 1; i < level; i++) {
-        total += getNextXP(i);
-    }
-    return total;
-  }
 
   // --- MODIFIED registerBtn.onclick ---
   registerBtn.onclick = async function() {
@@ -1337,6 +1349,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
       tradeSessionUnsubscribes = []; // <-- Changed
 
       const started = await loadPlayerDataAndStart(user);
+      
+      // +++ ADD THIS BLOCK +++
+      if (user.uid === ADMIN_UID) {
+        game.isAdmin = true;
+        console.log("Admin status granted.");
+      } else {
+        game.isAdmin = false;
+      }
+      // +++ END OF BLOCK +++
       
       if (started) {
         initChatListener();
@@ -1628,6 +1649,148 @@ function _addLocalMessageToDOM(text, type = 'system') {
     const user = auth.currentUser;
     if (!user) return false;
 
+    // --- +++ NEW ADMIN COMMANDS (TARGETED) +++ ---
+    if (game.isAdmin && messageText.startsWith('/')) {
+        const parts = messageText.substring(1).split(' ');
+        const command = parts[0].toLowerCase();
+        const args = parts.slice(1);
+
+        // --- /givegold [playername] [amount] ---
+        if (command === 'givegold') {
+            const targetName = args[0] ? args[0].toLowerCase() : '';
+            const amount = parseInt(args[1]);
+
+            if (!targetName || isNaN(amount) || amount <= 0) {
+                addLocalChatMessage("Usage: /givegold [playername] [amount]", 'error');
+                return true;
+            }
+
+            // --- Target is self ---
+            if (targetName === game.name.toLowerCase()) {
+                addGold(amount);
+                addLocalChatMessage(`Admin: Gave self ${amount} Gold.`, 'system');
+                return true;
+            }
+
+            // --- Target is another player ---
+            try {
+                const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
+                    return true;
+                }
+                
+                const playerDoc = querySnapshot.docs[0];
+                const playerData = playerDoc.data();
+                const newGold = (playerData.gold || 0) + amount;
+                
+                await updateDoc(doc(db, "players", playerDoc.id), { gold: newGold });
+                addLocalChatMessage(`Admin: Gave ${amount} Gold to ${playerData.name}.`, 'system');
+                
+            } catch (e) {
+                addLocalChatMessage(`Error giving gold: ${e.message}`, 'error');
+            }
+            return true;
+        }
+        
+        // --- /giveitem [playername] [Item Name] [amount] ---
+        if (command === 'giveitem') {
+            const targetName = args[0] ? args[0].toLowerCase() : '';
+            const qty = parseInt(args[args.length - 1]);
+            const itemName = args.slice(1, -1).join(' '); // Get item name from middle
+            
+            if (!targetName || itemName.length === 0 || isNaN(qty) || qty <= 0) {
+                addLocalChatMessage("Usage: /giveitem [playername] [Item Name] [amount]", 'error');
+                return true;
+            }
+            
+            const formattedName = itemName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+
+            if (!VALID_ITEMS.includes(formattedName)) {
+                addLocalChatMessage(`Admin Error: "${formattedName}" is not a valid item.`, 'error');
+                return true; // Stop the command
+            }
+
+            // --- Target is self ---
+            if (targetName === game.name.toLowerCase()) {
+                addItem(formattedName, qty);
+                addLocalChatMessage(`Admin: Gave self ${qty}x ${formattedName}.`, 'system');
+                return true;
+            }
+
+            // --- Target is another player ---
+            try {
+                const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
+                    return true;
+                }
+                
+                const playerDoc = querySnapshot.docs[0];
+                const playerData = playerDoc.data();
+                const newInventory = playerData.inventory || {};
+                newInventory[formattedName] = (newInventory[formattedName] || 0) + qty;
+                
+                await updateDoc(doc(db, "players", playerDoc.id), { inventory: newInventory });
+                addLocalChatMessage(`Admin: Gave ${qty}x ${formattedName} to ${playerData.name}.`, 'system');
+
+            } catch (e) {
+                addLocalChatMessage(`Error giving item: ${e.message}`, 'error');
+            }
+            return true;
+        }
+        
+        // --- /setlevel [playername] [skill] [level] ---
+        if (command === 'setlevel') {
+            const targetName = args[0] ? args[0].toLowerCase() : '';
+            const skill = args[1] ? args[1].toLowerCase() : '';
+            const level = parseInt(args[2]);
+            
+            if (!targetName || !skill || isNaN(level) || level < 1 || level > 99) {
+                addLocalChatMessage("Usage: /setlevel [playername] [skill] [1-99]", 'error');
+                return true;
+            }
+            
+            if (skill !== 'mining') {
+                 addLocalChatMessage("Unknown skill. Only 'mining' is supported.", 'error');
+                 return true;
+            }
+            
+            const newTotalXP = getTotalXPForLevel(level); // Use the global function
+            const newSkillData = { level: level, xp: 0, totalXP: newTotalXP };
+
+            // --- Target is self ---
+            if (targetName === game.name.toLowerCase()) {
+                game.mining = newSkillData;
+                updateSkillUI();
+                addLocalChatMessage(`Admin: Set own Mining level to ${level}.`, 'system');
+                return true;
+            }
+            
+            // --- Target is another player ---
+             try {
+                const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
+                    return true;
+                }
+                
+                const playerDoc = querySnapshot.docs[0];
+                await updateDoc(doc(db, "players", playerDoc.id), { mining: newSkillData });
+                addLocalChatMessage(`Admin: Set ${playerDoc.data().name}'s Mining level to ${level}.`, 'system');
+
+            } catch (e) {
+                addLocalChatMessage(`Error setting level: ${e.message}`, 'error');
+            }
+            return true;
+        }
+    }
+    // --- +++ END OF ADMIN COMMANDS +++ ---
+
+
     if (messageText.startsWith('/trade ')) {
       const targetName = messageText.substring(7).trim();
       if (targetName.toLowerCase() === game.name.toLowerCase()) {
@@ -1654,7 +1817,7 @@ function _addLocalMessageToDOM(text, type = 'system') {
       return true;
     }
     
-    return false; // Not a command
+    return false; // Not a recognized command
   }
 
   /**
