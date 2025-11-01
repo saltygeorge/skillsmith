@@ -1739,7 +1739,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         
         // If we are the active tab, AND we are busy (mining, dragging, etc.),
         // do not sync data. This prevents rollbacks.
-        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.inTrade || game.isDragging)) {
+        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.isDragging)) {
           return;
         }
         
