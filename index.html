@@ -17,13 +17,11 @@
 body {
   margin: 0;
   font-family: "Garamond", serif;
-  /* --- NEW BACKGROUND START --- */
-  background: #3f2b21; /* Fallback color for dark brick */
+  background: #3f2b21;
   background-image: url('images/brick_background.png');
-  background-size: cover; /* Ensures the image covers the entire screen */
-  background-attachment: fixed; /* Keeps the background static */
-  background-position: center center; /* Centers the background image */
-  /* --- NEW BACKGROUND END --- */
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center center;
   color: #fff;
   -webkit-font-smoothing: antialiased;
   display: flex;
@@ -46,18 +44,18 @@ body {
   width: 100%;
   max-width: 1240px;
   display: flex;
-  flex-direction: column; /* <-- CHANGED: Now a column layout */
+  flex-direction: column;
   gap: 20px;
   padding: 24px;
   box-sizing: border-box;
   margin: 0 auto;
 }
 
-/* --- +++ NEW: Panel Row Wrappers +++ --- */
+/* --- Panel Row Wrappers --- */
 #top-row-panels {
   display: flex;
   gap: 20px;
-  align-items: stretch; /* <-- This makes all 3 panels the same height */
+  align-items: stretch;
   width: 100%;
 }
 
@@ -67,11 +65,10 @@ body {
   width: 100%;
 }
 
-/* --- +++ NEW: Spacer for Chat Panel +++ --- */
+/* --- Spacer for Chat Panel --- */
 .sidebar-spacer {
-  /* This width MUST match the .sidebar width */
   width: calc((var(--slot-size) * 4) + (var(--slot-gap) * 3) + 32px + 8px);
-  flex-shrink: 0; /* Prevents it from shrinking */
+  flex-shrink: 0;
 }
 
 
@@ -80,10 +77,8 @@ body {
   width: calc((var(--slot-size) * 4) + (var(--slot-gap) * 3) + 32px + 8px);
   background: var(--panel-bg);
   padding: 16px;
-  border-radius: 10px; /* Slightly less rounded */
-  /* Worn/Sturdy Shadow: Inner shadow for depth, outer shadow for lift */
+  border-radius: 10px;
   box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
-  /* Strong, dark border for a rustic frame look */
   border: 4px solid #453625;
   box-sizing: border-box;
   display: flex;
@@ -94,7 +89,7 @@ body {
 .char-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .char-header h2, .main h2, #leaderboardPanel h2 { 
   margin: 0; 
-  font-size: 20px; /* <-- GUARANTEED: Sets all main h2s to 20px */
+  font-size: 20px;
 }
 
 .hp-bar { background: #772222; border-radius: 6px; overflow: hidden; margin-bottom: 12px; position: relative; height: 28px; }
@@ -110,16 +105,15 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* keep content at top */
+  justify-content: flex-start;
 }
 
-/* Equipment slots vertically centered between tabs and bottom */
 #equipmentTab {
   display: flex;
   flex-direction: column;
   justify-content: center;
   flex-grow: 1;
-  padding-top: 70px; /* lowers them a bit */
+  padding-top: 70px;
 }
 
 .equipment-character { display: flex; justify-content: center; }
@@ -140,19 +134,15 @@ body {
   width: 100%;
   height: calc((var(--slot-size) + var(--slot-gap)) * 4);
   overflow-y: auto;
-  overflow-x: hidden; /* prevent side scroll */
-  padding-right: 0; /* <-- MODIFIED: Removed 6px padding */
-  
-  /* --- NEW: For Firefox --- */
+  overflow-x: hidden;
+  padding-right: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--panel-bg);
 }
 .inventory-grid {
   display: grid;
-  /* --- FIX: Use auto-fit to force 4 columns within the space. --- */
   grid-template-columns: repeat(auto-fit, minmax(var(--slot-size), 1fr));
   gap: var(--slot-gap);
-  /* Ensure padding is uniform and matches the gap */
   padding: var(--slot-gap); 
   align-content: start;
 }
@@ -163,7 +153,6 @@ body {
   border: 2px solid rgba(120,90,50,0.25);
   position: relative;
   display: flex; align-items: center; justify-content: center; overflow: hidden;
-  /* +++ NEW: Add cursor pointer for items +++ */
   cursor: pointer;
 }
 .inv-slot img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
@@ -193,43 +182,39 @@ body {
   max-width: 240px;
 }
 
-/* --- +++ NEW: Custom Scrollbar for WebKit (Chrome, Safari) +++ --- */
+/* --- Custom Scrollbar --- */
 .inventory-grid-wrap::-webkit-scrollbar,
 #chatMessages::-webkit-scrollbar {
-  width: 8px; /* Sets the width of the scrollbar */
+  width: 8px;
 }
 .inventory-grid-wrap::-webkit-scrollbar-track,
 #chatMessages::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.2); /* Dark, subtle track background */
+  background: rgba(0,0,0,0.2);
   border-radius: 4px;
 }
 .inventory-grid-wrap::-webkit-scrollbar-thumb,
 #chatMessages::-webkit-scrollbar-thumb {
-  background: var(--accent); /* Uses your game's accent color for the handle */
+  background: var(--accent);
   border-radius: 4px;
 }
 .inventory-grid-wrap::-webkit-scrollbar-thumb:hover,
 #chatMessages::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-hover); /* Uses your hover color */
+  background: var(--accent-hover);
 }
-/* --- +++ END: Custom Scrollbar +++ --- */
 
-
-/* --- Main area (MODIFIED) --- */
+/* --- Main area --- */
 .main {
-  flex: 1; /* <-- RE-ADDED: To fill the middle space */
+  flex: 1;
   background: var(--panel-bg);
   padding: 18px;
-  border-radius: 10px; /* Slightly less rounded */
-  /* Worn/Sturdy Shadow: Inner shadow for depth, outer shadow for lift */
+  border-radius: 10px;
   box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
-  /* Strong, dark border for a rustic frame look */
   border: 4px solid #453625;
   min-height: 500px; 
   position: relative;
 }
 
-/* +++ NEW CHAT PANEL STYLE (MODIFIED) +++ */
+/* --- Chat Panel --- */
 .chat-panel {
   background: var(--panel-bg);
   padding: 18px;
@@ -238,12 +223,10 @@ body {
   border: 4px solid #453625;
   display: flex; 
   flex-direction: column;
-  min-height: 200px; /* Give it a minimum height */
+  min-height: 200px;
   flex-shrink: 0;
-  flex: 1; /* <-- ADDED: To fill the middle space in its row */
+  flex: 1;
 }
-
-/* --- THIS IS THE CHAT MESSAGES DIV --- */
 #chatMessages {
   flex-grow: 1; 
   background: rgba(0,0,0,0.2); 
@@ -253,18 +236,14 @@ body {
   height: 150px; 
   display: flex; 
   flex-direction: column-reverse;
-  
-  /* --- NEW: For Firefox --- */
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--panel-bg);
 }
-
 #chatInputContainer { 
   display: flex; 
   gap: 8px; 
   margin-top: 10px;
 }
-
 #chatInput { 
   flex-grow: 1; 
   padding: 8px; 
@@ -273,20 +252,17 @@ body {
   background: #3f2b21; 
   color: #fff;
 }
-/* --- END CHAT STYLES --- */
 
-
+/* --- Action Progress --- */
 .progress-container {
-  background: #7c644c; /* NEW: Lighter, muted tan/brown */
+  background: #7c644c;
   border-radius: 10px;
   height: 24px;
   overflow: hidden;
   position: relative;
 }
 .progress-fill { height: 100%; background: var(--gold); width: 0%; transition: width 0.08s; }
-
 .action-buttons { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
-
 button.primary {
   background: var(--accent); color: #fff; border: 0; padding: 10px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;
 }
@@ -311,29 +287,22 @@ button.primary:hover { background: var(--accent-hover); }
 }
 
 @media(max-width:900px) {
-  /* MODIFIED for new structure */
   .container { flex-direction: column; align-items: center; }
-  
-  /* Make all panels full width and stack */
   #top-row-panels, #bottom-row-chat {
       flex-direction: column;
       width: 95%;
   }
   .sidebar, .main, .chat-panel { 
-      width: 100%; /* Make them fill the 95% wrapper */
+      width: 100%;
       box-sizing: border-box;
   }
-  /* Hide the spacers on mobile */
   .sidebar-spacer {
       display: none;
   }
 }
 
-/* --- +++ NEW TRADE MODAL STYLES +++ --- */
-#tradeModal {
-  display: none; /* Changed by JS */
-}
-
+/* --- Trade Modal --- */
+#tradeModal { display: none; }
 .trade-content {
   background: var(--panel-bg);
   border: 4px solid #453625;
@@ -346,13 +315,7 @@ button.primary:hover { background: var(--accent-hover); }
   display: flex;
   flex-direction: column;
 }
-
-.trade-main-area {
-  display: flex;
-  gap: 20px;
-  flex: 1; /* Make it fill the vertical space */
-}
-
+.trade-main-area { display: flex; gap: 20px; flex: 1; }
 .trade-panel {
   background: rgba(0,0,0,0.15);
   border-radius: 8px;
@@ -361,7 +324,6 @@ button.primary:hover { background: var(--accent-hover); }
   flex-direction: column;
   flex: 1;
 }
-
 .trade-gold-display {
   display: flex;
   align-items: center;
@@ -370,25 +332,16 @@ button.primary:hover { background: var(--accent-hover); }
   margin-bottom: 10px;
   font-size: 16px;
 }
-.trade-gold-display img {
-  width: 30px;
-  height: 30px;
-}
-
-/* Make trade inventory scrollable */
+.trade-gold-display img { width: 30px; height: 30px; }
 #tradeInventoryGridWrap {
-  flex: 1; /* This makes it fill the panel's height */
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   background: rgba(0,0,0,0.2);
   border-radius: 6px;
-  
-  /* --- NEW: For Firefox --- */
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--panel-bg);
 }
-
-/* Make trade offer grids fixed size */
 #tradeMyOfferGrid, #tradeTheirOfferGrid {
   display: grid;
   grid-template-columns: repeat(4, var(--slot-size));
@@ -400,24 +353,12 @@ button.primary:hover { background: var(--accent-hover); }
   background: rgba(0,0,0,0.2);
   border-radius: 6px;
 }
-
-/* This makes empty offer slots visible */
 .inv-slot.offer-slot-placeholder {
   background: rgba(120,90,50,0.1);
   border-style: dashed;
 }
-
-.trade-offer-layout {
-  display: flex;
-  gap: 20px;
-}
-
-.trade-offer-box {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
+.trade-offer-layout { display: flex; gap: 20px; }
+.trade-offer-box { flex: 1; display: flex; flex-direction: column; }
 .trade-gold-input {
   margin-top: 10px;
   display: flex;
@@ -435,7 +376,6 @@ button.primary:hover { background: var(--accent-hover); }
   color: #fff;
   font-size: 14px;
 }
-
 #tradeAcceptBtn {
   margin-top: 15px;
   background: var(--accent);
@@ -446,7 +386,6 @@ button.primary:hover { background: var(--accent-hover); }
   opacity: 0.7;
   cursor: not-allowed;
 }
-
 .trade-status-indicator {
   margin-top: 10px;
   text-align: center;
@@ -470,7 +409,47 @@ button.primary:hover { background: var(--accent-hover); }
   background: rgba(0,150,0,0.3);
   color: #aaffaa;
 }
-/* --- +++ END TRADE MODAL STYLES +++ --- */
+
+/* --- Drag & Drop --- */
+.inv-slot.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+.inv-slot.drag-over {
+  border-color: var(--gold);
+  border-style: dashed;
+  background: rgba(181, 166, 66, 0.1);
+}
+
+/* +++ NEW: SESSION LOCK OVERLAY +++ */
+#sessionLockOverlay {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  z-index: 5000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+#sessionLockOverlay div {
+  background: var(--panel-bg);
+  border: 4px solid #453625;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  padding: 30px 40px;
+  border-radius: 10px;
+  max-width: 400px;
+}
+#sessionLockOverlay h2 {
+  margin-top: 0;
+  color: var(--gold);
+}
+/* +++ END NEW STYLES +++ */
+
 </style>
 </head>
 <body>
@@ -561,18 +540,15 @@ button.primary:hover { background: var(--accent-hover); }
             
           </div>
           
-          <!-- +++ MODIFIED SKILLS TAB +++ -->
           <div id="skillsTab" style="display:none;">
-            <!-- Content is now generated by updateSkillUI() -->
-          </div>
+            </div>
           
         </div>
       </div>
 
       <div class="main" id="mainArea">
         <div id="mainContentWrapper">
-          <!-- Content generated by backToActions() -->
-        </div>
+          </div>
         <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
       </div>
 
@@ -670,25 +646,40 @@ button.primary:hover { background: var(--accent-hover); }
     </div>
   </div>
 </div>
+
+<div id="sessionLockOverlay" style="display: none;">
+  <div>
+    <h2>Session Active Elsewhere</h2>
+    <p>This account is already being played in another tab or browser. To prevent data corruption, this tab has been disabled.</p>
+    <button id="takeControlButton" class="primary">Take Control Here</button>
+  </div>
+</div>
+
 <script>
 // --- Game State (MODIFIED) ---
 const game = {
   name: '',
   hp: 10,
   maxHP: 10,
-  inventory: {},
+  inventory: [], 
   inventoryCapacity: 39,
   gold: 0, 
   mining: { level: 1, xp: 0, totalXP: 0 },
-  blacksmith: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW
+  blacksmith: { level: 1, xp: 0, totalXP: 0 },
   miningActive: false,
-  blacksmithingActive: false, // +++ NEW
+  blacksmithingActive: false, 
   progressFrame: null,
   wasMiningBeforeTrade: false,
   shopOpen: false, 
   isAdmin: false,
   
-  // +++ ADDED FOR TRADE +++
+  // +++ NEW SESSION LOCK +++
+  // This is a unique ID for this specific tab
+  sessionLockId: 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9),
+  lockHeartbeat: null,    // This will hold the setInterval ID for the heartbeat
+  isSessionActive: false, // Is this tab the "master" tab?
+  isDragging: false,      // Are we currently dragging an item?
+  
   inTrade: false,
   activeTradeSessionId: null,
   activeTradeListener: null, 
@@ -696,29 +687,23 @@ const game = {
   myTradeOffer: { offerItems: {}, offerGold: 0, accepted: false },
   theirTradeOffer: { offerItems: {}, offerGold: 0, accepted: false }
 };
+// +++ END MODIFICATION +++
 
-// +++ MODIFIED VALID_ITEMS +++
+game.inventory = new Array(game.inventoryCapacity).fill(null);
+
 const VALID_ITEMS = [
   'Copper Ore',
-  'Copper Bar' // +++ NEW
+  'Copper Bar'
 ];
 
-// --- All your original game functions (setText, formatAmount, etc.) are unchanged ---
 function setText(id, text){ const el=document.getElementById(id); if(el) el.innerText=text; }
 
 function formatAmount(n) {
-  if (n < 1000) {
-    return n.toString();
-  }
-  if (n < 1000000) {
-    const val = (n / 1000).toFixed(2);
-    return parseFloat(val) + 'k';
-  }
-  const val = (n / 1000000).toFixed(2);
-  return parseFloat(val) + 'M';
+  if (n < 1000) return n.toString();
+  if (n < 1000000) return parseFloat((n / 1000).toFixed(2)) + 'k';
+  return parseFloat((n / 1000000).toFixed(2)) + 'M';
 }
 
-// --- MODIFIED createCharacter ---
 function createCharacter(){
   const name = document.getElementById('playerName').value.trim();
   if(!name) return; 
@@ -739,16 +724,14 @@ function updateHPUI(){
   setText('hpText', `${game.hp} / ${game.maxHP} HP`);
 }
 
-// --- NEW FUNCTIONS FOR GOLD ---
 function updateGoldUI() {
   setText('goldAmountText', formatAmount(game.gold));
 }
 
 function addGold(amount) {
-  game.gold = Math.max(0, game.gold + amount); // Prevents negative gold
+  game.gold = Math.max(0, game.gold + amount);
   updateGoldUI();
 }
-// --- END NEW FUNCTIONS ---
 
 function showTab(tab){
   document.getElementById('equipmentTab').style.display = 'none';
@@ -761,35 +744,31 @@ function renderInventoryGrid(){
   const grid = document.getElementById('inventoryGrid');
   grid.innerHTML = '';
   const capacity = game.inventoryCapacity;
-  const entries = Object.entries(game.inventory);
-  const slots = new Array(capacity).fill(null);
 
-  for(let i=0;i<entries.length && i<capacity;i++){
-    slots[i] = { name: entries[i][0], qty: entries[i][1] };
-  }
-
-  for(let i=0;i<capacity;i++){
+  for(let i = 0; i < capacity; i++){
+    const slotData = game.inventory[i];
     const slot = document.createElement('div');
     slot.className = 'inv-slot';
-    if(slots[i]){
-      const item = slots[i];
+    slot.dataset.slotIndex = i;
+    
+    if(slotData){
+      slot.draggable = true;
+      const item = slotData;
       const img = document.createElement('img');
-      
-      // +++ THIS IS THE FIX +++
       let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
       if (item.name === 'Copper Bar') {
-          imgName = 'copperbar'; // Use the exact filename
+          imgName = 'copperbar';
       }
-      // +++ END OF FIX +++
-      
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
       img.onerror = function(){ this.style.opacity='0.08'; this.style.filter='grayscale(90%)'; };
       slot.appendChild(img);
+      
       const amt = document.createElement('div');
       amt.className = 'inv-amount';
       amt.innerText = formatAmount(item.qty); 
       slot.appendChild(amt);
+      
       const exactAmount = item.qty.toLocaleString(); 
       const itemName = item.name;
       const tooltipContent = `
@@ -802,47 +781,52 @@ function renderInventoryGrid(){
       slot.onmouseleave = () => {
         hideTooltip();
       };
-      
       slot.onclick = () => {
         handleSellItemClick(item.name, item.qty);
       };
-      
+    } else {
+      slot.draggable = false;
     }
     grid.appendChild(slot);
   }
 }
+
 function addItem(name, qty=1){
-  if(!game.inventory[name]) game.inventory[name]=0;
-  game.inventory[name]+=qty;
+  let existingSlot = game.inventory.find(slot => slot && slot.name === name);
+  if (existingSlot) {
+    existingSlot.qty += qty;
+  } else {
+    let emptySlotIndex = game.inventory.findIndex(slot => slot === null);
+    if (emptySlotIndex > -1) {
+      game.inventory[emptySlotIndex] = { name: name, qty: qty };
+    } else {
+      console.warn(`Inventory full! Could not add ${name}`);
+      return; 
+    }
+  }
   renderInventoryGrid();
 }
 
-// +++ NEW: removeItem function +++
 function removeItem(name, qty = 1) {
-  if (!game.inventory[name]) {
+  let slotIndex = game.inventory.findIndex(slot => slot && slot.name === name);
+  if (slotIndex === -1) {
     console.warn(`Tried to remove item not in inventory: ${name}`);
-    return false; // +++ MODIFIED: Return false on failure
+    return false;
   }
-  if (game.inventory[name] < qty) {
-    console.warn(`Tried to remove ${qty} ${name}, but only have ${game.inventory[name]}`);
-    return false; // +++ MODIFIED: Return false on failure
+  const slot = game.inventory[slotIndex];
+  if (slot.qty < qty) {
+    console.warn(`Tried to remove ${qty} ${name}, but only have ${slot.qty}`);
+    return false; 
   }
-  
-  game.inventory[name] -= qty;
-  if (game.inventory[name] <= 0) {
-    delete game.inventory[name];
+  slot.qty -= qty;
+  if (slot.qty <= 0) {
+    game.inventory[slotIndex] = null;
   }
-  return true; // +++ MODIFIED: Return true on success
+  return true;
 }
 
-// +++ NEW: handleSellItemClick function +++
 function handleSellItemClick(itemName, currentQty) {
-  // 1. Check if shop is open
-  if (!game.shopOpen) {
-    return; // Do nothing if shop isn't open
-  }
-  
-  // 2. Define prices
+  if (!game.shopOpen) return;
   let sellPrice = 0;
   if (itemName === 'Copper Ore') {
     sellPrice = 1;
@@ -850,45 +834,30 @@ function handleSellItemClick(itemName, currentQty) {
     alert("This shop doesn't buy that item.");
     return;
   }
-  
-  // 3. Get quantity
   let qtyToSell = 0;
   if (currentQty === 1) {
     qtyToSell = 1;
   } else {
     const input = prompt(`How many ${itemName} do you want to sell? (You have: ${currentQty})`, currentQty);
-    if (input === null) return; // User cancelled
+    if (input === null) return;
     qtyToSell = parseInt(input);
   }
-  
-  // 4. Validate quantity
-  if (isNaN(qtyToSell) || qtyToSell <= 0) {
-    return; // Invalid number
-  }
+  if (isNaN(qtyToSell) || qtyToSell <= 0) return;
   if (qtyToSell > currentQty) {
     alert("You don't have that many to sell.");
     return;
   }
-  
-  // 5. Confirm sale
   const totalGold = qtyToSell * sellPrice;
   const confirmed = confirm(`Are you sure you want to sell ${qtyToSell} ${itemName} for ${totalGold} Gold?`);
   
-  // 6. Execute sale
   if (confirmed) {
-    // Use the new return value to ensure item was removed
     if (removeItem(itemName, qtyToSell)) {
-        addGold(totalGold); // This already updates the gold UI
-        
+        addGold(totalGold);
         hideTooltip(); 
-        
-        renderInventoryGrid(); // Manually re-render inventory UI
-        
-        // Also re-render trade inventory if it's open (it shouldn't be)
+        renderInventoryGrid();
         if (game.inTrade) {
           renderTradeInventory();
         }
-        
         alert(`You sold ${qtyToSell} ${itemName} for ${totalGold} Gold.`);
     } else {
         alert("Something went wrong, the sale did not complete.");
@@ -896,21 +865,17 @@ function handleSellItemClick(itemName, currentQty) {
   }
 }
 
-
 const tooltip = document.getElementById('tooltip');
-
 function showTooltip(evt, content) {
   if (!tooltip) return;
   tooltip.innerHTML = content;
   tooltip.style.display = 'block';
   moveTooltip(evt);
 }
-
 function hideTooltip() {
   if (!tooltip) return;
   tooltip.style.display = 'none';
 }
-
 function moveTooltip(evt) {
   if (!tooltip || tooltip.style.display === 'none') return;
   const tooltipRect = tooltip.getBoundingClientRect();
@@ -927,7 +892,6 @@ function moveTooltip(evt) {
 }
 
 function getNextXP(level){ return Math.floor(100 * Math.pow(1.15, level-1)); }
-
 function getTotalXPForLevel(level) {
     let total = 0;
     for(let i = 1; i < level; i++) {
@@ -936,15 +900,10 @@ function getTotalXPForLevel(level) {
     return total;
   }
 
-// +++ MODIFIED updateSkillUI +++
 function updateSkillUI(){
   const skillsTab = document.getElementById('skillsTab');
   if (!skillsTab) return;
-  
-  // Clear the tab
   skillsTab.innerHTML = '<div style="font-size:14px; margin-bottom:8px;">Skills</div>';
-  
-  // Helper to create skill HTML
   const createSkillHTML = (skillName, skillData) => {
     return `
       <div style="margin-bottom: 5px;">
@@ -955,23 +914,16 @@ function updateSkillUI(){
       </div>
     `;
   };
-  
-  // Add Mining
   skillsTab.innerHTML += createSkillHTML('Mining', 'mining');
-  
-  // Add Blacksmithing
   skillsTab.innerHTML += createSkillHTML('Blacksmith', 'blacksmith');
 }
 
-// +++ NEW: Generic Popup Function +++
 function showItemPopup(text, progressElementId) {
     const main = document.getElementById('mainArea');
     if (!main) return;
-    
     const popup = document.createElement('div');
     popup.className = 'xp-popup';
     popup.innerText = text;
-    
     const bar = document.getElementById(progressElementId);
     if (bar) {
         const barRect = bar.getBoundingClientRect();
@@ -989,13 +941,11 @@ function showItemPopup(text, progressElementId) {
     setTimeout(()=>popup.remove(), 900);
 }
 
-// +++ MODIFIED addXP +++
 function addXP(skill, amount){
   if (!game[skill]) {
       console.warn(`Skill "${skill}" does not exist.`);
       return;
   }
-  
   game[skill].totalXP += amount; 
   game[skill].xp += amount;
   while(game[skill].xp >= getNextXP(game[skill].level)){
@@ -1003,13 +953,9 @@ function addXP(skill, amount){
     game[skill].level++;
   }
   updateSkillUI();
-  
-  // Use the new generic popup function
-  // Determine which progress bar to attach to
   let barId = '';
   if (skill === 'mining') barId = 'mineProgress';
   if (skill === 'blacksmith') barId = 'smithProgress';
-  
   showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
 }
 
@@ -1017,140 +963,128 @@ const MINE_TIME_MS = 1500;
 const MINE_XP = 15;
 const MINE_ITEM = 'Copper Ore';
 
+// --- MODIFIED: Added Session Lock Check ---
 function startMining() {
+  if (!game.isSessionActive) {
+    alert("This game session is not active. Please take control to perform actions.");
+    return;
+  }
   if (game.miningActive) return; 
   game.miningActive = true;
-  
   const startBtn = document.getElementById('startMineBtn');
   const stopBtn = document.getElementById('stopMineBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-
   game.progressFrame = requestAnimationFrame((now) => miningLoop(now, now));
 }
 
 function miningLoop(timestamp, startTime) {
   if (!game.miningActive) return; 
-
   const elapsed = timestamp - startTime;
   let progress = (elapsed / MINE_TIME_MS) * 100;
 
   if (progress >= 100) {
     addItem(MINE_ITEM, 1);
     addXP('mining', MINE_XP);
-    
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = '0%';
-    game.progressFrame = requestAnimationFrame((now) => miningLoop(now, now)); // Loop
+    game.progressFrame = requestAnimationFrame((now) => miningLoop(now, now));
   } else {
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => miningLoop(now, startTime)); // Continue
+    game.progressFrame = requestAnimationFrame((now) => miningLoop(now, startTime));
   }
 }
 
 function stopMining(){
   game.miningActive = false;
   if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
-
   const bar = document.getElementById('mineProgress');
   if(bar) bar.style.width = '0%';
-
   const startBtn = document.getElementById('startMineBtn');
   if(startBtn) startBtn.style.display = 'inline-block';
-  
   const stopBtn = document.getElementById('stopMineBtn');
   if(stopBtn) stopBtn.style.display = 'none';
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
 
-
-// +++ --- NEW BLACKSMITHING FUNCTIONS --- +++
-
 const SMITH_TIME_MS = 5000;
-const SMITH_XP = 25; // Giving 25 XP
+const SMITH_XP = 25;
 const SMITH_ORE_COST = 2;
 const SMITH_BAR_ITEM = 'Copper Bar';
 
+// --- MODIFIED: Added Session Lock Check ---
 function startBlacksmithing() {
+  if (!game.isSessionActive) {
+    alert("This game session is not active. Please take control to perform actions.");
+    return;
+  }
   if (game.blacksmithingActive) return;
 
-  // Check for resources *before* starting
-  if (!game.inventory['Copper Ore'] || game.inventory['Copper Ore'] < SMITH_ORE_COST) {
+  const copperSlot = game.inventory.find(slot => slot && slot.name === 'Copper Ore');
+  if (!copperSlot || copperSlot.qty < SMITH_ORE_COST) {
       alert(`You need at least ${SMITH_ORE_COST} Copper Ore to smith a bar.`);
       return;
   }
   
   game.blacksmithingActive = true;
-  
   const startBtn = document.getElementById('startSmithBtn');
   const stopBtn = document.getElementById('stopSmithBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-
   game.progressFrame = requestAnimationFrame((now) => blacksmithingLoop(now, now));
 }
 
 function blacksmithingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-
   const elapsed = timestamp - startTime;
   let progress = (elapsed / SMITH_TIME_MS) * 100;
 
   if (progress >= 100) {
-    // --- Action Complete ---
-    
-    // Check for resources *again* right before consuming them
-    if (!game.inventory['Copper Ore'] || game.inventory['Copper Ore'] < SMITH_ORE_COST) {
+    const copperSlot = game.inventory.find(slot => slot && slot.name === 'Copper Ore');
+    if (!copperSlot || copperSlot.qty < SMITH_ORE_COST) {
         alert("You've run out of Copper Ore.");
-        stopBlacksmithing(); // Stop the loop
+        stopBlacksmithing();
         return;
     }
-    
-    // Consume ore, add bar and XP
     removeItem('Copper Ore', SMITH_ORE_COST);
     addItem(SMITH_BAR_ITEM, 1);
     addXP('blacksmith', SMITH_XP);
     showItemPopup('+1 Copper Bar', 'smithProgress');
     
-    // Reset for next loop
     const bar = document.getElementById('smithProgress');
     if (bar) bar.style.width = '0%';
     
-    // Check for resources for the *next* loop
-    if (game.inventory['Copper Ore'] < SMITH_ORE_COST) {
+    const copperSlotAgain = game.inventory.find(slot => slot && slot.name === 'Copper Ore');
+    if (!copperSlotAgain || copperSlotAgain.qty < SMITH_ORE_COST) {
         alert("You don't have enough ore to smith another bar.");
-        stopBlacksmithing(); // Stop the loop
+        stopBlacksmithing();
         return;
     }
-    
-    game.progressFrame = requestAnimationFrame((now) => blacksmithingLoop(now, now)); // Loop
+    game.progressFrame = requestAnimationFrame((now) => blacksmithingLoop(now, now));
   } else {
-    // --- In Progress ---
     const bar = document.getElementById('smithProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => blacksmithingLoop(now, startTime)); // Continue
+    game.progressFrame = requestAnimationFrame((now) => blacksmithingLoop(now, startTime));
   }
 }
 
 function stopBlacksmithing(){
   game.blacksmithingActive = false;
   if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
-
   const bar = document.getElementById('smithProgress');
   if(bar) bar.style.width = '0%';
-
   const startBtn = document.getElementById('startSmithBtn');
   if(startBtn) startBtn.style.display = 'inline-block';
-  
   const stopBtn = document.getElementById('stopSmithBtn');
   if(stopBtn) stopBtn.style.display = 'none';
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
 
 function openCopperBarSmith(){
   game.shopOpen = false; 
   hideTooltip();
-  stopMining(); // Stop other actions
-  
+  stopMining();
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <h2>Smithing - Copper Bar</h2>
@@ -1172,34 +1106,22 @@ function openCopperBarSmith(){
 function openBlacksmithHub() {
   game.shopOpen = false;
   hideTooltip();
-  stopMining(); // Stop other actions
-  stopBlacksmithing(); // Stop this action
-  
+  stopMining();
+  stopBlacksmithing();
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <h2>Blacksmith</h2>
     <div style="margin-top:8px; color:#efe3cf;">Choose an item to smith.</div>
-    
     <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
-      
-      <button id="copperBarBtn" 
-              class="primary" 
-              style="display: flex; align-items: center; gap: 10px;">
-        
-        <img src="images/copperbar.png" 
-             alt="Copper Bar" 
-             style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-             
+      <button id="copperBarBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/copperbar.png" alt="Copper Bar" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
         <span>Copper Bar</span>
       </button>
-      
       <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
     </div>
   `;
-  
   const copperBarBtn = document.getElementById('copperBarBtn');
   const returnBtn = document.getElementById('returnToActionsBtn');
-
   if (copperBarBtn) {
     copperBarBtn.onclick = openCopperBarSmith;
     copperBarBtn.onmouseenter = (event) => {
@@ -1207,21 +1129,15 @@ function openBlacksmithHub() {
     };
     copperBarBtn.onmouseleave = hideTooltip;
   }
-  
   if (returnBtn) {
     returnBtn.onclick = backToActions;
   }
 }
 
-// +++ --- END BLACKSMITHING FUNCTIONS --- +++
-
-
-// 1. This is your OLD "openMine" function, but RENAMED and with one small change.
 function openCopperMine(){
   game.shopOpen = false; 
   hideTooltip();
-  stopBlacksmithing(); // +++ NEW
-  
+  stopBlacksmithing();
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <h2>Beginner Mine - Copper vein</h2>
@@ -1240,38 +1156,25 @@ function openCopperMine(){
   document.getElementById('stopMineBtn').onclick = stopMining;
 }
 
-// 2. This is the NEW function for the mine selection screen.
 function openMineHub() {
   game.shopOpen = false; 
   hideTooltip();
   stopMining(); 
-  stopBlacksmithing(); // +++ NEW
-  
+  stopBlacksmithing();
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <h2>Mines</h2>
     <div style="margin-top:8px; color:#efe3cf;">Choose a mine to enter.</div>
-    
     <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
-      
-      <button id="copperVeinBtn" 
-              class="primary" 
-              style="display: flex; align-items: center; gap: 10px;">
-        
-        <img src="images/coppervein.png" 
-             alt="Copper Vein" 
-             style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-             
+      <button id="copperVeinBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/coppervein.png" alt="Copper Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
         <span>Copper Vein</span>
       </button>
-      
       <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
     </div>
   `;
-  
   const copperBtn = document.getElementById('copperVeinBtn');
   const returnBtn = document.getElementById('returnToActionsBtn');
-
   if (copperBtn) {
     copperBtn.onclick = openCopperMine;
     copperBtn.onmouseenter = (event) => {
@@ -1279,44 +1182,27 @@ function openMineHub() {
     };
     copperBtn.onmouseleave = hideTooltip;
   }
-  
   if (returnBtn) {
     returnBtn.onclick = backToActions;
   }
 }
 
-// +++ MODIFIED backToActions +++
 function backToActions(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  stopBlacksmithing(); // +++ NEW
-  
+  stopBlacksmithing();
   const wrapper = document.getElementById('mainContentWrapper');
-
   wrapper.innerHTML = `
     <div id="actionScreen" style="display: flex; gap: 10px;">
-      <img id="minesActionIcon" 
-           src="images/mines.png" 
-           alt="Mines" 
-           style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-           
-      <img id="blacksmithActionIcon" 
-           src="images/blacksmithicon.png" 
-           alt="Blacksmith" 
-           style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-           
-      <img id="shopActionIcon" 
-           src="images/shopbutton.png" 
-           alt="Shop" 
-           style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="minesActionIcon" src="images/mines.png" alt="Mines" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="blacksmithActionIcon" src="images/blacksmithicon.png" alt="Blacksmith" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="shopActionIcon" src="images/shopbutton.png" alt="Shop" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
     </div>
   `;
-
   const minesIcon = document.getElementById('minesActionIcon');
-  const blacksmithIcon = document.getElementById('blacksmithActionIcon'); // +++ NEW
+  const blacksmithIcon = document.getElementById('blacksmithActionIcon');
   const shopIcon = document.getElementById('shopActionIcon'); 
-
   if (minesIcon) {
     minesIcon.onclick = openMineHub;
     minesIcon.onmouseenter = (event) => {
@@ -1324,8 +1210,6 @@ function backToActions(){
     };
     minesIcon.onmouseleave = hideTooltip;
   }
-  
-  // +++ NEW: Attach blacksmith icon events +++
   if (blacksmithIcon) {
     blacksmithIcon.onclick = openBlacksmithHub; 
     blacksmithIcon.onmouseenter = (event) => {
@@ -1333,7 +1217,6 @@ function backToActions(){
     };
     blacksmithIcon.onmouseleave = hideTooltip;
   }
-  
   if (shopIcon) {
     shopIcon.onclick = openShop; 
     shopIcon.onmouseenter = (event) => {
@@ -1343,13 +1226,11 @@ function backToActions(){
   }
 }
 
-// +++ MODIFIED openShop +++
 function openShop() {
   hideTooltip();
   stopMining();
-  stopBlacksmithing(); // +++ NEW
+  stopBlacksmithing();
   game.shopOpen = true; 
-  
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <h2>General Store</h2>
@@ -1362,47 +1243,47 @@ function openShop() {
         <li style="margin-top:5px;">Copper Ore - 1 Gold each</li>
       </ul>
     </div>
-    
     <div class="action-buttons" style="margin-top:14px;">
       <button id="returnToActionsBtn" class="primary" style="background:#666;">Return</button>
     </div>
   `;
-  
   const returnBtn = document.getElementById('returnToActionsBtn');
   if (returnBtn) {
     returnBtn.onclick = backToActions;
   }
 }
 
-
-// --- MODIFIED resetGameState ---
 function resetGameState() {
   stopMining(); 
-  stopBlacksmithing(); // +++ NEW
-  
+  stopBlacksmithing();
   game.name = '';
   game.hp = 10;
   game.maxHP = 10;
-  game.inventory = {};
+  game.inventory = new Array(game.inventoryCapacity).fill(null);
   game.gold = 0; 
   game.mining = { level: 1, xp: 0, totalXP: 0 };
-  game.blacksmith = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW
+  game.blacksmith = { level: 1, xp: 0, totalXP: 0 };
   game.miningActive = false;
-  game.blacksmithingActive = false; // +++ NEW
+  game.blacksmithingActive = false;
   game.shopOpen = false; 
   game.isAdmin = false;
+  
+  // +++ NEW: Reset session state +++
+  game.isSessionActive = false;
+  game.isDragging = false;
+  if (typeof window.stopSessionHeartbeat === 'function') {
+      window.stopSessionHeartbeat();
+  }
   
   if (game.progressFrame) {
     cancelAnimationFrame(game.progressFrame);
     game.progressFrame = null;
   }
-  
   setText('charName', 'Player');
   updateHPUI();
   renderInventoryGrid();
   updateSkillUI();
   updateGoldUI(); 
-  
   if (typeof backToActions === 'function') {
     backToActions();
   }
@@ -1411,10 +1292,98 @@ function resetGameState() {
   }
 }
 
+// --- MODIFIED: Added isDragging logic ---
 document.addEventListener('DOMContentLoaded', ()=>{
   showTab('inventory'); 
   window.resetGameState = resetGameState;
   document.addEventListener('mousemove', moveTooltip);
+  
+  const inventoryGrid = document.getElementById('inventoryGrid');
+  let draggedItemIndex = null;
+  let currentDragOverSlot = null;
+  
+  inventoryGrid.addEventListener('dragstart', (e) => {
+    if (e.target && e.target.classList.contains('inv-slot') && e.target.draggable) {
+      draggedItemIndex = parseInt(e.target.dataset.slotIndex);
+      e.dataTransfer.effectAllowed = 'move';
+      
+      // +++ NEW: Set dragging flag +++
+      game.isDragging = true;
+      
+      setTimeout(() => {
+        e.target.classList.add('dragging');
+      }, 0);
+    }
+  });
+
+  inventoryGrid.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    const targetSlot = e.target.closest('.inv-slot');
+    if (targetSlot) {
+      if (currentDragOverSlot && currentDragOverSlot !== targetSlot) {
+        currentDragOverSlot.classList.remove('drag-over');
+      }
+      targetSlot.classList.add('drag-over');
+      currentDragOverSlot = targetSlot;
+    }
+  });
+  
+  inventoryGrid.addEventListener('dragleave', (e) => {
+    const targetSlot = e.target.closest('.inv-slot');
+    if (targetSlot) {
+      targetSlot.classList.remove('drag-over');
+      if (currentDragOverSlot === targetSlot) {
+        currentDragOverSlot = null;
+      }
+    }
+  });
+
+  inventoryGrid.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const dropSlot = e.target.closest('.inv-slot');
+    if (dropSlot && draggedItemIndex !== null) {
+      const dropIndex = parseInt(dropSlot.dataset.slotIndex);
+      if (draggedItemIndex !== dropIndex) {
+        const temp = game.inventory[draggedItemIndex];
+        game.inventory[draggedItemIndex] = game.inventory[dropIndex];
+        game.inventory[dropIndex] = temp;
+        renderInventoryGrid();
+        // +++ NEW: Save immediately after a successful drag/drop +++
+        if (typeof window.savePlayerData === 'function') {
+            window.savePlayerData();
+        }
+      }
+    }
+    
+    // Cleanup
+    if (currentDragOverSlot) {
+      currentDragOverSlot.classList.remove('drag-over');
+      currentDragOverSlot = null;
+    }
+    const draggingEl = document.querySelector('.inv-slot.dragging');
+    if (draggingEl) {
+      draggingEl.classList.remove('dragging');
+    }
+    draggedItemIndex = null;
+    // +++ NEW: Clear dragging flag +++
+    game.isDragging = false;
+  });
+
+  inventoryGrid.addEventListener('dragend', (e) => {
+    // Final cleanup
+    if (currentDragOverSlot) {
+      currentDragOverSlot.classList.remove('drag-over');
+      currentDragOverSlot = null;
+    }
+    const draggingEl = document.querySelector('.inv-slot.dragging');
+    if (draggingEl) {
+      draggingEl.classList.remove('dragging');
+    }
+    draggedItemIndex = null;
+    // +++ NEW: Clear dragging flag +++
+    game.isDragging = false;
+  });
+  
 });
 </script>
 
@@ -1424,7 +1393,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  // +++ MODIFIED CHAT/TRADE IMPORTS +++
   import {
 
   getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where,
@@ -1434,7 +1402,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   const ADMIN_UID = "qHclRuNSFTTrE19xYd7ilqIPFVe2";
   
-  // --- Your Firebase config (Unchanged) ---
   const firebaseConfig = {
     apiKey: "AIzaSyD6sIi0SbPUUjJFJsJB22xBOF7ZD0H7utw",
     authDomain: "skill-3d8e1.firebaseapp.com",
@@ -1448,7 +1415,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // DOM refs (Unchanged)
   const authScreen = document.getElementById('authScreen');
   const startScreen = document.getElementById('startScreen');
   const gameScreen = document.getElementById('gameScreen');
@@ -1456,31 +1422,174 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const loginBtn = document.getElementById('loginBtn');
   const refreshLeaderboardBtn = document.getElementById('refreshLeaderboardBtn'); 
 
-  // --- MODIFIED savePlayerData ---
+  // +++ --- NEW SESSION LOCK CONSTANTS & FUNCTIONS --- +++
+  const LOCK_STALE_TIME_MS = 10000; // 10 seconds
+  const LOCK_HEARTBEAT_MS = 4000;   // 4 seconds
+
+  /**
+   * (Helper) Gets the player doc ref.
+   */
+  function getPlayerRef() {
+    const user = auth.currentUser;
+    if (!user) return null;
+    return doc(db, "players", user.uid);
+  }
+
+  /**
+   * Shows the session lock overlay.
+   */
+  function showSessionLockOverlay() {
+    const overlay = document.getElementById('sessionLockOverlay');
+    if (overlay) overlay.style.display = 'flex';
+  }
+  
+  /**
+   * Hides the session lock overlay.
+   */
+  function hideSessionLockOverlay() {
+    const overlay = document.getElementById('sessionLockOverlay');
+    if (overlay) overlay.style.display = 'none';
+  }
+
+  /**
+   * Starts the heartbeat to keep our session lock fresh.
+   */
+  window.startSessionHeartbeat = function() {
+    if (game.lockHeartbeat) return; // Already running
+    game.lockHeartbeat = setInterval(async () => {
+      const playerRef = getPlayerRef();
+      if (!playerRef || !game.isSessionActive) {
+        stopSessionHeartbeat(); // Stop if we're no longer active
+        return;
+      }
+      try {
+        await updateDoc(playerRef, { "activeSession.timestamp": Date.now() });
+      } catch (e) {
+        console.error("Heartbeat failed:", e);
+        // If it fails, the lock will become stale and another tab can take it.
+        stopSessionHeartbeat();
+      }
+    }, LOCK_HEARTBEAT_MS);
+  }
+
+  /**
+   * Stops the heartbeat.
+   */
+  window.stopSessionHeartbeat = function() {
+    if (game.lockHeartbeat) {
+      clearInterval(game.lockHeartbeat);
+      game.lockHeartbeat = null;
+    }
+  }
+
+  /**
+   * Releases the session lock from Firebase.
+   * @param {boolean} isAsync - If false, we can't wait for the update (e.g., closing tab).
+   */
+  window.releaseSessionLock = async function(isAsync = true) {
+    stopSessionHeartbeat();
+    const playerRef = getPlayerRef();
+    if (!playerRef) return;
+    
+    // We only release the lock if we are the one holding it.
+    try {
+      const promise = runTransaction(db, async (transaction) => {
+        const snap = await transaction.get(playerRef);
+        if (!snap.exists()) return;
+        const lock = snap.data().activeSession;
+        if (lock && lock.id === game.sessionLockId) {
+          transaction.update(playerRef, { activeSession: null });
+        }
+      });
+      
+      if (isAsync) {
+        await promise;
+      }
+    } catch (e) {
+      console.error("Failed to release lock:", e);
+    }
+  }
+  
+  /**
+   * Tries to acquire the session lock using a transaction.
+   * This is called when a lock is free or stale, or when user clicks "Take Control".
+   */
+  window.acquireSessionLock = async function() {
+    const playerRef = getPlayerRef();
+    if (!playerRef) return;
+    
+    try {
+      await runTransaction(db, async (transaction) => {
+        const snap = await transaction.get(playerRef);
+        if (!snap.exists()) throw new Error("Player doc does not exist.");
+        
+        const data = snap.data();
+        const lock = data.activeSession;
+        const now = Date.now();
+        
+        // Check if a fresh lock is held by another session
+        if (lock && lock.id !== game.sessionLockId && (now - lock.timestamp) < LOCK_STALE_TIME_MS) {
+          throw new Error("Lock is still fresh and held by another session.");
+        }
+        
+        // Lock is free, stale, or ours. Take it.
+        const newLock = { id: game.sessionLockId, timestamp: now };
+        transaction.update(playerRef, { activeSession: newLock });
+      });
+      
+      // Success! We are now the active session.
+      game.isSessionActive = true;
+      startSessionHeartbeat();
+      hideSessionLockOverlay();
+      
+    } catch (e) {
+      console.error("Failed to acquire lock:", e.message);
+      // We failed to get the lock, another tab must have beat us.
+      // The onSnapshot listener will handle showing the overlay.
+    }
+  }
+  // +++ --- END NEW SESSION LOCK FUNCTIONS --- +++
+
+
   window.savePlayerData = async function() {
     try {
       const user = auth.currentUser;
       if (!user) return;
-      const nameToSave = game.name || ""; 
+      
+      // +++ NEW: Only the active session can save data +++
+      if (!game.isSessionActive) return;
+      
+      const nameToSave = game.name || "";
+      const inventoryToSave = [];
+      game.inventory.forEach((item, index) => {
+          if (item) {
+              inventoryToSave.push({
+                  slot: index,
+                  name: item.name,
+                  qty: item.qty
+              });
+          }
+      });
+      
       const payload = {
         name: nameToSave,
         name_lowercase: nameToSave.toLowerCase(),
         hp: game.hp,
         maxHP: game.maxHP,
-        inventory: game.inventory || {},
+        inventory: inventoryToSave, 
         gold: game.gold, 
         mining: {
           level: game.mining.level,
           xp: game.mining.xp,
           totalXP: game.mining.totalXP 
         },
-        // +++ NEW +++
         blacksmith: {
           level: game.blacksmith.level,
           xp: game.blacksmith.xp,
           totalXP: game.blacksmith.totalXP
         },
         updatedAt: new Date().toISOString()
+        // We don't save activeSession here, that's handled by the lock functions
       };
       await setDoc(doc(db, "players", user.uid), payload, { merge: true });
     } catch (e) {
@@ -1488,41 +1597,111 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
 
-  // --- MODIFIED loadPlayerDataAndStart ---
+  // --- HEAVILY MODIFIED: loadPlayerDataAndStart (now handles session lock) ---
   async function loadPlayerDataAndStart(user) {
     try {
-      // --- Detach any old listener first ---
       if (playerDocListener) {
         playerDocListener();
         playerDocListener = null;
       }
 
       const ref = doc(db, "players", user.uid);
-      
       let isFirstLoad = true; 
       
       playerDocListener = onSnapshot(ref, (snap) => {
-        if (!snap.exists() || !snap.data().name) {
+        
+        if (!snap.exists()) {
           console.log("Player document doesn't exist, showing start screen.");
           authScreen.style.display = 'none';
           startScreen.style.display = 'block'; 
           gameScreen.style.display = 'none';
           return; 
         }
-        
+
         const data = snap.data();
+        const lock = data.activeSession;
+        const now = Date.now();
+
+        // --- 1. SESSION LOCK LOGIC ---
+        if (!lock || (now - lock.timestamp > LOCK_STALE_TIME_MS)) {
+          // Lock is free or stale. Try to acquire it.
+          // We only do this if we're not *already* the active session.
+          if (!game.isSessionActive) {
+            acquireSessionLock();
+          }
+        } else if (lock.id !== game.sessionLockId) {
+          // Another tab has a fresh lock. We are INACTIVE.
+          game.isSessionActive = false;
+          stopSessionHeartbeat();
+          showSessionLockOverlay();
+          // Stop any local actions immediately
+          stopMining();
+          stopBlacksmithing();
+          if (game.inTrade) closeTradeWindow();
+        } else {
+          // We have the lock. We are ACTIVE.
+          game.isSessionActive = true;
+          hideSessionLockOverlay();
+        }
+
+        // --- 2. DATA SYNC LOGIC ---
         
+        // Ignore our own "echo" saves
+        if (snap.metadata.hasPendingWrites) {
+          return;
+        }
+        
+        // If we are the active tab, AND we are busy (mining, dragging, etc.),
+        // do not sync data. This prevents rollbacks.
+        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.inTrade || game.isDragging)) {
+          return;
+        }
+        
+        // If we are INACTIVE, OR we are ACTIVE and IDLE, sync the data.
+        
+        if (!data.name) {
+          // This handles the case right after registration
+          authScreen.style.display = 'none';
+          startScreen.style.display = 'block'; 
+          gameScreen.style.display = 'none';
+          return;
+        }
+
         game.name = data.name || game.name || "Adventurer";
         game.hp = (typeof data.hp === 'number') ? data.hp : game.hp;
         game.maxHP = (typeof data.maxHP === 'number') ? data.maxHP : game.maxHP;
-        game.inventory = data.inventory || {};
+        
+        let loadedInventoryData = data.inventory || [];
+        game.inventory = new Array(game.inventoryCapacity).fill(null);
+        if (Array.isArray(loadedInventoryData)) {
+            if (loadedInventoryData.length > 0 && typeof loadedInventoryData[0].slot === 'number') {
+                loadedInventoryData.forEach(item => {
+                    if (item && typeof item.slot === 'number' && item.slot < game.inventoryCapacity) {
+                        game.inventory[item.slot] = { name: item.name, qty: item.qty };
+                    }
+                });
+            } else if (loadedInventoryData.length > 0) {
+                console.log("Migrating (buggy) array inventory...");
+                for (let i = 0; i < loadedInventoryData.length && i < game.inventoryCapacity; i++) {
+                    if(loadedInventoryData[i]) {
+                      game.inventory[i] = { name: loadedInventoryData[i].name, qty: loadedInventoryData[i].qty };
+                    }
+                }
+            }
+        } else {
+            console.log("Migrating legacy (object) inventory...");
+            const entries = Object.entries(loadedInventoryData);
+            for (let i = 0; i < entries.length && i < game.inventoryCapacity; i++) {
+                game.inventory[i] = { name: entries[i][0], qty: entries[i][1] };
+            }
+        }
+        
         game.gold = (typeof data.gold === 'number') ? data.gold : 0; 
         
         if (data.mining) {
           game.mining.level = data.mining.level || 1;
           game.mining.xp = data.mining.xp || 0;
-          game.mining.totalXP = data.mining.totalXP || 
-                                (data.mining.level > 1 ? getTotalXPForLevel(data.mining.level - 1) + data.mining.xp : data.mining.xp) || 0; 
+          game.mining.totalXP = data.mining.totalXP || getTotalXPForLevel(data.mining.level - 1) + data.mining.xp || 0; 
         } else {
           game.mining = { level: 1, xp: 0, totalXP: 0 }; 
         }
@@ -1530,8 +1709,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if (data.blacksmith) {
           game.blacksmith.level = data.blacksmith.level || 1;
           game.blacksmith.xp = data.blacksmith.xp || 0;
-          game.blacksmith.totalXP = data.blacksmith.totalXP || 
-                                (data.blacksmith.level > 1 ? getTotalXPForLevel(data.blacksmith.level - 1) + data.blacksmith.xp : data.blacksmith.xp) || 0; 
+          game.blacksmith.totalXP = data.blacksmith.totalXP || getTotalXPForLevel(data.blacksmith.level - 1) + data.blacksmith.xp || 0; 
         } else {
           game.blacksmith = { level: 1, xp: 0, totalXP: 0 }; 
         }
@@ -1545,14 +1723,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if (isFirstLoad) {
           window.renderLeaderboards(); 
           isFirstLoad = false;         
-          backToActions(); // <-- ### MOVED HERE! ###
+          backToActions(); 
         }
         
         startScreen.style.display = 'none';
         authScreen.style.display = 'none';
         gameScreen.style.display = 'block';
-        
-        // backToActions(); // <-- ### REMOVED FROM HERE! ###
         
       }, (error) => {
         console.error("Player listener error:", error);
@@ -1575,8 +1751,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
 
-
-  // --- MODIFIED registerBtn.onclick ---
+  // --- MODIFIED: Added activeSession to new doc ---
   registerBtn.onclick = async function() {
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
@@ -1588,10 +1763,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
         name_lowercase: "",
         hp: 10,
         maxHP: 10,
-        inventory: {},
+        inventory: [],
         gold: 0, 
         mining: { level: 1, xp: 0, totalXP: 0 },
-        blacksmith: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW
+        blacksmith: { level: 1, xp: 0, totalXP: 0 }, 
+        activeSession: null, // +++ ADD THIS
         createdAt: new Date().toISOString()
       });
       alert("Account created. Now create your character."); 
@@ -1613,14 +1789,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   };
 
-  // +++ MODIFIED Auth state listener (FOR TRADE) +++
+  // --- MODIFIED: Handles session cleanup ---
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // --- Detach old trade listeners ---
       if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
       tradeSessionUnsubscribes.forEach(unsub => unsub()); 
       tradeSessionUnsubscribes = []; 
-
       if (playerDocListener) playerDocListener();
 
       const started = await loadPlayerDataAndStart(user);
@@ -1634,32 +1808,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
       
       if (started) {
         initChatListener();
-        initTradeListeners(); 
+        initTradeListeners();
+        // The loadPlayerDataAndStart listener will automatically handle
+        // acquiring the lock on first load.
       } else {
         startScreen.style.display = 'block';
         gameScreen.style.display = 'none';
         authScreen.style.display = 'none';
       }
     } else {
-      // No user => show auth UI
+      // User is logged out
       authScreen.style.display = 'flex';
       startScreen.style.display = 'none';
       gameScreen.style.display = 'none';
-      if (window.resetGameState) {
-        window.resetGameState();
-      }
-      // --- Detach listeners on logout ---
+      
+      // Stop listeners and release lock
       if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
       tradeSessionUnsubscribes.forEach(unsub => unsub()); 
       tradeSessionUnsubscribes = []; 
+      if (playerDocListener) playerDocListener();
+      stopSessionHeartbeat();
+      // We don't release the lock, just let it go stale.
       
-      if (playerDocListener) playerDocListener(); // +++ NEW
-      
+      if (window.resetGameState) {
+        window.resetGameState();
+      }
       isTradeRequestsLoaded = false; 
     }
   });
 
-  // +++ MODIFIED createCharacter PATCH (FOR TRADE) +++
   (function(){
     const originalCreate = window.createCharacter;
     if (typeof originalCreate === "function") {
@@ -1686,36 +1863,36 @@ document.addEventListener('DOMContentLoaded', ()=>{
           window.renderLeaderboards();
           initChatListener(); 
           initTradeListeners(); 
+          // The onSnapshot listener will fire and handle the lock.
         }
       };
     }
   })();
   
-  // +++ NEW CHAT FUNCTIONS START +++
+  // --- CHAT FUNCTIONS (Unchanged) ---
   let isChatHistoryLoaded = false;
   let localMessageQueue = [];
   let chatListenerUnsubscribe = null;
   let isTradeRequestsLoaded = false;
+  let playerDocListener = null; 
 
-  let playerDocListener = null; //
-
-  /**
-   * Sends a new chat message OR handles a chat command.
-   */
   async function sendChatMessage() {
     const chatInput = document.getElementById('chatInput');
     const messageText = chatInput.value.trim();
     const user = auth.currentUser;
-
     if (messageText.length === 0) return; 
-
+    
+    // +++ NEW: Prevent sending chat from inactive tab +++
+    if (!game.isSessionActive) {
+      alert("This tab is not active. Take control to send messages.");
+      return;
+    }
+    
     chatInput.value = '';
-
     if (messageText.startsWith('/')) {
       const isCommand = await handleChatCommand(messageText);
       if (isCommand) return; 
     }
-
     if (messageText.length > 256) {
       alert("Message is too long (max 256 chars).");
       return;
@@ -1724,7 +1901,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       alert("You must be logged in and have a character to chat.");
       return;
     }
-
     try {
       await addDoc(collection(db, "messages"), {
         senderUid: user.uid,
@@ -1737,16 +1913,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
       alert("Failed to send message. Please try again.");
     }
   }
-
-function _addLocalMessageToDOM(text, type = 'system') {
+  function _addLocalMessageToDOM(text, type = 'system') {
     const chatMessagesContainer = document.getElementById('chatMessages');
     if (!chatMessagesContainer) return;
-
     const msgElement = document.createElement('div');
     msgElement.style.marginBottom = '6px';
     msgElement.style.lineHeight = '1.3';
     msgElement.style.wordBreak = 'break-word';
-
     if (type === 'system') {
       msgElement.style.color = '#aaffaa'; 
       msgElement.style.fontStyle = 'italic';
@@ -1760,64 +1933,44 @@ function _addLocalMessageToDOM(text, type = 'system') {
       msgElement.style.fontStyle = 'italic';
       msgElement.textContent = text;
     }
-    
     chatMessagesContainer.prepend(msgElement); 
   }
-
-  /**
-   * Initializes the real-time listener for the chat.
-   */
   function initChatListener() {
     if (chatListenerUnsubscribe) {
       chatListenerUnsubscribe();
       chatListenerUnsubscribe = null;
     }
-
     const chatMessagesContainer = document.getElementById('chatMessages');
     if (!chatMessagesContainer) return;
-
     const q = query(
       collection(db, "messages"), 
       orderBy("timestamp", "asc"),
       limitToLast(25)
     );
-
     chatListenerUnsubscribe = onSnapshot(q, (querySnapshot) => {
-      
       let hasAdds = false; 
-
       querySnapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-          
           if (isChatHistoryLoaded) {
             hasAdds = true; 
-            
             const msg = change.doc.data();
             const msgElement = document.createElement('div');
             msgElement.style.marginBottom = '6px';
             msgElement.style.lineHeight = '1.3';
             msgElement.style.wordBreak = 'break-word';
-
             const sender = document.createElement('strong');
             sender.style.color = 'var(--gold)'; 
             sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
-            
             const text = document.createTextNode(msg.text);
-
             msgElement.appendChild(sender);
             msgElement.appendChild(text);
-            
             chatMessagesContainer.prepend(msgElement);
           }
         }
       });
-
       if (!isChatHistoryLoaded) {
-        
         isChatHistoryLoaded = true;
-        
         let hadHistoryMessages = false;
-        
         querySnapshot.docs.forEach(doc => {
             hadHistoryMessages = true;
             const msg = doc.data();
@@ -1825,29 +1978,22 @@ function _addLocalMessageToDOM(text, type = 'system') {
             msgElement.style.marginBottom = '6px';
             msgElement.style.lineHeight = '1.3';
             msgElement.style.wordBreak = 'break-word';
-
             const sender = document.createElement('strong');
             sender.style.color = 'var(--gold)'; 
             sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
-            
             const text = document.createTextNode(msg.text);
-
             msgElement.appendChild(sender);
             msgElement.appendChild(text);
-            
             chatMessagesContainer.prepend(msgElement);
         });
-
         let hadQueuedMessages = localMessageQueue.length > 0;
         localMessageQueue.forEach(msg => {
           _addLocalMessageToDOM(msg.text, msg.type);
         });
         localMessageQueue = []; 
-        
         if (hadHistoryMessages || hadQueuedMessages) {
           chatMessagesContainer.scrollTop = 0;
         }
-        
         while (chatMessagesContainer.childElementCount > 30) {
           chatMessagesContainer.lastChild.remove();
         }
@@ -1858,57 +2004,103 @@ function _addLocalMessageToDOM(text, type = 'system') {
         }
         chatMessagesContainer.scrollTop = 0;
       }
-
     }, (error) => {
       console.error("Chat listener error: ", error);
       chatMessagesContainer.innerHTML = '<div style="color: red;">Error loading chat.</div>';
     });
   }
-  // +++ NEW CHAT FUNCTIONS END +++
-
-
-  // +++ NEW TRADE FUNCTIONS START +++
-
+  
+  // --- TRADE FUNCTIONS (Mostly Unchanged) ---
   let tradeRequestUnsubscribe = null;
   let tradeSessionUnsubscribes = []; 
-
   function addLocalChatMessage(text, type = 'system') {
     const chatMessagesContainer = document.getElementById('chatMessages');
     if (!chatMessagesContainer) return;
-
     if (!isChatHistoryLoaded) {
       localMessageQueue.push({ text, type });
     } else {
       _addLocalMessageToDOM(text, type);
-      
       while (chatMessagesContainer.childElementCount > 30) {
         chatMessagesContainer.lastChild.remove();
       }
       chatMessagesContainer.scrollTop = 0;
     }
   }
-
-  // +++ MODIFIED handleChatCommand +++
+  function convertSavedInvToLocal(savedInvData) {
+      const localInv = new Array(game.inventoryCapacity).fill(null);
+      if (!Array.isArray(savedInvData)) {
+          const entries = Object.entries(savedInvData);
+          for (let i = 0; i < entries.length && i < game.inventoryCapacity; i++) {
+              localInv[i] = { name: entries[i][0], qty: entries[i][1] };
+          }
+      } else {
+          if (savedInvData.length > 0 && typeof savedInvData[0].slot === 'number') {
+              savedInvData.forEach(item => {
+                  if (item && item.slot < game.inventoryCapacity) {
+                      localInv[item.slot] = { name: item.name, qty: item.qty };
+                  }
+              });
+          } else if (savedInvData.length > 0) {
+              for (let i = 0; i < savedInvData.length && i < game.inventoryCapacity; i++) {
+                  if (savedInvData[i]) {
+                      localInv[i] = { name: savedInvData[i].name, qty: savedInvData[i].qty };
+                  }
+              }
+          }
+      }
+      return localInv;
+  }
+  function convertLocalInvToSaved(localInv) {
+      const inventoryToSave = [];
+      localInv.forEach((item, index) => {
+          if (item) {
+              inventoryToSave.push({
+                  slot: index,
+                  name: item.name,
+                  qty: item.qty
+              });
+          }
+      });
+      return inventoryToSave;
+  }
+  function checkItem(localInvArray, itemName, qty) {
+      const item = localInvArray.find(slot => slot && slot.name === itemName);
+      return item && item.qty >= qty;
+  }
+  function modifyInventory(localInvArray, itemName, qtyChange) {
+      const newInv = [...localInvArray];
+      let slotIndex = newInv.findIndex(slot => slot && slot.name === itemName);
+      if (slotIndex > -1) {
+          const newQty = newInv[slotIndex].qty + qtyChange;
+          if (newQty <= 0) {
+              newInv[slotIndex] = null;
+          } else {
+              newInv[slotIndex] = { ...newInv[slotIndex], qty: newQty };
+          }
+      } else if (qtyChange > 0) {
+          let emptySlotIndex = newInv.findIndex(slot => slot === null);
+          if (emptySlotIndex > -1) {
+              newInv[emptySlotIndex] = { name: itemName, qty: qtyChange };
+          } else {
+              throw new Error(`Inventory full, cannot add ${itemName}.`);
+          }
+      }
+      return newInv;
+  }
   async function handleChatCommand(messageText) {
     const user = auth.currentUser;
     if (!user) return false;
-
-    // --- ADMIN COMMANDS ---
     if (game.isAdmin && messageText.startsWith('/')) {
         const parts = messageText.substring(1).split(' ');
         const command = parts[0].toLowerCase();
         const args = parts.slice(1);
-
-        // --- /givegold [playername] [amount] ---
         if (command === 'givegold') {
             const targetName = args[0] ? args[0].toLowerCase() : '';
             const amount = parseInt(args[1]);
-
             if (!targetName || isNaN(amount) || amount <= 0) {
                 addLocalChatMessage("Usage: /givegold [playername] [amount]", 'error');
                 return true;
             }
-
             if (targetName === game.name.toLowerCase()) {
                 try {
                     addGold(amount); 
@@ -1919,7 +2111,6 @@ function _addLocalMessageToDOM(text, type = 'system') {
                 }
                 return true;
             }
-
             try {
                 const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
                 const querySnapshot = await getDocs(q);
@@ -1927,41 +2118,32 @@ function _addLocalMessageToDOM(text, type = 'system') {
                     addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
                     return true;
                 }
-                
                 const playerDoc = querySnapshot.docs[0];
                 const playerData = playerDoc.data();
                 const newGold = (playerData.gold || 0) + amount;
-                
                 await updateDoc(doc(db, "players", playerDoc.id), { gold: newGold });
                 addLocalChatMessage(`Admin: Gave ${amount} Gold to ${playerData.name}.`, 'system');
-                
             } catch (e) {
                 addLocalChatMessage(`Error giving gold: ${e.message}`, 'error');
             }
             return true;
         }
-        
-        // --- /giveitem [playername] [Item Name] [amount] ---
         if (command === 'giveitem') {
             const targetName = args[0] ? args[0].toLowerCase() : '';
             const qty = parseInt(args[args.length - 1]);
             const itemName = args.slice(1, -1).join(' '); 
-            
             if (!targetName || itemName.length === 0 || isNaN(qty) || qty <= 0) {
                 addLocalChatMessage("Usage: /giveitem [playername] [Item Name] [amount]", 'error');
                 return true;
             }
-            
             const formattedName = itemName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-
             if (!VALID_ITEMS.includes(formattedName)) {
                 addLocalChatMessage(`Admin Error: "${formattedName}" is not a valid item.`, 'error');
                 return true; 
             }
-
             if (targetName === game.name.toLowerCase()) {
                 try {
-                    addItem(formattedName, qty); 
+                    addItem(formattedName, qty);
                     await window.savePlayerData(); 
                     addLocalChatMessage(`Admin: Gave self ${qty}x ${formattedName}.`, 'system');
                 } catch (e) {
@@ -1969,7 +2151,6 @@ function _addLocalMessageToDOM(text, type = 'system') {
                 }
                 return true;
             }
-
             try {
                 const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
                 const querySnapshot = await getDocs(q);
@@ -1977,44 +2158,35 @@ function _addLocalMessageToDOM(text, type = 'system') {
                     addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
                     return true;
                 }
-                
                 const playerDoc = querySnapshot.docs[0];
                 const playerData = playerDoc.data();
-                const newInventory = playerData.inventory || {};
-                newInventory[formattedName] = (newInventory[formattedName] || 0) + qty;
-                
-                await updateDoc(doc(db, "players", playerDoc.id), { inventory: newInventory });
+                let currentLocalInv = convertSavedInvToLocal(playerData.inventory || []);
+                const newLocalInv = modifyInventory(currentLocalInv, formattedName, qty);
+                const newSavedInv = convertLocalInvToSaved(newLocalInv);
+                await updateDoc(doc(db, "players", playerDoc.id), { inventory: newSavedInv });
                 addLocalChatMessage(`Admin: Gave ${qty}x ${formattedName} to ${playerData.name}.`, 'system');
-
             } catch (e) {
                 addLocalChatMessage(`Error giving item: ${e.message}`, 'error');
             }
             return true;
         }
-        
-        // --- /setlevel [playername] [skill] [level] ---
         if (command === 'setlevel') {
             const targetName = args[0] ? args[0].toLowerCase() : '';
             const skill = args[1] ? args[1].toLowerCase() : '';
             const level = parseInt(args[2]);
-            
             if (!targetName || !skill || isNaN(level) || level < 1 || level > 99) {
                 addLocalChatMessage("Usage: /setlevel [playername] [skill] [1-99]", 'error');
                 return true;
             }
-            
-            // +++ MODIFIED +++
             if (skill !== 'mining' && skill !== 'blacksmith') {
                  addLocalChatMessage("Unknown skill. Use 'mining' or 'blacksmith'.", 'error');
                  return true;
             }
-            
             const newTotalXP = getTotalXPForLevel(level); 
             const newSkillData = { level: level, xp: 0, totalXP: newTotalXP };
-
             if (targetName === game.name.toLowerCase()) {
                 try {
-                    game[skill] = newSkillData; // Update local game
+                    game[skill] = newSkillData; 
                     updateSkillUI();
                     await window.savePlayerData(); 
                     addLocalChatMessage(`Admin: Set own ${skill} level to ${level}.`, 'system');
@@ -2023,7 +2195,6 @@ function _addLocalMessageToDOM(text, type = 'system') {
                 }
                 return true;
             }
-            
              try {
                 const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
                 const querySnapshot = await getDocs(q);
@@ -2031,21 +2202,21 @@ function _addLocalMessageToDOM(text, type = 'system') {
                     addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
                     return true;
                 }
-                
                 const playerDoc = querySnapshot.docs[0];
-                // +++ MODIFIED +++
-                // Save skill data under its own key (e.g., 'mining': {...})
                 await updateDoc(doc(db, "players", playerDoc.id), { [skill]: newSkillData });
                 addLocalChatMessage(`Admin: Set ${playerDoc.data().name}'s ${skill} level to ${level}.`, 'system');
-
             } catch (e) {
                 addLocalChatMessage(`Error setting level: ${e.message}`, 'error');
             }
             return true;
         }
     }
-    // --- END OF ADMIN COMMANDS ---
-
+    
+    // +++ NEW: Check for active session before allowing trade +++
+    if (!game.isSessionActive) {
+      addLocalChatMessage("This tab is not active. Take control to trade.", 'error');
+      return true; // It's a command, but it's blocked.
+    }
 
     if (messageText.startsWith('/trade ')) {
       const targetName = messageText.substring(7).trim();
@@ -2061,7 +2232,6 @@ function _addLocalMessageToDOM(text, type = 'system') {
       await initiateTradeRequest(targetName);
       return true;
     }
-
     if (messageText.startsWith('/accepttrade ')) {
       const requesterName = messageText.substring(13).trim(); 
       if (game.inTrade) {
@@ -2072,29 +2242,20 @@ function _addLocalMessageToDOM(text, type = 'system') {
       await acceptTradeRequest(requesterName);
       return true;
     }
-    
-    return false; // Not a recognized command
+    return false;
   }
-
-  /**
-   * (1) Initiator: Finds a player and creates a 'tradeRequest' doc.
-   */
   async function initiateTradeRequest(targetName) {
     try {
       const targetNameLower = targetName.toLowerCase();
       const q = query(collection(db, "players"), where("name_lowercase", "==", targetNameLower));
       const querySnapshot = await getDocs(q);
-      
       if (querySnapshot.empty) {
         addLocalChatMessage(`Player not found: ${targetName}`, 'error');
         return;
       }
-
       const targetDoc = querySnapshot.docs[0];
       const targetUid = targetDoc.id;
       const targetData = targetDoc.data();
-
-      // Create the request
       await addDoc(collection(db, "tradeRequests"), {
         fromUid: auth.currentUser.uid,
         fromName: game.name,
@@ -2103,56 +2264,39 @@ function _addLocalMessageToDOM(text, type = 'system') {
         status: 'pending',
         createdAt: serverTimestamp()
       });
-
       addLocalChatMessage(`Trade request sent to ${targetData.name}. It will expire in 60 seconds.`, 'trade');
-
     } catch (e) {
       console.error("Error sending trade request:", e);
       addLocalChatMessage("Error sending trade request.", 'error');
     }
   }
-
-  /**
-   * (2) Accepter: Finds a pending request and creates the 'tradeSession'.
-   */
   async function acceptTradeRequest(requesterName) {
     try {
       const myUid = auth.currentUser.uid;
       const requesterNameLower = requesterName.toLowerCase();
-      
       const playerQuery = query(collection(db, "players"), where("name_lowercase", "==", requesterNameLower));
       const playerSnapshot = await getDocs(playerQuery);
-
       if (playerSnapshot.empty) {
         addLocalChatMessage(`Player not found: ${requesterName}`, 'error');
         return;
       }
-      
       const requesterUid = playerSnapshot.docs[0].id;
       const requesterData = playerSnapshot.docs[0].data();
-
-      const sixtySecondsAgo = new Date(Date.now() - 60000);
-
       const requestQuery = query(
         collection(db, "tradeRequests"),
         where("toUid", "==", myUid),
         where("status", "==", "pending")
       );
-      
       const requestSnapshot = await getDocs(requestQuery);
-
       const validRequests = requestSnapshot.docs.filter(doc => {
           const data = doc.data();
           return data.fromUid === requesterUid; 
       });
-
       if (validRequests.length === 0) {
         addLocalChatMessage(`No pending trade request found from ${requesterData.name}. It may have expired.`, 'error');
         return;
       }
-
       const requestDoc = validRequests[0]; 
-
       const tradeSessionRef = doc(collection(db, "tradeSessions"));
       const tradeSessionData = {
         status: 'active',
@@ -2172,45 +2316,30 @@ function _addLocalMessageToDOM(text, type = 'system') {
           accepted: false
         }
       };
-
       const batch = writeBatch(db);
       batch.set(tradeSessionRef, tradeSessionData);
       batch.update(requestDoc.ref, { status: 'accepted', sessionId: tradeSessionRef.id });
-      
       await batch.commit();
-      
     } catch (e) {
       console.error("Error accepting trade:", e);
       addLocalChatMessage("Error accepting trade. Are they busy?", 'error');
     }
   }
-
-
-  /**
-   * (3) Listens for new trade requests AND active trade sessions.
-   * This is called once on successful login.
-   */
   function initTradeListeners() {
     const myUid = auth.currentUser.uid;
     if (!myUid) return;
-
     if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
     tradeSessionUnsubscribes.forEach(unsub => unsub()); 
     tradeSessionUnsubscribes = []; 
-
     isTradeRequestsLoaded = false; 
-
     const requestQuery = query(
       collection(db, "tradeRequests"),
       where("toUid", "==", myUid),
       where("status", "==", "pending")
     );
-    
     tradeRequestUnsubscribe = onSnapshot(requestQuery, (snapshot) => {
-      
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-          
           if (isTradeRequestsLoaded) {
             const request = change.doc.data();
             addLocalChatMessage(
@@ -2220,11 +2349,8 @@ function _addLocalMessageToDOM(text, type = 'system') {
           }
         }
       });
-
       isTradeRequestsLoaded = true;
-
     }, (error) => console.error("Trade request listener error:", error));
-
     const sessionQuery1 = query(
       collection(db, "tradeSessions"),
       where("player1.uid", "==", myUid),
@@ -2235,17 +2361,14 @@ function _addLocalMessageToDOM(text, type = 'system') {
       where("player2.uid", "==", myUid),
       where("status", "in", ["active", "cancelled"]) 
     );
-    
     const handleSessionStart = (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         const sessionData = change.doc.data();
         const sessionId = change.doc.id;
-        
         if (change.type === "added" && sessionData.status === "active" && !game.inTrade) {
           openTradeWindow(sessionId, sessionData);
         } 
         else if (change.type === "modified" && sessionData.status === "cancelled" && game.inTrade) {
-          
           if (sessionId === game.activeTradeSessionId) {
             addLocalChatMessage(`Trade was cancelled.`, 'trade');
             closeTradeWindow();
@@ -2253,7 +2376,6 @@ function _addLocalMessageToDOM(text, type = 'system') {
         }
       });
     };
-    
     tradeSessionUnsubscribes.push( 
       onSnapshot(sessionQuery1, handleSessionStart, (e) => console.error("Session listener 1:", e))
     );
@@ -2261,118 +2383,65 @@ function _addLocalMessageToDOM(text, type = 'system') {
       onSnapshot(sessionQuery2, handleSessionStart, (e) => console.error("Session listener 2:", e))
     );
   }
-  
-  /**
-   * (4) Opens the trade modal and attaches the main session listener.
-   */
-function openTradeWindow(sessionId, sessionData) {
+  function openTradeWindow(sessionId, sessionData) {
     if (game.inTrade) return; 
-
     if (game.miningActive) {
       stopMining();
       game.wasMiningBeforeTrade = true;
     }
-    // +++ NEW +++
     if (game.blacksmithingActive) {
         stopBlacksmithing();
-        // We can reuse the same flag
         game.wasMiningBeforeTrade = true; 
     }
-
     game.inTrade = true;
     game.activeTradeSessionId = sessionId;
     game.myTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
     game.theirTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
-
     const myUid = auth.currentUser.uid;
     const myRole = (sessionData.player1.uid === myUid) ? 'player1' : 'player2';
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
-    
     game.myTradeRole = myRole; 
-    
     const modal = document.getElementById('tradeModal');
     setText('tradePartnerName', sessionData[theirRole].name);
     setText('tradeMyGold', formatAmount(game.gold));
     document.getElementById('tradeMyGoldOffer').value = 0;
     document.getElementById('tradeMyGoldOffer').max = game.gold;
-
     renderTradeInventory(); 
     renderOfferGrid('tradeMyOfferGrid', {}); 
     renderOfferGrid('tradeTheirOfferGrid', {}); 
-    
     modal.style.display = 'flex'; 
-
     if (game.activeTradeListener) game.activeTradeListener(); 
-    
     game.activeTradeListener = onSnapshot(doc(db, "tradeSessions", sessionId), (doc) => {
       if (!doc.exists()) {
         closeTradeWindow();
         addLocalChatMessage("Trade session was deleted.", 'error');
         return;
       }
-      
       const data = doc.data();
-      
       if (data.status === 'cancelled') {
         const errorMsg = data.errorMessage ? `: ${data.errorMessage}` : '.';
         addLocalChatMessage(`Trade was cancelled${errorMsg}`, 'trade');
         closeTradeWindow();
         return;
       }
-      
       if (data.status === 'completed') {
-        
-        try {
-          const myOffer = data[myRole];
-          const theirOffer = data[theirRole];
-
-          game.gold = (game.gold - myOffer.offerGold) + theirOffer.offerGold;
-          if (game.gold < 0) game.gold = 0; 
-
-          for (const [item, qty] of Object.entries(myOffer.offerItems)) {
-            if (game.inventory[item]) {
-              game.inventory[item] -= qty;
-              if (game.inventory[item] <= 0) {
-                delete game.inventory[item];
-              }
-            }
-          }
-          
-          for (const [item, qty] of Object.entries(theirOffer.offerItems)) {
-            game.inventory[item] = (game.inventory[item] || 0) + qty;
-          }
-
-          window.savePlayerData();
-          
-          addLocalChatMessage("Trade complete!", 'trade');
-          
-        } catch (e) {
-          console.error("Error applying trade results:", e);
-          addLocalChatMessage("Trade complete, but an error occurred updating your inventory. Please reload.", 'error');
-        }
-        
+        addLocalChatMessage("Trade complete!", 'trade');
         closeTradeWindow();
         return;
       }
-      
       game.myTradeOffer = data[myRole];
       game.theirTradeOffer = data[theirRole];
-
       renderOfferGrid('tradeMyOfferGrid', game.myTradeOffer.offerItems);
       renderOfferGrid('tradeTheirOfferGrid', game.theirTradeOffer.offerItems);
-      
       if (document.activeElement !== document.getElementById('tradeMyGoldOffer')) {
          document.getElementById('tradeMyGoldOffer').value = game.myTradeOffer.offerGold;
       }
       setText('tradeTheirGoldOffer', formatAmount(game.theirTradeOffer.offerGold));
-      
       updateTradeAcceptStatus('myTradeStatus', game.myTradeOffer.accepted);
       updateTradeAcceptStatus('theirTradeStatus', game.theirTradeOffer.accepted);
-
       if (game.myTradeOffer.accepted && game.theirTradeOffer.accepted) {
         document.getElementById('tradeAcceptBtn').disabled = true;
         document.getElementById('tradeCancelBtn').disabled = true;
-        
         if (myRole === 'player1') {
           executeTrade(sessionId, data);
         }
@@ -2381,84 +2450,70 @@ function openTradeWindow(sessionId, sessionData) {
          document.getElementById('tradeCancelBtn').disabled = false;
       }
     });
-
     document.getElementById('tradeCancelBtn').onclick = cancelTrade;
     document.getElementById('tradeAcceptBtn').onclick = setTradeAccepted;
     document.getElementById('tradeMyGoldOffer').onchange = updateMyGoldOffer;
   }
-  
-  /**
-   * (5) Helper: Renders the player's inventory into the trade modal.
-   */
   function renderTradeInventory() {
     const grid = document.getElementById('tradeInventoryGrid');
     grid.innerHTML = '';
-    
-    Object.entries(game.inventory).forEach(([name, qty]) => {
+    game.inventory.forEach(slot => {
+      if (!slot) return; 
+      const name = slot.name;
+      const qty = slot.qty;
       const itemInOffer = game.myTradeOffer.offerItems[name] || 0;
       const qtyAvailable = qty - itemInOffer;
-      
       if (qtyAvailable <= 0) return; 
-
-      const slot = document.createElement('div');
-      slot.className = 'inv-slot';
-      slot.onclick = () => addItemToOffer(name, qtyAvailable); 
-      
+      const slotEl = document.createElement('div');
+      slotEl.className = 'inv-slot';
+      slotEl.onclick = () => addItemToOffer(name, qtyAvailable); 
+      let imgName = name.toLowerCase().replace(/\s+/g,'_');
+      if (name === 'Copper Bar') {
+          imgName = 'copperbar';
+      }
       const img = document.createElement('img');
-      const imgName = name.toLowerCase().replace(/\s+/g,'_');
       img.src = `images/${imgName}.png`;
       img.alt = name;
-      slot.appendChild(img);
-      
+      slotEl.appendChild(img);
       const amt = document.createElement('div');
       amt.className = 'inv-amount';
       amt.innerText = formatAmount(qtyAvailable);
-      slot.appendChild(amt);
-      
+      slotEl.appendChild(amt);
       const tooltipContent = `
         <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${name}</div>
         <div>Amount: ${qtyAvailable.toLocaleString()}</div>
         <div style="color:#aaffaa; margin-top: 5px;">Click to offer...</div>
       `;
-      slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
-      slot.onmouseleave = hideTooltip;
-      
-      grid.appendChild(slot);
+      slotEl.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+      slotEl.onmouseleave = hideTooltip;
+      grid.appendChild(slotEl);
     });
   }
-
-  /**
-   * (6) Helper: Renders an offer grid (4x4).
-   */
   function renderOfferGrid(gridId, items) {
     const grid = document.getElementById(gridId);
     const isMyOffer = (gridId === 'tradeMyOfferGrid');
     grid.innerHTML = '';
-    
     const itemEntries = Object.entries(items);
-
     for (let i = 0; i < 16; i++) {
       const slot = document.createElement('div');
-      
       if (itemEntries[i]) {
         const [name, qty] = itemEntries[i];
         slot.className = 'inv-slot';
-        
         if (isMyOffer) {
           slot.onclick = () => removeItemFromOffer(name);
         }
-        
         const img = document.createElement('img');
-        const imgName = name.toLowerCase().replace(/\s+/g,'_');
+        let imgName = name.toLowerCase().replace(/\s+/g,'_');
+        if (name === 'Copper Bar') {
+            imgName = 'copperbar';
+        }
         img.src = `images/${imgName}.png`;
         img.alt = name;
         slot.appendChild(img);
-        
         const amt = document.createElement('div');
         amt.className = 'inv-amount';
         amt.innerText = formatAmount(qty);
         slot.appendChild(amt);
-        
         const tooltipContent = `
           <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${name}</div>
           <div>Amount: ${qty.toLocaleString()}</div>
@@ -2466,17 +2521,12 @@ function openTradeWindow(sessionId, sessionData) {
         `;
         slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
         slot.onmouseleave = hideTooltip;
-        
       } else {
         slot.className = 'inv-slot offer-slot-placeholder';
       }
       grid.appendChild(slot);
     }
   }
-  
-  /**
-   * (7) Helper: Updates the 'accepted' text and color.
-   */
   function updateTradeAcceptStatus(elementId, isAccepted) {
     const el = document.getElementById(elementId);
     if (isAccepted) {
@@ -2487,14 +2537,8 @@ function openTradeWindow(sessionId, sessionData) {
       el.classList.remove('accepted');
     }
   }
-
-  /**
-   * (8) Action: Player clicks to add an item to their offer.
-   */
   async function addItemToOffer(itemName, maxQty) {
-  console.log(`addItemToOffer CALLED: item=${itemName}, maxQty=${maxQty}`);
     const currentOfferQty = game.myTradeOffer.offerItems[itemName] || 0;
-    
     let qtyToOffer = 0;
     if (maxQty === 1) {
       qtyToOffer = 1;
@@ -2503,37 +2547,29 @@ function openTradeWindow(sessionId, sessionData) {
       if (input === null) return; 
       qtyToOffer = parseInt(input);
     }
-    
     if (isNaN(qtyToOffer) || qtyToOffer <= 0) return;
     if (qtyToOffer > maxQty) {
       alert(`You can only offer up to ${maxQty} of this item.`);
       qtyToOffer = maxQty;
     }
-
     const offerItemCount = Object.keys(game.myTradeOffer.offerItems).length;
     if (!game.myTradeOffer.offerItems[itemName] && offerItemCount >= 16) {
       alert("Your trade offer grid is full (16 unique items).");
       return;
     }
-
     const newOfferItems = { ...game.myTradeOffer.offerItems };
     newOfferItems[itemName] = (newOfferItems[itemName] || 0) + qtyToOffer;
-    
     const myRole = game.myTradeRole;
     if (!myRole) return; 
-    
     const newOfferObject = {
         ...game.myTradeOffer,
         offerItems: newOfferItems,
         accepted: false
     };
-
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
-    
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     updatePayload[`${theirRole}.accepted`] = false;
-    
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
       renderTradeInventory(); 
@@ -2542,29 +2578,20 @@ function openTradeWindow(sessionId, sessionData) {
       addLocalChatMessage("Error updating offer.", 'error');
     }
   }
-
-  /**
-   * (9) Action: Player clicks to remove an item from their offer.
-   */
   async function removeItemFromOffer(itemName) {
     const newOfferItems = { ...game.myTradeOffer.offerItems }; 
     delete newOfferItems[itemName]; 
-    
     const myRole = game.myTradeRole;
     if (!myRole) return; 
-    
     const newOfferObject = {
         ...game.myTradeOffer,
         offerItems: newOfferItems,
         accepted: false
     };
-
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
-
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     updatePayload[`${theirRole}.accepted`] = false;
-    
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
       renderTradeInventory(); 
@@ -2572,10 +2599,6 @@ function openTradeWindow(sessionId, sessionData) {
       console.error("Error updating offer:", e);
     }
   }
-
-  /**
-   * (10) Action: Player changes their gold offer.
-   */
   async function updateMyGoldOffer(event) {
     let gold = parseInt(event.target.value);
     if (isNaN(gold) || gold < 0) gold = 0;
@@ -2583,46 +2606,33 @@ function openTradeWindow(sessionId, sessionData) {
       gold = game.gold;
       event.target.value = gold;
     }
-    
     const myRole = game.myTradeRole;
     if (!myRole) return; 
-    
     const newOfferObject = {
         ...game.myTradeOffer,
         offerGold: gold,
         accepted: false
     };
-
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
-    
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     updatePayload[`${theirRole}.accepted`] = false;
-    
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
     } catch (e) {
       console.error("Error updating gold offer:", e);
     }
   }
-
-  /**
-   * (11) Action: Player clicks the 'Accept' button.
-   */
   async function setTradeAccepted() {
     document.getElementById('tradeAcceptBtn').disabled = true; 
-    
     const myRole = game.myTradeRole;
     if (!myRole) return; 
-    
     const newOfferObject = {
         ...game.myTradeOffer,
         accepted: true 
     };
-
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
-    
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
     } catch (e) {
@@ -2630,18 +2640,11 @@ function openTradeWindow(sessionId, sessionData) {
       document.getElementById('tradeAcceptBtn').disabled = false;
     }
   }
-
-  /**
-   * (12) Action: Player clicks the 'Cancel' button.
-   */
   async function cancelTrade() {
     document.getElementById('tradeCancelBtn').disabled = true;
     document.getElementById('tradeAcceptBtn').disabled = true;
-
     const sessionId = game.activeTradeSessionId;
-    
     closeTradeWindow(); 
-    
     if (sessionId) {
       try {
         await updateDoc(doc(db, "tradeSessions", sessionId), {
@@ -2652,10 +2655,6 @@ function openTradeWindow(sessionId, sessionData) {
       }
     }
   }
-
-  /**
-   * (13) Action: Closes the trade window and resets state.
-   */
   function closeTradeWindow() {
     if (!game.inTrade) return; 
     if (game.activeTradeListener) {
@@ -2667,80 +2666,82 @@ function openTradeWindow(sessionId, sessionData) {
     game.myTradeRole = null; 
     game.myTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
     game.theirTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
-    
     document.getElementById('tradeModal').style.display = 'none';
     hideTooltip();
-    
     renderInventoryGrid();
     updateGoldUI();
-
     if (game.wasMiningBeforeTrade) {
       game.wasMiningBeforeTrade = false;
-      
       const startBtn = document.getElementById('startMineBtn');
       const startSmithBtn = document.getElementById('startSmithBtn');
       if (startBtn) {
         startMining();
-      } else if (startSmithBtn) { // +++ NEW
+      } else if (startSmithBtn) { 
         startBlacksmithing();
       }
     }
   }
-
-  /**
-   * (14) The Final Step: Execute the trade using a secure transaction.
-   * This is called by the onSnapshot listener when both players have accepted.
-   * Only player1 runs this.
-   */
   async function executeTrade(sessionId, sessionData) {
     try {
       await runTransaction(db, async (transaction) => {
         const sessionRef = doc(db, "tradeSessions", sessionId);
         const player1Ref = doc(db, "players", sessionData.player1.uid);
         const player2Ref = doc(db, "players", sessionData.player2.uid);
-
         const [sessionSnap, p1Snap, p2Snap] = await Promise.all([
           transaction.get(sessionRef),
           transaction.get(player1Ref),
           transaction.get(player2Ref)
         ]);
-
         if (!sessionSnap.exists() || !p1Snap.exists() || !p2Snap.exists()) {
           throw new Error("A player or session does not exist.");
         }
-
         const trade = sessionSnap.data();
         const p1Data = p1Snap.data();
         const p2Data = p2Snap.data();
-
         if (trade.status !== 'active') {
           throw new Error("Trade is no longer active.");
         }
         if (!trade.player1.accepted || !trade.player2.accepted) {
           throw new Error("Both players have not accepted.");
         }
-        
         const p1Offer = trade.player1;
         const p2Offer = trade.player2;
-
+        const p1LocalInv = convertSavedInvToLocal(p1Data.inventory || []);
+        const p2LocalInv = convertSavedInvToLocal(p2Data.inventory || []);
         if (p1Data.gold < p1Offer.offerGold) throw new Error(`${p1Data.name} does not have enough gold.`);
         if (p2Data.gold < p2Offer.offerGold) throw new Error(`${p2Data.name} does not have enough gold.`);
-        
         for (const [item, qty] of Object.entries(p1Offer.offerItems)) {
-          if (!p1Data.inventory[item] || p1Data.inventory[item] < qty) {
+          if (!checkItem(p1LocalInv, item, qty)) {
             throw new Error(`${p1Data.name} does not have ${qty} ${item}.`);
           }
         }
         for (const [item, qty] of Object.entries(p2Offer.offerItems)) {
-          if (!p2Data.inventory[item] || p2Data.inventory[item] < qty) {
+          if (!checkItem(p2LocalInv, item, qty)) {
             throw new Error(`${p2Data.name} does not have ${qty} ${item}.`);
           }
         }
-
+        let newP1LocalInv = [...p1LocalInv];
+        let newP2LocalInv = [...p2LocalInv];
+        for (const [item, qty] of Object.entries(p1Offer.offerItems)) {
+            newP1LocalInv = modifyInventory(newP1LocalInv, item, -qty);
+            newP2LocalInv = modifyInventory(newP2LocalInv, item, +qty);
+        }
+        for (const [item, qty] of Object.entries(p2Offer.offerItems)) {
+            newP2LocalInv = modifyInventory(newP2LocalInv, item, -qty);
+            newP1LocalInv = modifyInventory(newP1LocalInv, item, +qty);
+        }
+        const newP1SavedInv = convertLocalInvToSaved(newP1LocalInv);
+        const newP2SavedInv = convertLocalInvToSaved(newP2LocalInv);
         transaction.update(sessionRef, { status: 'completed' });
-        
+        transaction.update(player1Ref, {
+            gold: p1Data.gold - p1Offer.offerGold + p2Offer.offerGold,
+            inventory: newP1SavedInv
+        });
+        transaction.update(player2Ref, {
+            gold: p2Data.gold - p2Offer.offerGold + p1Offer.offerGold,
+            inventory: newP2SavedInv
+        });
       });
-      
     } catch (e) {
       console.error("TRADE FAILED:", e);
       await updateDoc(doc(db, "tradeSessions", sessionId), { 
@@ -2750,10 +2751,7 @@ function openTradeWindow(sessionId, sessionData) {
     }
   }
 
-  // --- END OF NEW TRADE FUNCTIONS ---
-
-
-  // --- LEADERBOARD FUNCTION (MODIFIED) ---
+  // --- LEADERBOARD FUNCTION (Unchanged) ---
   window.renderLeaderboards = async function() {
     const contentContainer = document.getElementById('leaderboardContent'); 
     if (!contentContainer) return;
@@ -2768,20 +2766,15 @@ function openTradeWindow(sessionId, sessionData) {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         if (!data.name || data.name === "") return;
-        
-        // +++ MODIFIED: Calculate total XP from all skills +++
         const miningXp = data.mining?.totalXP || 0; 
         const blacksmithXp = data.blacksmith?.totalXP || 0;
         const totalXp = miningXp + blacksmithXp;
-        
         players.push({
           name: data.name,
           totalXp: totalXp,
         });
       });
-      
       players.sort((a, b) => b.totalXp - a.totalXp);
-      
       let leaderboardHtml = '';
       players.slice(0, 10).forEach((player, index) => {
         const rank = index + 1;
@@ -2797,7 +2790,6 @@ function openTradeWindow(sessionId, sessionData) {
           </div>
         `;
       });
-      
       if(players.length === 0){
         leaderboardHtml += `<div style="text-align:center; padding: 20px; opacity: 0.7;">No players found. Start playing to get on the board!</div>`;
       }
@@ -2808,20 +2800,21 @@ function openTradeWindow(sessionId, sessionData) {
     }
   }
   
-  // +++ MODIFIED DOMContentLoaded +++
+  // --- MODIFIED: Added Session Lock Button ---
   document.addEventListener('DOMContentLoaded', () => {
     if (refreshLeaderboardBtn) {
-        refreshLeaderboardBtn.onclick = window.renderLeaderboards;
+        refreshLeaderboardBtn.onclick = async () => {
+          if (typeof window.savePlayerData === 'function') {
+            await window.savePlayerData();
+          }
+          window.renderLeaderboards();
+        };
     }
-
-    // +++ ADDED CHAT LISTENERS +++
     const chatSendBtn = document.getElementById('chatSendBtn');
     const chatInput = document.getElementById('chatInput');
-
     if (chatSendBtn) {
       chatSendBtn.onclick = sendChatMessage;
     }
-
     if (chatInput) {
       chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -2830,26 +2823,47 @@ function openTradeWindow(sessionId, sessionData) {
         }
       });
     }
+    
+    // +++ NEW: Session Lock Button +++
+    const takeControlBtn = document.getElementById('takeControlButton');
+    if (takeControlBtn) {
+      takeControlBtn.onclick = () => {
+        if (typeof window.acquireSessionLock === 'function') {
+          window.acquireSessionLock();
+        }
+      };
+    }
   });
 
-  // --- Autosave and Logout functions (Unchanged) ---
+  // --- MODIFIED: Autosave only runs on active, visible tab ---
   setInterval(() => {
     const user = auth.currentUser;
-    if (user) {
+    // Only save if this is the active session and the tab is visible
+    if (user && game.isSessionActive && !document.hidden && !game.inTrade) {
       window.savePlayerData();
     }
   }, 30000);
 
+  // --- MODIFIED: Releases session lock on tab close ---
   window.addEventListener('beforeunload', (e) => {
     try {
+      // If we are the active session, release the lock
+      if (game.isSessionActive) {
+        if (typeof window.releaseSessionLock === 'function') {
+          // Fire-and-forget, we can't await this
+          window.releaseSessionLock(false); 
+        }
+      }
+      
+      // Try one last save
       const user = auth.currentUser;
-      if (user) {
+      if (user && game.isSessionActive && !game.inTrade) {
         window.savePlayerData();
       }
     } catch (err) { /* ignore */ }
   });
 
-  // +++ MODIFIED LOGOUT FUNCTION (FOR TRADE) +++
+  // --- MODIFIED: Releases session lock on logout ---
   window.firebaseLogout = async function() {
     try {
       if (game.inTrade && game.activeTradeSessionId) {
@@ -2863,6 +2877,15 @@ function openTradeWindow(sessionId, sessionData) {
         closeTradeWindow();
       }
       
+      // +++ NEW: Release the lock before logging out +++
+      if (game.isSessionActive) {
+        if (typeof window.releaseSessionLock === 'function') {
+          await window.releaseSessionLock(true); // We can await this
+        }
+      }
+      stopSessionHeartbeat();
+      
+      // Save one last time
       await window.savePlayerData();
       await signOut(auth);
       
