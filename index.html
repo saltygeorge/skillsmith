@@ -1266,37 +1266,80 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // --- MODIFIED loadPlayerDataAndStart ---
   async function loadPlayerDataAndStart(user) {
     try {
+      // --- Detach any old listener first ---
+      if (playerDocListener) {
+        playerDocListener();
+        playerDocListener = null;
+      }
+
       const ref = doc(db, "players", user.uid);
-      const snap = await getDoc(ref);
-      if (!snap.exists() || !snap.data().name) {
+      
+      // --- This is the new part: onSnapshot ---
+      // This function now just *starts* the listener
+      playerDocListener = onSnapshot(ref, (snap) => {
+        if (!snap.exists() || !snap.data().name) {
+          // This is a new player, show the start screen
+          // We can't do this from here... we must handle it outside.
+          // For now, we'll just log it. This logic flow needs to be handled.
+          console.log("Player document doesn't exist, showing start screen.");
+          authScreen.style.display = 'none';
+          startScreen.style.display = 'block'; // Show create character screen
+          gameScreen.style.display = 'none';
+          return; // Stop processing
+        }
+        
+        // --- Document exists, update the game state ---
+        const data = snap.data();
+        
+        // Load data into the local game object
+        game.name = data.name || game.name || "Adventurer";
+        game.hp = (typeof data.hp === 'number') ? data.hp : game.hp;
+        game.maxHP = (typeof data.maxHP === 'number') ? data.maxHP : game.maxHP;
+        game.inventory = data.inventory || {};
+        game.gold = (typeof data.gold === 'number') ? data.gold : 0; 
+        
+        if (data.mining) {
+          game.mining.level = data.mining.level || game.mining.level;
+          game.mining.xp = data.mining.xp || game.mining.xp;
+          game.mining.totalXP = data.mining.totalXP || 
+                                (data.mining.level > 1 ? getTotalXPForLevel(data.mining.level - 1) + data.mining.xp : data.mining.xp) || 0; 
+        }
+
+        // --- Update all UI elements with the new data ---
+        // This will run every time the data changes (e.g., from an admin command)
+        setText('charName', game.name);
+        updateHPUI();
+        renderInventoryGrid();
+        updateSkillUI();
+        updateGoldUI(); 
+        window.renderLeaderboards(); // Optionally refresh leaderboards
+        
+        // Ensure game screen is visible
+        startScreen.style.display = 'none';
+        authScreen.style.display = 'none';
+        gameScreen.style.display = 'block';
+        
+        // This only needs to run the very first time, but it's safe here
+        backToActions(); 
+        
+      }, (error) => {
+        // Handle errors
+        console.error("Player listener error:", error);
+        alert("Error loading player data. Please refresh.");
+      });
+      
+      // The listener is now active. We must check if the doc exists
+      // to handle brand new players.
+      const initialSnap = await getDoc(ref);
+      if (!initialSnap.exists() || !initialSnap.data().name) {
         authScreen.style.display = 'none';
         startScreen.style.display = 'block';
         gameScreen.style.display = 'none';
-        return false;
+        return false; // Tell onAuthStateChanged it wasn't a full start
       }
-      const data = snap.data();
-      game.name = data.name || game.name || "Adventurer";
-      game.hp = (typeof data.hp === 'number') ? data.hp : game.hp;
-      game.maxHP = (typeof data.maxHP === 'number') ? data.maxHP : game.maxHP;
-      game.inventory = data.inventory || {};
-      game.gold = (typeof data.gold === 'number') ? data.gold : 0; // <-- ADDED
-      if (data.mining) {
-        game.mining.level = data.mining.level || game.mining.level;
-        game.mining.xp = data.mining.xp || game.mining.xp;
-        game.mining.totalXP = data.mining.totalXP || 
-                              (data.mining.level > 1 ? getTotalXPForLevel(data.mining.level - 1) + data.mining.xp : data.mining.xp) || 0; 
-      }
-      document.getElementById('charName').innerText = game.name;
-      startScreen.style.display = 'none';
-      authScreen.style.display = 'none';
-      gameScreen.style.display = 'block';
-      updateHPUI();
-      renderInventoryGrid();
-      updateSkillUI();
-      updateGoldUI(); // <-- ADDED
-      window.renderLeaderboards(); 
-      backToActions();
-      return true;
+
+      return true; // Tell onAuthStateChanged that startup was successful
+      
     } catch (e) {
       console.error("Load failed:", e);
       return false;
@@ -1347,6 +1390,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
       tradeSessionUnsubscribes.forEach(unsub => unsub()); // <-- Changed
       tradeSessionUnsubscribes = []; // <-- Changed
+
+      if (playerDocListener) playerDocListener();
 
       const started = await loadPlayerDataAndStart(user);
       
@@ -1422,6 +1467,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   let localMessageQueue = [];
   let chatListenerUnsubscribe = null;
   let isTradeRequestsLoaded = false;
+
+  let playerDocListener = null; //
+
   /**
    * Sends a new chat message OR handles a chat command.
    */
