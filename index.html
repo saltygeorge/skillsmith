@@ -914,19 +914,82 @@ function getTotalXPForLevel(level) {
 function updateSkillUI(){
   const skillsTab = document.getElementById('skillsTab');
   if (!skillsTab) return;
-  skillsTab.innerHTML = '<div style="font-size:14px; margin-bottom:8px;">Skills</div>';
-  const createSkillHTML = (skillName, skillData) => {
-    return `
-      <div style="margin-bottom: 5px;">
-        ${skillName}: <span id="${skillData}Level">${game[skillData].level}</span> — 
-        XP: <span id="${skillData}XP">${game[skillData].xp}</span> / 
-        <span id="${skillData}NextXP">${getNextXP(game[skillData].level)}</span> 
-        (Total: <span id="${skillData}TotalXP">${game[skillData].totalXP}</span>)
+  
+  // Clear the tab and set up the header/container
+  skillsTab.innerHTML = `
+    <div style="font-size:14px; margin-bottom:12px;">Skills</div>
+    <div id="skillIconsContainer" style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: flex-start;">
+      </div>
+  `;
+
+  const container = document.getElementById('skillIconsContainer');
+
+  /**
+   * Helper function to create a skill icon with a tooltip
+   * @param {string} skillName - The display name (e.g., "Mining")
+   * @param {string} skillDataKey - The key in the game object (e.g., "mining")
+   * @param {string} iconFileName - The name of the icon file in /images/
+   */
+  const createSkillIcon = (skillName, skillDataKey, iconFileName) => {
+    const data = game[skillDataKey];
+    const iconWrapper = document.createElement('button');
+    iconWrapper.className = 'primary'; // Use 'primary' class for base styling
+    iconWrapper.style.cssText = `
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      gap: 5px; 
+      padding: 8px 10px; 
+      height: 80px; /* Fixed height for consistency */
+      width: 80px;  /* Fixed width for consistency */
+      justify-content: center;
+      font-size: 13px;
+      background: var(--accent);
+      border: 2px solid #50311f; /* Added a border to define the button */
+      transition: all 0.15s ease;
+    `;
+    
+    // --- Create the tooltip content ---
+    const nextXP = getNextXP(data.level);
+    // Calculate progress percentage, ensuring it doesn't exceed 100%
+    const progressPercent = Math.min(100, (data.xp / nextXP) * 100);
+    
+    const tooltipContent = `
+      <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${skillName}</div>
+      <div style="font-size: 14px; margin-bottom: 6px;">Level: <span style="font-weight: bold;">${data.level}</span></div>
+      <div>XP: ${data.xp.toLocaleString()} / ${nextXP.toLocaleString()}</div>
+      <div>(Total XP: ${data.totalXP.toLocaleString()})</div>
+      
+      <div style="width: 100%; height: 8px; background: #555; border-radius: 4px; margin-top: 8px; border: 1px solid #333;">
+        <div style="height: 100%; width: ${progressPercent}%; background: #4caf50; border-radius: 4px; transition: width 0.2s;"></div>
       </div>
     `;
+
+    // Set up hover/tooltip events
+    iconWrapper.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+    iconWrapper.onmouseleave = hideTooltip;
+
+    // Create and append icon image
+    const img = document.createElement('img');
+    img.src = `images/${iconFileName}`;
+    img.alt = skillName;
+    img.style.cssText = 'width: 40px; height: 40px; object-fit: contain; margin-bottom: 2px; pointer-events: none;';
+    img.onerror = function(){ this.style.opacity='0.1'; this.style.filter='grayscale(100%)'; }; // Fallback
+    iconWrapper.appendChild(img);
+
+    // Append level text
+    const levelText = document.createElement('span');
+    levelText.innerText = `Lvl ${data.level}`;
+    levelText.style.fontWeight = 'bold';
+    levelText.style.pointerEvents = 'none';
+    iconWrapper.appendChild(levelText);
+
+    container.appendChild(iconWrapper);
   };
-  skillsTab.innerHTML += createSkillHTML('Mining', 'mining');
-  skillsTab.innerHTML += createSkillHTML('Blacksmith', 'blacksmith');
+
+  // --- Call the function for each of your skills ---
+  createSkillIcon('Mining', 'mining', 'miningskillicon.png');
+  createSkillIcon('Blacksmith', 'blacksmith', 'blacksmithskillicon.png');
 }
 
 function showItemPopup(text, progressElementId) {
