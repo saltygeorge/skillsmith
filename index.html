@@ -997,7 +997,8 @@ function showItemPopup(text, progressElementId) {
     if (!main) return;
     const popup = document.createElement('div');
     popup.className = 'xp-popup';
-    popup.innerText = text;
+    popup.innerHTML = text; // Allow HTML
+popup.style.lineHeight = '1.4';
     const bar = document.getElementById(progressElementId);
     if (bar) {
         const barRect = bar.getBoundingClientRect();
@@ -1030,7 +1031,10 @@ function addXP(skill, amount){
   let barId = '';
   if (skill === 'mining') barId = 'mineProgress';
   if (skill === 'blacksmith') barId = 'smithProgress';
+  if (skill !== 'blacksmith' && skill !== 'mining') { // Don't show popup for blacksmith, it will be handled manually
   showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
+ }
+
 }
 
 const MINE_TIME_MS = 1500;
@@ -1059,7 +1063,12 @@ function miningLoop(timestamp, startTime) {
 
   if (progress >= 100) {
     addItem(MINE_ITEM, 1);
-    addXP('mining', MINE_XP);
+    addXP('mining', MINE_XP); // This now adds XP without a popup
+
+    // Create the new combined popup
+    const popupText = `+${MINE_XP} Mining XP<br>+1 Copper Ore`;
+    showItemPopup(popupText, 'mineProgress');
+    
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = '0%';
     game.progressFrame = requestAnimationFrame((now) => miningLoop(now, now));
@@ -1123,8 +1132,11 @@ function blacksmithingLoop(timestamp, startTime) {
     }
     removeItem('Copper Ore', SMITH_ORE_COST);
     addItem(SMITH_BAR_ITEM, 1);
-    addXP('blacksmith', SMITH_XP);
-    showItemPopup('+1 Copper Bar', 'smithProgress');
+    addXP('blacksmith', SMITH_XP); // This now adds XP without a popup
+    
+    // Create the new combined popup
+    const popupText = `+${SMITH_XP} Blacksmith XP<br>+1 Copper Bar`;
+    showItemPopup(popupText, 'smithProgress');
     
     const bar = document.getElementById('smithProgress');
     if (bar) bar.style.width = '0%';
