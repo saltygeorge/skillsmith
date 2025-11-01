@@ -2479,29 +2479,22 @@ document.addEventListener('DOMContentLoaded', ()=>{
         stopBlacksmithing();
         game.wasMiningBeforeTrade = true; 
     }
-    
-    // --- REVERTED TO SIMPLER LOGIC ---
     game.inTrade = true;
     game.activeTradeSessionId = sessionId;
     game.myTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
     game.theirTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
-    // --- END REVERT ---
-
     const myUid = auth.currentUser.uid;
     const myRole = (sessionData.player1.uid === myUid) ? 'player1' : 'player2';
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     game.myTradeRole = myRole; 
-
     const modal = document.getElementById('tradeModal');
     setText('tradePartnerName', sessionData[theirRole].name);
     setText('tradeMyGold', formatAmount(game.gold));
-    
-    document.getElementById('tradeMyGoldOffer').value = 0; // Start at 0
+    document.getElementById('tradeMyGoldOffer').value = 0;
     document.getElementById('tradeMyGoldOffer').max = game.gold;
-    
     renderTradeInventory(); 
-    renderOfferGrid('tradeMyOfferGrid', {}); // Start empty
-    renderOfferGrid('tradeTheirOfferGrid', {}); // Start empty
+    renderOfferGrid('tradeMyOfferGrid', {}); 
+    renderOfferGrid('tradeTheirOfferGrid', {}); 
     modal.style.display = 'flex'; 
     if (game.activeTradeListener) game.activeTradeListener(); 
     game.activeTradeListener = onSnapshot(doc(db, "tradeSessions", sessionId), (doc) => {
@@ -2522,30 +2515,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
         closeTradeWindow();
         return;
       }
-
-      // --- THIS IS THE FIX ---
-      // Revert to syncing *both* offers from the server.
-      // This is the single source of truth and fixes the transaction.
       game.myTradeOffer = data[myRole];
       game.theirTradeOffer = data[theirRole];
-
-      // Re-render *everything* based on server data.
-      // This fixes the "visual lag" bug.
       renderOfferGrid('tradeMyOfferGrid', game.myTradeOffer.offerItems);
       renderOfferGrid('tradeTheirOfferGrid', game.theirTradeOffer.offerItems);
-      renderTradeInventory(); // Re-render inventory to update available quantities
-
-      // This logic prevents the server from overwriting your gold
-      // input *while you are typing in it*.
       if (document.activeElement !== document.getElementById('tradeMyGoldOffer')) {
          document.getElementById('tradeMyGoldOffer').value = game.myTradeOffer.offerGold;
       }
-      
       setText('tradeTheirGoldOffer', formatAmount(game.theirTradeOffer.offerGold));
       updateTradeAcceptStatus('myTradeStatus', game.myTradeOffer.accepted);
       updateTradeAcceptStatus('theirTradeStatus', game.theirTradeOffer.accepted);
-      // --- END FIX ---
-
       if (game.myTradeOffer.accepted && game.theirTradeOffer.accepted) {
         document.getElementById('tradeAcceptBtn').disabled = true;
         document.getElementById('tradeCancelBtn').disabled = true;
@@ -2668,25 +2647,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
     newOfferItems[itemName] = (newOfferItems[itemName] || 0) + qtyToOffer;
     const myRole = game.myTradeRole;
     if (!myRole) return; 
-    
-    // 1. Create the new offer
     const newOfferObject = {
         ...game.myTradeOffer,
         offerItems: newOfferItems,
         accepted: false
     };
-    
-    // 2. Create the payload
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     updatePayload[`${theirRole}.accepted`] = false;
-
-    // 3. Update local state IMMEDIATELY
-    // 3. Update Firebase. The onSnapshot listener will handle the UI.
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
-      // The listener will now re-render everything
+      renderTradeInventory(); 
     } catch (e) {
       console.error("Error updating offer:", e);
       addLocalChatMessage("Error updating offer.", 'error');
@@ -2702,17 +2674,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
         offerItems: newOfferItems,
         accepted: false
     };
-    
-    // 2. Create the payload
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     updatePayload[`${theirRole}.accepted`] = false;
-
-    // 3. Update local state IMMEDIATELY
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
-      // The listener will now re-render everything
+      renderTradeInventory(); 
     } catch (e) {
       console.error("Error updating offer:", e);
     }
@@ -2731,20 +2699,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
         offerGold: gold,
         accepted: false
     };
-
-    // 2. Create the payload
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     updatePayload[`${theirRole}.accepted`] = false;
-    
-    // 3. Update local state IMMEDIATELY
-    game.myTradeOffer = newOfferObject;
-
-    // 4. Update Firebase
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
-      // No UI render needed here, the input field already has the value
     } catch (e) {
       console.error("Error updating gold offer:", e);
     }
@@ -2757,18 +2717,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
         ...game.myTradeOffer,
         accepted: true 
     };
-    
-    // 2. Create the payload
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
-
-    // 3. Update local state IMMEDIATELY
-    game.myTradeOffer = newOfferObject;
-    
-    // 4. Update Firebase
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
-      // The snapshot listener will handle the UI update for the "Accepted" text
     } catch (e) {
       console.error("Error accepting trade:", e);
       document.getElementById('tradeAcceptBtn').disabled = false;
