@@ -1482,7 +1482,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   import {
 
   getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where,
-    addDoc, serverTimestamp, onSnapshot, orderBy, limit, limitToLast, runTransaction, writeBatch, updateDoc
+    addDoc, serverTimestamp, onSnapshot, orderBy, limit, limitToLast, runTransaction, writeBatch, updateDoc,
+    increment // <-- ADD THIS
     
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -2214,9 +2215,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
                     return true;
                 }
                 const playerDoc = querySnapshot.docs[0];
-                const playerData = playerDoc.data();
-                const newGold = (playerData.gold || 0) + amount;
-                await updateDoc(doc(db, "players", playerDoc.id), { gold: newGold });
+                const playerData = playerDoc.data(); // We still need this for the name
+                await updateDoc(doc(db, "players", playerDoc.id), {
+                    gold: increment(amount) // Use the atomic increment operation
+                });
                 addLocalChatMessage(`Admin: Gave ${amount} Gold to ${playerData.name}.`, 'system');
             } catch (e) {
                 addLocalChatMessage(`Error giving gold: ${e.message}`, 'error');
