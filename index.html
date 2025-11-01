@@ -681,6 +681,7 @@ const game = {
   mining: { level: 1, xp: 0, totalXP: 0 },
   miningActive: false,
   progressFrame: null,
+  wasMiningBeforeTrade: false,
   
   // +++ ADDED FOR TRADE +++
   inTrade: false,
@@ -1743,6 +1744,12 @@ function _addLocalMessageToDOM(text, type = 'system') {
 function openTradeWindow(sessionId, sessionData) {
     if (game.inTrade) return; // Should not happen, but a good check
 
+// --- +++ NEW MINING FIX +++ ---
+    if (game.miningActive) {
+      stopMining();
+      game.wasMiningBeforeTrade = true;
+    }
+
     game.inTrade = true;
     game.activeTradeSessionId = sessionId;
     game.myTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
@@ -2188,6 +2195,20 @@ function openTradeWindow(sessionId, sessionData) {
     // Refresh main game UI
     renderInventoryGrid();
     updateGoldUI();
+
+    // --- +++ NEW MINING FIX +++ ---
+    if (game.wasMiningBeforeTrade) {
+      game.wasMiningBeforeTrade = false;
+      
+      // Check if we are still on the mining screen
+      const startBtn = document.getElementById('startMineBtn');
+      if (startBtn) {
+        startMining();
+      }
+      // If startBtn doesn't exist, we're not on the mining screen,
+      // so we correctly do nothing.
+    }
+    // --- +++ END FIX +++ ---
   }
 
   /**
