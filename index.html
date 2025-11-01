@@ -1667,8 +1667,13 @@ function _addLocalMessageToDOM(text, type = 'system') {
 
             // --- Target is self ---
             if (targetName === game.name.toLowerCase()) {
-                addGold(amount);
-                addLocalChatMessage(`Admin: Gave self ${amount} Gold.`, 'system');
+                try {
+                    addGold(amount); // Update local game
+                    await window.savePlayerData(); // Await the save
+                    addLocalChatMessage(`Admin: Gave self ${amount} Gold.`, 'system');
+                } catch (e) {
+                    addLocalChatMessage(`Error giving self gold: ${e.message}`, 'error');
+                }
                 return true;
             }
 
@@ -1714,8 +1719,13 @@ function _addLocalMessageToDOM(text, type = 'system') {
 
             // --- Target is self ---
             if (targetName === game.name.toLowerCase()) {
-                addItem(formattedName, qty);
-                addLocalChatMessage(`Admin: Gave self ${qty}x ${formattedName}.`, 'system');
+                try {
+                    addItem(formattedName, qty); // Update local game
+                    await window.savePlayerData(); // Await the save
+                    addLocalChatMessage(`Admin: Gave self ${qty}x ${formattedName}.`, 'system');
+                } catch (e) {
+                    addLocalChatMessage(`Error giving self item: ${e.message}`, 'error');
+                }
                 return true;
             }
 
@@ -1763,9 +1773,14 @@ function _addLocalMessageToDOM(text, type = 'system') {
 
             // --- Target is self ---
             if (targetName === game.name.toLowerCase()) {
-                game.mining = newSkillData;
-                updateSkillUI();
-                addLocalChatMessage(`Admin: Set own Mining level to ${level}.`, 'system');
+                try {
+                    game.mining = newSkillData; // Update local game
+                    updateSkillUI();
+                    await window.savePlayerData(); // Await the save
+                    addLocalChatMessage(`Admin: Set own Mining level to ${level}.`, 'system');
+                } catch (e) {
+                    addLocalChatMessage(`Error setting self level: ${e.message}`, 'error');
+                }
                 return true;
             }
             
