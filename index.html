@@ -675,17 +675,28 @@ const game = {
   
   // +++ NEW SESSION LOCK +++
   // This is a unique ID for this specific tab
-  sessionLockId: 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9),
-  lockHeartbeat: null,    // This will hold the setInterval ID for the heartbeat
-  isSessionActive: false, // Is this tab the "master" tab?
-  isDragging: false,      // Are we currently dragging an item?
-  
-  inTrade: false,
-  activeTradeSessionId: null,
-  activeTradeListener: null, 
-  myTradeRole: null, 
-  myTradeOffer: { offerItems: {}, offerGold: 0, accepted: false },
-  theirTradeOffer: { offerItems: {}, offerGold: 0, accepted: false }
+  sessionLockId: (function() {
+  let id = sessionStorage.getItem('gameSessionId');
+  if (!id) {
+    // No ID exists, so this is a new tab. Create one.
+    id = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+    sessionStorage.setItem('gameSessionId', id);
+  }
+  // Return the persistent ID for this tab
+  return id;
+})(),
+// +++ END MODIFICATION +++
+
+lockHeartbeat: null,    // This will hold the setInterval ID for the heartbeat
+isSessionActive: false, // Is this tab the "master" tab?
+isDragging: false,      // Are we currently dragging an item?
+
+inTrade: false,
+activeTradeSessionId: null,
+activeTradeListener: null, 
+myTradeRole: null, 
+myTradeOffer: { offerItems: {}, offerGold: 0, accepted: false },
+theirTradeOffer: { offerItems: {}, offerGold: 0, accepted: false }
 };
 // +++ END MODIFICATION +++
 
@@ -2865,35 +2876,38 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // --- MODIFIED: Releases session lock on logout ---
   window.firebaseLogout = async function() {
-    try {
-      if (game.inTrade && game.activeTradeSessionId) {
-        try {
-          await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), {
-            status: 'cancelled'
-          });
-        } catch (e) {
-          console.warn("Could not cancel active trade on logout:", e);
-        }
-        closeTradeWindow();
+  try {
+    // 1. If in trade, cancel it first (Existing logic)
+    if (game.inTrade && game.activeTradeSessionId) {
+      try {
+        await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), {
+          status: 'cancelled'
+        });
+      } catch (e) {
+        console.warn("Could not cancel active trade on logout:", e);
       }
-      
-      // +++ NEW: Release the lock before logging out +++
-      if (game.isSessionActive) {
-        if (typeof window.releaseSessionLock === 'function') {
-          await window.releaseSessionLock(true); // We can await this
-        }
-      }
-      stopSessionHeartbeat();
-      
-      // Save one last time
-      await window.savePlayerData();
-      await signOut(auth);
-      
-      alert("Logged out."); 
-    } catch (e) {
-      console.error("Logout failed:", e);
+      closeTradeWindow();
     }
-  };
+    
+    // 2. +++ NEW CRITICAL FIX +++: Release the session lock explicitly
+    if (game.isSessionActive) {
+      if (typeof window.releaseSessionLock === 'function') {
+        // Await the lock release before doing anything else
+        await window.releaseSessionLock(true);
+      }
+    }
+    stopSessionHeartbeat();
+    
+    // 3. Save, then sign out
+    await window.savePlayerData();
+    await signOut(auth);
+    
+    alert("Logged out."); 
+  } catch (e) {
+    console.error("Logout failed:", e);
+    alert("Logout failed. Please try again or close your browser.");
+  }
+};
 </script>
 </body>
 </html>
