@@ -1941,15 +1941,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
           return alert("Error checking name. Please try again.");
         }
         
-        originalCreate();
+        originalCreate(); // Sets game.name locally
         
         const user = auth.currentUser;
         if (user) {
-          await window.savePlayerData();
+          // --- THIS IS THE FIX ---
+          // We MUST acquire the session lock *before* trying to save,
+          // otherwise savePlayerData() will exit early because
+          // game.isSessionActive is false.
+          if (typeof window.acquireSessionLock === 'function') {
+            await window.acquireSessionLock();
+          }
+          // --- END FIX ---
+
+          await window.savePlayerData(); // This will now succeed
           window.renderLeaderboards();
           initChatListener(); 
           initTradeListeners(); 
-          // The onSnapshot listener will fire and handle the lock.
+          // The onSnapshot listener will fire and update the UI
         }
       };
     }
