@@ -2647,18 +2647,28 @@ document.addEventListener('DOMContentLoaded', ()=>{
     newOfferItems[itemName] = (newOfferItems[itemName] || 0) + qtyToOffer;
     const myRole = game.myTradeRole;
     if (!myRole) return; 
+    
+    // 1. Create the new offer
     const newOfferObject = {
         ...game.myTradeOffer,
         offerItems: newOfferItems,
         accepted: false
     };
+    
+    // 2. Create the payload
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     updatePayload[`${theirRole}.accepted`] = false;
+
+    // 3. Update local state IMMEDIATELY
+    game.myTradeOffer = newOfferObject;
+    
+    // 4. Update Firebase and render UI
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
       renderTradeInventory(); 
+      renderOfferGrid('tradeMyOfferGrid', game.myTradeOffer.offerItems); // Re-render our offer grid
     } catch (e) {
       console.error("Error updating offer:", e);
       addLocalChatMessage("Error updating offer.", 'error');
@@ -2674,13 +2684,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
         offerItems: newOfferItems,
         accepted: false
     };
+    
+    // 2. Create the payload
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     updatePayload[`${theirRole}.accepted`] = false;
+
+    // 3. Update local state IMMEDIATELY
+    game.myTradeOffer = newOfferObject;
+
+    // 4. Update Firebase and render UI
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
       renderTradeInventory(); 
+      renderOfferGrid('tradeMyOfferGrid', game.myTradeOffer.offerItems); // Re-render our offer grid
     } catch (e) {
       console.error("Error updating offer:", e);
     }
@@ -2699,12 +2717,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
         offerGold: gold,
         accepted: false
     };
+
+    // 2. Create the payload
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     updatePayload[`${theirRole}.accepted`] = false;
+    
+    // 3. Update local state IMMEDIATELY
+    game.myTradeOffer = newOfferObject;
+
+    // 4. Update Firebase
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
+      // No UI render needed here, the input field already has the value
     } catch (e) {
       console.error("Error updating gold offer:", e);
     }
@@ -2717,10 +2743,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
         ...game.myTradeOffer,
         accepted: true 
     };
+    
+    // 2. Create the payload
     const updatePayload = {};
     updatePayload[myRole] = newOfferObject; 
+
+    // 3. Update local state IMMEDIATELY
+    game.myTradeOffer = newOfferObject;
+    
+    // 4. Update Firebase
     try {
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
+      // The snapshot listener will handle the UI update for the "Accepted" text
     } catch (e) {
       console.error("Error accepting trade:", e);
       document.getElementById('tradeAcceptBtn').disabled = false;
