@@ -1188,12 +1188,12 @@ function resetGameState() {
     backToActions();
   }
   if (typeof showTab === 'function') {
-    showTab('equipment');
+    showTab('inventory'); // <-- ### THIS IS THE CHANGE ###
   }
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  showTab('equipment');
+  showTab('inventory'); // <-- ### THIS IS THE CHANGE ###
   window.resetGameState = resetGameState;
   document.addEventListener('mousemove', moveTooltip);
 });
