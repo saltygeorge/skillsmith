@@ -1829,7 +1829,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
       
       // Success! We are now the active session.
       game.isSessionActive = true;
-      startSessionHeartbeat();
+      
+      // *** CRITICAL FIX ***: We no longer call startSessionHeartbeat() 
+      // here to prevent the original 3s interval logic from running.
+      // We rely purely on the 30s autosave for lock refresh.
+      
+      // startSessionHeartbeat(); <-- DELETE THIS LINE
+      
       hideSessionLockOverlay();
       
     } catch (e) {
