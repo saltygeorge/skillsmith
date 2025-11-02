@@ -573,11 +573,11 @@ button.primary:hover { background: var(--accent-hover); }
 #combat-main-actions {
   display: flex;
   gap: 10px;
-  /* margin-top: auto; has been removed */
+  flex-direction: column; /* Stack buttons */
 }
 
 #combat-main-actions button {
-  flex: 1;
+  /* flex: 1; removed */
   font-size: 16px;
 }
 /* --- END: Combat UI Styles --- */
@@ -1388,26 +1388,42 @@ popup.style.lineHeight = '1.4';
     setTimeout(()=>popup.remove(), 900);
 }
 
-function addXP(skill, amount){
+function addXP(skill, amount, delay = 0){
   if (!game[skill]) {
       console.warn(`Skill "${skill}" does not exist.`);
       return;
   }
   game[skill].totalXP += amount; 
   game[skill].xp += amount;
+  
+  let leveledUp = false; // --- NEW: Add a flag ---
   while(game[skill].xp >= getNextXP(game[skill].level)){
     game[skill].xp -= getNextXP(game[skill].level);
     game[skill].level++;
+    leveledUp = true; // --- NEW: Set the flag ---
   }
+  
+  // --- NEW: Check if vitality leveled up and update HP ---
+  if (leveledUp && skill === 'vitality') {
+    updateHPUI();
+  }
+  // --- END NEW ---
+
   updateSkillUI();
   let barId = '';
   if (skill === 'mining') barId = 'mineProgress';
   if (skill === 'blacksmith') barId = 'smithProgress';
   if (skill !== 'blacksmith' && skill !== 'mining') { // Don't show popup for blacksmith, it will be handled manually
-  showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
+    if (delay > 0) {
+      setTimeout(() => {
+        showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
+      }, delay);
+    } else {
+      showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
+    }
  }
 
-}
+ }
 
 const MINE_TIME_MS = 1500;
 const MINE_XP = 15;
@@ -2029,8 +2045,9 @@ function openCombatInterface(enemyName) {
           
           
           <div id="combat-main-actions">
-            <button id="combat-fight-btn" classbutton="primary" onclick="beginCombat()">Fight</button>
-            <button id="combat-run-btn" class="primary" style="background:#666;" onclick="runFromCombat()">Run</button>
+            <button id="combat-fight-btn" class="primary" onclick="beginCombat()">Fight</button>
+            <button id="combat-run-btn" class="primary" style="background:#666; display:none;" onclick="runFromCombat()">Run</button>
+            <button id="combat-return-btn" class="primary" style="background:#555;" onclick="returnToFarm()">Return</button>
           </div>
           
         </div>
@@ -2077,7 +2094,9 @@ function beginCombat() {
   
   game.inCombat = true;
   document.getElementById('combat-fight-btn').disabled = true;
+  document.getElementById('combat-run-btn').style.display = 'block';
   document.getElementById('combat-run-btn').disabled = false;
+  document.getElementById('combat-return-btn').style.display = 'none';
   
   
   // Player attacks every 2.4 seconds (example speed)
@@ -2098,33 +2117,45 @@ function runFromCombat(playerDied = false) {
   if (game.enemyCombatInterval) clearInterval(game.enemyCombatInterval);
   game.playerCombatInterval = null;
   game.enemyCombatInterval = null;
-  
-  
-  // Reset buttons
+
   const fightBtn = document.getElementById('combat-fight-btn');
   const runBtn = document.getElementById('combat-run-btn');
-  if (fightBtn) fightBtn.disabled = false;
-  if (runBtn) runBtn.disabled = true;
+  const returnBtn = document.getElementById('combat-return-btn');
+  
+  if (playerDied) {
+    // Player is dead, disable all actions
+    if (fightBtn) fightBtn.disabled = true;
+    if (runBtn) runBtn.disabled = true;
+    if (returnBtn) returnBtn.style.display = 'none';
+  } else {
+    // Player clicked "Run"
+    if (fightBtn) fightBtn.disabled = false; // Re-enable fight
+    if (runBtn) runBtn.style.display = 'none'; // Hide Run
+    if (runBtn) runBtn.disabled = true;
+    if (returnBtn) returnBtn.style.display = 'block'; // Show return
 
-  // Go back to the main action screen
-  // We use a short delay so you can read the "run" message
-  if (!playerDied) {
-    setTimeout(() => {
-      backToActions();
-      
-      // Check if we need to resume skilling
-      if (game.wasMiningBeforeCombat) {
-        openCopperMine(); // Re-opens the mine UI
-        startMining();      // Restarts mining
-      } else if (game.wasSmithingBeforeCombat) {
-        // This is more complex, might need to know *which* item
-        openBlacksmithHub(); // Just return to hub for now
-      }
-      game.wasMiningBeforeCombat = false;
-      game.wasSmithingBeforeCombat = false;
-      
-    }, 1000);
+    // Reset enemy HP
+    if (game.currentEnemy) {
+        game.currentEnemy.currentHp = game.currentEnemy.maxHp;
+        updateEnemyCombatUI();
+    }
   }
+}
+
+function returnToFarm() {
+  // 1. Go back to the farm screen
+  openFarmCombatArea(); 
+  
+  // 2. Check if we need to resume skilling
+  if (game.wasMiningBeforeCombat) {
+    openCopperMine(); // Re-opens the mine UI
+    startMining();      // Restarts mining
+  } else if (game.wasSmithingBeforeCombat) {
+    // This is more complex, might need to know *which* item
+    openBlacksmithHub(); // Just return to hub for now
+  }
+  game.wasMiningBeforeCombat = false;
+  game.wasSmithingBeforeCombat = false;
 }
 
 // NEW: Helper function to update the enemy's HP bar
@@ -2210,11 +2241,11 @@ function playerAttackTurn() {
     let mainXPGained = damage * 4; // Example: 4 XP per point of damage
     let skillToTrain = game.playerAttackStyle; // 'attack', 'strength', or 'defence'
     
-    addXP(skillToTrain, mainXPGained);
+    addXP(skillToTrain, mainXPGained, 0);
     
     // Per your table, Vitality XP is *always* gained
     let vitalityXPGained = Math.ceil(mainXPGained / 2); // e.g., half of main XP
-    addXP('vitality', vitalityXPGained);
+    addXP('vitality', vitalityXPGained, 450); // <-- This 450ms delay fixes it
   }
 
   // --- 4. Check for Enemy Death ---
@@ -2275,7 +2306,16 @@ function enemyAttackTurn() {
     setTimeout(() => {
       game.hp = game.maxHP; // Restore health
       updateHPUI();
-      // Line deleted
+      
+      // NEW: Reset buttons to pre-combat state
+      const fightBtn = document.getElementById('combat-fight-btn');
+      const runBtn = document.getElementById('combat-run-btn');
+      const returnBtn = document.getElementById('combat-return-btn');
+      
+      if (fightBtn) fightBtn.disabled = false; // Can fight again
+      if (runBtn) runBtn.style.display = 'none'; // Hide Run
+      if (runBtn) runBtn.disabled = true;
+      if (returnBtn) returnBtn.style.display = 'block'; // Can return
     }, 2000);
   }
 }
@@ -2735,6 +2775,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
           totalXP: game.vitality.totalXP
         },
         // +++ END NEW VITALITY SAVE LOGIC +++
+        playerAttackStyle: game.playerAttackStyle, // <-- ADD THIS
         updatedAt: new Date().toISOString()
         // We don't save activeSession here, that's handled by the lock functions
       };
@@ -2805,7 +2846,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
         }
         
         // If we are INACTIVE, OR we are ACTIVE and IDLE, sync the data.
-        
+        game.playerAttackStyle = data.playerAttackStyle || 'strength';
+
         if (!data.name) {
           // This handles the case right after registration
           authScreen.style.display = 'none';
@@ -2959,6 +3001,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         strength: { level: 1, xp: 0, totalXP: 0 }, 
         defence: { level: 1, xp: 0, totalXP: 0 }, 
         vitality: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW VITALITY FOR NEW ACCOUNTS +++
+        playerAttackStyle: 'strength',
         activeSession: null, // +++ ADD THIS
         createdAt: new Date().toISOString()
       });
@@ -2996,6 +3039,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         console.log("Admin status granted.");
       } else {
         game.isAdmin = false;
+        game.playerAttackStyle = 'strength';
       }
       
       if (started) {
