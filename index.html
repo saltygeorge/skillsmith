@@ -704,8 +704,9 @@ game.inventory = new Array(game.inventoryCapacity).fill(null);
 
 const VALID_ITEMS = [
   'Copper Ore',
-  'Copper Bar'
-];
+  'Copper Bar',
+  'Copper Chestplate' 
+]; // <--- CRITICAL FIX: Add the closing bracket AND semicolon
 
 const XP_TABLE = [
   0,        // Level 1
@@ -810,6 +811,8 @@ const XP_TABLE = [
   15000000  // Level 100: Custom value
 ];
 
+const CHESTPLATE_BAR_COST = 10;
+const CHESTPLATE_XP = 50; // Defining a standard XP gain for the item
 
 function setText(id, text){ const el=document.getElementById(id); if(el) el.innerText=text; }
 
@@ -871,9 +874,15 @@ function renderInventoryGrid(){
       const item = slotData;
       const img = document.createElement('img');
       let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
+      
+      // --- NEW: Custom image name logic for all multi-word items ---
       if (item.name === 'Copper Bar') {
           imgName = 'copperbar';
+      } else if (item.name === 'Copper Chestplate') { // +++ NEW CHECK +++
+          imgName = 'copperchestplate';
       }
+      // --- END NEW LOGIC ---
+      
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
       img.onerror = function(){ this.style.opacity='0.08'; this.style.filter='grayscale(90%)'; };
@@ -1264,6 +1273,89 @@ function stopMining(){
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
 
+// +++ NEW CRAFTING FUNCTION BLOCK TO INSERT +++
+const CHESTPLATE_TIME_MS = 10000; 
+
+function startChestplateCrafting() {
+  if (!game.isSessionActive) {
+    alert("This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  // --- Check total bars across all stacks ---
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Copper Bar') {
+          totalBars += slot.qty;
+      }
+  }
+
+  if (totalBars < CHESTPLATE_BAR_COST) {
+      alert(`You need at least ${CHESTPLATE_BAR_COST} Copper Bars to craft a chestplate.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startChestplateBtn');
+  const stopBtn = document.getElementById('stopChestplateBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, now));
+}
+
+function chestplateCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / CHESTPLATE_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    // --- Check materials again before consuming ---
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBars += slot.qty;
+        }
+    }
+    if (totalBars < CHESTPLATE_BAR_COST) {
+        alert("You've run out of Copper Bars.");
+        stopBlacksmithing();
+        return;
+    }
+    
+    removeItem('Copper Bar', CHESTPLATE_BAR_COST); // Consume 10 bars
+    addItem('Copper Chestplate', 1); // Add 1 chestplate
+    addXP('blacksmith', CHESTPLATE_XP); // Award Blacksmith XP
+    
+    // Create the new combined popup
+    const popupText = `+${CHESTPLATE_XP} Blacksmith XP<br>+1 Copper Chestplate`;
+    showItemPopup(popupText, 'chestplateProgress');
+    
+    const bar = document.getElementById('chestplateProgress');
+    if (bar) bar.style.width = '0%';
+    
+    // --- Check *again* for next loop ---
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBarsAfter += slot.qty;
+        }
+    }
+    if (totalBarsAfter < CHESTPLATE_BAR_COST) {
+        alert("You don't have enough bars to craft another chestplate.");
+        stopBlacksmithing();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('chestplateProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, startTime));
+  }
+}
+// +++ END NEW CRAFTING FUNCTION +++
+
+
 const SMITH_TIME_MS = 5000;
 const SMITH_XP = 25;
 const SMITH_ORE_COST = 2;
@@ -1382,6 +1474,30 @@ function openCopperBarSmith(){
   document.getElementById('stopSmithBtn').onclick = stopBlacksmithing;
 }
 
+// +++ NEW COPPER CHESTPLATE UI +++
+function openCopperChestplateSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Smithing - Copper Chestplate</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${CHESTPLATE_BAR_COST} Copper Bars.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="chestplateProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startChestplateBtn" class="primary">Start Crafting</button>
+      <button id="stopChestplateBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startChestplateBtn').onclick = startChestplateCrafting;
+  document.getElementById('stopChestplateBtn').onclick = stopBlacksmithing; // Use the same stop function
+}
+// +++ END NEW COPPER CHESTPLATE UI +++
+
 function openBlacksmithHub() {
   game.shopOpen = false;
   hideTooltip();
@@ -1391,16 +1507,22 @@ function openBlacksmithHub() {
   wrapper.innerHTML = `
     <h2>Blacksmith</h2>
     <div style="margin-top:8px; color:#efe3cf;">Choose an item to smith.</div>
-    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
+    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
       <button id="copperBarBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
         <img src="images/copperbar.png" alt="Copper Bar" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
         <span>Copper Bar</span>
+      </button>
+      <button id="copperChestplateBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/copperchestplate.png" alt="Copper Chestplate" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Copper Chestplate</span>
       </button>
       <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
     </div>
   `;
   const copperBarBtn = document.getElementById('copperBarBtn');
+  const copperChestplateBtn = document.getElementById('copperChestplateBtn'); 
   const returnBtn = document.getElementById('returnToActionsBtn');
+  
   if (copperBarBtn) {
     copperBarBtn.onclick = openCopperBarSmith;
     copperBarBtn.onmouseenter = (event) => {
@@ -1408,6 +1530,15 @@ function openBlacksmithHub() {
     };
     copperBarBtn.onmouseleave = hideTooltip;
   }
+  
+  if (copperChestplateBtn) {
+    copperChestplateBtn.onclick = openCopperChestplateSmith;
+    copperChestplateBtn.onmouseenter = (event) => {
+      showTooltip(event, `Requires: ${CHESTPLATE_BAR_COST} Copper Bars`);
+    };
+    copperChestplateBtn.onmouseleave = hideTooltip;
+  }
+
   if (returnBtn) {
     returnBtn.onclick = backToActions;
   }
