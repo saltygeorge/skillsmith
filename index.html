@@ -2045,8 +2045,8 @@ function openCombatInterface(enemyName) {
           
           
           <div id="combat-main-actions">
-            <button id="combat-fight-btn" class="primary" onclick="beginCombat()">Fight</button>
-            <button id="combat-run-btn" class="primary" style="background:#666; display:none;" onclick="runFromCombat()">Run</button>
+            <button id="combat-fight-btn" class="primary" style="background:#900;" onclick="beginCombat()">Fight</button>
+            <button id="combat-run-btn" class="primary" style="background:#080; display:none;" onclick="runFromCombat()">Run</button>
             <button id="combat-return-btn" class="primary" style="background:#555;" onclick="returnToFarm()">Return</button>
           </div>
           
@@ -2093,10 +2093,9 @@ function beginCombat() {
   }
   
   game.inCombat = true;
-  document.getElementById('combat-fight-btn').disabled = true;
-  document.getElementById('combat-run-btn').style.display = 'block';
+  document.getElementById('combat-fight-btn').style.display = 'none'; // HIDE Fight
+  document.getElementById('combat-run-btn').style.display = 'block'; // SHOW Run
   document.getElementById('combat-run-btn').disabled = false;
-  document.getElementById('combat-return-btn').style.display = 'none';
   
   
   // Player attacks every 2.4 seconds (example speed)
@@ -2129,8 +2128,9 @@ function runFromCombat(playerDied = false) {
     if (returnBtn) returnBtn.style.display = 'none';
   } else {
     // Player clicked "Run"
-    if (fightBtn) fightBtn.disabled = false; // Re-enable fight
-    if (runBtn) runBtn.style.display = 'none'; // Hide Run
+    if (fightBtn) fightBtn.style.display = 'block'; // SHOW Fight
+    if (fightBtn) fightBtn.disabled = false;
+    if (runBtn) runBtn.style.display = 'none'; // HIDE Run
     if (runBtn) runBtn.disabled = true;
     if (returnBtn) returnBtn.style.display = 'block'; // Show return
 
@@ -2143,6 +2143,16 @@ function runFromCombat(playerDied = false) {
 }
 
 function returnToFarm() {
+  // +++ NEW FIX: Stop combat loops +++
+  if (game.inCombat) {
+    game.inCombat = false;
+    if (game.playerCombatInterval) clearInterval(game.playerCombatInterval);
+    if (game.enemyCombatInterval) clearInterval(game.enemyCombatInterval);
+    game.playerCombatInterval = null;
+    game.enemyCombatInterval = null;
+  }
+  // +++ END FIX +++
+
   // 1. Go back to the farm screen
   openFarmCombatArea(); 
   
@@ -2312,8 +2322,9 @@ function enemyAttackTurn() {
       const runBtn = document.getElementById('combat-run-btn');
       const returnBtn = document.getElementById('combat-return-btn');
       
-      if (fightBtn) fightBtn.disabled = false; // Can fight again
-      if (runBtn) runBtn.style.display = 'none'; // Hide Run
+      if (fightBtn) fightBtn.style.display = 'block'; // SHOW Fight
+      if (fightBtn) fightBtn.disabled = false;
+      if (runBtn) runBtn.style.display = 'none'; // HIDE Run
       if (runBtn) runBtn.disabled = true;
       if (returnBtn) returnBtn.style.display = 'block'; // Can return
     }, 2000);
