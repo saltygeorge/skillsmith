@@ -2454,27 +2454,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
 
     if (messageText.startsWith('/trade ')) {
-      const targetName = messageText.substring(7).trim();
-      if (targetName.toLowerCase() === game.name.toLowerCase()) {
-        addLocalChatMessage("You cannot trade with yourself.", 'error');
-        return true;
-      }
-      if (game.inTrade) {
-        addLocalChatMessage("You are already in a trade.", 'error');
-        return true;
-      }
-      addLocalChatMessage(`Sending trade request to ${targetName}...`, 'system');
-      await initiateTradeRequest(targetName);
+      addLocalChatMessage("The trade system is temporarily disabled for maintenance.", 'error');
       return true;
     }
     if (messageText.startsWith('/accepttrade ')) {
-      const requesterName = messageText.substring(13).trim(); 
-      if (game.inTrade) {
-        addLocalChatMessage("You are already in a trade.", 'error');
-        return true;
-      }
-      addLocalChatMessage(`Attempting to accept trade from ${requesterName}...`, 'system');
-      await acceptTradeRequest(requesterName);
+      addLocalChatMessage("The trade system is temporarily disabled for maintenance.", 'error');
       return true;
     }
     return false;
@@ -2572,18 +2556,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       where("toUid", "==", myUid),
       where("status", "==", "pending")
     );
-    tradeRequestUnsubscribe = onSnapshot(requestQuery, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-          if (isTradeRequestsLoaded) {
-            const request = change.doc.data();
-            addLocalChatMessage(
-              `${request.fromName} sent you a trade request. Type '/accepttrade ${request.fromName}' to accept.`,
-              'trade'
-            );
-          }
-        }
-      });
+    // Trade requests are disabled due to maintenance.
+    tradeRequestUnsubscribe = onSnapshot(requestQuery, () => {
       isTradeRequestsLoaded = true;
     }, (error) => console.error("Trade request listener error:", error));
     const sessionQuery1 = query(
