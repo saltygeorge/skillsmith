@@ -1718,6 +1718,41 @@ function openMineHub() {
   }
 }
 
+function openCombatHub() {
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining(); 
+  stopBlacksmithing();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Combat Areas</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Choose an area to start fighting.</div>
+    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
+      
+      <button id="farmAreaBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/farm.png" alt="Farm Area" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>The Farm</span>
+      </button>
+      
+      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
+    </div>
+  `;
+  const farmBtn = document.getElementById('farmAreaBtn');
+  const returnBtn = document.getElementById('returnToActionsBtn');
+  
+  if (farmBtn) {
+    // This will lead to the actual combat setup screen (created later)
+    farmBtn.onclick = () => alert("Farm Combat Setup - Coming Soon!"); 
+    farmBtn.onmouseenter = (event) => {
+      showTooltip(event, 'Lvl Required: 1');
+    };
+    farmBtn.onmouseleave = hideTooltip;
+  }
+  if (returnBtn) {
+    returnBtn.onclick = backToActions;
+  }
+}
+
 function backToActions(){
   game.shopOpen = false; 
   hideTooltip();
@@ -1729,11 +1764,14 @@ function backToActions(){
       <img id="minesActionIcon" src="images/mines.png" alt="Mines" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
       <img id="blacksmithActionIcon" src="images/blacksmithicon.png" alt="Blacksmith" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
       <img id="shopActionIcon" src="images/shopbutton.png" alt="Shop" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="combatActionIcon" src="images/combatareas.png" alt="Combat Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
     </div>
   `;
   const minesIcon = document.getElementById('minesActionIcon');
   const blacksmithIcon = document.getElementById('blacksmithActionIcon');
   const shopIcon = document.getElementById('shopActionIcon'); 
+  const combatIcon = document.getElementById('combatActionIcon'); // +++ NEW ICON REFERENCE +++
+  
   if (minesIcon) {
     minesIcon.onclick = openMineHub;
     minesIcon.onmouseenter = (event) => {
@@ -1755,6 +1793,16 @@ function backToActions(){
     };
     shopIcon.onmouseleave = hideTooltip;
   }
+  
+  // +++ NEW COMBAT ICON LOGIC +++
+  if (combatIcon) {
+    combatIcon.onclick = openCombatHub; 
+    combatIcon.onmouseenter = (event) => {
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Combat Areas</div>');
+    };
+    combatIcon.onmouseleave = hideTooltip;
+  }
+  // +++ END NEW COMBAT LOGIC +++
 }
 
 function openShop() {
