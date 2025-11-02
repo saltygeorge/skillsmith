@@ -707,6 +707,110 @@ const VALID_ITEMS = [
   'Copper Bar'
 ];
 
+const XP_TABLE = [
+  0,        // Level 1
+  83,       // Level 2
+  174,      // Level 3
+  276,      // Level 4
+  388,      // Level 5
+  512,      // Level 6
+  650,      // Level 7
+  801,      // Level 8
+  969,      // Level 9
+  1154,     // Level 10
+  1358,     // Level 11
+  1584,     // Level 12
+  1833,     // Level 13
+  2107,     // Level 14
+  2411,     // Level 15
+  2746,     // Level 16
+  3115,     // Level 17
+  3523,     // Level 18
+  3973,     // Level 19
+  4470,     // Level 20
+  5018,     // Level 21
+  5624,     // Level 22
+  6291,     // Level 23
+  7028,     // Level 24
+  7842,     // Level 25
+  8740,     // Level 26
+  9730,     // Level 27
+  10824,    // Level 28
+  12031,    // Level 29
+  13363,    // Level 30
+  14833,    // Level 31
+  16456,    // Level 32
+  18247,    // Level 33
+  20224,    // Level 34
+  22436,    // Level 35
+  24898,    // Level 36
+  27673,    // Level 37
+  30779,    // Level 38
+  33648,    // Level 39
+  37224,    // Level 40
+  41171,    // Level 41
+  45542,    // Level 42
+  50339,    // Level 43
+  55649,    // Level 44
+  61512,    // Level 45
+  67983,    // Level 46
+  75127,    // Level 47
+  83014,    // Level 48
+  91721,    // Level 49
+  101333,   // Level 50
+  111945,   // Level 51
+  123660,   // Level 52
+  136615,   // Level 53
+  150872,   // Level 54
+  166636,   // Level 55
+  184040,   // Level 56
+  203254,   // Level 57
+  224446,   // Level 58
+  247866,   // Level 59
+  273742,   // Level 60
+  302288,   // Level 61
+  333804,   // Level 62
+  368599,   // Level 63
+  407015,   // Level 64
+  449426,   // Level 65
+  496254,   // Level 66
+  547953,   // Level 67
+  605032,   // Level 68
+  668051,   // Level 69
+  737637,   // Level 70
+  814445,   // Level 71
+  899252,   // Level 72
+  992895,   // Level 73
+  1096245,  // Level 74
+  1210210,  // Level 75
+  1336486,  // Level 76
+  1475581,  // Level 77 (Using 1,475,581)
+  1629200,  // Level 78 (Using 1,629,200)
+  1798808,  // Level 79
+  1986068,  // Level 80
+  2192818,  // Level 81
+  2421027,  // Level 82
+  2673114,  // Level 83
+  2951373,  // Level 84 (Using 2,951,373)
+  3258594,  // Level 85
+  3597292,  // Level 86
+  3972294,  // Level 87 (Using 3,972,294)
+  4385776,  // Level 88
+  4842295,  // Level 89
+  5346332,  // Level 90 (Using 5,346,332)
+  5902831,  // Level 91
+  6517253,  // Level 92
+  7195629,  // Level 93
+  7944614,  // Level 94
+  8771588,  // Level 95
+  9684577,  // Level 96
+  10692629, // Level 97
+  11805606, // Level 98
+  13034031, // Level 99
+  15000000  // Level 100: Custom value
+];
+
+
 function setText(id, text){ const el=document.getElementById(id); if(el) el.innerText=text; }
 
 function formatAmount(n) {
@@ -954,14 +1058,31 @@ function moveTooltip(evt) {
   tooltip.style.top = y + 'px';
 }
 
-function getNextXP(level){ return Math.floor(100 * Math.pow(1.15, level-1)); }
-function getTotalXPForLevel(level) {
-    let total = 0;
-    for(let i = 1; i < level; i++) {
-        total += getNextXP(i);
+function getNextXP(level){
+    // level is the CURRENT level (1-100)
+    
+    // Safety check for levels beyond the table
+    if (level >= XP_TABLE.length) {
+        return 0; 
     }
-    return total;
-  }
+
+    // XP_TABLE[level] holds the total XP for level + 1
+    const xpNeededForNextLevel = XP_TABLE[level]; 
+    
+    // XP_TABLE[level - 1] holds the total XP for the current level
+    const xpAlreadyGained = XP_TABLE[level - 1] || 0; 
+
+    return xpNeededForNextLevel - xpAlreadyGained;
+}
+
+function getTotalXPForLevel(level) {
+    // level is the level we want the *cumulative* XP for (1-100)
+
+    // The XP_TABLE is 0-indexed: Lvl 1 total XP is at index 0.
+    const index = Math.min(level - 1, XP_TABLE.length - 1);
+
+    return XP_TABLE[index] || 0;
+}
 
 function updateSkillUI(){
   const skillsTab = document.getElementById('skillsTab');
