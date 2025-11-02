@@ -1586,6 +1586,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // +++ FIX: Define doc() globally to resolve file:/// protocol errors +++
+  window.doc = doc;
+
   const authScreen = document.getElementById('authScreen');
   const startScreen = document.getElementById('startScreen');
   const gameScreen = document.getElementById('gameScreen');
