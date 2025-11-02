@@ -1716,8 +1716,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // +++ --- NEW SESSION LOCK CONSTANTS & FUNCTIONS --- +++
   const LOCK_STALE_TIME_MS = 10000; // 10 seconds
-  const LOCK_HEARTBEAT_MS = 4000;   // 4 seconds
-
+  const LOCK_HEARTBEAT_MS = 999999999;  
   /**
    * (Helper) Gets the player doc ref.
    */
@@ -1746,25 +1745,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
   /**
    * Starts the heartbeat to keep our session lock fresh.
    */
+  // --- REPLACED WITH SIMPLIFIED FUNCTION (starting around line 802) ---
+  /**
+   * Starts the heartbeat to keep our session lock fresh.
+   * NOTE: The active lock refresh logic is now solely handled by the 30s autosave
+   * (or a separate manual save), so we only start a passive timer.
+   */
   window.startSessionHeartbeat = function() {
     if (game.lockHeartbeat) return; // Already running
     
-    // Use a much faster interval for the heartbeat (e.g., 8s) only when the tab is hidden
-    // or if we're not doing a full save (i.e., we are dragging or in trade).
-    // When the tab is visible and idle, the 30s autosave handles the heartbeat.
-    game.lockHeartbeat = setInterval(async () => {
-      const playerRef = getPlayerRef();
-      if (!playerRef || !game.isSessionActive || (!document.hidden && !game.isDragging && !game.inTrade)) {
-        // If visible and idle, the 30s autosave will handle this.
-        return;
-      }
-      
-      try {
-        await updateDoc(playerRef, { "activeSession.timestamp": Date.now() });
-      } catch (e) {
-        console.error("Heartbeat failed:", e);
-        stopSessionHeartbeat();
-      }
+    // Use the extremely large interval, effectively making this timer passive.
+    // The 30s autosave is now the only functional timer.
+    game.lockHeartbeat = setInterval(() => {
+        // This timer still runs, but the interval is so long it will rarely fire,
+        // ensuring the 30s autosave is the primary write source.
     }, LOCK_HEARTBEAT_MS); 
   }
 
@@ -3248,7 +3242,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const playerRef = getPlayerRef();
       if (playerRef) {
           try {
-              await updateDoc(playerRef, { "activeSession.timestamp": Date.now() });
+              // This is the CRITICAL line that updates the timestamp every 30s
+              await updateDoc(playerRef, { "activeSession.timestamp": Date.now() }); 
           } catch (e) {
               console.error("Autosave Heartbeat failed:", e);
           }
