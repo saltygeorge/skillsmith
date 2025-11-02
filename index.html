@@ -1748,20 +1748,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
    */
   window.startSessionHeartbeat = function() {
     if (game.lockHeartbeat) return; // Already running
+    
+    // Use a much faster interval for the heartbeat (e.g., 8s) only when the tab is hidden
+    // or if we're not doing a full save (i.e., we are dragging or in trade).
+    // When the tab is visible and idle, the 30s autosave handles the heartbeat.
     game.lockHeartbeat = setInterval(async () => {
       const playerRef = getPlayerRef();
-      if (!playerRef || !game.isSessionActive) {
-        stopSessionHeartbeat(); // Stop if we're no longer active
+      if (!playerRef || !game.isSessionActive || (!document.hidden && !game.isDragging && !game.inTrade)) {
+        // If visible and idle, the 30s autosave will handle this.
         return;
       }
+      
       try {
         await updateDoc(playerRef, { "activeSession.timestamp": Date.now() });
       } catch (e) {
         console.error("Heartbeat failed:", e);
-        // If it fails, the lock will become stale and another tab can take it.
         stopSessionHeartbeat();
       }
-    }, LOCK_HEARTBEAT_MS);
+    }, LOCK_HEARTBEAT_MS); 
   }
 
   /**
@@ -3237,11 +3241,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 
   // --- MODIFIED: Autosave only runs on active, visible tab ---
-  setInterval(() => {
+  setInterval(async () => {
     const user = auth.currentUser;
-    // Only save if this is the active session and the tab is visible
-    if (user && game.isSessionActive && !document.hidden && !game.inTrade) {
-      window.savePlayerData();
+    if (user && game.isSessionActive && !game.inTrade) {
+      // 1. Refresh Lock Heartbeat (always do this first if we are the active session)
+      const playerRef = getPlayerRef();
+      if (playerRef) {
+          try {
+              await updateDoc(playerRef, { "activeSession.timestamp": Date.now() });
+          } catch (e) {
+              console.error("Autosave Heartbeat failed:", e);
+          }
+      }
+      
+      // 2. Perform Full Save (only if tab is visible and idle)
+      if (!document.hidden) {
+          window.savePlayerData();
+      }
     }
   }, 30000);
 
