@@ -666,8 +666,12 @@ const game = {
   gold: 0, 
   mining: { level: 1, xp: 0, totalXP: 0 },
   blacksmith: { level: 1, xp: 0, totalXP: 0 },
+  attack: { level: 1, xp: 0, totalXP: 0 }, 
+  strength: { level: 1, xp: 0, totalXP: 0 }, 
+  defence: { level: 1, xp: 0, totalXP: 0 }, 
+  vitality: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW VITALITY SKILL +++
   miningActive: false,
-  blacksmithingActive: false, 
+  blacksmithingActive: false,
   progressFrame: null,
   wasMiningBeforeTrade: false,
   shopOpen: false, 
@@ -1181,6 +1185,10 @@ function updateSkillUI(){
   // --- Call the function for each of your skills ---
   createSkillIcon('Mining', 'mining', 'miningskillicon.png');
   createSkillIcon('Blacksmith', 'blacksmith', 'blacksmithskillicon.png');
+  createSkillIcon('Attack', 'attack', 'attackskillicon.png'); 
+  createSkillIcon('Strength', 'strength', 'strengthskillicon.png'); 
+  createSkillIcon('Defence', 'defence', 'defenseskillicon.png'); 
+  createSkillIcon('Vitality', 'vitality', 'vitalityskillicon.png'); // +++ NEW VITALITY SKILL CALL +++
 }
 
 function showItemPopup(text, progressElementId) {
@@ -2184,6 +2192,30 @@ document.addEventListener('DOMContentLoaded', ()=>{
           xp: game.blacksmith.xp,
           totalXP: game.blacksmith.totalXP
         },
+        // +++ NEW ATTACK SAVE LOGIC +++
+        attack: {
+          level: game.attack.level,
+          xp: game.attack.xp,
+          totalXP: game.attack.totalXP
+        },
+        // +++ NEW STRENGTH AND DEFENCE SAVE LOGIC +++
+        strength: {
+          level: game.strength.level,
+          xp: game.strength.xp,
+          totalXP: game.strength.totalXP
+        },
+        defence: {
+          level: game.defence.level,
+          xp: game.defence.xp,
+          totalXP: game.defence.totalXP
+        },
+        // +++ NEW VITALITY SAVE LOGIC +++
+        vitality: {
+          level: game.vitality.level,
+          xp: game.vitality.xp,
+          totalXP: game.vitality.totalXP
+        },
+        // +++ END NEW VITALITY SAVE LOGIC +++
         updatedAt: new Date().toISOString()
         // We don't save activeSession here, that's handled by the lock functions
       };
@@ -2309,6 +2341,47 @@ document.addEventListener('DOMContentLoaded', ()=>{
         } else {
           game.blacksmith = { level: 1, xp: 0, totalXP: 0 }; 
         }
+        
+        // +++ NEW ATTACK LOADING LOGIC +++
+        if (data.attack) {
+          game.attack.level = data.attack.level || 1;
+          game.attack.xp = data.attack.xp || 0;
+          game.attack.totalXP = data.attack.totalXP || getTotalXPForLevel(data.attack.level - 1) + data.attack.xp || 0; 
+        } else {
+          game.attack = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        // +++ END NEW ATTACK LOADING LOGIC +++
+        
+        // +++ NEW STRENGTH LOADING LOGIC +++
+        if (data.strength) {
+          game.strength.level = data.strength.level || 1;
+          game.strength.xp = data.strength.xp || 0;
+          game.strength.totalXP = data.strength.totalXP || getTotalXPForLevel(data.strength.level - 1) + data.strength.xp || 0; 
+        } else {
+          game.strength = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        // +++ END NEW STRENGTH LOADING LOGIC +++
+        
+        // +++ NEW DEFENCE LOADING LOGIC +++
+        if (data.defence) {
+          game.defence.level = data.defence.level || 1;
+          game.defence.xp = data.defence.xp || 0;
+          game.defence.totalXP = data.defence.totalXP || getTotalXPForLevel(data.defence.level - 1) + data.defence.xp || 0; 
+        } else {
+          game.defence = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        //
+        //
+
+        // +++ NEW VITALITY LOADING LOGIC +++
+        if (data.vitality) {
+          game.vitality.level = data.vitality.level || 1;
+          game.vitality.xp = data.vitality.xp || 0;
+          game.vitality.totalXP = data.vitality.totalXP || getTotalXPForLevel(data.vitality.level - 1) + data.vitality.xp || 0; 
+        } else {
+          game.vitality = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        // +++ END NEW VITALITY LOADING LOGIC +++
 
         setText('charName', game.name);
         updateHPUI();
@@ -2363,6 +2436,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
         gold: 0, 
         mining: { level: 1, xp: 0, totalXP: 0 },
         blacksmith: { level: 1, xp: 0, totalXP: 0 }, 
+        attack: { level: 1, xp: 0, totalXP: 0 }, 
+        strength: { level: 1, xp: 0, totalXP: 0 }, 
+        defence: { level: 1, xp: 0, totalXP: 0 }, 
+        vitality: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW VITALITY FOR NEW ACCOUNTS +++
         activeSession: null, // +++ ADD THIS
         createdAt: new Date().toISOString()
       });
