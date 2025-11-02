@@ -1586,9 +1586,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // +++ FIX: Define doc() globally to resolve file:/// protocol errors +++
-  window.doc = doc;
-
   const authScreen = document.getElementById('authScreen');
   const startScreen = document.getElementById('startScreen');
   const gameScreen = document.getElementById('gameScreen');
@@ -2661,117 +2658,58 @@ document.addEventListener('DOMContentLoaded', ()=>{
     renderOfferGrid('tradeTheirOfferGrid', game.theirTradeOffer.offerItems); 
     modal.style.display = 'flex'; 
     if (game.activeTradeListener) game.activeTradeListener(); 
-    
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // +++ THIS IS THE NEW, SECURE onSnapshot LISTENER +++
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     game.activeTradeListener = onSnapshot(doc(db, "tradeSessions", sessionId), (doc) => {
       if (!doc.exists()) {
         closeTradeWindow();
         addLocalChatMessage("Trade session was deleted.", 'error');
         return;
       }
-      
       const data = doc.data();
-      const myRole = game.myTradeRole;
-      const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
-
-      // Select all UI elements we need to control
-      const acceptBtn = document.getElementById('tradeAcceptBtn');
-      const cancelBtn = document.getElementById('tradeCancelBtn');
-      const goldInput = document.getElementById('tradeMyGoldOffer');
-      const inventoryGrid = document.getElementById('tradeInventoryGrid');
-
-      // === STATE 1: FINALIZED (Waiting for Server) ===
-      // This is when the server is actively processing the trade.
-      if (data.status === 'finalized') {
-        acceptBtn.disabled = true;
-        cancelBtn.disabled = true;
-        goldInput.disabled = true;
-        inventoryGrid.style.pointerEvents = 'none'; // Disable inventory clicks
-        acceptBtn.innerText = "Processing...";
-        updateTradeAcceptStatus('myTradeStatus', true);
-        updateTradeAcceptStatus('theirTradeStatus', true);
-        return; // Wait for the server to send 'completed' or 'cancelled'
-      }
-
-      // === STATE 2: CANCELLED ===
-      // The trade has been cancelled by the server or a player.
       if (data.status === 'cancelled') {
         const errorMsg = data.errorMessage ? `: ${data.errorMessage}` : '.';
         addLocalChatMessage(`Trade was cancelled${errorMsg}`, 'trade');
         closeTradeWindow();
         return;
       }
-
-      // === STATE 3: COMPLETED ===
-      // The trade was successful.
       if (data.status === 'completed') {
         addLocalChatMessage("Trade complete!", 'trade');
         closeTradeWindow();
         return;
       }
-
-      // === STATE 4: ACTIVE (Trading in progress) ===
-      // This is the default state where players are adding items.
-      
-      // Update our local game state from the server snapshot
+      // --- THIS IS THE FIX ---
+      // ONLY update THEIR offer from the snapshot
       game.theirTradeOffer = data[theirRole];
-      game.myTradeOffer.accepted = data[myRole].accepted; // Only sync *our* accepted status
+      
+      // Manually sync our own "accepted" status
+      // This is the ONLY part of our offer we want from the server
+      game.myTradeOffer.accepted = data[myRole].accepted;
 
-      // Render the UI based on the new data
+      // Render THEIR grid (our grid is updated locally)
+      // We also update our inventory to show correct available amounts
       renderOfferGrid('tradeTheirOfferGrid', game.theirTradeOffer.offerItems);
-      renderTradeInventory(); // Re-render our inventory (shows available items)
+      renderTradeInventory();
+      
+      // We no longer need to check if we're typing, because we are
+      // no longer syncing our own gold value from the server.
+      
+      // ONLY set THEIR gold display
       setText('tradeTheirGoldOffer', formatAmount(game.theirTradeOffer.offerGold));
+      
+      // Update statuses for both
       updateTradeAcceptStatus('myTradeStatus', game.myTradeOffer.accepted);
       updateTradeAcceptStatus('theirTradeStatus', game.theirTradeOffer.accepted);
-
-      // --- THIS IS THE MAIN LOGIC FIX ---
-      // Check if both players have accepted
+      // --- END FIX ---
       if (game.myTradeOffer.accepted && game.theirTradeOffer.accepted) {
-        
-        // --- LOCK THE UI FOR *BOTH* PLAYERS ---
-        acceptBtn.disabled = true;
-        cancelBtn.disabled = true;
-        goldInput.disabled = true;
-        inventoryGrid.style.pointerEvents = 'none'; // Disable inventory clicks
-        
-        // Player 1 is responsible for sending the "finalize" signal
+        document.getElementById('tradeAcceptBtn').disabled = true;
+        document.getElementById('tradeCancelBtn').disabled = true;
         if (myRole === 'player1') {
-          acceptBtn.innerText = "Finalizing...";
-          // Tell the server to take over
-          updateDoc(doc(db, "tradeSessions", sessionId), {
-            status: 'finalized'
-          }).catch(e => {
-            // The update to 'finalized' failed! This is bad.
-            // This indicates a client-side network error or permissions issue.
-            // We must NOT try to cancel here, as it conflicts with other logic.
-            console.error("CRITICAL: Failed to send 'finalize' signal!", e);
-            
-            // Re-enable the buttons so the user can at least cancel manually.
-            acceptBtn.disabled = false;
-            cancelBtn.disabled = false;
-            goldInput.disabled = false;
-            inventoryGrid.style.pointerEvents = 'auto';
-            acceptBtn.innerText = "Accept (Error)";
-          });
-        } else {
-          // Player 2 just waits for the 'finalized' status from Player 1
-          acceptBtn.innerText = "Waiting for P1...";
+          executeTrade(sessionId, data);
         }
       } else {
-        // At least one player has not accepted. UI is active.
-        acceptBtn.disabled = false;
-        cancelBtn.disabled = false;
-        goldInput.disabled = false;
-        inventoryGrid.style.pointerEvents = 'auto'; // Enable inventory clicks
-        acceptBtn.innerText = "Accept";
+         document.getElementById('tradeAcceptBtn').disabled = false;
+         document.getElementById('tradeCancelBtn').disabled = false;
       }
     });
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // +++ END: NEW onSnapshot LISTENER +++
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    
     document.getElementById('tradeCancelBtn').onclick = cancelTrade;
     document.getElementById('tradeAcceptBtn').onclick = setTradeAccepted;
     document.getElementById('tradeMyGoldOffer').onchange = updateMyGoldOffer;
@@ -3007,12 +2945,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     closeTradeWindow(); 
     if (sessionId) {
       try {
-        // --- MODIFICATION: Add clearer error message ---
         await updateDoc(doc(db, "tradeSessions", sessionId), {
-          status: 'cancelled',
-          errorMessage: 'Trade cancelled by user.'
+          status: 'cancelled'
         });
-        // --- END MODIFICATION ---
       } catch (e) {
         console.error("Error updating cancelled trade:", e);
       }
@@ -3044,21 +2979,83 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }
     }
   }
-  
-  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  // +++ THIS ENTIRE FUNCTION IS NOW REMOVED FROM THE CLIENT +++
-  // +++ It will live in functions/index.js on the server +++
-  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  /*
   async function executeTrade(sessionId, sessionData) {
-    // ... All of your old, insecure code was here ...
-    // ... It has been DELETED from the client ...
-  }
-  */
-  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  // +++ END: FUNCTION REMOVAL +++
-  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    try {
+      await runTransaction(db, async (transaction) => {
+        const sessionRef = doc(db, "tradeSessions", sessionId);
+        const player1Ref = doc(db, "players", sessionData.player1.uid);
+        const player2Ref = doc(db, "players", sessionData.player2.uid);
+        const [sessionSnap, p1Snap, p2Snap] = await Promise.all([
+          transaction.get(sessionRef),
+          transaction.get(player1Ref),
+          transaction.get(player2Ref)
+        ]);
+        if (!sessionSnap.exists() || !p1Snap.exists() || !p2Snap.exists()) {
+          throw new Error("A player or session does not exist.");
+        }
+        const trade = sessionSnap.data();
+        const p1Data = p1Snap.data();
+        const p2Data = p2Snap.data();
+        if (trade.status !== 'active') {
+          throw new Error("Trade is no longer active.");
+        }
+        if (!trade.player1.accepted || !trade.player2.accepted) {
+          throw new Error("Both players have not accepted.");
+        }
+        const p1Offer = trade.player1;
+        const p2Offer = trade.player2;
+        const p1LocalInv = convertSavedInvToLocal(p1Data.inventory || []);
+        const p2LocalInv = convertSavedInvToLocal(p2Data.inventory || []);
+        if (p1Data.gold < p1Offer.offerGold) throw new Error(`${p1Data.name} does not have enough gold.`);
+        if (p2Data.gold < p2Offer.offerGold) throw new Error(`${p2Data.name} does not have enough gold.`);
+        
+        // --- This loop now uses the NEW 'checkItem' ---
+        for (const [item, qty] of Object.entries(p1Offer.offerItems)) {
+          if (!checkItem(p1LocalInv, item, qty)) {
+            throw new Error(`${p1Data.name} does not have ${qty} ${item}.`);
+          }
+        }
+        // --- This loop now uses the NEW 'checkItem' ---
+        for (const [item, qty] of Object.entries(p2Offer.offerItems)) {
+          if (!checkItem(p2LocalInv, item, qty)) {
+            throw new Error(`${p2Data.name} does not have ${qty} ${item}.`);
+          }
+        }
 
+        let newP1LocalInv = [...p1LocalInv];
+        let newP2LocalInv = [...p2LocalInv];
+
+        // --- These loops now use the NEW 'modifyInventory' ---
+        for (const [item, qty] of Object.entries(p1Offer.offerItems)) {
+            newP1LocalInv = modifyInventory(newP1LocalInv, item, -qty);
+            newP2LocalInv = modifyInventory(newP2LocalInv, item, +qty);
+        }
+        for (const [item, qty] of Object.entries(p2Offer.offerItems)) {
+            newP2LocalInv = modifyInventory(newP2LocalInv, item, -qty);
+            newP1LocalInv = modifyInventory(newP1LocalInv, item, +qty);
+        }
+        // --- End of new function usage ---
+
+        const newP1SavedInv = convertLocalInvToSaved(newP1LocalInv);
+        const newP2SavedInv = convertLocalInvToSaved(newP2LocalInv);
+        transaction.update(sessionRef, { status: 'completed' });
+        transaction.update(player1Ref, {
+            gold: p1Data.gold - p1Offer.offerGold + p2Offer.offerGold,
+            inventory: newP1SavedInv
+        });
+        transaction.update(player2Ref, {
+            gold: p2Data.gold - p2Offer.offerGold + p1Offer.offerGold,
+            inventory: newP2SavedInv
+        });
+      });
+    } catch (e) {
+      console.error("TRADE FAILED:", e);
+      await updateDoc(doc(db, "tradeSessions", sessionId), { 
+        status: 'cancelled',
+        errorMessage: e.message
+      });
+    }
+  }
 
   // --- LEADERBOARD FUNCTION (Unchanged) ---
   window.renderLeaderboards = async function() {
