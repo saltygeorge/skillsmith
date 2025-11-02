@@ -830,7 +830,10 @@ const game = {
   strength: { level: 1, xp: 0, totalXP: 0 }, 
   defence: { level: 1, xp: 0, totalXP: 0 }, 
   vitality: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW VITALITY SKILL +++
+  cooking: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW COOKING SKILL +++
   miningActive: false,
+  blacksmithingActive: false, // +++ NEW: Add missing cookingActive state +++
+  cookingActive: false,
   blacksmithingActive: false,
   progressFrame: null,
   wasMiningBeforeTrade: false,
@@ -877,7 +880,10 @@ const VALID_ITEMS = [
   'Copper Ore',
   'Copper Bar',
   'Copper Chestplate',
-  'Copper Shortsword' 
+  'Copper Shortsword',
+  'Raw Chicken',
+  'Cooked Chicken',
+  'Burnt Chicken'
 ]; // <-- THIS LINE IS THE FIX (Array is now closed)
 
 const XP_TABLE = [
@@ -1066,6 +1072,12 @@ function renderInventoryGrid(){
           imgName = 'copperchestplate';
       } else if (item.name === 'Copper Shortsword') { // +++ SHORTSWORD IMAGE FIX +++
           imgName = 'coppershortsword';
+      } else if (item.name === 'Raw Chicken') {
+          imgName = 'rawchicken';
+      } else if (item.name === 'Cooked Chicken') {
+          imgName = 'cookedchicken';
+      } else if (item.name === 'Burnt Chicken') {
+          imgName = 'burntchicken';
       }
       // --- END NEW LOGIC ---
       
@@ -1362,9 +1374,10 @@ function updateSkillUI(){
   createSkillIcon('Strength', 'strength', 'strengthskillicon.png'); 
   createSkillIcon('Defence', 'defence', 'defenseskillicon.png'); 
   createSkillIcon('Vitality', 'vitality', 'vitalityskillicon.png'); // +++ NEW VITALITY SKILL CALL +++
+  createSkillIcon('Cooking', 'cooking', 'cookingskillicon.png'); // +++ NEW COOKING SKILL CALL +++
 }
 
-function showItemPopup(text, progressElementId) {
+function showItemPopup(text, progressElementId, delay = 0) {
     const main = document.getElementById('mainArea');
     if (!main) return;
     const popup = document.createElement('div');
@@ -1384,8 +1397,15 @@ popup.style.lineHeight = '1.4';
         popup.style.top = '120px';
         popup.style.transform = 'translateX(-50%)';
     }
+    if (delay > 0) {
+    setTimeout(() => {
+      main.appendChild(popup);
+      setTimeout(() => popup.remove(), 850); // 850 to match splat
+    }, delay);
+  } else {
     main.appendChild(popup);
-    setTimeout(()=>popup.remove(), 900);
+    setTimeout(() => popup.remove(), 850); // 850 to match splat
+  }
 }
 
 function addXP(skill, amount, delay = 0){
@@ -1731,6 +1751,168 @@ function stopBlacksmithing(){
   const stopBtn = document.getElementById('stopSmithBtn');
   if(stopBtn) stopBtn.style.display = 'none';
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+const COOK_CHICKEN_TIME_MS = 3000;
+const COOK_CHICKEN_XP = 30;
+
+// --- NEW COOKING FUNCTIONS ---
+function startCookingChicken() {
+  if (!game.isSessionActive) {
+    alert("This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.cookingActive) return;
+
+  // --- Check for Raw Chicken ---
+  let totalRaw = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Raw Chicken') {
+          totalRaw += slot.qty;
+      }
+  }
+
+  if (totalRaw < 1) {
+      alert(`You need at least 1 Raw Chicken to cook.`);
+      return;
+  }
+  
+  game.cookingActive = true;
+  const startBtn = document.getElementById('startCookBtn');
+  const stopBtn = document.getElementById('stopCookBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => cookingChickenLoop(now, now));
+}
+
+function cookingChickenLoop(timestamp, startTime) {
+  if (!game.cookingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / COOK_CHICKEN_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    // --- Check materials again ---
+    let totalRaw = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Raw Chicken') {
+            totalRaw += slot.qty;
+        }
+    }
+    if (totalRaw < 1) {
+        alert("You've run out of Raw Chicken.");
+        stopCookingChicken();
+        return;
+    }
+    
+    removeItem('Raw Chicken', 1); // Consume 1 raw chicken
+    addXP('cooking', COOK_CHICKEN_XP); // Always award XP
+    
+    // Calculate success rate (50% at Lvl 1, 100% at Lvl 10)
+    const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (50/9)));
+    let popupText = '';
+    
+    if (Math.random() * 100 < successRate) {
+      // Success
+      addItem('Cooked Chicken', 1);
+      popupText = `+${COOK_CHICKEN_XP} Cooking XP<br>+1 Cooked Chicken`;
+    } else {
+      // Burnt
+      addItem('Burnt Chicken', 1);
+      popupText = `+${COOK_CHICKEN_XP} Cooking XP<br>+1 Burnt Chicken`;
+    }
+    
+    showItemPopup(popupText, 'cookProgress');
+    
+    const bar = document.getElementById('cookProgress');
+    if (bar) bar.style.width = '0%';
+    
+    // --- Check *again* for next loop ---
+    let totalRawAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Raw Chicken') {
+            totalRawAfter += slot.qty;
+        }
+    }
+    if (totalRawAfter < 1) {
+        alert("You don't have any more Raw Chicken to cook.");
+        stopCookingChicken();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => cookingChickenLoop(now, now));
+  } else {
+    const bar = document.getElementById('cookProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => cookingChickenLoop(now, startTime));
+  }
+}
+
+function stopCookingChicken(){
+  game.cookingActive = false;
+  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  const bar = document.getElementById('cookProgress');
+  if(bar) bar.style.width = '0%';
+  const startBtn = document.getElementById('startCookBtn');
+  if(startBtn) startBtn.style.display = 'inline-block';
+  const stopBtn = document.getElementById('stopCookBtn');
+  if(stopBtn) stopBtn.style.display = 'none';
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function openCookChicken(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing(); // Also stop smithing
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Cooking - Chicken</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: 1 Raw Chicken.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="cookProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCookBtn" class="primary">Start Cooking</button>
+      <button id="stopCookBtn" class="primary" style="background:#555; display:none;">Stop Cooking</button>
+      <button onclick="openKitchenHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCookBtn').onclick = startCookingChicken;
+  document.getElementById('stopCookBtn').onclick = stopCookingChicken;
+}
+
+function openKitchenHub() {
+  game.shopOpen = false;
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopCookingChicken(); // Stop cooking
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Kitchen</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Choose something to cook.</div>
+    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
+      <button id="cookChickenBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/cookedchicken.png" alt="Cooked Chicken" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Cook Chicken</span>
+      </button>
+      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
+    </div>
+  `;
+  const cookChickenBtn = document.getElementById('cookChickenBtn');
+  const returnBtn = document.getElementById('returnToActionsBtn');
+  
+  if (cookChickenBtn) {
+    cookChickenBtn.onclick = openCookChicken;
+    cookChickenBtn.onmouseenter = (event) => {
+      showTooltip(event, 'Requires: 1 Raw Chicken');
+    };
+    cookChickenBtn.onmouseleave = hideTooltip;
+  }
+  
+  if (returnBtn) {
+    returnBtn.onclick = backToActions;
+  }
 }
 
 function openCopperBarSmith(){
@@ -2260,12 +2442,14 @@ function playerAttackTurn() {
 
   // --- 4. Check for Enemy Death ---
   if (game.currentEnemy.currentHp <= 0) {
-    // Line deleted
+    
+    // +++ NEW: Add item drop +++
+    addItem('Raw Chicken', 1);
+    showItemPopup('+1 Raw Chicken', null, 900); // 900ms delay
     
     // Per your request: Respawn the chicken
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
     updateEnemyCombatUI();
-    // Line deleted
   }
 }
 
@@ -2343,12 +2527,14 @@ function backToActions(){
       <img id="blacksmithActionIcon" src="images/blacksmithicon.png" alt="Blacksmith" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
       <img id="shopActionIcon" src="images/shopbutton.png" alt="Shop" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
       <img id="combatActionIcon" src="images/combatareas.png" alt="Combat Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="kitchenActionIcon" src="images/kitchenbutton.png" alt="Kitchen" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
     </div>
   `;
   const minesIcon = document.getElementById('minesActionIcon');
   const blacksmithIcon = document.getElementById('blacksmithActionIcon');
   const shopIcon = document.getElementById('shopActionIcon'); 
   const combatIcon = document.getElementById('combatActionIcon'); // +++ NEW ICON REFERENCE +++
+  const kitchenIcon = document.getElementById('kitchenActionIcon');
   
   if (minesIcon) {
     minesIcon.onclick = openMineHub;
@@ -2381,6 +2567,14 @@ function backToActions(){
     combatIcon.onmouseleave = hideTooltip;
   }
   // +++ END NEW COMBAT LOGIC +++
+if (kitchenIcon) {
+    kitchenIcon.onclick = openKitchenHub; 
+    kitchenIcon.onmouseenter = (event) => {
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Kitchen</div>');
+    };
+    kitchenIcon.onmouseleave = hideTooltip;
+  }
+  // +++ END NEW KITCHEN LOGIC +++
 }
 
 function openShop() {
@@ -2420,7 +2614,10 @@ function resetGameState() {
   game.gold = 0; 
   game.mining = { level: 1, xp: 0, totalXP: 0 };
   game.blacksmith = { level: 1, xp: 0, totalXP: 0 };
-  game.miningActive = false;
+  game.cooking = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
+  game.miningActive = false,
+  game.blacksmithingActive = false, // +++ NEW +++
+  game.cookingActive = false,
   game.blacksmithingActive = false;
   game.shopOpen = false; 
   game.isAdmin = false;
@@ -2786,6 +2983,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
           totalXP: game.vitality.totalXP
         },
         // +++ END NEW VITALITY SAVE LOGIC +++
+        // +++ NEW COOKING SAVE LOGIC +++
+        cooking: {
+          level: game.cooking.level,
+          xp: game.cooking.xp,
+          totalXP: game.cooking.totalXP
+        },
+        // +++ END NEW VITALITY SAVE LOGIC +++
         playerAttackStyle: game.playerAttackStyle, // <-- ADD THIS
         updatedAt: new Date().toISOString()
         // We don't save activeSession here, that's handled by the lock functions
@@ -2954,6 +3158,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
           game.vitality = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW VITALITY LOADING LOGIC +++
+        
+        // +++ NEW COOKING LOADING LOGIC +++
+        if (data.cooking) {
+          game.cooking.level = data.cooking.level || 1;
+          game.cooking.xp = data.cooking.xp || 0;
+          game.cooking.totalXP = data.cooking.totalXP || getTotalXPForLevel(data.cooking.level - 1) + data.cooking.xp || 0; 
+        } else {
+          game.cooking = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        // +++ END NEW VITALITY LOADING LOGIC +++
 
         setText('charName', game.name);
         updateHPUI(); // This now calculates maxHP using game.vitality.level
@@ -3012,6 +3226,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         strength: { level: 1, xp: 0, totalXP: 0 }, 
         defence: { level: 1, xp: 0, totalXP: 0 }, 
         vitality: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW VITALITY FOR NEW ACCOUNTS +++
+        cooking: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW COOKING FOR NEW ACCOUNTS +++
         playerAttackStyle: 'strength',
         activeSession: null, // +++ ADD THIS
         createdAt: new Date().toISOString()
