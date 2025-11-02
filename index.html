@@ -1433,7 +1433,7 @@ function addXP(skill, amount, delay = 0){
   let barId = '';
   if (skill === 'mining') barId = 'mineProgress';
   if (skill === 'blacksmith') barId = 'smithProgress';
-  if (skill !== 'blacksmith' && skill !== 'mining') { // Don't show popup for blacksmith, it will be handled manually
+  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking') { // Don't show popup for blacksmith, it will be handled manually
     if (delay > 0) {
       setTimeout(() => {
         showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
@@ -1473,9 +1473,9 @@ function miningLoop(timestamp, startTime) {
     addItem(MINE_ITEM, 1); // Uses new addItem
     addXP('mining', MINE_XP); // This now adds XP without a popup
 
-    // Create the new combined popup
-    const popupText = `+${MINE_XP} Mining XP<br>+1 Copper Ore`;
-    showItemPopup(popupText, 'mineProgress');
+    // NEW: Create two separate, delayed popups
+    showItemPopup(`+${MINE_XP} Mining XP`, 'mineProgress', 0);
+    showItemPopup(`+1 Copper Ore`, 'mineProgress', 450);
     
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = '0%';
@@ -1553,9 +1553,9 @@ function chestplateCraftingLoop(timestamp, startTime) {
     addItem('Copper Chestplate', 1); // Add 1 chestplate
     addXP('blacksmith', CHESTPLATE_XP); // Award Blacksmith XP
     
-    // Create the new combined popup
-    const popupText = `+${CHESTPLATE_XP} Blacksmith XP<br>+1 Copper Chestplate`;
-    showItemPopup(popupText, 'chestplateProgress');
+    // NEW: Create two separate, delayed popups
+    showItemPopup(`+${CHESTPLATE_XP} Blacksmith XP`, 'chestplateProgress', 0);
+    showItemPopup(`+1 Copper Chestplate`, 'chestplateProgress', 450);
     
     const bar = document.getElementById('chestplateProgress');
     if (bar) bar.style.width = '0%';
@@ -1631,8 +1631,9 @@ function shortswordCraftingLoop(timestamp, startTime) {
     addItem('Copper Shortsword', 1); // Add 1 shortsword
     addXP('blacksmith', SHORTSWORD_XP); // Award Blacksmith XP
     
-    const popupText = `+${SHORTSWORD_XP} Blacksmith XP<br>+1 Copper Shortsword`;
-    showItemPopup(popupText, 'shortswordProgress');
+    // NEW: Create two separate, delayed popups
+    showItemPopup(`+${SHORTSWORD_XP} Blacksmith XP`, 'shortswordProgress', 0);
+    showItemPopup(`+1 Copper Shortsword`, 'shortswordProgress', 450);
     
     const bar = document.getElementById('shortswordProgress');
     if (bar) bar.style.width = '0%';
@@ -1714,9 +1715,9 @@ function blacksmithingLoop(timestamp, startTime) {
     addItem(SMITH_BAR_ITEM, 1); // Uses new addItem
     addXP('blacksmith', SMITH_XP); // This now adds XP without a popup
     
-    // Create the new combined popup
-    const popupText = `+${SMITH_XP} Blacksmith XP<br>+1 Copper Bar`;
-    showItemPopup(popupText, 'smithProgress');
+    // NEW: Create two separate, delayed popups
+    showItemPopup(`+${SMITH_XP} Blacksmith XP`, 'smithProgress', 0);
+    showItemPopup(`+1 Copper Bar`, 'smithProgress', 450);
     
     const bar = document.getElementById('smithProgress');
     if (bar) bar.style.width = '0%';
@@ -1805,23 +1806,23 @@ function cookingChickenLoop(timestamp, startTime) {
     }
     
     removeItem('Raw Chicken', 1); // Consume 1 raw chicken
-    addXP('cooking', COOK_CHICKEN_XP); // Always award XP
+    addXP('cooking', COOK_CHICKEN_XP); // Always award XP (no popup thanks to Step 1)
     
     // Calculate success rate (50% at Lvl 1, 100% at Lvl 10)
     const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (50/9)));
-    let popupText = '';
     
+    // NEW: Create two separate, delayed popups
     if (Math.random() * 100 < successRate) {
       // Success
       addItem('Cooked Chicken', 1);
-      popupText = `+${COOK_CHICKEN_XP} Cooking XP<br>+1 Cooked Chicken`;
+      showItemPopup(`+${COOK_CHICKEN_XP} Cooking XP`, 'cookProgress', 0);
+      showItemPopup(`+1 Cooked Chicken`, 'cookProgress', 450);
     } else {
       // Burnt
       addItem('Burnt Chicken', 1);
-      popupText = `+${COOK_CHICKEN_XP} Cooking XP<br>+1 Burnt Chicken`;
+      showItemPopup(`+${COOK_CHICKEN_XP} Cooking XP`, 'cookProgress', 0);
+      showItemPopup(`+1 Burnt Chicken`, 'cookProgress', 450);
     }
-    
-    showItemPopup(popupText, 'cookProgress');
     
     const bar = document.getElementById('cookProgress');
     if (bar) bar.style.width = '0%';
