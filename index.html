@@ -610,6 +610,35 @@ button.primary:hover { background: var(--accent-hover); }
   text-shadow: 0 1px 2px rgba(0,0,0,0.7); /* Simpler shadow */
 }
 
+/* --- NEW: Item Context Menu --- */
+#itemContextMenu {
+  display: none;
+  position: fixed;
+  z-index: 3000;
+  background: var(--panel-bg);
+  border: 2px solid #453625;
+  border-radius: 6px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  padding: 5px;
+  min-width: 100px;
+}
+.context-menu-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 700;
+}
+.context-menu-btn:hover {
+  background: var(--accent-hover);
+}
+/* --- END: Item Context Menu --- */
+
 </style>
 </head>
 <body>
@@ -1093,9 +1122,18 @@ function renderInventoryGrid(){
       
       const exactAmount = item.qty.toLocaleString(); 
       const itemName = item.name;
+      
+      // --- NEW: Add item stats to tooltip ---
+      let itemStats = '';
+      if (itemName === 'Cooked Chicken') {
+        itemStats = '<div style="color:#aaffaa; margin-top:4px;">+3 HP</div>';
+      }
+      // --- END NEW ---
+
       const tooltipContent = `
         <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${itemName}</div>
         <div style="color:#fff;">Amount: ${exactAmount}</div>
+        ${itemStats}
       `;
       slot.onmouseenter = (evt) => {
         showTooltip(evt, tooltipContent);
@@ -1103,8 +1141,11 @@ function renderInventoryGrid(){
       slot.onmouseleave = () => {
         hideTooltip();
       };
-      slot.onclick = () => {
-        handleSellItemClick(item.name, item.qty);
+      
+      // --- NEW: Updated click handler ---
+      const itemQty = item.qty; // Capture qty for the closure
+      slot.onclick = (event) => {
+        handleItemClick(event, itemName, itemQty);
       };
     } else {
       slot.draggable = false;
@@ -1236,6 +1277,83 @@ function handleSellItemClick(itemName, currentQty) {
     } else {
         alert("Something went wrong, the sale did not complete.");
     }
+  }
+}
+
+function handleItemClick(event, itemName, itemQty) {
+  // Always close any open menu first
+  hideItemContextMenu();
+
+  if (game.shopOpen) {
+    // If shop is open, we're selling
+    handleSellItemClick(itemName, itemQty);
+  } else if (itemName === 'Cooked Chicken') {
+    // Not in shop, and it's a chicken. Show eat menu.
+    showItemContextMenu(event, itemName);
+  }
+  // Other items do nothing outside the shop... for now.
+}
+
+// NEW: Shows the right-click-style menu
+function showItemContextMenu(event, itemName) {
+  const menu = document.getElementById('itemContextMenu');
+  let menuContent = '';
+
+  if (itemName === 'Cooked Chicken') {
+    menuContent += `<button class="context-menu-btn" onclick="eatCookedChicken()">Eat</button>`;
+  }
+  
+  // We can add other options here later (e.g., "Drop")
+  
+  if (menuContent) {
+    menu.innerHTML = menuContent;
+    menu.style.display = 'block';
+    
+    // Position menu near the cursor
+    const rect = document.body.getBoundingClientRect();
+    menu.style.left = (event.clientX - rect.left + 5) + 'px';
+    menu.style.top = (event.clientY - rect.top + 5) + 'px';
+
+    // Add a one-time listener to close the menu
+    // Use setTimeout to skip this current click event
+    setTimeout(() => {
+      document.addEventListener('click', hideItemContextMenu, { once: true });
+    }, 0);
+  }
+}
+
+// NEW: Hides the item context menu
+function hideItemContextMenu() {
+  const menu = document.getElementById('itemContextMenu');
+  if (menu) menu.style.display = 'none';
+  // Remove the listener just in case (though {once: true} should handle it)
+  document.removeEventListener('click', hideItemContextMenu);
+}
+
+// NEW: The logic for eating the chicken
+function eatCookedChicken() {
+  hideItemContextMenu(); // Close the menu
+
+  // Check if HP is full
+  if (game.hp >= game.maxHP) {
+    alert("Your HP is already full.");
+    return;
+  }
+
+  // Try to remove the item. If successful, heal the player.
+  if (removeItem('Cooked Chicken', 1)) {
+    game.hp = Math.min(game.maxHP, game.hp + 3);
+    updateHPUI();
+    
+    // --- NEW FIX: Re-render inventory and save ---
+    renderInventoryGrid();
+    if (typeof window.savePlayerData === 'function') {
+        window.savePlayerData();
+    }
+    // --- END FIX ---
+
+  } else {
+    console.warn('Tried to eat Cooked Chicken, but removeItem failed.');
   }
 }
 
@@ -2753,6 +2871,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   
 });
 </script>
+
+<div id="itemContextMenu"></div>
 
 <script type="module">
   // Firebase imports (CDN modules)
