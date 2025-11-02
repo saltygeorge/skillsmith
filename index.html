@@ -705,8 +705,9 @@ game.inventory = new Array(game.inventoryCapacity).fill(null);
 const VALID_ITEMS = [
   'Copper Ore',
   'Copper Bar',
-  'Copper Chestplate' 
-]; // <--- CRITICAL FIX: Add the closing bracket AND semicolon
+  'Copper Chestplate',
+  'Copper Shortsword' 
+]; // <-- THIS LINE IS THE FIX (Array is now closed)
 
 const XP_TABLE = [
   0,        // Level 1
@@ -814,6 +815,12 @@ const XP_TABLE = [
 const CHESTPLATE_BAR_COST = 10;
 const CHESTPLATE_XP = 50; // Defining a standard XP gain for the item
 
+// +++ NEW SHORTSWORD CONSTANTS +++
+const SHORTSWORD_BAR_COST = 5;
+const SHORTSWORD_XP = 32;
+const SHORTSWORD_TIME_MS = 5000;
+// +++ END NEW CONSTANTS +++
+
 function setText(id, text){ const el=document.getElementById(id); if(el) el.innerText=text; }
 
 function formatAmount(n) {
@@ -878,8 +885,10 @@ function renderInventoryGrid(){
       // --- NEW: Custom image name logic for all multi-word items ---
       if (item.name === 'Copper Bar') {
           imgName = 'copperbar';
-      } else if (item.name === 'Copper Chestplate') { // +++ NEW CHECK +++
+      } else if (item.name === 'Copper Chestplate') { // Handles chestplate image
           imgName = 'copperchestplate';
+      } else if (item.name === 'Copper Shortsword') { // +++ SHORTSWORD IMAGE FIX +++
+          imgName = 'coppershortsword';
       }
       // --- END NEW LOGIC ---
       
@@ -1356,6 +1365,81 @@ function chestplateCraftingLoop(timestamp, startTime) {
 // +++ END NEW CRAFTING FUNCTION +++
 
 
+function startShortswordCrafting() {
+  if (!game.isSessionActive) {
+    alert("This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Copper Bar') {
+          totalBars += slot.qty;
+      }
+  }
+
+  if (totalBars < SHORTSWORD_BAR_COST) {
+      alert(`You need at least ${SHORTSWORD_BAR_COST} Copper Bars to craft a shortsword.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startShortswordBtn');
+  const stopBtn = document.getElementById('stopShortswordBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, now));
+}
+
+function shortswordCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / SHORTSWORD_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBars += slot.qty;
+        }
+    }
+    if (totalBars < SHORTSWORD_BAR_COST) {
+        alert("You've run out of Copper Bars.");
+        stopBlacksmithing();
+        return;
+    }
+    
+    removeItem('Copper Bar', SHORTSWORD_BAR_COST); // Consume 5 bars
+    addItem('Copper Shortsword', 1); // Add 1 shortsword
+    addXP('blacksmith', SHORTSWORD_XP); // Award Blacksmith XP
+    
+    const popupText = `+${SHORTSWORD_XP} Blacksmith XP<br>+1 Copper Shortsword`;
+    showItemPopup(popupText, 'shortswordProgress');
+    
+    const bar = document.getElementById('shortswordProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBarsAfter += slot.qty;
+        }
+    }
+    if (totalBarsAfter < SHORTSWORD_BAR_COST) {
+        alert("You don't have enough bars to craft another shortsword.");
+        stopBlacksmithing();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('shortswordProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, startTime));
+  }
+}
+// +++ END NEW SHORTSWORD CRAFTING FUNCTION +++
+
 const SMITH_TIME_MS = 5000;
 const SMITH_XP = 25;
 const SMITH_ORE_COST = 2;
@@ -1498,6 +1582,30 @@ function openCopperChestplateSmith(){
 }
 // +++ END NEW COPPER CHESTPLATE UI +++
 
+// +++ NEW COPPER SHORTSWORD UI +++
+function openCopperShortswordSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Smithing - Copper Shortsword</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${SHORTSWORD_BAR_COST} Copper Bars.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="shortswordProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startShortswordBtn" class="primary">Start Crafting</button>
+      <button id="stopShortswordBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startShortswordBtn').onclick = startShortswordCrafting;
+  document.getElementById('stopShortswordBtn').onclick = stopBlacksmithing; 
+}
+// +++ END NEW COPPER SHORTSWORD UI +++
+
 function openBlacksmithHub() {
   game.shopOpen = false;
   hideTooltip();
@@ -1512,6 +1620,10 @@ function openBlacksmithHub() {
         <img src="images/copperbar.png" alt="Copper Bar" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
         <span>Copper Bar</span>
       </button>
+      <button id="copperShortswordBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/coppershortsword.png" alt="Copper Shortsword" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Copper Shortsword</span>
+      </button>
       <button id="copperChestplateBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
         <img src="images/copperchestplate.png" alt="Copper Chestplate" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
         <span>Copper Chestplate</span>
@@ -1520,6 +1632,7 @@ function openBlacksmithHub() {
     </div>
   `;
   const copperBarBtn = document.getElementById('copperBarBtn');
+  const copperShortswordBtn = document.getElementById('copperShortswordBtn'); 
   const copperChestplateBtn = document.getElementById('copperChestplateBtn'); 
   const returnBtn = document.getElementById('returnToActionsBtn');
   
@@ -1529,6 +1642,14 @@ function openBlacksmithHub() {
       showTooltip(event, 'Requires: 2 Copper Ore');
     };
     copperBarBtn.onmouseleave = hideTooltip;
+  }
+  
+  if (copperShortswordBtn) {
+    copperShortswordBtn.onclick = openCopperShortswordSmith;
+    copperShortswordBtn.onmouseenter = (event) => {
+      showTooltip(event, `Requires: ${SHORTSWORD_BAR_COST} Copper Bars`);
+    };
+    copperShortswordBtn.onmouseleave = hideTooltip;
   }
   
   if (copperChestplateBtn) {
