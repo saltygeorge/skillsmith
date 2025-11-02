@@ -92,7 +92,7 @@ body {
   font-size: 20px;
 }
 
-.hp-bar { background: #772222; border-radius: 6px; overflow: hidden; margin-bottom: 12px; position: relative; height: 28px; }
+.hp-bar { background: #772222; border-radius: 6px; margin-bottom: 12px; position: relative; height: 28px; }
 .hp-fill { height: 100%; background: #d22; width: 100%; transition: width 0.25s; }
 .hp-text { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: bold; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.7); font-size: 13px; }
 
@@ -212,6 +212,35 @@ body {
   border: 4px solid #453625;
   min-height: 500px; 
   position: relative;
+  
+  /* --- NEW: Added flex properties --- */
+  display: flex;
+  flex-direction: column;
+}
+
+#mainContentWrapper {
+  flex-grow: 1;     /* Allows this wrapper to fill the panel's height */
+  overflow-y: auto;   /* ADDS A SCROLLBAR if content is too tall */
+  min-height: 0;      /* A flexbox fix to allow shrinking/scrolling */
+  
+  /* --- NEW: Add custom scrollbar --- */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--panel-bg);
+}
+
+#mainContentWrapper::-webkit-scrollbar {
+  width: 8px;
+}
+#mainContentWrapper::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+#mainContentWrapper::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+#mainContentWrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
 }
 
 /* --- Chat Panel --- */
@@ -450,6 +479,137 @@ button.primary:hover { background: var(--accent-hover); }
 }
 /* +++ END NEW STYLES +++ */
 
+#combat-main-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#combat-enemy-area {
+  flex-basis: 200px; /* Reduced from 220px */
+  flex-shrink: 0;
+  text-align: center;
+  position: relative;
+  margin-bottom: 15px;
+}
+
+#combat-enemy-img {
+  max-height: 150px; /* Reduced from 180px */
+  max-width: 100%;
+  object-fit: contain;
+}
+
+#combat-enemy-hp-bar {
+  background: #772222;
+  border-radius: 6px;
+  /* overflow: hidden; */ /* <-- This is the fix */
+  position: relative;
+  height: 28px;
+  width: 80%;
+  max-width: 300px;
+  margin: 10px auto 0 auto;
+  border: 2px solid #333;
+}
+
+#combat-enemy-hp-fill {
+  height: 100%;
+  background: #d22;
+  width: 100%;
+  transition: width 0.25s;
+}
+
+#combat-enemy-hp-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+  font-size: 13px;
+}
+
+#combat-player-area {
+  flex-grow: 1;
+  display: flex;
+  gap: 20px;
+  background: rgba(0,0,0,0.15);
+  padding: 15px;
+  border-radius: 8px;
+}
+
+#combat-equip-panel {
+  /* Removed the fixed flex-basis of 300px */
+  /* This panel will now shrink to fit its content */
+}
+
+#combat-action-panel {
+  /* flex-grow: 1; has been removed */
+  display: flex;
+  flex-direction: column;
+}
+
+#combat-styles {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+#combat-styles button {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid var(--accent);
+  background: var(--accent);
+  opacity: 0.7;
+}
+
+#combat-styles button.active {
+  background: var(--accent-hover);
+  border-color: var(--gold);
+  opacity: 1.0;
+}
+
+
+#combat-main-actions {
+  display: flex;
+  gap: 10px;
+  /* margin-top: auto; has been removed */
+}
+
+#combat-main-actions button {
+  flex: 1;
+  font-size: 16px;
+}
+/* --- END: Combat UI Styles --- */
+
+.combat-splat {
+  position: absolute;
+  right: -40px; /* Moved over to center the new box */
+  top: -5px;    /* Moved up slightly */
+  font-size: 1.2rem;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 1600;
+  animation: rise 900ms ease-out forwards;
+  
+  /* --- NEW "BOX" STYLES --- */
+  background: rgba(10, 10, 10, 0.75);
+  border: 1px solid #000;
+  border-radius: 6px;
+  padding: 3px 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+.splat-damage {
+  color: #ff4d4d; /* Bright red */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7); /* Simpler shadow */
+}
+
+.splat-block {
+  color: #6dafff; /* Bright blue */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7); /* Simpler shadow */
+}
+
 </style>
 </head>
 <body>
@@ -676,6 +836,13 @@ const game = {
   wasMiningBeforeTrade: false,
   shopOpen: false, 
   isAdmin: false,
+  inCombat: false,
+  playerAttackStyle: 'strength', // Default to strength
+  currentEnemy: null,
+  playerCombatInterval: null,
+  enemyCombatInterval: null,
+  wasMiningBeforeCombat: false, // Renamed from 'wasMiningBeforeTrade'
+  wasSmithingBeforeCombat: false,
   
   // +++ NEW SESSION LOCK +++
   // This is a unique ID for this specific tab
@@ -848,6 +1015,12 @@ function createCharacter(){
 }
 
 function updateHPUI(){
+  // Calculate new maxHP based on Vitality level (1 HP per level starting at Lvl 1)
+  game.maxHP = 10 + (game.vitality ? (game.vitality.level - 1) : 0);
+  
+  // Ensure current HP doesn't exceed max HP after a level up
+  game.hp = Math.min(game.hp, game.maxHP); 
+  
   const percent = Math.min(100, Math.round((game.hp / game.maxHP) * 100));
   document.getElementById('hpFill').style.width = percent + '%';
   setText('hpText', `${game.hp} / ${game.maxHP} HP`);
@@ -1749,8 +1922,8 @@ function openCombatHub() {
   const returnBtn = document.getElementById('returnToActionsBtn');
   
   if (farmBtn) {
-    // This will lead to the actual combat setup screen (created later)
-    farmBtn.onclick = () => alert("Farm Combat Setup - Coming Soon!"); 
+    // This now opens the farm area
+    farmBtn.onclick = openFarmCombatArea;
     farmBtn.onmouseenter = (event) => {
       showTooltip(event, 'Lvl Required: 1');
     };
@@ -1758,6 +1931,352 @@ function openCombatHub() {
   }
   if (returnBtn) {
     returnBtn.onclick = backToActions;
+  }
+}
+
+function openFarmCombatArea() {
+  game.shopOpen = false;
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>The Farm</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A peaceful farm, mostly.</div>
+    
+    <div style="margin-top:20px; text-align:center; cursor:pointer;" onclick="openCombatInterface('Chicken')">
+      <img src="images/chickenmonster.png" alt="Chicken" style="height: 100px;">
+      <div style="font-weight:bold;">Chicken (Lvl 1)</div>
+    </div>
+    
+    <div class="action-buttons" style="margin-top:14px;">
+      <button onclick="openCombatHub()" class="primary" style="background:#666;">Return</button>
+    </div>
+  `;
+}
+
+// NEW: Function to build and open the main combat UI
+function openCombatInterface(enemyName) {
+  // Stop any skilling
+  if (game.miningActive) {
+    stopMining();
+    game.wasMiningBeforeCombat = true;
+  }
+  if (game.blacksmithingActive) {
+    stopBlacksmithing();
+    game.wasSmithingBeforeCombat = true;
+  }
+  
+  // Define our enemy
+  if (enemyName === 'Chicken') {
+    game.currentEnemy = {
+      name: 'Chicken',
+      level: 1,
+      maxHp: 10,
+      currentHp: 10,
+      attack: 1, // Low attack level
+      strength: 1, // Max hit is 1
+      defence: 1, // Low defence
+      img: 'images/chickenmonster.png'
+    };
+  } else {
+    console.error('Unknown enemy:', enemyName);
+    return;
+  }
+  
+  const wrapper = document.getElementById('mainContentWrapper');
+  
+  // --- This is the new UI layout you described ---
+  wrapper.innerHTML = `
+    <div id="combat-main-container">
+    
+      <div id="combat-enemy-area">
+        <img id="combat-enemy-img" src="${game.currentEnemy.img}" alt="${game.currentEnemy.name}">
+        <div id="combat-enemy-hp-bar">
+          <div id="combat-enemy-hp-fill" style="width:100%"></div>
+          <div id="combat-enemy-hp-text">10 / 10 HP</div>
+        </div>
+      </div>
+      
+      <div id="combat-player-area">
+        
+        <div id="combat-equip-panel">
+          <div class="equipment-character">
+            <div class="character-frame">
+              <div class="equipment-row">
+                <div class="equipment-slot" id="combat-helmet">
+                  </div>
+              </div>
+              <div class="equipment-row" style="align-items:center;">
+                <div class="equipment-slot" id="combat-weapon"></div>
+                <div class="equipment-slot" id="combat-chest"></div>
+              </div>
+              <div class="equipment-row">
+                <div class="equipment-slot" id="combat-boots"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="combat-action-panel">
+          <p style="margin: 0 0 10px 0; font-weight: bold;">Combat Style:</p>
+          <div id="combat-styles">
+            <button id="style-attack" class="primary" onclick="setAttackStyle('attack')">Accurate</button>
+            <button id="style-strength" class="primary" onclick="setAttackStyle('strength')">Aggressive</button>
+            <button id="style-defence" class="primary" onclick="setAttackStyle('defence')">Defensive</button>
+          </div>
+          
+          
+          <div id="combat-main-actions">
+            <button id="combat-fight-btn" classbutton="primary" onclick="beginCombat()">Fight</button>
+            <button id="combat-run-btn" class="primary" style="background:#666;" onclick="runFromCombat()">Run</button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Set the default active style button
+  setAttackStyle(game.playerAttackStyle, true); 
+  // We'll add a function to load the equipment images later
+}
+
+function setAttackStyle(style, isInitialization = false) {
+  game.playerAttackStyle = style;
+  
+  // Update button visual state
+  const styles = ['attack', 'strength', 'defence'];
+  styles.forEach(s => {
+    const btn = document.getElementById(`style-${s}`);
+    if (btn) {
+      if (s === style) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    }
+  });
+  
+  if (!isInitialization) {
+    // Line deleted
+  }
+}
+
+
+
+
+// NEW: Function to start the combat loops
+function beginCombat() {
+  if (game.inCombat) return; // Prevent starting multiple times
+  if (!game.isSessionActive) {
+    alert("This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  game.inCombat = true;
+  document.getElementById('combat-fight-btn').disabled = true;
+  document.getElementById('combat-run-btn').disabled = false;
+  
+  
+  // Player attacks every 2.4 seconds (example speed)
+  game.playerCombatInterval = setInterval(playerAttackTurn, 2400);
+  
+  // Enemy (Chicken) attacks every 3.0 seconds (example speed)
+  game.enemyCombatInterval = setInterval(enemyAttackTurn, 3000);
+}
+
+// NEW: Function to stop combat
+function runFromCombat(playerDied = false) {
+  if (!game.inCombat) return; // Can't run if not in a fight
+  
+  game.inCombat = false;
+  
+  // Stop the attack loops
+  if (game.playerCombatInterval) clearInterval(game.playerCombatInterval);
+  if (game.enemyCombatInterval) clearInterval(game.enemyCombatInterval);
+  game.playerCombatInterval = null;
+  game.enemyCombatInterval = null;
+  
+  
+  // Reset buttons
+  const fightBtn = document.getElementById('combat-fight-btn');
+  const runBtn = document.getElementById('combat-run-btn');
+  if (fightBtn) fightBtn.disabled = false;
+  if (runBtn) runBtn.disabled = true;
+
+  // Go back to the main action screen
+  // We use a short delay so you can read the "run" message
+  if (!playerDied) {
+    setTimeout(() => {
+      backToActions();
+      
+      // Check if we need to resume skilling
+      if (game.wasMiningBeforeCombat) {
+        openCopperMine(); // Re-opens the mine UI
+        startMining();      // Restarts mining
+      } else if (game.wasSmithingBeforeCombat) {
+        // This is more complex, might need to know *which* item
+        openBlacksmithHub(); // Just return to hub for now
+      }
+      game.wasMiningBeforeCombat = false;
+      game.wasSmithingBeforeCombat = false;
+      
+    }, 1000);
+  }
+}
+
+// NEW: Helper function to update the enemy's HP bar
+function updateEnemyCombatUI() {
+  if (!game.currentEnemy) return;
+  
+  const enemy = game.currentEnemy;
+  const percent = Math.max(0, (enemy.currentHp / enemy.maxHp) * 100);
+  
+  const fill = document.getElementById('combat-enemy-hp-fill');
+  const text = document.getElementById('combat-enemy-hp-text');
+  
+  if (fill) fill.style.width = percent + '%';
+  if (text) text.textContent = `${enemy.currentHp} / ${enemy.maxHp} HP`;
+}
+
+function showDamageSplat(target, amount, type) {
+  let anchorElement = null;
+  if (target === 'player') {
+    // This finds the player's main hp-bar
+    anchorElement = document.getElementById('hpFill').parentElement; 
+  } else if (target === 'enemy') {
+    anchorElement = document.getElementById('combat-enemy-hp-bar');
+  }
+
+  if (!anchorElement) return;
+
+  const splat = document.createElement('div');
+  splat.className = 'combat-splat';
+  
+  if (type === 'damage') {
+    splat.classList.add('splat-damage');
+    splat.textContent = amount;
+  } else { // 'block'
+    splat.classList.add('splat-block');
+    splat.textContent = '0';
+  }
+  
+  // Randomize horizontal position slightly
+  splat.style.right = (Math.floor(Math.random() * 20) - 40) + 'px';
+  
+  anchorElement.appendChild(splat);
+  setTimeout(() => splat.remove(), 850); // Remove just before animation ends
+}
+
+function playerAttackTurn() {
+  if (!game.inCombat || !game.currentEnemy) return;
+
+  // --- 1. Calculate Hit Chance ---
+  // Player's Attack vs. Enemy's Defence
+  // We'll make it a simple formula. Base 70% chance.
+  let hitChance = 70 + (game.attack.level - game.currentEnemy.defence);
+  hitChance = Math.max(10, Math.min(90, hitChance)); // Clamp between 10% and 90%
+
+  if (Math.random() * 100 > hitChance) {
+    showDamageSplat('enemy', 0, 'block'); // ENEMY MISS
+    return;
+  }
+
+  // --- 2. Calculate Damage (If Hit) ---
+  // Based on your table: Damage = Strength_Lvl (Major) + Attack_Lvl / 6 (Minor)
+  // We'll use this formula for the "Max Hit".
+  let maxHit = Math.floor(game.strength.level + (game.attack.level / 6));
+  if (maxHit < 1) maxHit = 1; // Ensure you can always hit at least a 1
+  
+  // Damage is a random number from 0 to your max hit
+  let damage = Math.floor(Math.random() * (maxHit + 1));
+
+  if (damage > 0) {
+    showDamageSplat('enemy', damage, 'damage'); // ENEMY HIT
+  } else {
+    showDamageSplat('enemy', 0, 'block'); // ENEMY HIT A 0
+  }
+
+  // Apply damage to enemy
+  game.currentEnemy.currentHp -= damage;
+  // Line deleted
+  updateEnemyCombatUI();
+
+  // --- 3. Grant XP ---
+  if (damage > 0) {
+    // Grant XP based on the style you're using
+    let mainXPGained = damage * 4; // Example: 4 XP per point of damage
+    let skillToTrain = game.playerAttackStyle; // 'attack', 'strength', or 'defence'
+    
+    addXP(skillToTrain, mainXPGained);
+    
+    // Per your table, Vitality XP is *always* gained
+    let vitalityXPGained = Math.ceil(mainXPGained / 2); // e.g., half of main XP
+    addXP('vitality', vitalityXPGained);
+  }
+
+  // --- 4. Check for Enemy Death ---
+  if (game.currentEnemy.currentHp <= 0) {
+    // Line deleted
+    
+    // Per your request: Respawn the chicken
+    game.currentEnemy.currentHp = game.currentEnemy.maxHp;
+    updateEnemyCombatUI();
+    // Line deleted
+  }
+}
+
+// NEW: The Enemy's turn to attack
+function enemyAttackTurn() {
+  if (!game.inCombat || !game.currentEnemy) return;
+
+  // --- 1. Calculate Hit Chance ---
+  // "he doesn't hit often"
+  // Enemy Attack (1) vs. Player Defence (game.defence.level)
+  // We'll give it a very low base chance.
+  let hitChance = 25 + (game.currentEnemy.attack - game.defence.level);
+  hitChance = Math.max(5, Math.min(50, hitChance)); // Clamp between 5% and 50%
+  
+  if (Math.random() * 100 > hitChance) {
+    showDamageSplat('player', 0, 'block'); // PLAYER MISS
+    return;
+  }
+
+  // --- 2. Calculate Damage (If Hit) ---
+  // "his max hit is 1"
+  let maxHit = game.currentEnemy.strength; // This is 1
+  let damage = Math.floor(Math.random() * (maxHit + 1)); // Will be 0 or 1
+
+  // TODO: Apply player's Damage Reduction from Defence/Armor here
+  
+  if (damage > 0) {
+    showDamageSplat('player', damage, 'damage'); // PLAYER HIT
+  } else {
+    showDamageSplat('player', 0, 'block'); // PLAYER HIT A 0
+  }
+  
+  // Apply damage to player
+  game.hp -= damage;
+  // Line deleted
+  updateHPUI(); // Update the player's main HP bar
+
+  // --- 3. Check for Player Death ---
+  if (game.hp <= 0) {
+    game.hp = 0; // Don't let it go negative
+    updateHPUI();
+    // Line deleted
+    
+    // Stop the fight, passing 'true' to indicate the player died
+    runFromCombat(true); 
+    
+    // Respawn the player after a short delay
+    setTimeout(() => {
+      game.hp = game.maxHP; // Restore health
+      updateHPUI();
+      // Line deleted
+    }, 2000);
   }
 }
 
@@ -2384,7 +2903,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         // +++ END NEW VITALITY LOADING LOGIC +++
 
         setText('charName', game.name);
-        updateHPUI();
+        updateHPUI(); // This now calculates maxHP using game.vitality.level
         renderInventoryGrid();
         updateSkillUI();
         updateGoldUI(); 
