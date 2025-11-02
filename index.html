@@ -3240,26 +3240,28 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   });
 
-  // --- MODIFIED: Autosave only runs on active, visible tab ---
+  // --- Autosave runs every 30s, but only performs writes if the tab is visible ---
   setInterval(async () => {
     const user = auth.currentUser;
-    if (user && game.isSessionActive && !game.inTrade) {
-      // 1. Refresh Lock Heartbeat (always do this first if we are the active session)
+
+    // Check if user is logged in, is the active session, not in trade, AND THE TAB IS VISIBLE.
+    if (user && game.isSessionActive && !game.inTrade && !document.hidden) {
+        
+      // 1. Refresh Lock Heartbeat (WRITE)
+      // This update maintains the lock and prevents other tabs from stealing control.
       const playerRef = getPlayerRef();
       if (playerRef) {
           try {
-              // This is the CRITICAL line that updates the timestamp every 30s
               await updateDoc(playerRef, { "activeSession.timestamp": Date.now() }); 
           } catch (e) {
               console.error("Autosave Heartbeat failed:", e);
           }
       }
       
-      // 2. Perform Full Save (only if tab is visible and idle)
-      if (!document.hidden) {
-          window.savePlayerData();
-      }
+      // 2. Perform Full Save (WRITE)
+      window.savePlayerData();
     }
+    // If document.hidden is true, the timer function exits immediately with no writes.
   }, 30000);
 
   // --- MODIFIED: Releases session lock on tab close ---
