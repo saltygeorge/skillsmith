@@ -218,6 +218,13 @@ body {
   flex-direction: column;
 }
 
+.bank-content-wrapper {
+  /* This overrides the standard padding from the parent containers (like .main or #mainContentWrapper) */
+  padding: 0 10px 10px 10px; /* Adjust top/bottom padding as needed, but reduce left/right */
+  width: 100%;
+  box-sizing: border-box; /* Crucial for preventing width overflow */
+}
+
 #mainContentWrapper {
   flex-grow: 1;     /* Allows this wrapper to fill the panel's height */
   overflow-y: auto;   /* ADDS A SCROLLBAR if content is too tall */
@@ -666,8 +673,12 @@ button.primary:hover { background: var(--accent-hover); }
 /* --- END: Item Context Menu --- */
 
 #bankGrid {
-  grid-template-columns: repeat(8, var(--slot-size)); /* 8 columns wide */
-  justify-content: center; /* Center the 8-column grid */
+  /* Set the number of columns */
+  grid-template-columns: repeat(5, var(--slot-size)); 
+  
+  /* --- CRITICAL FIX: Re-add centering and set min-width on its WRAPPER --- */
+  /* This ensures the grid is centered again */
+  justify-content: center; 
 }
 /* --- END NEW RULE --- */
 
@@ -683,10 +694,12 @@ button.primary:hover { background: var(--accent-hover); }
   padding: 15px;
   border-radius: 8px;
   display: flex;
-  justify-content: space-around;
+  /* This will put the input/button group on one side and "Banked Gold" on the other */
+  justify-content: space-between; 
   align-items: center;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 20px; /* Increased gap a bit for balance */
+  margin-top: -10px;
 }
 #bankGoldPanel > div {
   text-align: center;
@@ -715,6 +728,8 @@ button.primary:hover { background: var(--accent-hover); }
   border-radius: 8px;
   display: flex;
   flex-direction: column;
+  /* --- CRITICAL FIX: Add min-width to prevent panel from shrinking --- */
+  min-width: 400px; 
 }
 #bankPanel h3, #bankInventoryPanel h3 {
   margin: 0 0 10px 0;
@@ -956,7 +971,7 @@ const game = {
   gold: 0,
   // --- NEW BANK PROPERTIES ---
   bank: [],
-  bankCapacity: 40, // Example: 40 slots
+  bankCapacity: 20, // Example: 40 slots
   bankGold: 0,
   // --- END NEW ---
   mining: { level: 1, xp: 0, totalXP: 0 },
@@ -2988,30 +3003,27 @@ function openBank() {
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <div id="bankContainer">
-      <h2>Bank</h2>
       
-      <div id="bankGoldPanel">
-        <div>
-          <div>Your Gold</div>
-          <div id="bankPlayerGold" class="gold-display">0</div>
+      <div class="bank-content-wrapper"> 
+        <div id="bankGoldPanel">
+          
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="number" id="bankGoldInput" min="0" placeholder="Amount...">
+            <button class="primary" onclick="depositGold()">Deposit</button>
+            <button class="primary" onclick="withdrawGold()">Withdraw</button>
+          </div>
+          
+          <div>
+            <div>Banked Gold</div>
+            <div id="bankStoredGold" class="gold-display">0</div>
+          </div>
         </div>
-        <div>
-          <input type="number" id="bankGoldInput" min="0" placeholder="Amount...">
-        </div>
-        <div>
-          <button class="primary" onclick="depositGold()">Deposit</button>
-          <button class="primary" onclick="withdrawGold()">Withdraw</button>
-        </div>
-        <div>
-          <div>Banked Gold</div>
-          <div id="bankStoredGold" class="gold-display">0</div>
-        </div>
-      </div>
 
-      <div id="bankPanel">
-        <h3>Bank Storage</h3>
-        <div class="inventory-grid-wrap" id="bankGridWrap">
-          <div class="inventory-grid" id="bankGrid"></div>
+        <div id="bankPanel">
+          <h3>Bank Storage</h3>
+          <div class="inventory-grid-wrap" id="bankGridWrap">
+            <div class="inventory-grid" id="bankGrid"></div>
+          </div>
         </div>
       </div>
       
@@ -3020,12 +3032,12 @@ function openBank() {
       </div>
     </div>
   `;
+  // --- END REPLACE ---
 
   document.getElementById('returnToActionsBtn').onclick = backToActions;
   
   // Initial render
   renderBankGrid();
-  // renderBankInventoryGrid(); // This line should already be deleted
   updateBankGoldUI();
 }
 // --- Bank Drag-and-Drop Handlers ---
