@@ -665,6 +665,73 @@ button.primary:hover { background: var(--accent-hover); }
 }
 /* --- END: Item Context Menu --- */
 
+#bankGrid {
+  grid-template-columns: repeat(8, var(--slot-size)); /* 8 columns wide */
+  justify-content: center; /* Center the 8-column grid */
+}
+/* --- END NEW RULE --- */
+
+/* --- NEW: Bank UI Styles --- */
+
+#bankContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+#bankGoldPanel {
+  background: rgba(0,0,0,0.15);
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+#bankGoldPanel > div {
+  text-align: center;
+}
+#bankGoldPanel .gold-display {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--gold);
+}
+#bankGoldPanel input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: #3f2b21;
+  color: #fff;
+  width: 120px;
+}
+#bankGridPanels {
+  display: flex;
+  gap: 20px;
+}
+#bankPanel, #bankInventoryPanel {
+  flex: 1;
+  background: rgba(0,0,0,0.15);
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+#bankPanel h3, #bankInventoryPanel h3 {
+  margin: 0 0 10px 0;
+  text-align: center;
+}
+#bankGridWrap {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--panel-bg);
+  /* Taller 8-row height */
+  height: calc((var(--slot-size) + var(--slot-gap)) * 8 + var(--slot-gap));
+}
+
 </style>
 </head>
 <body>
@@ -886,7 +953,12 @@ const game = {
   maxHP: 10,
   inventory: [], 
   inventoryCapacity: 39,
-  gold: 0, 
+  gold: 0,
+  // --- NEW BANK PROPERTIES ---
+  bank: [],
+  bankCapacity: 40, // Example: 40 slots
+  bankGold: 0,
+  // --- END NEW ---
   mining: { level: 1, xp: 0, totalXP: 0 },
   blacksmith: { level: 1, xp: 0, totalXP: 0 },
   attack: { level: 1, xp: 0, totalXP: 0 }, 
@@ -897,7 +969,6 @@ const game = {
   miningActive: false,
   blacksmithingActive: false, // +++ NEW: Add missing cookingActive state +++
   cookingActive: false,
-  blacksmithingActive: false,
   progressFrame: null,
   wasMiningBeforeTrade: false,
   shopOpen: false, 
@@ -938,7 +1009,7 @@ theirTradeOffer: { offerItems: {}, offerGold: 0, accepted: false }
 // +++ END MODIFICATION +++
 
 game.inventory = new Array(game.inventoryCapacity).fill(null);
-
+game.bank = new Array(game.bankCapacity).fill(null);
 const VALID_ITEMS = [
   'Copper Ore',
   'Copper Bar',
@@ -2710,18 +2781,16 @@ function enemyAttackTurn() {
 }
 
 function backToActions(){
-  game.shopOpen = false; 
-  hideTooltip();
-  stopMining();
-  stopBlacksmithing();
+  // ... (some lines)
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
-    <div id="actionScreen" style="display: flex; gap: 10px;">
+    <div id="actionScreen" style="display: flex; gap: 10px; flex-wrap: wrap;">
       <img id="minesActionIcon" src="images/mines.png" alt="Mines" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
       <img id="blacksmithActionIcon" src="images/blacksmithicon.png" alt="Blacksmith" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
       <img id="shopActionIcon" src="images/shopbutton.png" alt="Shop" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
       <img id="combatActionIcon" src="images/combatareas.png" alt="Combat Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
       <img id="kitchenActionIcon" src="images/kitchenbutton.png" alt="Kitchen" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="bankActionIcon" src="images/bankbutton.png" alt="Bank" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
     </div>
   `;
   const minesIcon = document.getElementById('minesActionIcon');
@@ -2729,6 +2798,7 @@ function backToActions(){
   const shopIcon = document.getElementById('shopActionIcon'); 
   const combatIcon = document.getElementById('combatActionIcon'); // +++ NEW ICON REFERENCE +++
   const kitchenIcon = document.getElementById('kitchenActionIcon');
+  const bankIcon = document.getElementById('bankActionIcon');
   
   if (minesIcon) {
     minesIcon.onclick = openMineHub;
@@ -2768,8 +2838,369 @@ if (kitchenIcon) {
     };
     kitchenIcon.onmouseleave = hideTooltip;
   }
-  // +++ END NEW KITCHEN LOGIC +++
+  
+
+
+  // +++ NEW BANK ICON LOGIC +++
+  if (bankIcon) {
+    bankIcon.onclick = openBank; // This function doesn't exist yet
+    bankIcon.onmouseenter = (event) => {
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Bank</div>');
+    };
+    bankIcon.onmouseleave = hideTooltip;
+  }
+  // +++ END NEW BANK LOGIC +++
 }
+
+let draggedBankItem = null; // Stores data for bank drag-and-drop
+
+/**
+ * Renders the Bank grid UI
+ */
+function renderBankGrid() {
+  const grid = document.getElementById('bankGrid');
+  if (!grid) return;
+  
+  grid.innerHTML = '';
+  for(let i = 0; i < game.bankCapacity; i++) {
+    const slotData = game.bank[i];
+    const slot = document.createElement('div');
+    slot.className = 'inv-slot';
+    slot.dataset.slotIndex = i;
+    
+    // Bank slots are drop targets
+    slot.addEventListener('dragover', handleBankDragOver);
+    slot.addEventListener('dragleave', (e) => e.target.closest('.inv-slot').classList.remove('drag-over'));
+    slot.addEventListener('drop', handleBankDrop);
+
+    if(slotData) {
+      const item = slotData;
+      // Click to withdraw
+      slot.onclick = () => withdrawItem(i); 
+
+      // --- (Copied from renderInventoryGrid) ---
+      const img = document.createElement('img');
+      let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
+      if (item.name === 'Copper Bar') imgName = 'copperbar';
+      else if (item.name === 'Copper Chestplate') imgName = 'copperchestplate';
+      else if (item.name === 'Copper Shortsword') imgName = 'coppershortsword';
+      else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
+      else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
+      else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
+      img.src = `images/${imgName}.png`;
+      img.alt = item.name;
+      img.onerror = function(){ this.style.opacity='0.08'; };
+      slot.appendChild(img);
+      
+      const amt = document.createElement('div');
+      amt.className = 'inv-amount';
+      amt.innerText = formatAmount(item.qty); 
+      slot.appendChild(amt);
+      
+      const tooltipContent = `
+        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
+        <div>Amount: ${item.qty.toLocaleString()}</div>
+        <div style="color:#ffaaaa; margin-top: 5px;">Click to withdraw...</div>
+      `;
+      slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+      slot.onmouseleave = hideTooltip;
+      // --- (End copy) ---
+    }
+    grid.appendChild(slot);
+  }
+}
+
+/**
+ * Renders the Inventory grid *for the bank screen*
+ */
+function renderBankInventoryGrid() {
+  const grid = document.getElementById('bankInventoryGrid');
+  if (!grid) return;
+
+  grid.innerHTML = '';
+  for(let i = 0; i < game.inventoryCapacity; i++) {
+    const slotData = game.inventory[i];
+    const slot = document.createElement('div');
+    slot.className = 'inv-slot';
+    slot.dataset.slotIndex = i;
+
+    if(slotData) {
+      const item = slotData;
+      // Inventory items are draggable
+      slot.draggable = true;
+      slot.addEventListener('dragstart', (e) => handleBankDragStart(e, item, i));
+      slot.addEventListener('dragend', () => {
+        draggedBankItem = null;
+        const draggingEl = document.querySelector('.inv-slot.dragging');
+        if (draggingEl) draggingEl.classList.remove('dragging');
+      });
+
+      // --- (Copied from renderInventoryGrid) ---
+      const img = document.createElement('img');
+      let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
+      if (item.name === 'Copper Bar') imgName = 'copperbar';
+      else if (item.name === 'Copper Chestplate') imgName = 'copperchestplate';
+      else if (item.name === 'Copper Shortsword') imgName = 'coppershortsword';
+      else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
+      else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
+      else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
+      img.src = `images/${imgName}.png`;
+      img.alt = item.name;
+      img.onerror = function(){ this.style.opacity='0.08'; };
+      slot.appendChild(img);
+      
+      const amt = document.createElement('div');
+      amt.className = 'inv-amount';
+      amt.innerText = formatAmount(item.qty); 
+      slot.appendChild(amt);
+      
+      const tooltipContent = `
+        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
+        <div>Amount: ${item.qty.toLocaleString()}</div>
+        <div style="color:#aaffaa; margin-top: 5px;">Drag to deposit...</div>
+      `;
+      slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+      slot.onmouseleave = hideTooltip;
+      // --- (End copy) ---
+    }
+    grid.appendChild(slot);
+  }
+}
+
+/**
+ * Updates the gold values on the bank screen
+ */
+function updateBankGoldUI() {
+  setText('bankPlayerGold', formatAmount(game.gold));
+  setText('bankStoredGold', formatAmount(game.bankGold));
+}
+
+/**
+ * Main function to open the Bank UI
+ */
+function openBank() {
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopCookingChicken();
+  game.shopOpen = false; 
+
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <div id="bankContainer">
+      <h2>Bank</h2>
+      
+      <div id="bankGoldPanel">
+        <div>
+          <div>Your Gold</div>
+          <div id="bankPlayerGold" class="gold-display">0</div>
+        </div>
+        <div>
+          <input type="number" id="bankGoldInput" min="0" placeholder="Amount...">
+        </div>
+        <div>
+          <button class="primary" onclick="depositGold()">Deposit</button>
+          <button class="primary" onclick="withdrawGold()">Withdraw</button>
+        </div>
+        <div>
+          <div>Banked Gold</div>
+          <div id="bankStoredGold" class="gold-display">0</div>
+        </div>
+      </div>
+
+      <div id="bankPanel">
+        <h3>Bank Storage</h3>
+        <div class="inventory-grid-wrap" id="bankGridWrap">
+          <div class="inventory-grid" id="bankGrid"></div>
+        </div>
+      </div>
+      
+      <div class="action-buttons" style="margin-top:0px; align-self: flex-start;">
+        <button id="returnToActionsBtn" class="primary" style="background:#666;">Return</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('returnToActionsBtn').onclick = backToActions;
+  
+  // Initial render
+  renderBankGrid();
+  // renderBankInventoryGrid(); // This line should already be deleted
+  updateBankGoldUI();
+}
+// --- Bank Drag-and-Drop Handlers ---
+
+function handleBankDragStart(e, item, fromIndex) {
+  // Store item data for the drop
+  draggedBankItem = { item, fromIndex };
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => {
+    e.target.closest('.inv-slot').classList.add('dragging');
+  }, 0);
+}
+
+function handleBankDragOver(e) {
+  e.preventDefault();
+  const targetSlot = e.target.closest('.inv-slot');
+  if (targetSlot) {
+    targetSlot.classList.add('drag-over');
+  }
+}
+
+function handleBankDrop(e) {
+  e.preventDefault();
+  const targetSlot = e.target.closest('.inv-slot');
+  if (!targetSlot || !draggedBankItem) return;
+  
+  targetSlot.classList.remove('drag-over');
+  const toBankIndex = parseInt(targetSlot.dataset.slotIndex);
+  
+  // Call the deposit logic
+  depositItem(draggedBankItem.item, draggedBankItem.fromIndex, toBankIndex);
+  draggedBankItem = null;
+}
+
+// --- Bank Core Logic ---
+
+function depositItem(item, fromInventoryIndex, toBankIndex) {
+  if (!item) return;
+
+  const bankSlot = game.bank[toBankIndex];
+  
+  // Check if we're dropping on a different item
+  if (bankSlot && bankSlot.name !== item.name) {
+    alert("You can't stack different items. Drop on an empty slot or a stack of the same item.");
+    return;
+  }
+
+  let qtyToDeposit = item.qty;
+
+  // Ask for amount if it's a stack
+  if (item.qty > 1) {
+    const input = prompt(`How many ${item.name} do you want to deposit? (You have: ${item.qty})`, item.qty);
+    if (input === null) return; // User cancelled
+    qtyToDeposit = parseInt(input);
+  }
+
+  if (isNaN(qtyToDeposit) || qtyToDeposit <= 0) return;
+  if (qtyToDeposit > item.qty) {
+    alert("You don't have that many to deposit.");
+    return;
+  }
+
+  // 1. Remove from inventory
+  game.inventory[fromInventoryIndex].qty -= qtyToDeposit;
+  if (game.inventory[fromInventoryIndex].qty <= 0) {
+    game.inventory[fromInventoryIndex] = null;
+  }
+
+  // 2. Add to bank
+  if (bankSlot) {
+    // Stack on existing
+    bankSlot.qty += qtyToDeposit;
+  } else {
+    // Add to new slot
+    game.bank[toBankIndex] = { name: item.name, qty: qtyToDeposit };
+  }
+
+  // 3. Re-render and save
+  renderBankGrid();
+  renderInventoryGrid();
+  hideTooltip();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function withdrawItem(fromBankIndex) {
+  const item = game.bank[fromBankIndex];
+  if (!item) return;
+
+  let qtyToWithdraw = item.qty;
+
+  // Ask for amount if it's a stack
+  if (item.qty > 1) {
+    const input = prompt(`How many ${item.name} do you want to withdraw? (Bank has: ${item.qty})`, item.qty);
+    if (input === null) return; // User cancelled
+    qtyToWithdraw = parseInt(input);
+  }
+  
+  if (isNaN(qtyToWithdraw) || qtyToWithdraw <= 0) return;
+  if (qtyToWithdraw > item.qty) {
+    alert("You don't have that many to withdraw.");
+    return;
+  }
+
+  // 1. Add to inventory (using the safe addItem function)
+  // We'll *clone* the item data first
+  const itemToAdd = { name: item.name, qty: qtyToWithdraw };
+  addItem(itemToAdd.name, itemToAdd.qty); // This function is in your non-module script
+  
+  // Check if inventory was full
+  // This is tricky because addItem doesn't return success.
+  // We'll assume it works and re-render.
+  // A better way is to check manually.
+  
+  // 2. Remove from bank
+  game.bank[fromBankIndex].qty -= qtyToWithdraw;
+  if (game.bank[fromBankIndex].qty <= 0) {
+    game.bank[fromBankIndex] = null;
+  }
+  
+  // 3. Re-render and save
+  renderBankGrid();
+  renderInventoryGrid(); // This will update based on addItem
+  hideTooltip();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function depositGold() {
+  const inputEl = document.getElementById('bankGoldInput');
+  if (!inputEl) return;
+  
+  let amount = parseInt(inputEl.value);
+  if (isNaN(amount) || amount <= 0) {
+    alert("Please enter a valid amount.");
+    return;
+  }
+  if (amount > game.gold) {
+    alert("You don't have that much gold to deposit.");
+    return;
+  }
+
+  game.gold -= amount;
+  game.bankGold += amount;
+
+  inputEl.value = '';
+  updateBankGoldUI();
+  updateGoldUI(); // Update main UI
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function withdrawGold() {
+  const inputEl = document.getElementById('bankGoldInput');
+  if (!inputEl) return;
+  
+  let amount = parseInt(inputEl.value);
+  if (isNaN(amount) || amount <= 0) {
+    alert("Please enter a valid amount.");
+    return;
+  }
+  if (amount > game.bankGold) {
+    alert("You don't have that much gold in your bank.");
+    return;
+  }
+
+  game.bankGold -= amount;
+  game.gold += amount;
+
+  inputEl.value = '';
+  updateBankGoldUI();
+  updateGoldUI(); // Update main UI
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+// =================================================================
+// --- END NEW BANK FUNCTIONS ---
+// =================================================================
 
 function openShop() {
   hideTooltip();
@@ -2806,13 +3237,16 @@ function resetGameState() {
   game.maxHP = 10;
   game.inventory = new Array(game.inventoryCapacity).fill(null);
   game.gold = 0; 
+  // +++ NEW +++
+  game.bank = new Array(game.bankCapacity).fill(null);
+  game.bankGold = 0;
+  // +++ END NEW +++
   game.mining = { level: 1, xp: 0, totalXP: 0 };
   game.blacksmith = { level: 1, xp: 0, totalXP: 0 };
   game.cooking = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
-  game.miningActive = false,
-  game.blacksmithingActive = false, // +++ NEW +++
-  game.cookingActive = false,
-  game.blacksmithingActive = false;
+  game.miningActive = false;
+  game.blacksmithingActive = false; // +++ NEW +++
+  game.cookingActive = false;
   game.shopOpen = false; 
   game.isAdmin = false;
   
@@ -2855,6 +3289,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
       draggedItemIndex = parseInt(e.target.dataset.slotIndex);
       e.dataTransfer.effectAllowed = 'move';
       
+      // +++ NEW: Link to bank drag system +++
+      const item = game.inventory[draggedItemIndex];
+      if (item) {
+        // Use the script-global draggedBankItem
+        draggedBankItem = { item: { ...item }, fromIndex: draggedItemIndex };
+      }
+      // +++ END NEW +++
+
       // +++ NEW: Set dragging flag +++
       game.isDragging = true;
       
@@ -2863,6 +3305,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }, 0);
     }
   });
+
 
   inventoryGrid.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -2940,6 +3383,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       draggingEl.classList.remove('dragging');
     }
     draggedItemIndex = null;
+    draggedBankItem = null;
     // +++ NEW: Clear dragging flag +++
     game.isDragging = false;
   });
@@ -3128,9 +3572,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
       
       const nameToSave = game.name || "";
       const inventoryToSave = [];
+      // --- THIS IS THE FIX ---
+      // This code was missing. It adds your inventory to the save file.
       game.inventory.forEach((item, index) => {
           if (item) {
               inventoryToSave.push({
+                  slot: index,
+                  name: item.name,
+                  qty: item.qty
+              });
+          }
+      });
+      
+      // +++ NEW: Convert bank to save format +++
+      const bankToSave = [];
+      game.bank.forEach((item, index) => {
+          if (item) {
+              bankToSave.push({
                   slot: index,
                   name: item.name,
                   qty: item.qty
@@ -3144,7 +3602,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
         hp: game.hp,
         maxHP: game.maxHP,
         inventory: inventoryToSave, 
-        gold: game.gold, 
+        gold: game.gold,
+        // +++ NEW +++
+        bank: bankToSave,
+        bankGold: game.bankGold,
+        // +++ END NEW +++
         mining: {
           level: game.mining.level,
           xp: game.mining.xp,
@@ -3252,7 +3714,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         
         // If we are the active tab, AND we are busy (mining, dragging, etc.),
         // do not sync data. This prevents rollbacks.
-        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.isDragging)) {
+        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.cookingActive || game.isDragging)) {
           return;
         }
         
@@ -3297,6 +3759,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
         }
         
         game.gold = (typeof data.gold === 'number') ? data.gold : 0; 
+        
+        // +++ NEW: Load Bank Data +++
+        game.bankGold = (typeof data.bankGold === 'number') ? data.bankGold : 0;
+        let loadedBankData = data.bank || [];
+        game.bank = new Array(game.bankCapacity).fill(null);
+        if (Array.isArray(loadedBankData)) {
+            loadedBankData.forEach(item => {
+                if (item && typeof item.slot === 'number' && item.slot < game.bankCapacity) {
+                    game.bank[item.slot] = { name: item.name, qty: item.qty };
+                }
+            });
+        }
+        // +++ END NEW +++
         
         if (data.mining) {
           game.mining.level = data.mining.level || 1;
@@ -3416,6 +3891,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
         maxHP: 10,
         inventory: [],
         gold: 0, 
+        // +++ NEW +++
+        bank: [],
+        bankGold: 0,
+        // +++ END NEW +++
         mining: { level: 1, xp: 0, totalXP: 0 },
         blacksmith: { level: 1, xp: 0, totalXP: 0 }, 
         attack: { level: 1, xp: 0, totalXP: 0 }, 
@@ -4635,7 +5114,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       window.savePlayerData();
     }
     // If document.hidden is true, the timer function exits immediately with no writes.
-  }, 30000);
+  }, 9000);
 
   // --- MODIFIED: Releases session lock on tab close ---
   window.addEventListener('beforeunload', (e) => {
