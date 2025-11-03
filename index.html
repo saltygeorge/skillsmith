@@ -1088,6 +1088,8 @@ const VALID_ITEMS = [
   'Copper Bar',
   'Copper Chestplate',
   'Copper Shortsword',
+  'Copper Helmet', 
+  'Copper Boots', 
   'Raw Chicken',
   'Cooked Chicken',
   'Burnt Chicken'
@@ -1204,6 +1206,15 @@ const SHORTSWORD_BAR_COST = 5;
 const SHORTSWORD_XP = 32;
 const SHORTSWORD_TIME_MS = 5000;
 // +++ END NEW CONSTANTS +++
+const HELMET_BAR_COST = 5;
+const HELMET_XP = 32; // Same as shortsword
+const HELMET_TIME_MS = 5000; // Same as shortsword
+// +++ END NEW CONSTANTS +++
+
+// +++ NEW BOOTS CONSTANTS +++
+const BOOTS_BAR_COST = 4;
+const BOOTS_XP = 26; // 4 bars (~6.5xp/bar)
+const BOOTS_TIME_MS = 4000; // 4 bars (1s/bar)
 
 function setText(id, text){ const el=document.getElementById(id); if(el) el.innerText=text; }
 
@@ -1279,8 +1290,15 @@ function renderInventoryGrid(){
           imgName = 'copperchestplate';
       } else if (item.name === 'Copper Shortsword') { // +++ SHORTSWORD IMAGE FIX +++
           imgName = 'coppershortsword';
+      
+      // --- THIS BLOCK IS NOW FIXED ---
       } else if (item.name === 'Raw Chicken') {
-          imgName = 'rawchicken';
+          imgName = 'rawchicken'; 
+      } else if (item.name === 'Copper Helmet') {
+          imgName = 'copperhelmet';
+      // --- THIS BLOCK IS ALSO FIXED ---
+      } else if (item.name === 'Copper Boots') {
+          imgName = 'copperboots';
       } else if (item.name === 'Cooked Chicken') {
           imgName = 'cookedchicken';
       } else if (item.name === 'Burnt Chicken') {
@@ -1961,6 +1979,200 @@ async function shortswordCraftingLoop(timestamp, startTime) {
 }
 // +++ END NEW SHORTSWORD CRAFTING FUNCTION +++
 
+function openCopperHelmetSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Smithing - Copper Helmet</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${HELMET_BAR_COST} Copper Bars.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="helmetProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startHelmetBtn" class="primary">Start Crafting</button>
+      <button id="stopHelmetBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startHelmetBtn').onclick = startHelmetCrafting;
+  document.getElementById('stopHelmetBtn').onclick = stopBlacksmithing; 
+}
+
+async function startHelmetCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Copper Bar') {
+          totalBars += slot.qty;
+      }
+  }
+
+  if (totalBars < HELMET_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${HELMET_BAR_COST} Copper Bars to craft a helmet.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startHelmetBtn');
+  const stopBtn = document.getElementById('stopHelmetBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, now));
+}
+
+async function helmetCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / HELMET_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBars += slot.qty;
+        }
+    }
+    if (totalBars < HELMET_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
+        stopBlacksmithing();
+        return;
+    }
+    
+    removeItem('Copper Bar', HELMET_BAR_COST);
+    addItem('Copper Helmet', 1);
+    addXP('blacksmith', HELMET_XP);
+    
+    showItemPopup(`+${HELMET_XP} Blacksmith XP`, 'helmetProgress', 0);
+    showItemPopup(`+1 Copper Helmet`, 'helmetProgress', 450);
+    
+    const bar = document.getElementById('helmetProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBarsAfter += slot.qty;
+        }
+    }
+    if (totalBarsAfter < HELMET_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another helmet.");
+        stopBlacksmithing();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('helmetProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, startTime));
+  }
+}
+// +++ END NEW HELMET CRAFTING FUNCTION +++
+
+// +++ NEW COPPER BOOTS UI +++
+function openCopperBootsSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Smithing - Copper Boots</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${BOOTS_BAR_COST} Copper Bars.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="bootsProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startBootsBtn" class="primary">Start Crafting</button>
+      <button id="stopBootsBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startBootsBtn').onclick = startBootsCrafting;
+  document.getElementById('stopBootsBtn').onclick = stopBlacksmithing; 
+}
+
+async function startBootsCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Copper Bar') {
+          totalBars += slot.qty;
+      }
+  }
+
+  if (totalBars < BOOTS_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${BOOTS_BAR_COST} Copper Bars to craft boots.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startBootsBtn');
+  const stopBtn = document.getElementById('stopBootsBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => bootsCraftingLoop(now, now));
+}
+
+async function bootsCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / BOOTS_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBars += slot.qty;
+        }
+    }
+    if (totalBars < BOOTS_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
+        stopBlacksmithing();
+        return;
+    }
+    
+    removeItem('Copper Bar', BOOTS_BAR_COST);
+    addItem('Copper Boots', 1);
+    addXP('blacksmith', BOOTS_XP);
+    
+    showItemPopup(`+${BOOTS_XP} Blacksmith XP`, 'bootsProgress', 0);
+    showItemPopup(`+1 Copper Boots`, 'bootsProgress', 450);
+    
+    const bar = document.getElementById('bootsProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBarsAfter += slot.qty;
+        }
+    }
+    if (totalBarsAfter < BOOTS_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft more boots.");
+        stopBlacksmithing();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => bootsCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('bootsProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => bootsCraftingLoop(now, startTime));
+  }
+}
+
 const SMITH_TIME_MS = 5000;
 const SMITH_XP = 25;
 const SMITH_ORE_COST = 2;
@@ -2298,24 +2510,40 @@ function openBlacksmithHub() {
     <h2>Blacksmith</h2>
     <div style="margin-top:8px; color:#efe3cf;">Choose an item to smith.</div>
     <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
+      
       <button id="copperBarBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
         <img src="images/copperbar.png" alt="Copper Bar" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
         <span>Copper Bar</span>
       </button>
-      <button id="copperShortswordBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
-        <img src="images/coppershortsword.png" alt="Copper Shortsword" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Copper Shortsword</span>
+      
+      <button id="copperHelmetBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/copperhelmet.png" alt="Copper Helmet" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Copper Helmet</span>
       </button>
+
       <button id="copperChestplateBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
         <img src="images/copperchestplate.png" alt="Copper Chestplate" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
         <span>Copper Chestplate</span>
       </button>
+
+      <button id="copperBootsBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/copperboots.png" alt="Copper Boots" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Copper Boots</span>
+      </button>
+
+      <button id="copperShortswordBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/coppershortsword.png" alt="Copper Shortsword" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Copper Shortsword</span>
+      </button>
+      
       <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
     </div>
   `;
   const copperBarBtn = document.getElementById('copperBarBtn');
-  const copperShortswordBtn = document.getElementById('copperShortswordBtn'); 
+  const copperHelmetBtn = document.getElementById('copperHelmetBtn'); // <-- NEW
   const copperChestplateBtn = document.getElementById('copperChestplateBtn'); 
+  const copperBootsBtn = document.getElementById('copperBootsBtn'); // <-- NEW
+  const copperShortswordBtn = document.getElementById('copperShortswordBtn'); 
   const returnBtn = document.getElementById('returnToActionsBtn');
   
   if (copperBarBtn) {
@@ -2326,13 +2554,15 @@ function openBlacksmithHub() {
     copperBarBtn.onmouseleave = hideTooltip;
   }
   
-  if (copperShortswordBtn) {
-    copperShortswordBtn.onclick = openCopperShortswordSmith;
-    copperShortswordBtn.onmouseenter = (event) => {
-      showTooltip(event, `Requires: ${SHORTSWORD_BAR_COST} Copper Bars`);
+  // --- NEW HELMET LOGIC ---
+  if (copperHelmetBtn) {
+    copperHelmetBtn.onclick = openCopperHelmetSmith;
+    copperHelmetBtn.onmouseenter = (event) => {
+      showTooltip(event, `Requires: ${HELMET_BAR_COST} Copper Bars`);
     };
-    copperShortswordBtn.onmouseleave = hideTooltip;
+    copperHelmetBtn.onmouseleave = hideTooltip;
   }
+  // --- END NEW ---
   
   if (copperChestplateBtn) {
     copperChestplateBtn.onclick = openCopperChestplateSmith;
@@ -2340,6 +2570,24 @@ function openBlacksmithHub() {
       showTooltip(event, `Requires: ${CHESTPLATE_BAR_COST} Copper Bars`);
     };
     copperChestplateBtn.onmouseleave = hideTooltip;
+  }
+  
+  // --- NEW BOOTS LOGIC ---
+  if (copperBootsBtn) {
+    copperBootsBtn.onclick = openCopperBootsSmith;
+    copperBootsBtn.onmouseenter = (event) => {
+      showTooltip(event, `Requires: ${BOOTS_BAR_COST} Copper Bars`);
+    };
+    copperBootsBtn.onmouseleave = hideTooltip;
+  }
+  // --- END NEW ---
+
+  if (copperShortswordBtn) {
+    copperShortswordBtn.onclick = openCopperShortswordSmith;
+    copperShortswordBtn.onmouseenter = (event) => {
+      showTooltip(event, `Requires: ${SHORTSWORD_BAR_COST} Copper Bars`);
+    };
+    copperShortswordBtn.onmouseleave = hideTooltip;
   }
 
   if (returnBtn) {
@@ -3074,6 +3322,8 @@ function renderBankGrid() {
       if (item.name === 'Copper Bar') imgName = 'copperbar';
       else if (item.name === 'Copper Chestplate') imgName = 'copperchestplate';
       else if (item.name === 'Copper Shortsword') imgName = 'coppershortsword';
+      else if (item.name === 'Copper Helmet') imgName = 'copperhelmet';
+      else if (item.name === 'Copper Boots') imgName = 'copperboots';
       else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
       else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
       else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
