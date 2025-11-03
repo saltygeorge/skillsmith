@@ -2886,74 +2886,28 @@ function renderBankGrid() {
     slot.className = 'inv-slot';
     slot.dataset.slotIndex = i;
     
-    // Bank slots are drop targets
+    // --- STEP 1A: Drop target for Deposit (Inventory -> Bank) ---
     slot.addEventListener('dragover', handleBankDragOver);
     slot.addEventListener('dragleave', (e) => e.target.closest('.inv-slot').classList.remove('drag-over'));
-    slot.addEventListener('drop', handleBankDrop);
-
+    slot.addEventListener('drop', handleBankDrop); // Calls depositItem
+    
     if(slotData) {
       const item = slotData;
-      // Click to withdraw
-      slot.onclick = () => withdrawItem(i); 
-
-      // --- (Copied from renderInventoryGrid) ---
-      const img = document.createElement('img');
-      let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
-      if (item.name === 'Copper Bar') imgName = 'copperbar';
-      else if (item.name === 'Copper Chestplate') imgName = 'copperchestplate';
-      else if (item.name === 'Copper Shortsword') imgName = 'coppershortsword';
-      else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
-      else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
-      else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
-      img.src = `images/${imgName}.png`;
-      img.alt = item.name;
-      img.onerror = function(){ this.style.opacity='0.08'; };
-      slot.appendChild(img);
       
-      const amt = document.createElement('div');
-      amt.className = 'inv-amount';
-      amt.innerText = formatAmount(item.qty); 
-      slot.appendChild(amt);
-      
-      const tooltipContent = `
-        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
-        <div>Amount: ${item.qty.toLocaleString()}</div>
-        <div style="color:#ffaaaa; margin-top: 5px;">Click to withdraw...</div>
-      `;
-      slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
-      slot.onmouseleave = hideTooltip;
-      // --- (End copy) ---
-    }
-    grid.appendChild(slot);
-  }
-}
-
-/**
- * Renders the Inventory grid *for the bank screen*
- */
-function renderBankInventoryGrid() {
-  const grid = document.getElementById('bankInventoryGrid');
-  if (!grid) return;
-
-  grid.innerHTML = '';
-  for(let i = 0; i < game.inventoryCapacity; i++) {
-    const slotData = game.inventory[i];
-    const slot = document.createElement('div');
-    slot.className = 'inv-slot';
-    slot.dataset.slotIndex = i;
-
-    if(slotData) {
-      const item = slotData;
-      // Inventory items are draggable
-      slot.draggable = true;
-      slot.addEventListener('dragstart', (e) => handleBankDragStart(e, item, i));
+      // --- STEP 1B: Make this slot DRAGGABLE for Withdrawal (Bank -> Inventory) ---
+      slot.draggable = true; 
+      slot.addEventListener('dragstart', (e) => handleBankWithdrawDragStart(e, item, i)); // NEW HANDLER
       slot.addEventListener('dragend', () => {
         draggedBankItem = null;
+        game.isDragging = false; // Add drag flag cleanup
         const draggingEl = document.querySelector('.inv-slot.dragging');
         if (draggingEl) draggingEl.classList.remove('dragging');
       });
+      
+      // Click to withdraw (optional, but keep for consistency)
+      slot.onclick = () => withdrawItem(i); 
 
-      // --- (Copied from renderInventoryGrid) ---
+      // --- (Copied from renderInventoryGrid for item display) ---
       const img = document.createElement('img');
       let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
       if (item.name === 'Copper Bar') imgName = 'copperbar';
@@ -2975,7 +2929,7 @@ function renderBankInventoryGrid() {
       const tooltipContent = `
         <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
         <div>Amount: ${item.qty.toLocaleString()}</div>
-        <div style="color:#aaffaa; margin-top: 5px;">Drag to deposit...</div>
+        <div style="color:#ffaaaa; margin-top: 5px;">Click or Drag to withdraw...</div>
       `;
       slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
       slot.onmouseleave = hideTooltip;
@@ -2984,6 +2938,8 @@ function renderBankInventoryGrid() {
     grid.appendChild(slot);
   }
 }
+
+
 
 /**
  * Updates the gold values on the bank screen
@@ -3004,6 +2960,8 @@ function openBank() {
   game.shopOpen = false; 
 
   const wrapper = document.getElementById('mainContentWrapper');
+  
+  // --- This is the original HTML, without the extra inventory panel ---
   wrapper.innerHTML = `
     <div id="bankContainer">
       
@@ -3035,12 +2993,13 @@ function openBank() {
       </div>
     </div>
   `;
-  // --- END REPLACE ---
+  // --- END MODIFICATION ---
 
   document.getElementById('returnToActionsBtn').onclick = backToActions;
   
   // Initial render
   renderBankGrid();
+  // We no longer call renderBankInventoryGrid() here
   updateBankGoldUI();
 }
 // --- Bank Drag-and-Drop Handlers ---
@@ -3076,6 +3035,17 @@ function handleBankDrop(e) {
 }
 
 // --- Bank Core Logic ---
+
+function handleBankWithdrawDragStart(e, item, fromBankIndex) {
+  // Store item data and the *source* as 'bank'
+  draggedBankItem = { item, fromIndex: fromBankIndex, source: 'bank' };
+  e.dataTransfer.effectAllowed = 'move';
+  game.isDragging = true;
+  setTimeout(() => {
+    e.target.closest('.inv-slot').classList.add('dragging');
+  }, 0);
+}
+
 
 function depositItem(item, fromInventoryIndex, toBankIndex) {
   if (!item) return;
@@ -3213,6 +3183,67 @@ function withdrawGold() {
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
 
+function dragWithdrawItem(fromBankIndex, toInventoryIndex) {
+  const bankItem = game.bank[fromBankIndex];
+  const inventorySlotItem = game.inventory[toInventoryIndex];
+
+  if (!bankItem) return;
+
+  let qtyToWithdraw = bankItem.qty;
+
+  // Prompt logic
+  if (bankItem.qty > 1) {
+    const input = prompt(`How many ${bankItem.name} do you want to withdraw? (Bank has: ${bankItem.qty})`, bankItem.qty);
+    if (input === null) return; 
+    qtyToWithdraw = parseInt(input);
+  }
+  
+  if (isNaN(qtyToWithdraw) || qtyToWithdraw <= 0 || qtyToWithdraw > bankItem.qty) {
+    alert("Invalid or excessive amount entered.");
+    return;
+  }
+
+  // 1. Check if the inventory slot is already the same item (Stacking/Partial Stacking)
+  if (inventorySlotItem && inventorySlotItem.name === bankItem.name) {
+    // Stacking: Move chosen quantity to inventory stack
+    inventorySlotItem.qty += qtyToWithdraw;
+    bankItem.qty -= qtyToWithdraw;
+    if (bankItem.qty <= 0) {
+      game.bank[fromBankIndex] = null; // Clear bank slot if stack is empty
+    }
+
+  } else if (inventorySlotItem) {
+    // Swapping: Must be full stack withdrawal to swap
+    if (qtyToWithdraw < bankItem.qty) {
+      alert("You must withdraw the full stack to swap items, or drop onto an empty inventory slot.");
+      return;
+    }
+    
+    // Full Stack Withdrawal onto a different item -> Swap
+    game.bank[fromBankIndex] = inventorySlotItem;
+    game.inventory[toInventoryIndex] = bankItem;
+
+  } else {
+    // Move: Move the chosen quantity to the empty inventory slot
+    
+    // If we're moving the full stack to an empty slot
+    if (qtyToWithdraw === bankItem.qty) {
+        game.inventory[toInventoryIndex] = bankItem;
+        game.bank[fromBankIndex] = null; 
+    } else {
+    // If we're moving a partial stack to an empty slot
+        game.inventory[toInventoryIndex] = { name: bankItem.name, qty: qtyToWithdraw };
+        bankItem.qty -= qtyToWithdraw;
+    }
+  }
+  
+  // 2. Re-render and save
+  renderBankGrid();
+  renderInventoryGrid();
+  hideTooltip();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+  
 // =================================================================
 // --- END NEW BANK FUNCTIONS ---
 // =================================================================
@@ -3347,11 +3378,38 @@ document.addEventListener('DOMContentLoaded', ()=>{
   inventoryGrid.addEventListener('drop', (e) => {
     e.preventDefault();
     const dropSlot = e.target.closest('.inv-slot');
-    if (dropSlot && draggedItemIndex !== null) {
-      const dropIndex = parseInt(dropSlot.dataset.slotIndex);
+    
+    // Cleanup first
+    if (currentDragOverSlot) {
+      currentDragOverSlot.classList.remove('drag-over');
+      currentDragOverSlot = null;
+    }
+    const draggingEl = document.querySelector('.inv-slot.dragging');
+    if (draggingEl) {
+      draggingEl.classList.remove('dragging');
+    }
+
+    if (!dropSlot) {
+      // If we didn't drop on a slot, just clean up
+      draggedItemIndex = null;
+      draggedBankItem = null;
+      game.isDragging = false;
+      return;
+    }
+    
+    const dropIndex = parseInt(dropSlot.dataset.slotIndex);
+
+    // --- NEW LOGIC: Check if item is from the bank ---
+    if (draggedBankItem && draggedBankItem.source === 'bank') {
+      // This item came from the bank!
+      // draggedBankItem.fromIndex = bank slot index
+      // dropIndex = inventory slot index
+      dragWithdrawItem(draggedBankItem.fromIndex, dropIndex);
+
+    } else if (draggedItemIndex !== null) {
+      // This is an internal inventory drag (original logic)
       if (draggedItemIndex !== dropIndex) {
         
-        // --- This logic needs to be stack-aware ---
         const dragItem = game.inventory[draggedItemIndex];
         const dropItem = game.inventory[dropIndex];
         
@@ -3366,40 +3424,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
         }
         
         renderInventoryGrid();
-        // +++ NEW: Save immediately after a successful drag/drop +++
         if (typeof window.savePlayerData === 'function') {
             window.savePlayerData();
         }
       }
     }
     
-    // Cleanup
-    if (currentDragOverSlot) {
-      currentDragOverSlot.classList.remove('drag-over');
-      currentDragOverSlot = null;
-    }
-    const draggingEl = document.querySelector('.inv-slot.dragging');
-    if (draggingEl) {
-      draggingEl.classList.remove('dragging');
-    }
-    draggedItemIndex = null;
-    // +++ NEW: Clear dragging flag +++
-    game.isDragging = false;
-  });
-
-  inventoryGrid.addEventListener('dragend', (e) => {
     // Final cleanup
-    if (currentDragOverSlot) {
-      currentDragOverSlot.classList.remove('drag-over');
-      currentDragOverSlot = null;
-    }
-    const draggingEl = document.querySelector('.inv-slot.dragging');
-    if (draggingEl) {
-      draggingEl.classList.remove('dragging');
-    }
     draggedItemIndex = null;
-    draggedBankItem = null;
-    // +++ NEW: Clear dragging flag +++
+    draggedBankItem = null; // <-- Ensure this is cleared
     game.isDragging = false;
   });
   
