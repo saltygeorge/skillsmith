@@ -747,6 +747,61 @@ button.primary:hover { background: var(--accent-hover); }
   height: calc((var(--slot-size) + var(--slot-gap)) * 8 + var(--slot-gap));
 }
 
+#gameModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.7);
+  z-index: 4000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.game-modal {
+  background: var(--panel-bg);
+  border: 4px solid #453625;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
+  border-radius: 10px;
+  padding: 20px;
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.game-modal-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--gold);
+  margin: 0 0 15px 0;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 10px;
+}
+.game-modal-content {
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.game-modal-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: #3f2b21;
+  color: #fff;
+  font-size: 16px;
+  box-sizing: border-box; /* Important */
+}
+.game-modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 </style>
 </head>
 <body>
@@ -1350,17 +1405,16 @@ function removeItem(name, qty = 1) {
 // --- END OF REPLACEMENTS IN THIS SCRIPT BLOCK ---
 // =================================================================
 
-function handleSellItemClick(itemName, currentQty) {
+async function handleSellItemClick(itemName, currentQty) {
   if (!game.shopOpen) return;
   let sellPrice = 0;
   if (itemName === 'Copper Ore') {
     sellPrice = 1;
   } else {
-    alert("This shop doesn't buy that item.");
+    await showGameAlert("Cannot Sell", "This shop doesn't buy that item."); // Replaced alert
     return;
   }
   
-  // --- This logic needs to be updated to check total quantity ---
   let totalQty = 0;
   for (const slot of game.inventory) {
       if(slot && slot.name === itemName) {
@@ -1372,23 +1426,29 @@ function handleSellItemClick(itemName, currentQty) {
   if (totalQty === 1) {
     qtyToSell = 1;
   } else {
-    const input = prompt(`How many ${itemName} do you want to sell? (You have: ${totalQty})`, totalQty);
+    // --- MODIFICATION HERE ---
+    const input = await showGamePrompt(
+      `Sell ${itemName}`, 
+      `How many ${itemName} do you want to sell? (You have: ${totalQty})`, 
+      totalQty
+    );
     if (input === null) return;
     qtyToSell = parseInt(input);
+    // --- END MODIFICATION ---
   }
 
   if (isNaN(qtyToSell) || qtyToSell <= 0) return;
   if (qtyToSell > totalQty) {
-    alert("You don't have that many to sell.");
+    await showGameAlert("Invalid Amount", "You don't have that many to sell."); // Replaced alert
     return;
   }
   
   const totalGold = qtyToSell * sellPrice;
-  // NOTE: Using alert/confirm is bad practice, but we'll leave it for now.
+  
+  // We'll leave the 'confirm' box for now, as it's a different UI (Yes/No)
   const confirmed = confirm(`Are you sure you want to sell ${qtyToSell} ${itemName} for ${totalGold} Gold?`);
   
   if (confirmed) {
-    // We use the NEW removeItem function which works correctly
     if (removeItem(itemName, qtyToSell)) {
         addGold(totalGold);
         hideTooltip(); 
@@ -1396,9 +1456,9 @@ function handleSellItemClick(itemName, currentQty) {
         if (game.inTrade) {
           renderTradeInventory();
         }
-        alert(`You sold ${qtyToSell} ${itemName} for ${totalGold} Gold.`);
+        await showGameAlert("Sale Complete", `You sold ${qtyToSell} ${itemName} for ${totalGold} Gold.`); // Replaced alert
     } else {
-        alert("Something went wrong, the sale did not complete.");
+        await showGameAlert("Error", "Something went wrong, the sale did not complete."); // Replaced alert
     }
   }
 }
@@ -1691,9 +1751,9 @@ const MINE_XP = 15;
 const MINE_ITEM = 'Copper Ore';
 
 // --- MODIFIED: Added Session Lock Check ---
-function startMining() {
+async function startMining() {
   if (!game.isSessionActive) {
-    alert("This game session is not active. Please take control to perform actions.");
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
   if (game.miningActive) return; 
@@ -1743,9 +1803,9 @@ function stopMining(){
 // +++ NEW CRAFTING FUNCTION BLOCK TO INSERT +++
 const CHESTPLATE_TIME_MS = 10000; 
 
-function startChestplateCrafting() {
+async function startChestplateCrafting() {
   if (!game.isSessionActive) {
-    alert("This game session is not active. Please take control to perform actions.");
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
   if (game.blacksmithingActive) return;
@@ -1759,7 +1819,7 @@ function startChestplateCrafting() {
   }
 
   if (totalBars < CHESTPLATE_BAR_COST) {
-      alert(`You need at least ${CHESTPLATE_BAR_COST} Copper Bars to craft a chestplate.`);
+      await showGameAlert("Not Enough Materials", `You need at least ${CHESTPLATE_BAR_COST} Copper Bars to craft a chestplate.`);
       return;
   }
   
@@ -1771,7 +1831,7 @@ function startChestplateCrafting() {
   game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, now));
 }
 
-function chestplateCraftingLoop(timestamp, startTime) {
+async function chestplateCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
   const elapsed = timestamp - startTime;
   let progress = (elapsed / CHESTPLATE_TIME_MS) * 100;
@@ -1785,7 +1845,7 @@ function chestplateCraftingLoop(timestamp, startTime) {
         }
     }
     if (totalBars < CHESTPLATE_BAR_COST) {
-        alert("You've run out of Copper Bars.");
+        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
         stopBlacksmithing();
         return;
     }
@@ -1809,7 +1869,7 @@ function chestplateCraftingLoop(timestamp, startTime) {
         }
     }
     if (totalBarsAfter < CHESTPLATE_BAR_COST) {
-        alert("You don't have enough bars to craft another chestplate.");
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another chestplate.");
         stopBlacksmithing();
         return;
     }
@@ -1823,9 +1883,9 @@ function chestplateCraftingLoop(timestamp, startTime) {
 // +++ END NEW CRAFTING FUNCTION +++
 
 
-function startShortswordCrafting() {
+async function startShortswordCrafting() {
   if (!game.isSessionActive) {
-    alert("This game session is not active. Please take control to perform actions.");
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
   if (game.blacksmithingActive) return;
@@ -1838,7 +1898,7 @@ function startShortswordCrafting() {
   }
 
   if (totalBars < SHORTSWORD_BAR_COST) {
-      alert(`You need at least ${SHORTSWORD_BAR_COST} Copper Bars to craft a shortsword.`);
+      await showGameAlert("Not Enough Materials", `You need at least ${SHORTSWORD_BAR_COST} Copper Bars to craft a shortsword.`);
       return;
   }
   
@@ -1850,7 +1910,7 @@ function startShortswordCrafting() {
   game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, now));
 }
 
-function shortswordCraftingLoop(timestamp, startTime) {
+async function shortswordCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
   const elapsed = timestamp - startTime;
   let progress = (elapsed / SHORTSWORD_TIME_MS) * 100;
@@ -1863,7 +1923,7 @@ function shortswordCraftingLoop(timestamp, startTime) {
         }
     }
     if (totalBars < SHORTSWORD_BAR_COST) {
-        alert("You've run out of Copper Bars.");
+        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
         stopBlacksmithing();
         return;
     }
@@ -1886,7 +1946,7 @@ function shortswordCraftingLoop(timestamp, startTime) {
         }
     }
     if (totalBarsAfter < SHORTSWORD_BAR_COST) {
-        alert("You don't have enough bars to craft another shortsword.");
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another shortsword.");
         stopBlacksmithing();
         return;
     }
@@ -1905,14 +1965,13 @@ const SMITH_ORE_COST = 2;
 const SMITH_BAR_ITEM = 'Copper Bar';
 
 // --- MODIFIED: Added Session Lock Check ---
-function startBlacksmithing() {
+async function startBlacksmithing() {
   if (!game.isSessionActive) {
-    alert("This game session is not active. Please take control to perform actions.");
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
   if (game.blacksmithingActive) return;
 
-  // --- Check total ore across all stacks ---
   let totalOre = 0;
   for (const slot of game.inventory) {
       if (slot && slot.name === 'Copper Ore') {
@@ -1921,7 +1980,7 @@ function startBlacksmithing() {
   }
 
   if (totalOre < SMITH_ORE_COST) {
-      alert(`You need at least ${SMITH_ORE_COST} Copper Ore to smith a bar.`);
+      await showGameAlert("Not Enough Materials", `You need at least ${SMITH_ORE_COST} Copper Ore to smith a bar.`);
       return;
   }
   
@@ -1933,7 +1992,7 @@ function startBlacksmithing() {
   game.progressFrame = requestAnimationFrame((now) => blacksmithingLoop(now, now));
 }
 
-function blacksmithingLoop(timestamp, startTime) {
+async function blacksmithingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
   const elapsed = timestamp - startTime;
   let progress = (elapsed / SMITH_TIME_MS) * 100;
@@ -1947,7 +2006,7 @@ function blacksmithingLoop(timestamp, startTime) {
         }
     }
     if (totalOre < SMITH_ORE_COST) {
-        alert("You've run out of Copper Ore.");
+        await showGameAlert("Out of Materials", "You've run out of Copper Ore.");
         stopBlacksmithing();
         return;
     }
@@ -1971,7 +2030,7 @@ function blacksmithingLoop(timestamp, startTime) {
         }
     }
     if (totalOreAfter < SMITH_ORE_COST) {
-        alert("You don't have enough ore to smith another bar.");
+        await showGameAlert("Not Enough Materials", "You don't have enough ore to smith another bar.");
         stopBlacksmithing();
         return;
     }
@@ -1999,9 +2058,9 @@ const COOK_CHICKEN_TIME_MS = 3000;
 const COOK_CHICKEN_XP = 30;
 
 // --- NEW COOKING FUNCTIONS ---
-function startCookingChicken() {
+async function startCookingChicken() {
   if (!game.isSessionActive) {
-    alert("This game session is not active. Please take control to perform actions.");
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
   if (game.cookingActive) return;
@@ -2015,7 +2074,7 @@ function startCookingChicken() {
   }
 
   if (totalRaw < 1) {
-      alert(`You need at least 1 Raw Chicken to cook.`);
+      await showGameAlert("Not Enough Materials", `You need at least 1 Raw Chicken to cook.`);
       return;
   }
   
@@ -2027,7 +2086,7 @@ function startCookingChicken() {
   game.progressFrame = requestAnimationFrame((now) => cookingChickenLoop(now, now));
 }
 
-function cookingChickenLoop(timestamp, startTime) {
+async function cookingChickenLoop(timestamp, startTime) {
   if (!game.cookingActive) return; 
   const elapsed = timestamp - startTime;
   let progress = (elapsed / COOK_CHICKEN_TIME_MS) * 100;
@@ -2041,7 +2100,7 @@ function cookingChickenLoop(timestamp, startTime) {
         }
     }
     if (totalRaw < 1) {
-        alert("You've run out of Raw Chicken.");
+        await showGameAlert("Out of Materials", "You've run out of Raw Chicken.");
         stopCookingChicken();
         return;
     }
@@ -2076,7 +2135,7 @@ function cookingChickenLoop(timestamp, startTime) {
         }
     }
     if (totalRawAfter < 1) {
-        alert("You don't have any more Raw Chicken to cook.");
+        await showGameAlert("Not Enough Materials", "You don't have any more Raw Chicken to cook.");
         stopCookingChicken();
         return;
     }
@@ -2870,6 +2929,106 @@ if (kitchenIcon) {
   // +++ END NEW BANK LOGIC +++
 }
 
+function _createModal(title, contentHtml, buttons) {
+  // Return a new promise that we can control
+  return new Promise((resolve) => {
+    // 1. Create elements
+    const overlay = document.createElement('div');
+    overlay.id = 'gameModalOverlay';
+
+    const modal = document.createElement('div');
+    modal.className = 'game-modal';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'game-modal-title';
+    titleEl.textContent = title;
+
+    const contentEl = document.createElement('div');
+    contentEl.className = 'game-modal-content';
+    contentEl.innerHTML = contentHtml; // Use innerHTML to allow custom content
+
+    const buttonEl = document.createElement('div');
+    buttonEl.className = 'game-modal-buttons';
+
+    // 2. Create buttons
+    buttons.forEach(btnConfig => {
+      const button = document.createElement('button');
+      button.textContent = btnConfig.text;
+      button.className = btnConfig.class || 'primary';
+      if (btnConfig.style) {
+        button.style.background = btnConfig.style;
+      }
+
+      // --- MODIFIED ONCLICK LOGIC ---
+      button.onclick = () => {
+        const inputEl = modal.querySelector('.game-modal-input');
+        let resolveValue = btnConfig.value; // Default to the button's value (e.g., null for 'Cancel')
+
+        // If an input exists AND the clicked button was NOT a cancel button (value is not null)
+        if (inputEl && btnConfig.value !== null) { 
+          resolveValue = inputEl.value; // Resolve with the input's value instead
+        }
+        
+        overlay.remove();
+        resolve(resolveValue); // Resolve with either the input value or the button value
+      };
+      // --- END MODIFICATION ---
+      
+      buttonEl.appendChild(button);
+    });
+
+    // 3. Assemble and append
+    modal.appendChild(titleEl);
+    modal.appendChild(contentEl);
+    modal.appendChild(buttonEl);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Focus the first primary button or input
+    const firstButton = modal.querySelector('button.primary');
+    const firstInput = modal.querySelector('input');
+    if (firstInput) {
+      firstInput.focus();
+      firstInput.select(); // Also select the text
+    } else if (firstButton) {
+      firstButton.focus();
+    }
+  });
+}
+
+/**
+ * Shows a custom, in-game alert box.
+ * Replaces the default browser alert().
+ * @param {string} title - The title for the alert.
+ * @param {string} message - The message to display.
+ */
+async function showGameAlert(title, message) {
+  const buttons = [
+    { text: 'OK', value: 'ok', class: 'primary' }
+  ];
+  // We await the modal helper. The promise will resolve when 'OK' is clicked.
+  await _createModal(title, `<p>${message}</p>`, buttons);
+}
+
+async function showGamePrompt(title, message, defaultValue = '') {
+  // HTML for the modal's content, including the input field
+  const contentHtml = `
+    <p>${message}</p>
+    <input type="number" class="game-modal-input" value="${defaultValue}" onfocus="this.select();">
+  `;
+  
+  // Buttons: Cancel (value: null) and OK (value: 'ok')
+  const buttons = [
+    { text: 'Cancel', value: null, class: 'primary', style: '#666' },
+    { text: 'OK', value: 'ok', class: 'primary' } // 'ok' is a placeholder, _createModal will grab the input value
+  ];
+
+  // Our upgraded _createModal will return the input's value if 'OK' is clicked,
+  // or null if 'Cancel' is clicked.
+  const result = await _createModal(title, contentHtml, buttons);
+  return result;
+}
+
 let draggedBankItem = null; // Stores data for bank drag-and-drop
 
 /**
@@ -3021,17 +3180,15 @@ function handleBankDragOver(e) {
   }
 }
 
-function handleBankDrop(e) {
+async function handleBankDrop(e) {
   e.preventDefault();
   const targetSlot = e.target.closest('.inv-slot');
   
-  // --- NEW: Always remove drag-over class ---
   if (targetSlot) {
     targetSlot.classList.remove('drag-over');
   }
 
   if (!targetSlot || !draggedBankItem) {
-     // If drop is invalid, try to clean up
      const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
      if (draggingEl) draggingEl.classList.remove('dragging');
      draggedBankItem = null;
@@ -3040,13 +3197,12 @@ function handleBankDrop(e) {
 
   const toBankIndex = parseInt(targetSlot.dataset.slotIndex);
   
-  // Call the deposit logic and check its return value
-  const depositSuccess = depositItem(draggedBankItem.item, draggedBankItem.fromIndex, toBankIndex);
+  // --- MODIFICATION HERE ---
+  // We must now 'await' the depositItem function
+  const depositSuccess = await depositItem(draggedBankItem.item, draggedBankItem.fromIndex, toBankIndex);
+  // --- END MODIFICATION ---
   
-  // --- NEW: Cleanup if deposit was cancelled ---
   if (!depositSuccess) {
-    // Deposit was cancelled (user hit cancel on prompt)
-    // We need to find the original dragged item in the *inventory* and remove its class.
     const originalSlotIndex = draggedBankItem.fromIndex;
     const originalSlotEl = document.querySelector(`#inventoryGrid .inv-slot[data-slot-index="${originalSlotIndex}"]`);
     if (originalSlotEl) {
@@ -3070,94 +3226,88 @@ function handleBankWithdrawDragStart(e, item, fromBankIndex) {
 }
 
 
-function depositItem(item, fromInventoryIndex, toBankIndex) {
+async function depositItem(item, fromInventoryIndex, toBankIndex) {
   if (!item) return;
 
   const bankSlot = game.bank[toBankIndex];
   
-  // Check if we're dropping on a different item
   if (bankSlot && bankSlot.name !== item.name) {
-    alert("You can't stack different items. Drop on an empty slot or a stack of the same item.");
+    await showGameAlert("Invalid Slot", "You can't stack different items. Drop on an empty slot or a stack of the same item."); // Replaced alert
     return;
   }
 
   let qtyToDeposit = item.qty;
 
-  // Ask for amount if it's a stack
   if (item.qty > 1) {
-    const input = prompt(`How many ${item.name} do you want to deposit? (You have: ${item.qty})`, item.qty);
+    // --- MODIFICATION HERE ---
+    const input = await showGamePrompt(
+      `Deposit ${item.name}`,
+      `How many ${item.name} do you want to deposit? (You have: ${item.qty})`,
+      item.qty
+    );
     if (input === null) return false;
     qtyToDeposit = parseInt(input);
+    // --- END MODIFICATION ---
   }
 
   if (isNaN(qtyToDeposit) || qtyToDeposit <= 0) return;
   if (qtyToDeposit > item.qty) {
-    alert("You don't have that many to deposit.");
+    await showGameAlert("Invalid Amount", "You don't have that many to deposit."); // Replaced alert
     return;
   }
 
-  // 1. Remove from inventory
   game.inventory[fromInventoryIndex].qty -= qtyToDeposit;
   if (game.inventory[fromInventoryIndex].qty <= 0) {
     game.inventory[fromInventoryIndex] = null;
   }
 
-  // 2. Add to bank
   if (bankSlot) {
-    // Stack on existing
     bankSlot.qty += qtyToDeposit;
   } else {
-    // Add to new slot
     game.bank[toBankIndex] = { name: item.name, qty: qtyToDeposit };
   }
 
-  // 3. Re-render and save
   renderBankGrid();
   renderInventoryGrid();
   hideTooltip();
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
   return true;
-
 }
 
-function withdrawItem(fromBankIndex) {
+async function withdrawItem(fromBankIndex) {
   const item = game.bank[fromBankIndex];
   if (!item) return;
 
   let qtyToWithdraw = item.qty;
 
-  // Ask for amount if it's a stack
   if (item.qty > 1) {
-    const input = prompt(`How many ${item.name} do you want to withdraw? (Bank has: ${item.qty})`, item.qty);
-    if (input === null) return; // User cancelled
+    // --- MODIFICATION HERE ---
+    const input = await showGamePrompt(
+      `Withdraw ${item.name}`,
+      `How many ${item.name} do you want to withdraw? (Bank has: ${item.qty})`,
+      item.qty
+    );
+    if (input === null) return;
     qtyToWithdraw = parseInt(input);
+    // --- END MODIFICATION ---
   }
   
   if (isNaN(qtyToWithdraw) || qtyToWithdraw <= 0) return;
   if (qtyToWithdraw > item.qty) {
-    alert("You don't have that many to withdraw.");
+    await showGameAlert("Invalid Amount", "You don't have that many to withdraw."); // Replaced alert
     return;
   }
-
-  // 1. Add to inventory (using the safe addItem function)
-  // We'll *clone* the item data first
+  
   const itemToAdd = { name: item.name, qty: qtyToWithdraw };
-  addItem(itemToAdd.name, itemToAdd.qty); // This function is in your non-module script
+  addItem(itemToAdd.name, itemToAdd.qty); 
   
-  // Check if inventory was full
-  // This is tricky because addItem doesn't return success.
-  // We'll assume it works and re-render.
-  // A better way is to check manually.
-  
-  // 2. Remove from bank
   game.bank[fromBankIndex].qty -= qtyToWithdraw;
   if (game.bank[fromBankIndex].qty <= 0) {
     game.bank[fromBankIndex] = null;
   }
   
-  // 3. Re-render and save
   renderBankGrid();
-  renderInventoryGrid(); // This will update based on addItem
+  renderInventoryGrid(); 
   hideTooltip();
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
@@ -3208,7 +3358,7 @@ function withdrawGold() {
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
 
-function dragWithdrawItem(fromBankIndex, toInventoryIndex) {
+async function dragWithdrawItem(fromBankIndex, toInventoryIndex) {
   const bankItem = game.bank[fromBankIndex];
   const inventorySlotItem = game.inventory[toInventoryIndex];
 
@@ -3216,53 +3366,49 @@ function dragWithdrawItem(fromBankIndex, toInventoryIndex) {
 
   let qtyToWithdraw = bankItem.qty;
 
-  // Prompt logic
   if (bankItem.qty > 1) {
-    const input = prompt(`How many ${bankItem.name} do you want to withdraw? (Bank has: ${bankItem.qty})`, bankItem.qty);
+    // --- MODIFICATION HERE ---
+    const input = await showGamePrompt(
+      `Withdraw ${bankItem.name}`,
+      `How many ${bankItem.name} do you want to withdraw? (Bank has: ${bankItem.qty})`,
+      bankItem.qty
+    );
     if (input === null) return; 
     qtyToWithdraw = parseInt(input);
+    // --- END MODIFICATION ---
   }
   
   if (isNaN(qtyToWithdraw) || qtyToWithdraw <= 0 || qtyToWithdraw > bankItem.qty) {
-    alert("Invalid or excessive amount entered.");
+    await showGameAlert("Invalid Amount", "Invalid or excessive amount entered."); // Replaced alert
     return;
   }
 
-  // 1. Check if the inventory slot is already the same item (Stacking/Partial Stacking)
   if (inventorySlotItem && inventorySlotItem.name === bankItem.name) {
-    // Stacking: Move chosen quantity to inventory stack
     inventorySlotItem.qty += qtyToWithdraw;
     bankItem.qty -= qtyToWithdraw;
     if (bankItem.qty <= 0) {
-      game.bank[fromBankIndex] = null; // Clear bank slot if stack is empty
+      game.bank[fromBankIndex] = null; 
     }
 
   } else if (inventorySlotItem) {
-    // Swapping: Must be full stack withdrawal to swap
     if (qtyToWithdraw < bankItem.qty) {
-      alert("You must withdraw the full stack to swap items, or drop onto an empty inventory slot.");
+      await showGameAlert("Invalid Action", "You must withdraw the full stack to swap items, or drop onto an empty inventory slot."); // Replaced alert
       return;
     }
     
-    // Full Stack Withdrawal onto a different item -> Swap
     game.bank[fromBankIndex] = inventorySlotItem;
     game.inventory[toInventoryIndex] = bankItem;
 
   } else {
-    // Move: Move the chosen quantity to the empty inventory slot
-    
-    // If we're moving the full stack to an empty slot
     if (qtyToWithdraw === bankItem.qty) {
         game.inventory[toInventoryIndex] = bankItem;
         game.bank[fromBankIndex] = null; 
     } else {
-    // If we're moving a partial stack to an empty slot
         game.inventory[toInventoryIndex] = { name: bankItem.name, qty: qtyToWithdraw };
         bankItem.qty -= qtyToWithdraw;
     }
   }
   
-  // 2. Re-render and save
   renderBankGrid();
   renderInventoryGrid();
   hideTooltip();
@@ -3400,7 +3546,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   });
 
-  inventoryGrid.addEventListener('drop', (e) => {
+  inventoryGrid.addEventListener('drop', async (e) => {
     e.preventDefault();
     const dropSlot = e.target.closest('.inv-slot');
     
@@ -3426,10 +3572,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     // --- NEW LOGIC: Check if item is from the bank ---
     if (draggedBankItem && draggedBankItem.source === 'bank') {
-      // This item came from the bank!
-      // draggedBankItem.fromIndex = bank slot index
-      // dropIndex = inventory slot index
-      dragWithdrawItem(draggedBankItem.fromIndex, dropIndex);
+      // --- MODIFICATION HERE ---
+      // We must 'await' this function now
+      await dragWithdrawItem(draggedBankItem.fromIndex, dropIndex);
+      // --- END MODIFICATION ---
 
     } else if (draggedItemIndex !== null) {
       // This is an internal inventory drag (original logic)
@@ -4848,18 +4994,24 @@ window.showSaveIndicator = function() {
     if (maxQty === 1) {
       qtyToOffer = 1;
     } else {
-      const input = prompt(`How many ${itemName} do you want to offer? (Max: ${maxQty})`, maxQty);
+      // --- MODIFICATION HERE ---
+      const input = await window.showGamePrompt( // Use window.showGamePrompt
+        `Offer ${itemName}`,
+        `How many ${itemName} do you want to offer? (Max: ${maxQty})`, 
+        maxQty
+      );
       if (input === null) return; 
       qtyToOffer = parseInt(input);
+      // --- END MODIFICATION ---
     }
     if (isNaN(qtyToOffer) || qtyToOffer <= 0) return;
     if (qtyToOffer > maxQty) {
-      alert(`You can only offer up to ${maxQty} of this item.`);
+      await window.showGameAlert("Invalid Amount", `You can only offer up to ${maxQty} of this item.`); // Use window.showGameAlert
       qtyToOffer = maxQty;
     }
     const offerItemCount = Object.keys(game.myTradeOffer.offerItems).length;
     if (!game.myTradeOffer.offerItems[itemName] && offerItemCount >= 16) {
-      alert("Your trade offer grid is full (16 unique items).");
+      await window.showGameAlert("Trade Full", "Your trade offer grid is full (16 unique items)."); // Use window.showGameAlert
       return;
     }
     const newOfferItems = { ...game.myTradeOffer.offerItems };
@@ -4875,17 +5027,13 @@ window.showSaveIndicator = function() {
     updatePayload[myRole] = newOfferObject; 
     const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
     updatePayload[`${theirRole}.accepted`] = false;
-    // --- THIS IS THE FIX ---
-    // 1. Update local state IMMEDIATELY
+    
     game.myTradeOffer = newOfferObject;
     
-    // 2. Update local UI IMMEDIATELY
     renderOfferGrid('tradeMyOfferGrid', game.myTradeOffer.offerItems);
     renderTradeInventory(); 
-    // --- END FIX ---
 
     try {
-      // 3. Send the update to the server
       await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
     } catch (e) {
       console.error("Error updating offer:", e);
