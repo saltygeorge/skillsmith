@@ -111,9 +111,9 @@ body {
 #equipmentTab {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* justify-content: center;  <- REMOVED */
   flex-grow: 1;
-  padding-top: 70px;
+  /* padding-top: 70px; <- REMOVED */
 }
 
 .equipment-character { display: flex; justify-content: center; }
@@ -802,6 +802,32 @@ button.primary:hover { background: var(--accent-hover); }
   justify-content: flex-end;
 }
 
+#equipmentStats {
+  margin-top: 20px; /* Space below the character model */
+  padding: 10px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 6px;
+}
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 4px;
+  font-size: 15px;
+}
+.stat-row:not(:last-child) {
+  border-bottom: 1px solid var(--accent);
+}
+.stat-label {
+  color: #efe3cf;
+  font-weight: bold;
+}
+.stat-value {
+  color: var(--gold);
+  font-weight: bold;
+}
+/* --- END: Equipment Stats Display --- */
+
 </style>
 </head>
 <body>
@@ -874,7 +900,22 @@ button.primary:hover { background: var(--accent-hover); }
                 </div>
               </div>
             </div>
-          </div>
+
+            <div id="equipmentStats">
+              <div class="stat-row">
+                <span class="stat-label">Physical Damage</span>
+                <span class="stat-value" id="stat-phys-dmg">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Armor</span>
+                <span class="stat-value" id="stat-armor">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Attack Speed</span>
+                <span class="stat-value" id="stat-speed">4.0s</span>
+              </div>
+            </div>
+            </div>
           
           <div id="inventoryTab" style="display:none;">
             <div class="inventory-grid-wrap" id="inventoryGridWrap">
@@ -1222,6 +1263,25 @@ const BOOTS_BAR_COST = 4;
 const BOOTS_XP = 26; // 4 bars (~6.5xp/bar)
 const BOOTS_TIME_MS = 4000; // 4 bars (1s/bar)
 
+// --- NEW: Central Item Stat Definitions ---
+const ITEM_STATS = {
+  'Copper Helmet': {
+    armor: 1
+  },
+  'Copper Chestplate': {
+    armor: 2
+  },
+  'Copper Boots': {
+    armor: 1
+  },
+  'Copper Shortsword': {
+    damage: 1,
+    styleBonus: 1, // Bonus for 'attack' style
+    speed: 2
+  }
+};
+// --- END: Item Stat Definitions ---
+
 function setText(id, text){ const el=document.getElementById(id); if(el) el.innerText=text; }
 
 function formatAmount(n) {
@@ -1257,10 +1317,75 @@ function updateHPUI(){
   setText('hpText', `${game.hp} / ${game.maxHP} HP`);
 }
 
+
+/**
+ * Calculates all player combat stats based on levels and equipment.
+ */
+function getPlayerCombatStats() {
+  // 1. Base Stats from *Equipment Only*
+  let stats = {
+    equipmentDamage: 0, 
+    equipmentArmor: 0, 
+    equipmentSpeed: 0,
+  };
+
+  // 2. Add Equipment Bonuses
+  for (const [slotType, item] of Object.entries(game.equipment)) {
+    if (item && ITEM_STATS[item.name]) {
+      const itemStats = ITEM_STATS[item.name];
+      stats.equipmentDamage += itemStats.damage || 0;
+      stats.equipmentArmor += itemStats.armor || 0;
+      stats.equipmentSpeed += itemStats.speed || 0;
+
+      // Special bonus for Copper Shortsword on 'attack' style
+      if (item.name === 'Copper Shortsword' && game.playerAttackStyle === 'attack') {
+        stats.equipmentDamage += itemStats.styleBonus || 0;
+      }
+    }
+  }
+  
+  // 3. Calculate Final Stats (Base + Skills + Equipment)
+  const finalStats = {};
+  
+  // --- NEW: Physical Damage ---
+  // Skill-based damage is now uncapped: 1 + (Strength Lvl / 4)
+  const skillMaxHit = 1 + Math.floor(game.strength.level / 4);
+  
+  // Final Max Hit = Skill Hit + Equipment Hit
+  finalStats.physicalDamage = skillMaxHit + stats.equipmentDamage;
+
+  // --- Armor ---
+  // Base armor from Defence level (e.g., 1 per 5 levels)
+  const skillArmor = Math.floor(game.defence.level / 5);
+  finalStats.armor = skillArmor + stats.equipmentArmor;
+  
+  // --- Attack Speed ---
+  const speedReduction = stats.equipmentSpeed * 300; // 0.3s per speed point
+  finalStats.attackSpeed = Math.max(1200, 4000 - speedReduction); // 4.0s base
+  
+  // Also pass through the equipment-only bonuses for the UI display
+  finalStats.equipmentDamage = stats.equipmentDamage;
+  finalStats.equipmentArmor = stats.equipmentArmor;
+  finalStats.equipmentSpeed = stats.equipmentSpeed; // <-- THIS LINE IS ADDED
+  
+  return finalStats;
+}
+
+
 /**
  * Renders the equipment in both the main sidebar and combat UI.
  */
 function renderEquipment() {
+  // --- 1. Calculate current stats ---
+  const stats = getPlayerCombatStats();
+  
+  // --- 2. Update the Stats Display ---
+  // Show *only* the bonus from equipment, as requested
+  setText('stat-phys-dmg', `+${stats.equipmentDamage}`);
+  setText('stat-armor', `+${stats.equipmentArmor}`);
+  setText('stat-speed', `+${stats.equipmentSpeed}`); // <-- THIS LINE IS CHANGED
+
+  // --- 3. Update Equipment Slots & Tooltips ---
   const slots = ['helmet', 'chest', 'weapon', 'boots'];
   const itemImageMap = {
     'Copper Helmet': 'copperhelmet',
@@ -1272,17 +1397,17 @@ function renderEquipment() {
   slots.forEach(slotType => {
     const item = game.equipment[slotType];
     
-    // 1. Get the Main Sidebar Slot
+    // Get the Main Sidebar Slot
     const mainSlotEl = document.getElementById(slotType);
     
-    // 2. Get the (optional) Combat UI Slot
+    // Get the (optional) Combat UI Slot
     const combatSlotEl = document.getElementById(`combat-${slotType}`);
     
     let imgName = '';
     if (item) {
       imgName = itemImageMap[item.name];
     } else {
-      // Use placeholder images (e.g., 'helmet.png', 'chest.png')
+      // Use placeholder images
       if (slotType === 'helmet') imgName = 'helmet';
       if (slotType === 'chest') imgName = 'chestplate';
       if (slotType === 'weapon') imgName = 'weapon';
@@ -1290,25 +1415,33 @@ function renderEquipment() {
     }
     
     const imgHtml = `<img src="images/${imgName}.png" alt="${slotType}">`;
+    const itemStats = item ? ITEM_STATS[item.name] : null;
+
+    // --- Generate Stat Tooltip HTML ---
+    let statsHtml = '';
+    if (itemStats) {
+      if (itemStats.damage) statsHtml += `<div style="color:#aaffaa;">+${itemStats.damage} Physical Damage</div>`;
+      if (itemStats.styleBonus) statsHtml += `<div style="color:#aaffaa;">+${itemStats.styleBonus} Physical Damage (if accurate)</div>`;
+      if (itemStats.armor) statsHtml += `<div style="color:#aaffaa;">+${itemStats.armor} Armor</div>`;
+      if (itemStats.speed) statsHtml += `<div style="color:#aaffaa;">+${itemStats.speed} Speed</div>`;
+    }
 
     // Update Main Sidebar Slot
     if (mainSlotEl) {
       mainSlotEl.innerHTML = imgHtml;
-      // Add onclick to unequip (only for the main sidebar)
       mainSlotEl.onclick = () => unequipItem(slotType);
       
-      // Add tooltip
       if (item) {
         mainSlotEl.onmouseenter = (evt) => {
           const tooltipContent = `
             <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
+            ${statsHtml}
             <div style="color:#ffaaaa; margin-top: 5px;">Click to unequip...</div>
           `;
           showTooltip(evt, tooltipContent);
         };
         mainSlotEl.onmouseleave = hideTooltip;
       } else {
-        // Clear listeners if no item
         mainSlotEl.onmouseenter = null;
         mainSlotEl.onmouseleave = null;
       }
@@ -1317,13 +1450,13 @@ function renderEquipment() {
     // Update Combat UI Slot (if it exists)
     if (combatSlotEl) {
       combatSlotEl.innerHTML = imgHtml;
-      combatSlotEl.onclick = null; // No equipping/unequipping from combat UI
+      combatSlotEl.onclick = null; 
       
-      // Add tooltip
       if (item) {
         combatSlotEl.onmouseenter = (evt) => {
            const tooltipContent = `
             <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
+            ${statsHtml}
           `;
           showTooltip(evt, tooltipContent);
         };
@@ -1369,20 +1502,16 @@ function renderInventoryGrid(){
       const img = document.createElement('img');
       let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
       
-      // --- NEW: Custom image name logic for all multi-word items ---
       if (item.name === 'Copper Bar') {
           imgName = 'copperbar';
-      } else if (item.name === 'Copper Chestplate') { // Handles chestplate image
+      } else if (item.name === 'Copper Chestplate') {
           imgName = 'copperchestplate';
-      } else if (item.name === 'Copper Shortsword') { // +++ SHORTSWORD IMAGE FIX +++
+      } else if (item.name === 'Copper Shortsword') {
           imgName = 'coppershortsword';
-      
-      // --- THIS BLOCK IS NOW FIXED ---
       } else if (item.name === 'Raw Chicken') {
           imgName = 'rawchicken'; 
       } else if (item.name === 'Copper Helmet') {
           imgName = 'copperhelmet';
-      // --- THIS BLOCK IS ALSO FIXED ---
       } else if (item.name === 'Copper Boots') {
           imgName = 'copperboots';
       } else if (item.name === 'Cooked Chicken') {
@@ -1390,7 +1519,6 @@ function renderInventoryGrid(){
       } else if (item.name === 'Burnt Chicken') {
           imgName = 'burntchicken';
       }
-      // --- END NEW LOGIC ---
       
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
@@ -1405,10 +1533,23 @@ function renderInventoryGrid(){
       const exactAmount = item.qty.toLocaleString(); 
       const itemName = item.name;
       
-      // --- NEW: Add item stats to tooltip ---
+      // --- NEW: Generate Stat Tooltip ---
       let itemStats = '';
-      if (itemName === 'Cooked Chicken') {
+      let clickAction = '';
+      const stats = ITEM_STATS[itemName];
+
+      if (stats) {
+        // This is equipable
+        if (stats.damage) itemStats += `<div style="color:#aaffaa;">+${stats.damage} Physical Damage</div>`;
+        if (stats.styleBonus) itemStats += `<div style="color:#aaffaa;">+${stats.styleBonus} Physical Damage (if accurate)</div>`;
+        if (stats.armor) itemStats += `<div style="color:#aaffaa;">+${stats.armor} Armor</div>`;
+        if (stats.speed) itemStats += `<div style="color:#aaffaa;">+${stats.speed} Speed</div>`;
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px;">Click to equip...</div>';
+      
+      } else if (itemName === 'Cooked Chicken') {
+        // This is consumable
         itemStats = '<div style="color:#aaffaa; margin-top:4px;">+3 HP</div>';
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px;">Click to eat...</div>';
       }
       // --- END NEW ---
 
@@ -1416,6 +1557,7 @@ function renderInventoryGrid(){
         <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${itemName}</div>
         <div style="color:#fff;">Amount: ${exactAmount}</div>
         ${itemStats}
+        ${clickAction}
       `;
       slot.onmouseenter = (evt) => {
         showTooltip(evt, tooltipContent);
@@ -1424,11 +1566,9 @@ function renderInventoryGrid(){
         hideTooltip();
       };
       
-      // --- MODIFIED: Updated click handler ---
-      const itemQty = item.qty; // Capture qty for the closure
-      const slotIndex = i; // Capture the index for the closure
+      const itemQty = item.qty; 
+      const slotIndex = i; 
       slot.onclick = (event) => {
-        // We now pass the slotIndex
         handleItemClick(event, itemName, itemQty, slotIndex);
       };
     } else {
@@ -1667,26 +1807,98 @@ function eatCookedChicken() {
  * @param {string} slotType - The type of slot ('helmet', 'chest', 'weapon', 'boots')
  * @param {number} fromInvIndex - The inventory index the item is coming from
  */
-function equipItem(slotType, fromInvIndex) {
-  const itemToEquip = game.inventory[fromInvIndex];
-  if (!itemToEquip) return; // Item doesn't exist (shouldn't happen)
+/**
+ * Equips an item from the inventory.
+ * @param {string} slotType - The type of slot ('helmet', 'chest', 'weapon', 'boots')
+ * @param {number} fromInvIndex - The inventory index the item is coming from
+ */
+async function equipItem(slotType, fromInvIndex) {
+  const itemStack = game.inventory[fromInvIndex];
+  if (!itemStack) return; // Item doesn't exist
 
-  // 1. Get the item currently equipped (if any)
-  const currentlyEquipped = game.equipment[slotType];
+  const itemBeingWorn = game.equipment[slotType]; // This is {qty: 1} or null
+
+  // --- NEW: Check for inventory space BEFORE equipping ---
+  if (itemBeingWorn) {
+    // We need to unequip an item. Check if there's space for it.
+    // Can it stack with the item we're equipping?
+    const canStackOnSelf = (itemStack.name === itemBeingWorn.name);
+    
+    // Is there another stack of this item OR an empty slot?
+    const hasStackingSlot = game.inventory.find(slot => slot && slot.name === itemBeingWorn.name && slot !== itemStack);
+    const hasEmptySlot = game.inventory.find(slot => slot === null);
+
+    // If the stack we're clicking is > 1 and it's not the same item,
+    // we can't put the unequipped item back in this slot.
+    if (itemStack.qty > 1 && !canStackOnSelf && !hasStackingSlot && !hasEmptySlot) {
+      await showGameAlert("Inventory Full", "You have no room to unequip your currently worn item.");
+      return;
+    }
+  }
+  // --- END: Space Check ---
+
+  // --- Stop combat to prevent errors ---
+  const wasInCombat = game.inCombat;
+  if (wasInCombat) {
+    runFromCombat(false); // Stop loops
+    const fightBtn = document.getElementById('combat-fight-btn');
+    if (fightBtn) fightBtn.disabled = true;
+  }
+  // --- END NEW ---
+
+  // 1. Create the new single item to wear
+  const newItemToEquip = { name: itemStack.name, qty: 1 };
   
-  // 2. Perform the swap
-  game.equipment[slotType] = itemToEquip; // Put new item on character
-  game.inventory[fromInvIndex] = currentlyEquipped; // Put old item in inventory (or null if slot was empty)
+  // 2. Put the new item on the character
+  game.equipment[slotType] = newItemToEquip;
   
-  // 3. Re-render everything
-  renderEquipment();
+  // 3. Decrement the inventory stack
+  itemStack.qty -= 1;
+
+  // 4. Handle the leftovers
+  if (itemStack.qty <= 0) {
+    // The stack is empty. Put the old item (or null) in its place.
+    game.inventory[fromInvIndex] = itemBeingWorn;
+  } else if (itemBeingWorn) {
+    // The stack is NOT empty. We must add the old item back.
+    // Use the "smart" unequip logic: try to stack first, then find empty slot.
+    let stacked = false;
+    for (const slot of game.inventory) {
+      if (slot && slot.name === itemBeingWorn.name) {
+        slot.qty += 1;
+        stacked = true;
+        break;
+      }
+    }
+    if (!stacked) {
+      // We already checked for an empty slot, so this is safe.
+      const emptySlot = game.inventory.findIndex(s => s === null);
+      if (emptySlot !== -1) {
+         game.inventory[emptySlot] = itemBeingWorn;
+      }
+    }
+  }
+  
+  // 5. Re-render everything
+  renderEquipment(); // This will update stats
   renderInventoryGrid();
   hideTooltip();
   if (typeof window.savePlayerData === 'function') {
     window.savePlayerData();
   }
+  
+  // 6. Restart combat if we were in it
+  if (wasInCombat) {
+    setTimeout(() => {
+      beginCombat(); // Restart with new stats
+    }, 50);
+  }
 }
 
+/**
+ * Unequips an item from the equipment slot.
+ * @param {string} slotType - The type of slot ('helmet', 'chest', 'weapon', 'boots')
+ */
 /**
  * Unequips an item from the equipment slot.
  * @param {string} slotType - The type of slot ('helmet', 'chest', 'weapon', 'boots')
@@ -1695,25 +1907,56 @@ async function unequipItem(slotType) {
   const itemToUnequip = game.equipment[slotType];
   if (!itemToUnequip) return; // Slot is already empty
 
-  // 1. Check for an empty inventory slot
-  const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
-  
-  if (emptySlotIndex === -1) {
-    // Inventory is full
-    await showGameAlert("Inventory Full", "You can't unequip this, your inventory is full.");
-    return;
+  // --- NEW: Smart unequip logic ---
+  // 1. Try to find an existing stack to add to
+  let stacked = false;
+  for (const slot of game.inventory) {
+    if (slot && slot.name === itemToUnequip.name) {
+      slot.qty += 1;
+      stacked = true;
+      break;
+    }
   }
+
+  // 2. If not stacked, find an empty slot
+  if (!stacked) {
+    const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
+    if (emptySlotIndex === -1) {
+      // Inventory is full
+      await showGameAlert("Inventory Full", "You can't unequip this, your inventory is full.");
+      return;
+    }
+    // Put item in the empty slot
+    game.inventory[emptySlotIndex] = itemToUnequip;
+  }
+  // --- END: Smart unequip logic ---
+
+
+  // --- Stop combat to prevent errors ---
+  const wasInCombat = game.inCombat;
+  if (wasInCombat) {
+    runFromCombat(false); // Stop loops
+    const fightBtn = document.getElementById('combat-fight-btn');
+    if (fightBtn) fightBtn.disabled = true;
+  }
+  // --- END NEW ---
   
-  // 2. Perform the unequip
-  game.inventory[emptySlotIndex] = itemToUnequip; // Add item to inventory
-  game.equipment[slotType] = null; // Clear equipment slot
+  // 3. Clear the equipment slot (since item is safely in inventory)
+  game.equipment[slotType] = null; 
   
-  // 3. Re-render everything
-  renderEquipment();
+  // 4. Re-render everything
+  renderEquipment(); // This will update stats
   renderInventoryGrid();
   hideTooltip();
   if (typeof window.savePlayerData === 'function') {
     window.savePlayerData();
+  }
+  
+  // 5. Restart combat if we were in it
+  if (wasInCombat) {
+    setTimeout(() => {
+      beginCombat(); // Restart with new stats
+    }, 50);
   }
 }
 
@@ -2969,6 +3212,12 @@ function setAttackStyle(style, isInitialization = false) {
     }
   });
   
+  // --- THIS IS THE FIX ---
+  // Re-render equipment to update stats (like style bonuses)
+  // This will also update the combat UI equipment panel if it's open
+  renderEquipment(); 
+  // --- END FIX ---
+
   if (!isInitialization) {
     // Line deleted
   }
@@ -2979,22 +3228,24 @@ function setAttackStyle(style, isInitialization = false) {
 
 // NEW: Function to start the combat loops
 function beginCombat() {
-  if (game.inCombat) return; // Prevent starting multiple times
+  if (game.inCombat) return; 
   if (!game.isSessionActive) {
-    alert("This game session is not active. Please take control to perform actions.");
+    showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
   
   game.inCombat = true;
-  document.getElementById('combat-fight-btn').style.display = 'none'; // HIDE Fight
-  document.getElementById('combat-run-btn').style.display = 'block'; // SHOW Run
+  document.getElementById('combat-fight-btn').style.display = 'none'; 
+  document.getElementById('combat-run-btn').style.display = 'block'; 
   document.getElementById('combat-run-btn').disabled = false;
   
+  // --- NEW: Calculate stats and set dynamic attack speed ---
+  const stats = getPlayerCombatStats();
   
-  // Player attacks every 2.4 seconds (example speed)
-  game.playerCombatInterval = setInterval(playerAttackTurn, 2400);
+  // Player attacks at their calculated attack speed
+  game.playerCombatInterval = setInterval(playerAttackTurn, stats.attackSpeed);
   
-  // Enemy (Chicken) attacks every 3.0 seconds (example speed)
+  // Enemy (Chicken) attacks every 3.0 seconds
   game.enemyCombatInterval = setInterval(enemyAttackTurn, 3000);
 }
 
@@ -3163,9 +3414,11 @@ function showDamageSplat(target, amount, type) {
 function playerAttackTurn() {
   if (!game.inCombat || !game.currentEnemy) return;
 
-  // --- 1. Calculate Hit Chance ---
+  // --- 1. Get Player's Current Stats ---
+  const playerStats = getPlayerCombatStats();
+
+  // --- 2. Calculate Hit Chance ---
   // Player's Attack vs. Enemy's Defence
-  // We'll make it a simple formula. Base 70% chance.
   let hitChance = 70 + (game.attack.level - game.currentEnemy.defence);
   hitChance = Math.max(10, Math.min(90, hitChance)); // Clamp between 10% and 90%
 
@@ -3174,11 +3427,10 @@ function playerAttackTurn() {
     return;
   }
 
-  // --- 2. Calculate Damage (If Hit) ---
-  // Based on your table: Damage = Strength_Lvl (Major) + Attack_Lvl / 6 (Minor)
-  // We'll use this formula for the "Max Hit".
-  let maxHit = Math.floor(game.strength.level + (game.attack.level / 6));
-  if (maxHit < 1) maxHit = 1; // Ensure you can always hit at least a 1
+  // --- 3. Calculate Damage (If Hit) ---
+  // Get the final max hit from our stats function
+  // This is (Unarmed 1-4) + (Equip Damage)
+  let maxHit = playerStats.physicalDamage;
   
   // Damage is a random number from 0 to your max hit
   let damage = Math.floor(Math.random() * (maxHit + 1));
@@ -3191,30 +3443,24 @@ function playerAttackTurn() {
 
   // Apply damage to enemy
   game.currentEnemy.currentHp -= damage;
-  // Line deleted
   updateEnemyCombatUI();
 
-  // --- 3. Grant XP ---
+  // --- 4. Grant XP ---
   if (damage > 0) {
-    // Grant XP based on the style you're using
-    let mainXPGained = damage * 4; // Example: 4 XP per point of damage
-    let skillToTrain = game.playerAttackStyle; // 'attack', 'strength', or 'defence'
+    let mainXPGained = damage * 4; 
+    let skillToTrain = game.playerAttackStyle; 
     
     addXP(skillToTrain, mainXPGained, 0);
     
-    // Per your table, Vitality XP is *always* gained
-    let vitalityXPGained = Math.ceil(mainXPGained / 2); // e.g., half of main XP
-    addXP('vitality', vitalityXPGained, 450); // <-- This 450ms delay fixes it
+    let vitalityXPGained = Math.ceil(mainXPGained / 2);
+    addXP('vitality', vitalityXPGained, 450);
   }
 
-  // --- 4. Check for Enemy Death ---
+  // --- 5. Check for Enemy Death ---
   if (game.currentEnemy.currentHp <= 0) {
-    
-    // +++ NEW: Add item drop +++
     addItem('Raw Chicken', 1);
-    showItemPopup('+1 Raw Chicken', null, 900); // 900ms delay
+    showItemPopup('+1 Raw Chicken', null, 900);
     
-    // Per your request: Respawn the chicken
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
     updateEnemyCombatUI();
   }
@@ -3224,45 +3470,48 @@ function playerAttackTurn() {
 function enemyAttackTurn() {
   if (!game.inCombat || !game.currentEnemy) return;
 
-  // --- 1. Calculate Hit Chance ---
-  // "he doesn't hit often"
-  // Enemy Attack (1) vs. Player Defence (game.defence.level)
-  // We'll give it a very low base chance.
+  // --- 1. Get Player's Current Stats ---
+  const playerStats = getPlayerCombatStats();
+
+  // --- 2. Calculate Hit Chance ---
   let hitChance = 25 + (game.currentEnemy.attack - game.defence.level);
-  hitChance = Math.max(5, Math.min(50, hitChance)); // Clamp between 5% and 50%
+  hitChance = Math.max(5, Math.min(50, hitChance)); 
   
   if (Math.random() * 100 > hitChance) {
     showDamageSplat('player', 0, 'block'); // PLAYER MISS
     return;
   }
 
-  // --- 2. Calculate Damage (If Hit) ---
-  // "his max hit is 1"
-  let maxHit = game.currentEnemy.strength; // This is 1
+  // --- 3. Calculate Damage (If Hit) ---
+  let maxHit = game.currentEnemy.strength; // Chicken max hit is 1
   let damage = Math.floor(Math.random() * (maxHit + 1)); // Will be 0 or 1
 
-  // TODO: Apply player's Damage Reduction from Defence/Armor here
+  // --- 4. Apply Damage Reduction ---
+  // 'playerStats.armor' is the total armor from skills + equipment
+  // The chicken's max hit is 1. We'll make it simple:
+  // If player's armor > 0, they have a chance to block.
+  // (Armor * 10%) chance to block the hit entirely.
+  let armorChance = Math.min(80, playerStats.armor * 10); // Max 80% block chance
+  
+  if (damage > 0 && (Math.random() * 100 < armorChance)) {
+    damage = 0; // Blocked!
+  }
   
   if (damage > 0) {
     showDamageSplat('player', damage, 'damage'); // PLAYER HIT
   } else {
-    showDamageSplat('player', 0, 'block'); // PLAYER HIT A 0
+    showDamageSplat('player', 0, 'block'); // PLAYER HIT A 0 (or was blocked)
   }
   
   // Apply damage to player
   game.hp -= damage;
-  // Line deleted
-  updateHPUI(); // Update the player's main HP bar
+  updateHPUI(); 
 
-  // --- 3. Check for Player Death ---
+  // --- 5. Check for Player Death ---
   if (game.hp <= 0) {
-    game.hp = 0; // Don't let it go negative
+    game.hp = 0; 
     updateHPUI();
-    
-    // Stop the fight, passing 'true' to indicate the player died
     runFromCombat(true); 
-    
-    // Call the new death handler
     handlePlayerDeath();
   }
 }
@@ -3455,28 +3704,24 @@ function renderBankGrid() {
     slot.className = 'inv-slot';
     slot.dataset.slotIndex = i;
     
-    // --- STEP 1A: Drop target for Deposit (Inventory -> Bank) ---
     slot.addEventListener('dragover', handleBankDragOver);
     slot.addEventListener('dragleave', (e) => e.target.closest('.inv-slot').classList.remove('drag-over'));
-    slot.addEventListener('drop', handleBankDrop); // Calls depositItem
+    slot.addEventListener('drop', handleBankDrop);
     
     if(slotData) {
       const item = slotData;
       
-      // --- STEP 1B: Make this slot DRAGGABLE for Withdrawal (Bank -> Inventory) ---
       slot.draggable = true; 
-      slot.addEventListener('dragstart', (e) => handleBankWithdrawDragStart(e, item, i)); // NEW HANDLER
+      slot.addEventListener('dragstart', (e) => handleBankWithdrawDragStart(e, item, i));
       slot.addEventListener('dragend', () => {
         draggedBankItem = null;
-        game.isDragging = false; // Add drag flag cleanup
+        game.isDragging = false; 
         const draggingEl = document.querySelector('.inv-slot.dragging');
         if (draggingEl) draggingEl.classList.remove('dragging');
       });
       
-      // Click to withdraw (optional, but keep for consistency)
       slot.onclick = () => withdrawItem(i); 
 
-      // --- (Copied from renderInventoryGrid for item display) ---
       const img = document.createElement('img');
       let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
       if (item.name === 'Copper Bar') imgName = 'copperbar';
@@ -3497,14 +3742,25 @@ function renderBankGrid() {
       amt.innerText = formatAmount(item.qty); 
       slot.appendChild(amt);
       
+      // --- NEW: Generate Stat Tooltip ---
+      let itemStats = '';
+      const stats = ITEM_STATS[item.name];
+      if (stats) {
+        if (stats.damage) itemStats += `<div style="color:#aaffaa;">+${stats.damage} Physical Damage</div>`;
+        if (stats.styleBonus) itemStats += `<div style="color:#aaffaa;">+${stats.styleBonus} Physical Damage (if accurate)</div>`;
+        if (stats.armor) itemStats += `<div style="color:#aaffaa;">+${stats.armor} Armor</div>`;
+        if (stats.speed) itemStats += `<div style="color:#aaffaa;">+${stats.speed} Speed</div>`;
+      }
+      // --- END NEW ---
+
       const tooltipContent = `
         <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
         <div>Amount: ${item.qty.toLocaleString()}</div>
+        ${itemStats}
         <div style="color:#ffaaaa; margin-top: 5px;">Click or Drag to withdraw...</div>
       `;
       slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
       slot.onmouseleave = hideTooltip;
-      // --- (End copy) ---
     }
     grid.appendChild(slot);
   }
