@@ -1032,6 +1032,12 @@ const game = {
   bankCapacity: 20, // Example: 40 slots
   bankGold: 0,
   // --- END NEW ---
+  equipment: {
+    helmet: null,
+    chest: null,
+    weapon: null,
+    boots: null
+  },
   mining: { level: 1, xp: 0, totalXP: 0 },
   blacksmith: { level: 1, xp: 0, totalXP: 0 },
   attack: { level: 1, xp: 0, totalXP: 0 }, 
@@ -1235,6 +1241,7 @@ function createCharacter(){
   renderInventoryGrid();
   updateSkillUI();
   updateGoldUI();
+  renderEquipment(); // <-- ADD THIS
   backToActions(); 
 }
 
@@ -1248,6 +1255,85 @@ function updateHPUI(){
   const percent = Math.min(100, Math.round((game.hp / game.maxHP) * 100));
   document.getElementById('hpFill').style.width = percent + '%';
   setText('hpText', `${game.hp} / ${game.maxHP} HP`);
+}
+
+/**
+ * Renders the equipment in both the main sidebar and combat UI.
+ */
+function renderEquipment() {
+  const slots = ['helmet', 'chest', 'weapon', 'boots'];
+  const itemImageMap = {
+    'Copper Helmet': 'copperhelmet',
+    'Copper Chestplate': 'copperchestplate',
+    'Copper Shortsword': 'coppershortsword',
+    'Copper Boots': 'copperboots'
+  };
+
+  slots.forEach(slotType => {
+    const item = game.equipment[slotType];
+    
+    // 1. Get the Main Sidebar Slot
+    const mainSlotEl = document.getElementById(slotType);
+    
+    // 2. Get the (optional) Combat UI Slot
+    const combatSlotEl = document.getElementById(`combat-${slotType}`);
+    
+    let imgName = '';
+    if (item) {
+      imgName = itemImageMap[item.name];
+    } else {
+      // Use placeholder images (e.g., 'helmet.png', 'chest.png')
+      if (slotType === 'helmet') imgName = 'helmet';
+      if (slotType === 'chest') imgName = 'chestplate';
+      if (slotType === 'weapon') imgName = 'weapon';
+      if (slotType === 'boots') imgName = 'boots';
+    }
+    
+    const imgHtml = `<img src="images/${imgName}.png" alt="${slotType}">`;
+
+    // Update Main Sidebar Slot
+    if (mainSlotEl) {
+      mainSlotEl.innerHTML = imgHtml;
+      // Add onclick to unequip (only for the main sidebar)
+      mainSlotEl.onclick = () => unequipItem(slotType);
+      
+      // Add tooltip
+      if (item) {
+        mainSlotEl.onmouseenter = (evt) => {
+          const tooltipContent = `
+            <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
+            <div style="color:#ffaaaa; margin-top: 5px;">Click to unequip...</div>
+          `;
+          showTooltip(evt, tooltipContent);
+        };
+        mainSlotEl.onmouseleave = hideTooltip;
+      } else {
+        // Clear listeners if no item
+        mainSlotEl.onmouseenter = null;
+        mainSlotEl.onmouseleave = null;
+      }
+    }
+    
+    // Update Combat UI Slot (if it exists)
+    if (combatSlotEl) {
+      combatSlotEl.innerHTML = imgHtml;
+      combatSlotEl.onclick = null; // No equipping/unequipping from combat UI
+      
+      // Add tooltip
+      if (item) {
+        combatSlotEl.onmouseenter = (evt) => {
+           const tooltipContent = `
+            <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
+          `;
+          showTooltip(evt, tooltipContent);
+        };
+        combatSlotEl.onmouseleave = hideTooltip;
+      } else {
+        combatSlotEl.onmouseenter = null;
+        combatSlotEl.onmouseleave = null;
+      }
+    }
+  });
 }
 
 function updateGoldUI() {
@@ -1338,10 +1424,12 @@ function renderInventoryGrid(){
         hideTooltip();
       };
       
-      // --- NEW: Updated click handler ---
+      // --- MODIFIED: Updated click handler ---
       const itemQty = item.qty; // Capture qty for the closure
+      const slotIndex = i; // Capture the index for the closure
       slot.onclick = (event) => {
-        handleItemClick(event, itemName, itemQty);
+        // We now pass the slotIndex
+        handleItemClick(event, itemName, itemQty, slotIndex);
       };
     } else {
       slot.draggable = false;
@@ -1483,18 +1571,32 @@ async function handleSellItemClick(itemName, currentQty) {
   }
 }
 
-function handleItemClick(event, itemName, itemQty) {
+function handleItemClick(event, itemName, itemQty, slotIndex) {
   // Always close any open menu first
   hideItemContextMenu();
+
+  // --- NEW: Define equipable items and their slots ---
+  const equipableItems = {
+    'Copper Helmet': 'helmet',
+    'Copper Chestplate': 'chest',
+    'Copper Shortsword': 'weapon',
+    'Copper Boots': 'boots'
+  };
+  const itemSlotType = equipableItems[itemName];
+  // --- END NEW ---
 
   if (game.shopOpen) {
     // If shop is open, we're selling
     handleSellItemClick(itemName, itemQty);
+  } else if (itemSlotType) {
+    // --- NEW: This is an equipable item! ---
+    // We pass the slot *type* (e.g., 'helmet') and the inventory *index*
+    equipItem(itemSlotType, slotIndex);
   } else if (itemName === 'Cooked Chicken') {
-    // Not in shop, and it's a chicken. Show eat menu.
+    // Not in shop, not equipable, and it's a chicken. Show eat menu.
     showItemContextMenu(event, itemName);
   }
-  // Other items do nothing outside the shop... for now.
+  // Other items (like ores) do nothing when clicked.
 }
 
 // NEW: Shows the right-click-style menu
@@ -1557,6 +1659,61 @@ function eatCookedChicken() {
 
   } else {
     console.warn('Tried to eat Cooked Chicken, but removeItem failed.');
+  }
+}
+
+/**
+ * Equips an item from the inventory.
+ * @param {string} slotType - The type of slot ('helmet', 'chest', 'weapon', 'boots')
+ * @param {number} fromInvIndex - The inventory index the item is coming from
+ */
+function equipItem(slotType, fromInvIndex) {
+  const itemToEquip = game.inventory[fromInvIndex];
+  if (!itemToEquip) return; // Item doesn't exist (shouldn't happen)
+
+  // 1. Get the item currently equipped (if any)
+  const currentlyEquipped = game.equipment[slotType];
+  
+  // 2. Perform the swap
+  game.equipment[slotType] = itemToEquip; // Put new item on character
+  game.inventory[fromInvIndex] = currentlyEquipped; // Put old item in inventory (or null if slot was empty)
+  
+  // 3. Re-render everything
+  renderEquipment();
+  renderInventoryGrid();
+  hideTooltip();
+  if (typeof window.savePlayerData === 'function') {
+    window.savePlayerData();
+  }
+}
+
+/**
+ * Unequips an item from the equipment slot.
+ * @param {string} slotType - The type of slot ('helmet', 'chest', 'weapon', 'boots')
+ */
+async function unequipItem(slotType) {
+  const itemToUnequip = game.equipment[slotType];
+  if (!itemToUnequip) return; // Slot is already empty
+
+  // 1. Check for an empty inventory slot
+  const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
+  
+  if (emptySlotIndex === -1) {
+    // Inventory is full
+    await showGameAlert("Inventory Full", "You can't unequip this, your inventory is full.");
+    return;
+  }
+  
+  // 2. Perform the unequip
+  game.inventory[emptySlotIndex] = itemToUnequip; // Add item to inventory
+  game.equipment[slotType] = null; // Clear equipment slot
+  
+  // 3. Re-render everything
+  renderEquipment();
+  renderInventoryGrid();
+  hideTooltip();
+  if (typeof window.savePlayerData === 'function') {
+    window.savePlayerData();
   }
 }
 
@@ -2788,9 +2945,12 @@ function openCombatInterface(enemyName) {
     </div>
   `;
   
+  // --- THIS IS THE FIX ---
+  renderEquipment();
+  // --- END FIX ---
+
   // Set the default active style button
   setAttackStyle(game.playerAttackStyle, true); 
-  // We'll add a function to load the equipment images later
 }
 
 function setAttackStyle(style, isInitialization = false) {
@@ -3809,6 +3969,7 @@ function resetGameState() {
   // +++ NEW +++
   game.bank = new Array(game.bankCapacity).fill(null);
   game.bankGold = 0;
+  game.equipment = { helmet: null, chest: null, weapon: null, boots: null };
   // +++ END NEW +++
   game.mining = { level: 1, xp: 0, totalXP: 0 };
   game.blacksmith = { level: 1, xp: 0, totalXP: 0 };
@@ -3835,6 +3996,7 @@ function resetGameState() {
   renderInventoryGrid();
   updateSkillUI();
   updateGoldUI(); 
+  renderEquipment(); // <-- ADD THIS
   if (typeof backToActions === 'function') {
     backToActions();
   }
@@ -4282,6 +4444,7 @@ window.showSaveIndicator = function() {
         bank: bankToSave,
         bankGold: game.bankGold,
         // +++ END NEW +++
+        equipment: game.equipment, // <-- ADD THIS
         mining: {
           level: game.mining.level,
           xp: game.mining.xp,
@@ -4401,6 +4564,11 @@ window.showSaveIndicator = function() {
         
         // If we are INACTIVE, OR we are ACTIVE and IDLE, sync the data.
         game.playerAttackStyle = data.playerAttackStyle || 'strength';
+        
+        // +++ NEW: Load Equipment +++
+        game.equipment = data.equipment || { helmet: null, chest: null, weapon: null, boots: null };
+        renderEquipment(); // <-- Render the equipment on load
+        // +++ END NEW +++
 
         if (!data.name) {
           // This handles the case right after registration
@@ -4576,6 +4744,7 @@ window.showSaveIndicator = function() {
         bank: [],
         bankGold: 0,
         // +++ END NEW +++
+        equipment: { helmet: null, chest: null, weapon: null, boots: null },
         mining: { level: 1, xp: 0, totalXP: 0 },
         blacksmith: { level: 1, xp: 0, totalXP: 0 }, 
         attack: { level: 1, xp: 0, totalXP: 0 }, 
