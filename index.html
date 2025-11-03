@@ -861,6 +861,9 @@ button.primary:hover { background: var(--accent-hover); }
         <div id="leaderboardContent">
           <div style="text-align:center; margin-top: 10px; color: #fff; opacity: 0.7;">Loading leaderboard...</div>
         </div>
+        <div id="saveTimerText" style="display: none; margin-top: 10px; text-align: right; font-size: 11px; color: #aaffaa; font-weight: bold;">
+            Progress Saved!
+        </div>
       </div>
 
     </div> 
@@ -3401,6 +3404,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
   
 });
+
+window.showSaveIndicator = function() {
+    const timerEl = document.getElementById('saveTimerText');
+    if (timerEl) {
+        timerEl.style.display = 'block';
+        // Hide the message after 2 seconds
+        setTimeout(() => {
+            timerEl.style.display = 'none';
+        }, 2000);
+    }
+}
+
 </script>
 
 <div id="itemContextMenu"></div>
@@ -3665,6 +3680,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
         // We don't save activeSession here, that's handled by the lock functions
       };
       await setDoc(doc(db, "players", user.uid), payload, { merge: true });
+      
+      // *** MODIFIED LINE ***
+      if (typeof window.showSaveIndicator === 'function') {
+        window.showSaveIndicator();
+      }
+
     } catch (e) {
       console.error("Save failed:", e);
     }
@@ -5181,6 +5202,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     alert("Logout failed. Please try again or close your browser.");
   }
 };
+
+
 </script>
 </body>
 </html>
