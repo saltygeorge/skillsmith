@@ -3024,13 +3024,36 @@ function handleBankDragOver(e) {
 function handleBankDrop(e) {
   e.preventDefault();
   const targetSlot = e.target.closest('.inv-slot');
-  if (!targetSlot || !draggedBankItem) return;
   
-  targetSlot.classList.remove('drag-over');
+  // --- NEW: Always remove drag-over class ---
+  if (targetSlot) {
+    targetSlot.classList.remove('drag-over');
+  }
+
+  if (!targetSlot || !draggedBankItem) {
+     // If drop is invalid, try to clean up
+     const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
+     if (draggingEl) draggingEl.classList.remove('dragging');
+     draggedBankItem = null;
+     return;
+  }
+
   const toBankIndex = parseInt(targetSlot.dataset.slotIndex);
   
-  // Call the deposit logic
-  depositItem(draggedBankItem.item, draggedBankItem.fromIndex, toBankIndex);
+  // Call the deposit logic and check its return value
+  const depositSuccess = depositItem(draggedBankItem.item, draggedBankItem.fromIndex, toBankIndex);
+  
+  // --- NEW: Cleanup if deposit was cancelled ---
+  if (!depositSuccess) {
+    // Deposit was cancelled (user hit cancel on prompt)
+    // We need to find the original dragged item in the *inventory* and remove its class.
+    const originalSlotIndex = draggedBankItem.fromIndex;
+    const originalSlotEl = document.querySelector(`#inventoryGrid .inv-slot[data-slot-index="${originalSlotIndex}"]`);
+    if (originalSlotEl) {
+      originalSlotEl.classList.remove('dragging');
+    }
+  }
+  
   draggedBankItem = null;
 }
 
@@ -3063,7 +3086,7 @@ function depositItem(item, fromInventoryIndex, toBankIndex) {
   // Ask for amount if it's a stack
   if (item.qty > 1) {
     const input = prompt(`How many ${item.name} do you want to deposit? (You have: ${item.qty})`, item.qty);
-    if (input === null) return; // User cancelled
+    if (input === null) return false;
     qtyToDeposit = parseInt(input);
   }
 
@@ -3093,6 +3116,8 @@ function depositItem(item, fromInventoryIndex, toBankIndex) {
   renderInventoryGrid();
   hideTooltip();
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  return true;
+
 }
 
 function withdrawItem(fromBankIndex) {
