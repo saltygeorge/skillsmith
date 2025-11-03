@@ -3207,64 +3207,74 @@ async function handleBankDrop(e) {
     // === BANK -> BANK internal move ===
     
     if (fromIndex !== toIndex) {
-      const dragItem = game.bank[fromIndex];
+      // --- Get the item data *before* the prompt ---
+      const dragItemBeforePrompt = game.bank[fromIndex];
       const dropItem = game.bank[toIndex];
 
       // --- MODIFIED: Handle Shift-Click to move specific amount ---
-      if (e.shiftKey && dragItem) { // No longer need qty > 1 check
+      if (e.shiftKey && dragItemBeforePrompt) { 
         
-        if (dropItem && dropItem.name !== dragItem.name) {
+        if (dropItem && dropItem.name !== dragItemBeforePrompt.name) {
           await showGameAlert("Invalid Slot", "You can only move onto an empty slot or a stack of the same item.");
         } else {
-          // --- CHANGED: Updated prompt text and default value ---
           const input = await showGamePrompt(
-            `Move ${dragItem.name}`, 
-            `How many to move? (You have: ${dragItem.qty})`, 
-            "" // <-- Empty default value
+            `Move ${dragItemBeforePrompt.name}`, 
+            `How many to move? (You have: ${dragItemBeforePrompt.qty})`,
+            "" 
           );
 
-          // Clean up grey slot if user cancelled
+          // --- THIS IS THE FIX ---
+          // After the prompt (await) is done, we re-check the bank
+            
           if (input === null) {
+            // User cancelled
             const originalSlotEl = document.querySelector(`#bankGrid .inv-slot[data-slot-index="${fromIndex}"]`);
             if (originalSlotEl) {
               originalSlotEl.classList.remove('dragging');
             }
           } else {
+            // --- EXPLOIT FIX: Re-validate the item *after* the prompt ---
+            const itemAfterPrompt = game.bank[fromIndex]; // Check game.bank
+            
+            // Check if the item was consumed or changed
+            if (!itemAfterPrompt || itemAfterPrompt.name !== dragItemBeforePrompt.name) {
+              // The item was consumed! Abort.
+              draggedBankItem = null;
+              game.isDragging = false;
+              return; // Safely exit
+            }
+            // --- END EXPLOIT FIX ---
+            
             const splitAmount = parseInt(input);
 
             if (isNaN(splitAmount) || splitAmount <= 0) { /* Invalid */ }
             
-            // --- CHANGED: Updated validation ---
-            else if (splitAmount > dragItem.qty) {
+            // Use the most up-to-date quantity
+            else if (splitAmount > itemAfterPrompt.qty) { 
               await showGameAlert("Invalid Amount", "You don't have that many.");
             } 
             
-            // --- NEW: Handle full stack move ---
-            else if (splitAmount === dragItem.qty) {
-              // This is a FULL STACK move.
-              // This logic is now copied from the 'else' block below
-              if (dragItem && dropItem && dragItem.name === dragItem.name) {
-                // Stack
-                dropItem.qty += dragItem.qty;
+            else if (splitAmount === itemAfterPrompt.qty) { 
+              // Full stack move
+              if (itemAfterPrompt && dropItem && itemAfterPrompt.name === dropItem.name) {
+                dropItem.qty += itemAfterPrompt.qty;
                 game.bank[fromIndex] = null;
               } else {
-                // Swap
                 game.bank[fromIndex] = dropItem;
-                game.bank[toIndex] = dragItem;
+                game.bank[toIndex] = itemAfterPrompt;
               }
               renderBankGrid();
               if (typeof window.savePlayerData === 'function') savePlayerData();
             }
-            // --- END MODIFICATION ---
             
             else {
-              // This is a valid SPLIT (splitAmount < dragItem.qty)
-              if (dropItem) { // Stack onto existing
+              // This is a valid SPLIT
+              if (dropItem) { 
                 dropItem.qty += splitAmount;
-              } else { // Move to new slot
-                game.bank[toIndex] = { name: dragItem.name, qty: splitAmount };
+              } else { 
+                game.bank[toIndex] = { name: itemAfterPrompt.name, qty: splitAmount };
               }
-              dragItem.qty -= splitAmount;
+              itemAfterPrompt.qty -= splitAmount; // Use the validated item
 
               renderBankGrid();
               if (typeof window.savePlayerData === 'function') savePlayerData();
@@ -3273,12 +3283,12 @@ async function handleBankDrop(e) {
         }
       } else {
         // --- BANK SWAP/STACK (No Shift) ---
-        if (dragItem && dropItem && dragItem.name === dragItem.name) {
-          // Stack
+        // We must re-get the dragItem in case it was consumed
+        const dragItem = game.bank[fromIndex]; 
+        if (dragItem && dropItem && dragItem.name === dropItem.name) {
           dropItem.qty += dragItem.qty;
           game.bank[fromIndex] = null;
         } else {
-          // Swap
           game.bank[fromIndex] = dropItem;
           game.bank[toIndex] = dragItem;
         }
@@ -3692,63 +3702,74 @@ inventoryGrid.addEventListener('dragend', (e) => {
       
       if (fromIndex !== toIndex) { 
         
-        const dragItem = game.inventory[fromIndex];
+        // --- Get the item data *before* the prompt ---
+        const dragItemBeforePrompt = game.inventory[fromIndex];
         const dropItem = game.inventory[toIndex];
 
         // --- MODIFIED: Handle Shift-Click to move specific amount ---
-        if (e.shiftKey && dragItem) { // No longer need qty > 1 check
+        if (e.shiftKey && dragItemBeforePrompt) { 
           
-          if (dropItem && dropItem.name !== dragItem.name) {
+          if (dropItem && dropItem.name !== dragItemBeforePrompt.name) {
             await showGameAlert("Invalid Slot", "You can only move onto an empty slot or a stack of the same item.");
           } else {
-            // --- CHANGED: Updated prompt text and default value ---
             const input = await showGamePrompt(
-              `Move ${dragItem.name}`, 
-              `How many to move? (You have: ${dragItem.qty})`, 
-              "" // <-- Empty default value
+              `Move ${dragItemBeforePrompt.name}`, 
+              `How many to move? (You have: ${dragItemBeforePrompt.qty})`,
+              ""
             );
             
-            // Clean up grey slot if user cancelled
+            // --- THIS IS THE FIX ---
+            // After the prompt (await) is done, we re-check the inventory
+            
             if (input === null) { 
+              // User cancelled
               const originalSlotEl = document.querySelector(`#inventoryGrid .inv-slot[data-slot-index="${fromIndex}"]`);
               if (originalSlotEl) originalSlotEl.classList.remove('dragging');
               
             } else {
+              // --- EXPLOIT FIX: Re-validate the item *after* the prompt ---
+              const itemAfterPrompt = game.inventory[fromIndex];
+              
+              // Check if the item was consumed or changed
+              if (!itemAfterPrompt || itemAfterPrompt.name !== dragItemBeforePrompt.name) {
+                // The item was consumed! Abort the action.
+                draggedItemIndex = null;
+                draggedBankItem = null;
+                game.isDragging = false;
+                return; // Safely exit
+              }
+              // --- END EXPLOIT FIX ---
+            
               const splitAmount = parseInt(input);
               
               if (isNaN(splitAmount) || splitAmount <= 0) { /* Invalid number */ }
               
-              // --- CHANGED: Updated validation ---
-              else if (splitAmount > dragItem.qty) {
+              // Use the most up-to-date quantity
+              else if (splitAmount > itemAfterPrompt.qty) { 
                 await showGameAlert("Invalid Amount", "You don't have that many.");
               } 
               
-              // --- NEW: Handle full stack move ---
-              else if (splitAmount === dragItem.qty) {
-                // This is a FULL STACK move.
-                // This logic is now copied from the 'else' block below
-                if (dragItem && dropItem && dragItem.name === dropItem.name) {
-                    // Stacking items
-                    dropItem.qty += dragItem.qty;
+              else if (splitAmount === itemAfterPrompt.qty) { 
+                // Full stack move
+                if (itemAfterPrompt && dropItem && itemAfterPrompt.name === dropItem.name) {
+                    dropItem.qty += itemAfterPrompt.qty;
                     game.inventory[fromIndex] = null;
                 } else {
-                    // Swapping items
                     game.inventory[fromIndex] = dropItem;
-                    game.inventory[toIndex] = dragItem;
+                    game.inventory[toIndex] = itemAfterPrompt;
                 }
                 renderInventoryGrid();
                 if (typeof window.savePlayerData === 'function') savePlayerData();
               }
-              // --- END MODIFICATION ---
               
               else {
-                // This is a valid SPLIT (splitAmount < dragItem.qty)
-                if (dropItem) { // Stacking onto existing
+                // This is a valid SPLIT
+                if (dropItem) { 
                   dropItem.qty += splitAmount;
-                } else { // Moving to new slot
-                  game.inventory[toIndex] = { name: dragItem.name, qty: splitAmount };
+                } else { 
+                  game.inventory[toIndex] = { name: itemAfterPrompt.name, qty: splitAmount };
                 }
-                dragItem.qty -= splitAmount;
+                itemAfterPrompt.qty -= splitAmount; // Use the validated item
                 
                 renderInventoryGrid();
                 if (typeof window.savePlayerData === 'function') savePlayerData();
@@ -3757,12 +3778,12 @@ inventoryGrid.addEventListener('dragend', (e) => {
           }
         } else {
           // --- This is the ORIGINAL Swap/Stack logic ---
+          // We must re-get the dragItem in case it was consumed
+          const dragItem = game.inventory[fromIndex]; 
           if (dragItem && dropItem && dragItem.name === dropItem.name) {
-              // Stacking items
               dropItem.qty += dragItem.qty;
               game.inventory[fromIndex] = null;
           } else {
-              // Swapping items
               game.inventory[fromIndex] = dropItem;
               game.inventory[toIndex] = dragItem;
           }
