@@ -477,6 +477,32 @@ button.primary:hover { background: var(--accent-hover); }
   margin-top: 0;
   color: var(--gold);
 }
+
+#deathOverlay {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  z-index: 5001; /* Higher than session lock */
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+#deathOverlay div {
+  background: var(--panel-bg);
+  border: 4px solid #453625;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  padding: 30px 40px;
+  border-radius: 10px;
+  max-width: 400px;
+}
+#deathOverlay h2 {
+  margin-top: 0;
+  color: #ff4d4d; /* Red for death */
+}
 /* +++ END NEW STYLES +++ */
 
 #combat-main-container {
@@ -841,6 +867,14 @@ button.primary:hover { background: var(--accent-hover); }
     <h2>Session Active Elsewhere</h2>
     <p>This account is already being played in another tab or browser. To prevent data corruption, this tab has been disabled.</p>
     <button id="takeControlButton" class="primary">Take Control Here</button>
+  </div>
+</div>
+
+<div id="deathOverlay" style="display: none;">
+  <div>
+    <h2>You died!</h2>
+    <p>You lost all your inventory and gold.</p>
+    <button id="reviveBtn" class="primary" onclick="revivePlayer()">Revive</button>
   </div>
 </div>
 
@@ -2483,6 +2517,62 @@ function updateEnemyCombatUI() {
   if (text) text.textContent = `${enemy.currentHp} / ${enemy.maxHp} HP`;
 }
 
+function showDeathOverlay() {
+  const overlay = document.getElementById('deathOverlay');
+  if (overlay) overlay.style.display = 'flex';
+}
+
+/**
+ * Hides the death overlay.
+ */
+function hideDeathOverlay() {
+  const overlay = document.getElementById('deathOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+/**
+ * Handles all logic when a player's HP reaches 0.
+ */
+function handlePlayerDeath() {
+  // 1. Wipe inventory
+  game.inventory = new Array(game.inventoryCapacity).fill(null);
+  renderInventoryGrid();
+  
+  // 2. Wipe gold
+  game.gold = 0;
+  updateGoldUI();
+  
+  // 3. Save the empty state
+  if (typeof window.savePlayerData === 'function') {
+    window.savePlayerData();
+  }
+  
+  // 4. Show the death modal
+  showDeathOverlay();
+}
+
+/**
+ * Handles the "Revive" button click.
+ */
+function revivePlayer() {
+  // 1. Hide the modal
+  hideDeathOverlay();
+  
+  // 2. Restore HP
+  game.hp = game.maxHP;
+  updateHPUI();
+  
+  // 3. Go back to the main hub
+  backToActions();
+  
+  // 4. Save the new HP state
+  if (typeof window.savePlayerData === 'function') {
+    window.savePlayerData();
+  }
+}
+// --- END: Death & Revive Functions ---
+
+
 function showDamageSplat(target, amount, type) {
   let anchorElement = null;
   if (target === 'player') {
@@ -2610,27 +2700,12 @@ function enemyAttackTurn() {
   if (game.hp <= 0) {
     game.hp = 0; // Don't let it go negative
     updateHPUI();
-    // Line deleted
     
     // Stop the fight, passing 'true' to indicate the player died
     runFromCombat(true); 
     
-    // Respawn the player after a short delay
-    setTimeout(() => {
-      game.hp = game.maxHP; // Restore health
-      updateHPUI();
-      
-      // NEW: Reset buttons to pre-combat state
-      const fightBtn = document.getElementById('combat-fight-btn');
-      const runBtn = document.getElementById('combat-run-btn');
-      const returnBtn = document.getElementById('combat-return-btn');
-      
-      if (fightBtn) fightBtn.style.display = 'block'; // SHOW Fight
-      if (fightBtn) fightBtn.disabled = false;
-      if (runBtn) runBtn.style.display = 'none'; // HIDE Run
-      if (runBtn) runBtn.disabled = true;
-      if (returnBtn) returnBtn.style.display = 'block'; // Can return
-    }, 2000);
+    // Call the new death handler
+    handlePlayerDeath();
   }
 }
 
@@ -4458,9 +4533,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         if (!data.name || data.name === "") return;
+        
+        // --- THIS IS THE FIX ---
+        // We now get the totalXP from *all* skills and add them together.
         const miningXp = data.mining?.totalXP || 0; 
         const blacksmithXp = data.blacksmith?.totalXP || 0;
-        const totalXp = miningXp + blacksmithXp;
+        const attackXp = data.attack?.totalXP || 0;
+        const strengthXp = data.strength?.totalXP || 0;
+        const defenceXp = data.defence?.totalXP || 0;
+        const vitalityXp = data.vitality?.totalXP || 0;
+        const cookingXp = data.cooking?.totalXP || 0;
+
+        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp;
+        // --- END OF FIX ---
+
         players.push({
           name: data.name,
           totalXp: totalXp,
