@@ -1360,7 +1360,9 @@ function addItem(name, qty = 1) {
     }
   }
 
-  renderInventoryGrid();
+  if (!game.isDragging) {
+    renderInventoryGrid();
+  }
 }
 
 // =================================================================
