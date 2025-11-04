@@ -828,6 +828,44 @@ button.primary:hover { background: var(--accent-hover); }
 }
 /* --- END: Equipment Stats Display --- */
 
+/* --- NEW: Locked Item/Vein Style --- */
+.locked-item {
+  opacity: 0.4;
+  filter: grayscale(80%);
+  cursor: not-allowed !important;
+}
+.locked-item:hover {
+  background: var(--accent) !important; /* Prevents hover effect */
+}
+/* --- END: Locked Item/Vein Style --- */
+
+.tabs button.active {
+  background: var(--accent-hover); /* Make it look "pressed" */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+  border: 1px solid var(--gold); /* Highlight it */
+}
+#smithingItemsContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+/* --- END: Smithing Tabs --- */
+
+/* --- NEW: Smithing Tab Active State --- */
+.tabs button.active {
+  background: var(--accent-hover); /* Make it look "pressed" */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+  border: 1px solid var(--gold); /* Highlight it */
+}
+#smithingItemsContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+/* --- END: Smithing Tabs --- */
+
 </style>
 </head>
 <body>
@@ -1139,8 +1177,15 @@ const VALID_ITEMS = [
   'Copper Boots', 
   'Raw Chicken',
   'Cooked Chicken',
-  'Burnt Chicken'
-]; // <-- THIS LINE IS THE FIX (Array is now closed)
+  'Burnt Chicken',
+  'Coal Ore',
+  'Iron Ore',
+  'Iron Bar',
+  'Iron Helmet',
+  'Iron Chestplate',
+  'Iron Boots',
+  'Iron Shortsword'
+];
 
 const XP_TABLE = [
   0,        // Level 1
@@ -1259,9 +1304,58 @@ const HELMET_TIME_MS = 5000; // Same as shortsword
 // +++ END NEW CONSTANTS +++
 
 // +++ NEW BOOTS CONSTANTS +++
+// +++ NEW BOOTS CONSTANTS +++
 const BOOTS_BAR_COST = 4;
 const BOOTS_XP = 26; // 4 bars (~6.5xp/bar)
 const BOOTS_TIME_MS = 4000; // 4 bars (1s/bar)
+
+// --- NEW: Mining Level Requirements ---
+const COAL_MINE_LVL = 5;
+const IRON_MINE_LVL = 10;
+
+// --- NEW: Coal/Iron Mining Constants ---
+const COAL_MINE_TIME_MS = 2000;
+const COAL_MINE_XP = 20;
+const COAL_MINE_ITEM = 'Coal Ore';
+
+const IRON_MINE_TIME_MS = 3000;
+const IRON_MINE_XP = 35;
+const IRON_MINE_ITEM = 'Iron Ore';
+
+// --- NEW: Blacksmith Level Requirements ---
+const COPPER_BAR_LVL = 1;
+const COPPER_SWORD_LVL = 3;
+const COPPER_BOOTS_LVL = 5;
+const COPPER_HELMET_LVL = 6;
+const COPPER_CHEST_LVL = 8;
+
+const IRON_BAR_LVL = 11;
+const IRON_SWORD_LVL = 13;
+const IRON_BOOTS_LVL = 15;
+const IRON_HELMET_LVL = 16;
+const IRON_CHEST_LVL = 18;
+
+// --- NEW: Iron Smithing Constants ---
+const IRON_BAR_ORE_COST = 1; // 1 Iron Ore
+const IRON_BAR_COAL_COST = 1; // 1 Coal Ore
+const IRON_BAR_XP = 30;
+const IRON_BAR_TIME_MS = 6000;
+
+const IRON_HELMET_BAR_COST = 5;
+const IRON_HELMET_XP = 150; 
+const IRON_HELMET_TIME_MS = 7000; 
+
+const IRON_CHESTPLATE_BAR_COST = 10;
+const IRON_CHESTPLATE_XP = 300; 
+const IRON_CHESTPLATE_TIME_MS = 12000; 
+
+const IRON_BOOTS_BAR_COST = 4;
+const IRON_BOOTS_XP = 120; 
+const IRON_BOOTS_TIME_MS = 6000; 
+
+const IRON_SHORTSWORD_BAR_COST = 5;
+const IRON_SHORTSWORD_XP = 150;
+const IRON_SHORTSWORD_TIME_MS = 7000;
 
 // --- NEW: Central Item Stat Definitions ---
 const ITEM_STATS = {
@@ -1276,6 +1370,21 @@ const ITEM_STATS = {
   },
   'Copper Shortsword': {
     damage: 1,
+    styleBonus: 1, // Bonus for 'attack' style
+    speed: 2
+  },
+  // --- NEW: Iron Item Stats ---
+  'Iron Helmet': {
+    armor: 2
+  },
+  'Iron Chestplate': {
+    armor: 3
+  },
+  'Iron Boots': {
+    armor: 2
+  },
+  'Iron Shortsword': {
+    damage: 2,
     styleBonus: 1, // Bonus for 'attack' style
     speed: 2
   }
@@ -1391,7 +1500,11 @@ function renderEquipment() {
     'Copper Helmet': 'copperhelmet',
     'Copper Chestplate': 'copperchestplate',
     'Copper Shortsword': 'coppershortsword',
-    'Copper Boots': 'copperboots'
+    'Copper Boots': 'copperboots',
+    'Iron Helmet': 'ironhelmet',
+    'Iron Chestplate': 'ironchestplate',
+    'Iron Shortsword': 'ironshortsword',
+    'Iron Boots': 'ironboots'
   };
 
   slots.forEach(slotType => {
@@ -1518,6 +1631,20 @@ function renderInventoryGrid(){
           imgName = 'cookedchicken';
       } else if (item.name === 'Burnt Chicken') {
           imgName = 'burntchicken';
+      } else if (item.name === 'Coal Ore') {
+          imgName = 'coalore';
+      } else if (item.name === 'Iron Ore') {
+          imgName = 'ironore';
+      } else if (item.name === 'Iron Bar') {
+          imgName = 'ironbar';
+      } else if (item.name === 'Iron Helmet') {
+          imgName = 'ironhelmet';
+      } else if (item.name === 'Iron Chestplate') {
+          imgName = 'ironchestplate';
+      } else if (item.name === 'Iron Boots') {
+          imgName = 'ironboots';
+      } else if (item.name === 'Iron Shortsword') {
+          imgName = 'ironshortsword';
       }
       
       img.src = `images/${imgName}.png`;
@@ -1720,7 +1847,11 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Copper Helmet': 'helmet',
     'Copper Chestplate': 'chest',
     'Copper Shortsword': 'weapon',
-    'Copper Boots': 'boots'
+    'Copper Boots': 'boots',
+    'Iron Helmet': 'helmet',
+    'Iron Chestplate': 'chest',
+    'Iron Shortsword': 'weapon',
+    'Iron Boots': 'boots'
   };
   const itemSlotType = equipableItems[itemName];
   // --- END NEW ---
@@ -2573,6 +2704,353 @@ async function bootsCraftingLoop(timestamp, startTime) {
   }
 }
 
+// --- NEW: Iron Bar Crafting Logic ---
+async function startIronBarCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalIronOre = 0;
+  let totalCoalOre = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Iron Ore') totalIronOre += slot.qty;
+      if (slot && slot.name === 'Coal Ore') totalCoalOre += slot.qty;
+  }
+
+  if (totalIronOre < IRON_BAR_ORE_COST || totalCoalOre < IRON_BAR_COAL_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${IRON_BAR_ORE_COST} Iron Ore and ${IRON_BAR_COAL_COST} Coal Ore.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startSmithBtn');
+  const stopBtn = document.getElementById('stopSmithBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => ironBarCraftingLoop(now, now));
+}
+
+async function ironBarCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / IRON_BAR_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalIronOre = 0;
+    let totalCoalOre = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Ore') totalIronOre += slot.qty;
+        if (slot && slot.name === 'Coal Ore') totalCoalOre += slot.qty;
+    }
+    if (totalIronOre < IRON_BAR_ORE_COST || totalCoalOre < IRON_BAR_COAL_COST) {
+        await showGameAlert("Out of Materials", "You've run out of ore.");
+        stopBlacksmithing();
+        return;
+    }
+    
+    removeItem('Iron Ore', IRON_BAR_ORE_COST);
+    removeItem('Coal Ore', IRON_BAR_COAL_COST);
+    addItem('Iron Bar', 1);
+    addXP('blacksmith', IRON_BAR_XP);
+    
+    showItemPopup(`+${IRON_BAR_XP} Blacksmith XP`, 'smithProgress', 0);
+    showItemPopup(`+1 Iron Bar`, 'smithProgress', 450);
+    
+    const bar = document.getElementById('smithProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalIronAfter = 0;
+    let totalCoalAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Ore') totalIronAfter += slot.qty;
+        if (slot && slot.name === 'Coal Ore') totalCoalAfter += slot.qty;
+    }
+    if (totalIronAfter < IRON_BAR_ORE_COST || totalCoalAfter < IRON_BAR_COAL_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough ore to smith another bar.");
+        stopBlacksmithing();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => ironBarCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('smithProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => ironBarCraftingLoop(now, startTime));
+  }
+}
+
+// --- NEW: Iron Helmet Crafting Logic ---
+async function startIronHelmetCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
+  }
+
+  if (totalBars < IRON_HELMET_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${IRON_HELMET_BAR_COST} Iron Bars.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startHelmetBtn');
+  const stopBtn = document.getElementById('stopHelmetBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => ironHelmetCraftingLoop(now, now));
+}
+
+async function ironHelmetCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / IRON_HELMET_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
+    }
+    if (totalBars < IRON_HELMET_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Iron Bars.");
+        stopBlacksmithing();
+        return;
+    }
+    
+    removeItem('Iron Bar', IRON_HELMET_BAR_COST);
+    addItem('Iron Helmet', 1);
+    addXP('blacksmith', IRON_HELMET_XP);
+    
+    showItemPopup(`+${IRON_HELMET_XP} Blacksmith XP`, 'helmetProgress', 0);
+    showItemPopup(`+1 Iron Helmet`, 'helmetProgress', 450);
+    
+    const bar = document.getElementById('helmetProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Bar') totalBarsAfter += slot.qty;
+    }
+    if (totalBarsAfter < IRON_HELMET_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another helmet.");
+        stopBlacksmithing();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => ironHelmetCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('helmetProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => ironHelmetCraftingLoop(now, startTime));
+  }
+}
+
+// --- NEW: Iron Chestplate Crafting Logic ---
+async function startIronChestplateCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
+  }
+
+  if (totalBars < IRON_CHESTPLATE_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${IRON_CHESTPLATE_BAR_COST} Iron Bars.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startChestplateBtn');
+  const stopBtn = document.getElementById('stopChestplateBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => ironChestplateCraftingLoop(now, now));
+}
+
+async function ironChestplateCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / IRON_CHESTPLATE_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
+    }
+    if (totalBars < IRON_CHESTPLATE_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Iron Bars.");
+        stopBlacksmithing();
+        return;
+    }
+    
+    removeItem('Iron Bar', IRON_CHESTPLATE_BAR_COST);
+    addItem('Iron Chestplate', 1);
+    addXP('blacksmith', IRON_CHESTPLATE_XP);
+    
+    showItemPopup(`+${IRON_CHESTPLATE_XP} Blacksmith XP`, 'chestplateProgress', 0);
+    showItemPopup(`+1 Iron Chestplate`, 'chestplateProgress', 450);
+    
+    const bar = document.getElementById('chestplateProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Bar') totalBarsAfter += slot.qty;
+    }
+    if (totalBarsAfter < IRON_CHESTPLATE_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another chestplate.");
+        stopBlacksmithing();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => ironChestplateCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('chestplateProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => ironChestplateCraftingLoop(now, startTime));
+  }
+}
+
+// --- NEW: Iron Boots Crafting Logic ---
+async function startIronBootsCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
+  }
+
+  if (totalBars < IRON_BOOTS_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${IRON_BOOTS_BAR_COST} Iron Bars.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startBootsBtn');
+  const stopBtn = document.getElementById('stopBootsBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => ironBootsCraftingLoop(now, now));
+}
+
+async function ironBootsCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / IRON_BOOTS_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
+    }
+    if (totalBars < IRON_BOOTS_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Iron Bars.");
+        stopBlacksmithing();
+        return;
+    }
+    
+    removeItem('Iron Bar', IRON_BOOTS_BAR_COST);
+    addItem('Iron Boots', 1);
+    addXP('blacksmith', IRON_BOOTS_XP);
+    
+    showItemPopup(`+${IRON_BOOTS_XP} Blacksmith XP`, 'bootsProgress', 0);
+    showItemPopup(`+1 Iron Boots`, 'bootsProgress', 450);
+    
+    const bar = document.getElementById('bootsProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Bar') totalBarsAfter += slot.qty;
+    }
+    if (totalBarsAfter < IRON_BOOTS_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft more boots.");
+        stopBlacksmithing();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => ironBootsCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('bootsProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => ironBootsCraftingLoop(now, startTime));
+  }
+}
+
+// --- NEW: Iron Shortsword Crafting Logic ---
+async function startIronShortswordCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
+  }
+
+  if (totalBars < IRON_SHORTSWORD_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${IRON_SHORTSWORD_BAR_COST} Iron Bars.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startShortswordBtn');
+  const stopBtn = document.getElementById('stopShortswordBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => ironShortswordCraftingLoop(now, now));
+}
+
+async function ironShortswordCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / IRON_SHORTSWORD_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
+    }
+    if (totalBars < IRON_SHORTSWORD_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Iron Bars.");
+        stopBlacksmithing();
+        return;
+    }
+    
+    removeItem('Iron Bar', IRON_SHORTSWORD_BAR_COST);
+    addItem('Iron Shortsword', 1);
+    addXP('blacksmith', IRON_SHORTSWORD_XP);
+    
+    showItemPopup(`+${IRON_SHORTSWORD_XP} Blacksmith XP`, 'shortswordProgress', 0);
+    showItemPopup(`+1 Iron Shortsword`, 'shortswordProgress', 450);
+    
+    const bar = document.getElementById('shortswordProgress');
+    if (bar) bar.style.width = '0%';
+    
+    // --- THIS IS THE FIX ---
+    // Crafting an item is a single action. Stop after one.
+    stopBlacksmithing();
+    // --- END FIX ---
+
+  } else {
+    const bar = document.getElementById('shortswordProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => ironShortswordCraftingLoop(now, startTime));
+  }
+}
+
 const SMITH_TIME_MS = 5000;
 const SMITH_XP = 25;
 const SMITH_ORE_COST = 2;
@@ -2900,98 +3378,261 @@ function openCopperShortswordSmith(){
 }
 // +++ END NEW COPPER SHORTSWORD UI +++
 
+// --- NEW: Iron Bar UI ---
+function openIronBarSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Smithing - Iron Bar</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_BAR_ORE_COST} Iron Ore, ${IRON_BAR_COAL_COST} Coal Ore.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="smithProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startSmithBtn" class="primary">Start Smithing</button>
+      <button id="stopSmithBtn" class="primary" style="background:#555; display:none;">Stop Smithing</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startSmithBtn').onclick = startIronBarCrafting;
+  document.getElementById('stopSmithBtn').onclick = stopBlacksmithing;
+}
+
+// --- NEW: Iron Helmet UI ---
+function openIronHelmetSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Smithing - Iron Helmet</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_HELMET_BAR_COST} Iron Bars.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="helmetProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startHelmetBtn" class="primary">Start Crafting</button>
+      <button id="stopHelmetBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startHelmetBtn').onclick = startIronHelmetCrafting;
+  document.getElementById('stopHelmetBtn').onclick = stopBlacksmithing; 
+}
+
+// --- NEW: Iron Chestplate UI ---
+function openIronChestplateSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Smithing - Iron Chestplate</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_CHESTPLATE_BAR_COST} Iron Bars.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="chestplateProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startChestplateBtn" class="primary">Start Crafting</button>
+      <button id="stopChestplateBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startChestplateBtn').onclick = startIronChestplateCrafting;
+  document.getElementById('stopChestplateBtn').onclick = stopBlacksmithing;
+}
+
+// --- NEW: Iron Boots UI ---
+function openIronBootsSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Smithing - Iron Boots</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_BOOTS_BAR_COST} Iron Bars.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="bootsProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startBootsBtn" class="primary">Start Crafting</button>
+      <button id="stopBootsBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startBootsBtn').onclick = startIronBootsCrafting;
+  document.getElementById('stopBootsBtn').onclick = stopBlacksmithing; 
+}
+
+// --- NEW: Iron Shortsword UI ---
+function openIronShortswordSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Smithing - Iron Shortsword</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_SHORTSWORD_BAR_COST} Iron Bars.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="shortswordProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startShortswordBtn" class="primary">Start Crafting</button>
+      <button id="stopShortswordBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startShortswordBtn').onclick = startIronShortswordCrafting;
+  document.getElementById('stopShortswordBtn').onclick = stopBlacksmithing; 
+}
+// +++ END NEW COPPER SHORTSWORD UI +++
+
 function openBlacksmithHub() {
   game.shopOpen = false;
   hideTooltip();
   stopMining();
   stopBlacksmithing();
   const wrapper = document.getElementById('mainContentWrapper');
+  
   wrapper.innerHTML = `
-    <h2>Blacksmith</h2>
-    <div style="margin-top:8px; color:#efe3cf;">Choose an item to smith.</div>
-    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
-      
-      <button id="copperBarBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+    <div class="tabs" style="margin-top: 0; margin-bottom: 14px;">
+      <button id="smithCopperTab" class="active">Copper</button>
+      <button id="smithIronTab">Iron</button>
+    </div>
+
+    <div id="smithingItemsContainer" class="action-buttons" style="margin-top: 0; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
+      <!-- Items will be rendered here by JS -->
+    </div>
+    
+    <div class="action-buttons" style="margin-top: 14px;">
+      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
+    </div>
+  `;
+  
+  const copperTab = document.getElementById('smithCopperTab');
+  const ironTab = document.getElementById('smithIronTab');
+  
+  copperTab.onclick = () => {
+    copperTab.classList.add('active');
+    ironTab.classList.remove('active');
+    renderSmithingItems('copper');
+  };
+  
+  ironTab.onclick = () => {
+    ironTab.classList.add('active');
+    copperTab.classList.remove('active');
+    renderSmithingItems('iron');
+  };
+
+  document.getElementById('returnToActionsBtn').onclick = backToActions;
+  
+  // Render copper items by default
+  renderSmithingItems('copper');
+}
+
+function renderSmithingItems(metalType) {
+  const container = document.getElementById('smithingItemsContainer');
+  if (!container) return;
+  
+  const smithLvl = game.blacksmith.level;
+  
+  // --- Helper function for locked buttons (moved inside) ---
+  const setupSmithButton = (btnId, locked, onclick, levelReq, tooltipText) => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      if (locked) {
+        btn.onclick = null;
+        btn.onmouseenter = (event) => showTooltip(event, `Requires Blacksmith Lvl: ${levelReq}`);
+      } else {
+        btn.onclick = onclick;
+        btn.onmouseenter = (event) => showTooltip(event, tooltipText);
+      }
+      btn.onmouseleave = hideTooltip;
+    }
+  };
+  
+  if (metalType === 'copper') {
+    // --- Copper Level Locks ---
+    const copperBarLocked = smithLvl < COPPER_BAR_LVL;
+    const copperSwordLocked = smithLvl < COPPER_SWORD_LVL;
+    const copperBootsLocked = smithLvl < COPPER_BOOTS_LVL;
+    const copperHelmetLocked = smithLvl < COPPER_HELMET_LVL;
+    const copperChestLocked = smithLvl < COPPER_CHEST_LVL;
+    
+    container.innerHTML = `
+      <button id="copperBarBtn" class="primary ${copperBarLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
         <img src="images/copperbar.png" alt="Copper Bar" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
         <span>Copper Bar</span>
       </button>
-      
-      <button id="copperHelmetBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
-        <img src="images/copperhelmet.png" alt="Copper Helmet" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Copper Helmet</span>
-      </button>
-
-      <button id="copperChestplateBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
-        <img src="images/copperchestplate.png" alt="Copper Chestplate" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Copper Chestplate</span>
-      </button>
-
-      <button id="copperBootsBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
-        <img src="images/copperboots.png" alt="Copper Boots" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Copper Boots</span>
-      </button>
-
-      <button id="copperShortswordBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+      <button id="copperShortswordBtn" class="primary ${copperSwordLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
         <img src="images/coppershortsword.png" alt="Copper Shortsword" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
         <span>Copper Shortsword</span>
       </button>
-      
-      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
-    </div>
-  `;
-  const copperBarBtn = document.getElementById('copperBarBtn');
-  const copperHelmetBtn = document.getElementById('copperHelmetBtn'); // <-- NEW
-  const copperChestplateBtn = document.getElementById('copperChestplateBtn'); 
-  const copperBootsBtn = document.getElementById('copperBootsBtn'); // <-- NEW
-  const copperShortswordBtn = document.getElementById('copperShortswordBtn'); 
-  const returnBtn = document.getElementById('returnToActionsBtn');
-  
-  if (copperBarBtn) {
-    copperBarBtn.onclick = openCopperBarSmith;
-    copperBarBtn.onmouseenter = (event) => {
-      showTooltip(event, 'Requires: 2 Copper Ore');
-    };
-    copperBarBtn.onmouseleave = hideTooltip;
-  }
-  
-  // --- NEW HELMET LOGIC ---
-  if (copperHelmetBtn) {
-    copperHelmetBtn.onclick = openCopperHelmetSmith;
-    copperHelmetBtn.onmouseenter = (event) => {
-      showTooltip(event, `Requires: ${HELMET_BAR_COST} Copper Bars`);
-    };
-    copperHelmetBtn.onmouseleave = hideTooltip;
-  }
-  // --- END NEW ---
-  
-  if (copperChestplateBtn) {
-    copperChestplateBtn.onclick = openCopperChestplateSmith;
-    copperChestplateBtn.onmouseenter = (event) => {
-      showTooltip(event, `Requires: ${CHESTPLATE_BAR_COST} Copper Bars`);
-    };
-    copperChestplateBtn.onmouseleave = hideTooltip;
-  }
-  
-  // --- NEW BOOTS LOGIC ---
-  if (copperBootsBtn) {
-    copperBootsBtn.onclick = openCopperBootsSmith;
-    copperBootsBtn.onmouseenter = (event) => {
-      showTooltip(event, `Requires: ${BOOTS_BAR_COST} Copper Bars`);
-    };
-    copperBootsBtn.onmouseleave = hideTooltip;
-  }
-  // --- END NEW ---
-
-  if (copperShortswordBtn) {
-    copperShortswordBtn.onclick = openCopperShortswordSmith;
-    copperShortswordBtn.onmouseenter = (event) => {
-      showTooltip(event, `Requires: ${SHORTSWORD_BAR_COST} Copper Bars`);
-    };
-    copperShortswordBtn.onmouseleave = hideTooltip;
-  }
-
-  if (returnBtn) {
-    returnBtn.onclick = backToActions;
+      <button id="copperBootsBtn" class="primary ${copperBootsLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/copperboots.png" alt="Copper Boots" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Copper Boots</span>
+      </button>
+      <button id="copperHelmetBtn" class="primary ${copperHelmetLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/copperhelmet.png" alt="Copper Helmet" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Copper Helmet</span>
+      </button>
+      <button id="copperChestplateBtn" class="primary ${copperChestLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/copperchestplate.png" alt="Copper Chestplate" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Copper Chestplate</span>
+      </button>
+    `;
+    
+    // --- Re-attach listeners for copper items ---
+    setupSmithButton('copperBarBtn', copperBarLocked, openCopperBarSmith, COPPER_BAR_LVL, 'Requires: 2 Copper Ore');
+    setupSmithButton('copperShortswordBtn', copperSwordLocked, openCopperShortswordSmith, COPPER_SWORD_LVL, `Requires: ${SHORTSWORD_BAR_COST} Copper Bars`);
+    setupSmithButton('copperBootsBtn', copperBootsLocked, openCopperBootsSmith, COPPER_BOOTS_LVL, `Requires: ${BOOTS_BAR_COST} Copper Bars`);
+    setupSmithButton('copperHelmetBtn', copperHelmetLocked, openCopperHelmetSmith, COPPER_HELMET_LVL, `Requires: ${HELMET_BAR_COST} Copper Bars`);
+    setupSmithButton('copperChestplateBtn', copperChestLocked, openCopperChestplateSmith, COPPER_CHEST_LVL, `Requires: ${CHESTPLATE_BAR_COST} Copper Bars`);
+    
+  } else if (metalType === 'iron') {
+    // --- Iron Level Locks ---
+    const ironBarLocked = smithLvl < IRON_BAR_LVL;
+    const ironSwordLocked = smithLvl < IRON_SWORD_LVL;
+    const ironBootsLocked = smithLvl < IRON_BOOTS_LVL;
+    const ironHelmetLocked = smithLvl < IRON_HELMET_LVL;
+    const ironChestLocked = smithLvl < IRON_CHEST_LVL;
+    
+    container.innerHTML = `
+      <button id="ironBarBtn" class="primary ${ironBarLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/ironbar.png" alt="Iron Bar" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Iron Bar</span>
+      </button>
+      <button id="ironShortswordBtn" class="primary ${ironSwordLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/ironshortsword.png" alt="Iron Shortsword" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Iron Shortsword</span>
+      </button>
+      <button id="ironBootsBtn" class="primary ${ironBootsLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/ironboots.png" alt="Iron Boots" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Iron Boots</span>
+      </button>
+      <button id="ironHelmetBtn" class="primary ${ironHelmetLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/ironhelmet.png" alt="Iron Helmet" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Iron Helmet</span>
+      </button>
+      <button id="ironChestplateBtn" class="primary ${ironChestLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/ironchestplate.png" alt="Iron Chestplate" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Iron Chestplate</span>
+      </button>
+    `;
+    
+    // --- Re-attach listeners for iron items ---
+    setupSmithButton('ironBarBtn', ironBarLocked, openIronBarSmith, IRON_BAR_LVL, `Requires: 1 Iron Ore, 1 Coal Ore`);
+    setupSmithButton('ironShortswordBtn', ironSwordLocked, openIronShortswordSmith, IRON_SWORD_LVL, `Requires: ${IRON_SHORTSWORD_BAR_COST} Iron Bars`);
+    setupSmithButton('ironBootsBtn', ironBootsLocked, openIronBootsSmith, IRON_BOOTS_LVL, `Requires: ${IRON_BOOTS_BAR_COST} Iron Bars`);
+    setupSmithButton('ironHelmetBtn', ironHelmetLocked, openIronHelmetSmith, IRON_HELMET_LVL, `Requires: ${IRON_HELMET_BAR_COST} Iron Bars`);
+    setupSmithButton('ironChestplateBtn', ironChestLocked, openIronChestplateSmith, IRON_CHEST_LVL, `Requires: ${IRON_CHESTPLATE_BAR_COST} Iron Bars`);
   }
 }
 
@@ -3001,8 +3642,8 @@ function openCopperMine(){
   stopBlacksmithing();
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
-    <h2>Beginner Mine - Copper vein</h2>
-    <div style="margin-top:8px; color:#efe3cf;">A low level copper vein.</div>
+    <h2>Mine - Copper Vein</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A common copper vein.</div>
     <div style="margin-top:16px;">
       <div class="progress-container">
         <div class="progress-fill" id="mineProgress"></div>
@@ -3017,25 +3658,168 @@ function openCopperMine(){
   document.getElementById('stopMineBtn').onclick = stopMining;
 }
 
+// --- NEW: Coal Mine UI ---
+function openCoalMine(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Mine - Coal Vein</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A dark, crumbly coal vein.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="mineProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startMineBtn" class="primary">Start Mining</button>
+      <button id="stopMineBtn" class="primary" style="background:#555; display:none;">Stop Mining</button>
+      <button onclick="openMineHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startMineBtn').onclick = () => startCoalMining();
+  document.getElementById('stopMineBtn').onclick = stopMining;
+}
+
+// --- NEW: Coal Mine Logic ---
+async function startCoalMining() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.miningActive) return; 
+  game.miningActive = true;
+  const startBtn = document.getElementById('startMineBtn');
+  const stopBtn = document.getElementById('stopMineBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => coalMiningLoop(now, now));
+}
+
+function coalMiningLoop(timestamp, startTime) {
+  if (!game.miningActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / COAL_MINE_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    addItem(COAL_MINE_ITEM, 1);
+    addXP('mining', COAL_MINE_XP);
+
+    showItemPopup(`+${COAL_MINE_XP} Mining XP`, 'mineProgress', 0);
+    showItemPopup(`+1 ${COAL_MINE_ITEM}`, 'mineProgress', 450);
+    
+    const bar = document.getElementById('mineProgress');
+    if (bar) bar.style.width = '0%';
+    game.progressFrame = requestAnimationFrame((now) => coalMiningLoop(now, now));
+  } else {
+    const bar = document.getElementById('mineProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => coalMiningLoop(now, startTime));
+  }
+}
+
+// --- NEW: Iron Mine UI ---
+function openIronMine(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Mine - Iron Vein</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A sturdy iron vein.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="mineProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startMineBtn" class="primary">Start Mining</button>
+      <button id="stopMineBtn" class="primary" style="background:#555; display:none;">Stop Mining</button>
+      <button onclick="openMineHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startMineBtn').onclick = () => startIronMining();
+  document.getElementById('stopMineBtn').onclick = stopMining;
+}
+
+// --- NEW: Iron Mine Logic ---
+async function startIronMining() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.miningActive) return; 
+  game.miningActive = true;
+  const startBtn = document.getElementById('startMineBtn');
+  const stopBtn = document.getElementById('stopMineBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => ironMiningLoop(now, now));
+}
+
+function ironMiningLoop(timestamp, startTime) {
+  if (!game.miningActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / IRON_MINE_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    addItem(IRON_MINE_ITEM, 1);
+    addXP('mining', IRON_MINE_XP);
+
+    showItemPopup(`+${IRON_MINE_XP} Mining XP`, 'mineProgress', 0);
+    showItemPopup(`+1 ${IRON_MINE_ITEM}`, 'mineProgress', 450);
+    
+    const bar = document.getElementById('mineProgress');
+    if (bar) bar.style.width = '0%';
+    game.progressFrame = requestAnimationFrame((now) => ironMiningLoop(now, now));
+  } else {
+    const bar = document.getElementById('mineProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => ironMiningLoop(now, startTime));
+  }
+}
+
 function openMineHub() {
   game.shopOpen = false; 
   hideTooltip();
   stopMining(); 
   stopBlacksmithing();
   const wrapper = document.getElementById('mainContentWrapper');
+  
+  const miningLvl = game.mining.level;
+  const coalLocked = miningLvl < COAL_MINE_LVL;
+  const ironLocked = miningLvl < IRON_MINE_LVL;
+
   wrapper.innerHTML = `
-    <h2>Mines</h2>
-    <div style="margin-top:8px; color:#efe3cf;">Choose a mine to enter.</div>
-    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
+    <h2>Mine</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Choose a vein to mine.</div>
+    
+    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
+      
       <button id="copperVeinBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
         <img src="images/coppervein.png" alt="Copper Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
         <span>Copper Vein</span>
       </button>
+      
+      <button id="coalVeinBtn" class="primary ${coalLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/coalvein.png" alt="Coal Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Coal Vein</span>
+      </button>
+
+      <button id="ironVeinBtn" class="primary ${ironLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/ironvein.png" alt="Iron Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <span>Iron Vein</span>
+      </button>
+
       <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
     </div>
   `;
   const copperBtn = document.getElementById('copperVeinBtn');
+  const coalBtn = document.getElementById('coalVeinBtn');
+  const ironBtn = document.getElementById('ironVeinBtn');
   const returnBtn = document.getElementById('returnToActionsBtn');
+
   if (copperBtn) {
     copperBtn.onclick = openCopperMine;
     copperBtn.onmouseenter = (event) => {
@@ -3043,6 +3827,37 @@ function openMineHub() {
     };
     copperBtn.onmouseleave = hideTooltip;
   }
+
+  if (coalBtn) {
+    if (coalLocked) {
+      coalBtn.onclick = null;
+      coalBtn.onmouseenter = (event) => {
+        showTooltip(event, `Requires Mining Lvl: ${COAL_MINE_LVL}`);
+      };
+    } else {
+      coalBtn.onclick = openCoalMine;
+      coalBtn.onmouseenter = (event) => {
+        showTooltip(event, `Lvl Required: ${COAL_MINE_LVL}`);
+      };
+    }
+    coalBtn.onmouseleave = hideTooltip;
+  }
+
+  if (ironBtn) {
+    if (ironLocked) {
+      ironBtn.onclick = null;
+      ironBtn.onmouseenter = (event) => {
+        showTooltip(event, `Requires Mining Lvl: ${IRON_MINE_LVL}`);
+      };
+    } else {
+      ironBtn.onclick = openIronMine;
+      ironBtn.onmouseenter = (event) => {
+        showTooltip(event, `Lvl Required: ${IRON_MINE_LVL}`);
+      };
+    }
+    ironBtn.onmouseleave = hideTooltip;
+  }
+
   if (returnBtn) {
     returnBtn.onclick = backToActions;
   }
@@ -3517,7 +4332,14 @@ function enemyAttackTurn() {
 }
 
 function backToActions(){
-  // ... (some lines)
+  // --- This is the cleanup code that was missing ---
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopCookingChicken();
+  game.shopOpen = false;
+  // --- End of cleanup code ---
+
   const wrapper = document.getElementById('mainContentWrapper');
   wrapper.innerHTML = `
     <div id="actionScreen" style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -3539,7 +4361,7 @@ function backToActions(){
   if (minesIcon) {
     minesIcon.onclick = openMineHub;
     minesIcon.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Mines</div>');
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Mine</div>');
     };
     minesIcon.onmouseleave = hideTooltip;
   }
@@ -3579,7 +4401,7 @@ if (kitchenIcon) {
 
   // +++ NEW BANK ICON LOGIC +++
   if (bankIcon) {
-    bankIcon.onclick = openBank; // This function doesn't exist yet
+    bankIcon.onclick = openBank; // This function now exists
     bankIcon.onmouseenter = (event) => {
       showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Bank</div>');
     };
@@ -3732,6 +4554,13 @@ function renderBankGrid() {
       else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
       else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
       else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
+      else if (item.name === 'Coal Ore') imgName = 'coalore';
+      else if (item.name === 'Iron Ore') imgName = 'ironore';
+      else if (item.name === 'Iron Bar') imgName = 'ironbar';
+      else if (item.name === 'Iron Helmet') imgName = 'ironhelmet';
+      else if (item.name === 'Iron Chestplate') imgName = 'ironchestplate';
+      else if (item.name === 'Iron Boots') imgName = 'ironboots';
+      else if (item.name === 'Iron Shortsword') imgName = 'ironshortsword';
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
       img.onerror = function(){ this.style.opacity='0.08'; };
