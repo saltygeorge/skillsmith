@@ -1450,6 +1450,11 @@ function getPlayerCombatStats() {
       if (item.name === 'Copper Shortsword' && game.playerAttackStyle === 'attack') {
         stats.equipmentDamage += itemStats.styleBonus || 0;
       }
+      // +++ FIX: Check for Iron Shortsword +++
+      if (item.name === 'Iron Shortsword' && game.playerAttackStyle === 'attack') {
+        stats.equipmentDamage += itemStats.styleBonus || 0;
+      }
+      // +++ END FIX +++
     }
   }
   
