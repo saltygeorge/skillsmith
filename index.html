@@ -1344,7 +1344,19 @@ const musicPlayer = new Audio();
 musicPlayer.loop = false;
 let audioAutoplayBlocked = false; // We handle the loop to change tracks
 // --- END NEW ---
-
+// +++ PASTE THE FUNCTION HERE +++
+/**
+ * Preloads an array of image URLs in the background.
+ * @param {string[]} urls - An array of image paths to preload.
+ */
+function preloadImages(urls) {
+  if (!Array.isArray(urls)) return;
+  
+  urls.forEach(url => {
+    const img = new Image();
+    img.src = url;
+  });
+}
 /**
  * Updates the music player's volume/mute state from game.settings
  */
@@ -4258,6 +4270,11 @@ function openCombatHub() {
   if (returnBtn) {
     returnBtn.onclick = backToActions;
   }
+
+  // +++ NEW PRELOAD CALL +++
+  // Preload the assets for the *next* screen (openFarmCombatArea)
+  preloadImages(['images/chickenmonster.png']);
+  // +++ END PRELOAD CALL +++
 }
 
 function openFarmCombatArea() {
@@ -4280,6 +4297,12 @@ function openFarmCombatArea() {
       <button onclick="openCombatHub()" class="primary" style="background:#666;">Return</button>
     </div>
   `;
+
+  // +++ NEW PRELOAD CALL +++
+  // Preload the assets for the *next* screen (openCombatInterface)
+  // Use the actual GIF name from your combat code
+  preloadImages(['images/chickenanim.gif']);
+  // +++ END PRELOAD CALL +++
 }
 
 // NEW: Function to build and open the main combat UI
@@ -4782,6 +4805,31 @@ if (kitchenIcon) {
     bankIcon.onmouseleave = hideTooltip;
   }
   // +++ END NEW BANK LOGIC +++
+
+  // +++ NEW PRELOAD CALL +++
+  const assetsToPreload = [
+    // Mine Hub
+    'images/coppervein.png',
+    'images/coalvein.png',
+    'images/ironvein.png',
+    // Blacksmith Hub
+    'images/copperbar.png',
+    'images/coppershortsword.png',
+    'images/copperboots.png',
+    'images/copperhelmet.png',
+    'images/copperchestplate.png',
+    'images/ironbar.png',
+    'images/ironshortsword.png',
+    'images/ironboots.png',
+    'images/ironhelmet.png',
+    'images/ironchestplate.png',
+    // Combat Hub
+    'images/farm.png',
+    // Kitchen Hub
+    'images/cookedchicken.png'
+  ];
+  preloadImages(assetsToPreload);
+  // +++ END PRELOAD CALL +++
 }
 
 function _createModal(title, contentHtml, buttons) {
@@ -5610,6 +5658,22 @@ function playGlobalSound(src) {
   }
 }
 // --- END: Settings Functions ---
+
+/**
+ * The new global sound player that respects settings
+ * @param {string} src - The path to the sound file
+ */
+function playGlobalSound(src) {
+  if (game.settings.isSfxMuted) return; // Use new sfxMuted setting
+  try {
+    const sound = new Audio(src);
+    sound.volume = game.settings.sfxVolume; // Use new sfxVolume setting
+    sound.play();
+  } catch (e) {
+    console.warn("Could not play sound", src, e);
+  }
+}
+
 
 // --- MODIFIED: Added isDragging logic ---
 document.addEventListener('DOMContentLoaded', ()=>{
