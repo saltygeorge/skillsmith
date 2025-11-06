@@ -3643,7 +3643,7 @@ function renderSmithingItems(metalType) {
     `;
     
     // --- Re-attach listeners for iron items ---
-    setupSmithButton('ironBarBtn', ironBarLocked, openIronBarSmith, IRON_BAR_LVL, `Requires: 1 Iron Ore, 1 Coal Ore`);
+    setupSmithButton('ironBarBtn', ironBarLocked, openIronBarSmith, IRON_BAR_LVL, `Requires: ${IRON_BAR_ORE_COST} Iron Ore, ${IRON_BAR_COAL_COST} Coal Ore`);
     setupSmithButton('ironShortswordBtn', ironSwordLocked, openIronShortswordSmith, IRON_SWORD_LVL, `Requires: ${IRON_SHORTSWORD_BAR_COST} Iron Bars`);
     setupSmithButton('ironBootsBtn', ironBootsLocked, openIronBootsSmith, IRON_BOOTS_LVL, `Requires: ${IRON_BOOTS_BAR_COST} Iron Bars`);
     setupSmithButton('ironHelmetBtn', ironHelmetLocked, openIronHelmetSmith, IRON_HELMET_LVL, `Requires: ${IRON_HELMET_BAR_COST} Iron Bars`);
