@@ -889,8 +889,8 @@ button.primary:hover { background: var(--accent-hover); }
   top: 50%;
   transform: translateY(-50%);
   right: 2px; /* <-- FIX: Changed from 18px */
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
   background: transparent; 
   border: 0;
   outline: none;
@@ -2116,8 +2116,10 @@ async function handleSellItemClick(itemName, currentQty) {
   
   const totalGold = qtyToSell * sellPrice;
   
-  // We'll leave the 'confirm' box for now, as it's a different UI (Yes/No)
-  const confirmed = confirm(`Are you sure you want to sell ${qtyToSell} ${itemName} for ${totalGold} Gold?`);
+  const confirmed = await showGameConfirm( // <-- USE 'await showGameConfirm'
+    "Confirm Sale", 
+    `Are you sure you want to sell ${qtyToSell} ${itemName} for ${totalGold} Gold?`
+  );
   
   if (confirmed) {
     if (removeItem(itemName, qtyToSell)) {
@@ -2203,12 +2205,12 @@ function hideItemContextMenu() {
 }
 
 // NEW: The logic for eating the chicken
-function eatCookedChicken() {
+async function eatCookedChicken() { // <-- ADD 'async'
   hideItemContextMenu(); // Close the menu
 
   // Check if HP is full
   if (game.hp >= game.maxHP) {
-    alert("Your HP is already full.");
+    await showGameAlert("HP Full", "Your HP is already full."); // <-- USE 'await showGameAlert'
     return;
   }
 
@@ -4153,72 +4155,70 @@ function openMineHub() {
   const coalLocked = miningLvl < COAL_MINE_LVL;
   const ironLocked = miningLvl < IRON_MINE_LVL;
 
+  // --- MODIFIED HTML ---
   wrapper.innerHTML = `
     <h2>Mine</h2>
     <div style="margin-top:8px; color:#efe3cf;">Choose a vein to mine.</div>
     
-    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
+    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
       
-      <button id="copperVeinBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+      <button id="copperVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/coppervein.png" alt="Copper Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Copper Vein</span>
       </button>
       
-      <button id="coalVeinBtn" class="primary ${coalLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="coalVeinBtn" class="primary ${coalLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/coalvein.png" alt="Coal Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Coal Vein</span>
       </button>
 
-      <button id="ironVeinBtn" class="primary ${ironLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="ironVeinBtn" class="primary ${ironLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/ironvein.png" alt="Iron Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Iron Vein</span>
       </button>
+    </div>
 
-      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
+    <div class="action-buttons" style="margin-top: 14px;">
+      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
     </div>
   `;
+  // --- END MODIFIED HTML ---
+
   const copperBtn = document.getElementById('copperVeinBtn');
   const coalBtn = document.getElementById('coalVeinBtn');
   const ironBtn = document.getElementById('ironVeinBtn');
   const returnBtn = document.getElementById('returnToActionsBtn');
 
+  // --- MODIFIED LISTENERS ---
   if (copperBtn) {
     copperBtn.onclick = openCopperMine;
     copperBtn.onmouseenter = (event) => {
-      showTooltip(event, 'Lvl Required: 1');
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div>Lvl Required: 1');
     };
     copperBtn.onmouseleave = hideTooltip;
   }
 
   if (coalBtn) {
+    const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Coal Vein</div>Requires Mining Lvl: ${COAL_MINE_LVL}`;
     if (coalLocked) {
       coalBtn.onclick = null;
-      coalBtn.onmouseenter = (event) => {
-        showTooltip(event, `Requires Mining Lvl: ${COAL_MINE_LVL}`);
-      };
+      coalBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
     } else {
       coalBtn.onclick = openCoalMine;
-      coalBtn.onmouseenter = (event) => {
-        showTooltip(event, `Lvl Required: ${COAL_MINE_LVL}`);
-      };
+      coalBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
     }
     coalBtn.onmouseleave = hideTooltip;
   }
 
   if (ironBtn) {
+    const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Iron Vein</div>Requires Mining Lvl: ${IRON_MINE_LVL}`;
     if (ironLocked) {
       ironBtn.onclick = null;
-      ironBtn.onmouseenter = (event) => {
-        showTooltip(event, `Requires Mining Lvl: ${IRON_MINE_LVL}`);
-      };
+      ironBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
     } else {
       ironBtn.onclick = openIronMine;
-      ironBtn.onmouseenter = (event) => {
-        showTooltip(event, `Lvl Required: ${IRON_MINE_LVL}`);
-      };
+      ironBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
     }
     ironBtn.onmouseleave = hideTooltip;
   }
+  // --- END MODIFIED LISTENERS ---
 
   if (returnBtn) {
     returnBtn.onclick = backToActions;
@@ -4304,7 +4304,7 @@ function openCombatInterface(enemyName) {
       attack: 1, // Low attack level
       strength: 1, // Max hit is 1
       defence: 1, // Low defence
-      img: 'images/chickenmonster.png'
+      img: 'images/chickenanim.gif'
     };
   } else {
     console.error('Unknown enemy:', enemyName);
@@ -4884,6 +4884,27 @@ async function showGamePrompt(title, message, defaultValue = '') {
   return result;
 }
 
+/**
+ * Shows a custom, in-game confirmation box (Yes/No).
+ * Replaces the default browser confirm().
+ * @param {string} title - The title for the confirm box.
+ * @param {string} message - The question to ask.
+ * @returns {Promise<boolean>} - Resolves true if "Yes" was clicked, false if "No"/"Cancel".
+ */
+async function showGameConfirm(title, message) {
+  const contentHtml = `<p>${message}</p>`;
+  
+  const buttons = [
+    { text: 'No', value: false, class: 'primary', style: '#666' },
+    { text: 'Yes', value: true, class: 'primary' } // 'Yes' resolves to true
+  ];
+
+  // This will return `true` or `false`
+  const result = await _createModal(title, contentHtml, buttons);
+  return result;
+}
+
+
 let draggedBankItem = null; // Stores data for bank drag-and-drop
 
 /**
@@ -5283,17 +5304,17 @@ async function withdrawItem(fromBankIndex) {
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
 
-function depositGold() {
+async function depositGold() { // <-- ADD 'async'
   const inputEl = document.getElementById('bankGoldInput');
   if (!inputEl) return;
   
   let amount = parseInt(inputEl.value);
   if (isNaN(amount) || amount <= 0) {
-    alert("Please enter a valid amount.");
+    await showGameAlert("Invalid Amount", "Please enter a valid amount."); // <-- USE 'await showGameAlert'
     return;
   }
   if (amount > game.gold) {
-    alert("You don't have that much gold to deposit.");
+    await showGameAlert("Not Enough Gold", "You don't have that much gold to deposit."); // <-- USE 'await showGameAlert'
     return;
   }
 
@@ -5306,17 +5327,17 @@ function depositGold() {
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
 
-function withdrawGold() {
+async function withdrawGold() { // <-- ADD 'async'
   const inputEl = document.getElementById('bankGoldInput');
   if (!inputEl) return;
   
   let amount = parseInt(inputEl.value);
   if (isNaN(amount) || amount <= 0) {
-    alert("Please enter a valid amount.");
+    await showGameAlert("Invalid Amount", "Please enter a valid amount."); // <-- USE 'await showGameAlert'
     return;
   }
   if (amount > game.bankGold) {
-    alert("You don't have that much gold in your bank.");
+    await showGameAlert("Not Enough Gold", "You don't have that much gold in your bank."); // <-- USE 'await showGameAlert'
     return;
   }
 
@@ -6395,9 +6416,9 @@ window.showSaveIndicator = function() {
         loadSettings();
         startMusicPlaylist();
 
-      }, (error) => {
+      }, async (error) => { // <-- Add 'async' here
         console.error("Player listener error:", error);
-        alert("Error loading player data. Please refresh.");
+        await showGameAlert("Load Error", "Error loading player data. Please refresh the page.");
       });
       
       const initialSnap = await getDoc(ref);
@@ -6420,7 +6441,7 @@ window.showSaveIndicator = function() {
   registerBtn.onclick = async function() {
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
-    if (!email || !password) return alert("Enter email and password.");
+    if (!email || !password) { await showGameAlert("Error", "Please enter an email and password."); return; }
     try {
       const uc = await createUserWithEmailAndPassword(auth, email, password);
       await setDoc(doc(db, "players", uc.user.uid), {
@@ -6446,9 +6467,9 @@ window.showSaveIndicator = function() {
         activeSession: null, // +++ ADD THIS
         createdAt: new Date().toISOString()
       });
-      alert("Account created. Now create your character."); 
+      await showGameAlert("Account Created", "Your account has been created. You must now create your character.");
     } catch (err) {
-      alert(err.message || "Registration failed.");
+      await showGameAlert("Registration Failed", err.message || "An unknown error occurred during registration.");
       console.error(err);
     }
   };
@@ -6456,11 +6477,11 @@ window.showSaveIndicator = function() {
   loginBtn.onclick = async function() {
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
-    if (!email || !password) return alert("Enter email and password.");
+    if (!email || !password) { await showGameAlert("Error", "Please enter an email and password."); return; }
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      alert(err.message || "Login failed."); 
+      await showGameAlert("Login Failed", err.message || "An unknown error occurred during login.");
       console.error(err);
     }
   };
@@ -6519,17 +6540,17 @@ window.showSaveIndicator = function() {
     if (typeof originalCreate === "function") {
       window.createCharacter = async function() {
         const name = document.getElementById('playerName').value.trim();
-        if(!name) return alert('Enter a name first.');
+        if(!name) { await showGameAlert("Error", "Please enter a name for your character."); return; }
         try {
           const nameLower = name.toLowerCase();
           const q = query(collection(db, "players"), where("name_lowercase", "==", nameLower));
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
-            return alert("That name is already taken. Please choose another.");
+            { await showGameAlert("Name Taken", "That name is already taken. Please choose another."); return; }
           }
         } catch (e) {
           console.error("Name check failed:", e);
-          return alert("Error checking name. Please try again.");
+          { await showGameAlert("Error", "An error occurred while checking the name. Please try again."); return; }
         }
         
         originalCreate(); // Sets game.name locally
@@ -6572,7 +6593,7 @@ window.showSaveIndicator = function() {
     
     // +++ NEW: Prevent sending chat from inactive tab +++
     if (!game.isSessionActive) {
-      alert("This tab is not active. Take control to send messages.");
+      await showGameAlert("Session Not Active", "This tab is not active. Take control to send messages.");
       return;
     }
     
@@ -6582,11 +6603,11 @@ window.showSaveIndicator = function() {
       if (isCommand) return; 
     }
     if (messageText.length > 256) {
-      alert("Message is too long (max 256 chars).");
+      await showGameAlert("Error", "Your message is too long (max 256 chars).");
       return;
     }
     if (!user || !game.name) {
-      alert("You must be logged in and have a character to chat.");
+      await showGameAlert("Error", "You must be logged in and have a character to chat.");
       return;
     }
     try {
@@ -6598,7 +6619,7 @@ window.showSaveIndicator = function() {
       });
     } catch (e) {
       console.error("Error sending message: ", e);
-      alert("Failed to send message. Please try again.");
+      await showGameAlert("Error", "Failed to send message. Please try again.");
     }
   }
   function _addLocalMessageToDOM(text, type = 'system') {
@@ -7706,10 +7727,10 @@ if (!validSkills.includes(skill)) {
     await window.savePlayerData();
     await signOut(auth);
     
-    alert("Logged out."); 
+    await showGameAlert("Logged Out", "You have been successfully logged out.");
   } catch (e) {
     console.error("Logout failed:", e);
-    alert("Logout failed. Please try again or close your browser.");
+    await showGameAlert("Logout Failed", "Logout failed. Please try again or close your browser.");
   }
 };
 
