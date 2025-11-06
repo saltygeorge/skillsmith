@@ -1962,7 +1962,7 @@ async function equipItem(slotType, fromInvIndex) {
     
     // Is there another stack of this item OR an empty slot?
     const hasStackingSlot = game.inventory.find(slot => slot && slot.name === itemBeingWorn.name && slot !== itemStack);
-    const hasEmptySlot = game.inventory.find(slot => slot === null);
+    const hasEmptySlot = game.inventory.some(slot => slot === null);
 
     // If the stack we're clicking is > 1 and it's not the same item,
     // we can't put the unequipped item back in this slot.
@@ -4255,19 +4255,25 @@ function playerAttackTurn() {
   // Damage is a random number from 0 to your max hit
   let damage = Math.floor(Math.random() * (maxHit + 1));
 
-  if (damage > 0) {
-    showDamageSplat('enemy', damage, 'damage'); // ENEMY HIT
+  // +++ FIX: CAP DAMAGE TO ENEMY'S REMAINING HP +++
+  // Determine the actual damage applied, which is the MINIMUM of the damage rolled
+  // and the enemy's current HP. This prevents over-damage and excess XP.
+  let damageApplied = Math.min(damage, game.currentEnemy.currentHp);
+
+  if (damageApplied > 0) {
+    showDamageSplat('enemy', damageApplied, 'damage'); // ENEMY HIT
   } else {
     showDamageSplat('enemy', 0, 'block'); // ENEMY HIT A 0
   }
 
   // Apply damage to enemy
-  game.currentEnemy.currentHp -= damage;
+  game.currentEnemy.currentHp -= damageApplied;
   updateEnemyCombatUI();
 
   // --- 4. Grant XP ---
-  if (damage > 0) {
-    let mainXPGained = damage * 4; 
+  if (damageApplied > 0) {
+    // XP is now calculated based on the *actual* damage applied (damageApplied)
+    let mainXPGained = damageApplied * 4; 
     let skillToTrain = game.playerAttackStyle; 
     
     addXP(skillToTrain, mainXPGained, 0);
