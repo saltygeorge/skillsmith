@@ -911,6 +911,18 @@ button.primary:hover { background: var(--accent-hover); }
   pointer-events: none; /* Let clicks pass to the button */
 }
 
+.setting-row label {
+  font-weight: bold;
+  font-size: 16px;
+  flex-basis: 110px; /* Give labels a fixed width to align sliders */
+  flex-shrink: 0;
+}
+.setting-mute-btn {
+  min-width: 80px; /* Make mute buttons smaller */
+  padding: 8px 10px;
+  margin-left: 15px; /* Space from slider */
+}
+
 /* --- NEW: Settings Modal --- */
 #settingsModalOverlay {
   display: none; /* Hidden by default */
@@ -1224,13 +1236,15 @@ button.primary:hover { background: var(--accent-hover); }
     <div class="settings-modal-title">Settings</div>
     
     <div class="setting-row">
-      <label for="volumeSlider">Volume</label>
-      <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.05">
+      <label for="sfxVolumeSlider">Sound Effects</label>
+      <input type="range" id="sfxVolumeSlider" class="volume-slider" min="0" max="1" step="0.05">
+      <button id="sfxMuteBtn" class="primary setting-mute-btn">Mute</button>
     </div>
 
     <div class="setting-row">
-      <label for="muteBtn">Mute All Sounds</label>
-      <button id="muteBtn" class="primary" style="min-width: 100px;">Mute</button>
+      <label for="musicVolumeSlider">Music</label>
+      <input type="range" id="musicVolumeSlider" class="volume-slider" min="0" max="1" step="0.05">
+      <button id="musicMuteBtn" class="primary setting-mute-btn">Mute</button>
     </div>
 
     <div class="action-buttons" style="margin-top: 10px; justify-content: flex-end;">
@@ -1246,7 +1260,12 @@ const game = {
   name: '',
   hp: 10,
   maxHP: 10,
-  settings: { volume: 0.5, isMuted: false },
+  settings: { 
+    sfxVolume: 0.5, 
+    isSfxMuted: false, 
+    musicVolume: 0.15,  // <--- Changed this from 0.3
+    isMusicMuted: false 
+  },
   inventory: [], 
   inventoryCapacity: 39,
   gold: 0,
@@ -1312,6 +1331,131 @@ theirTradeOffer: { offerItems: {}, offerGold: 0, accepted: false }
 
 game.inventory = new Array(game.inventoryCapacity).fill(null);
 game.bank = new Array(game.bankCapacity).fill(null);
+
+// --- NEW: Music Player State ---
+const musicPlaylist = [
+  'sounds/music/music1.mp3',
+  'sounds/music/music2.mp3',
+  'sounds/music/music3.mp3',
+  'sounds/music/music4.mp3',
+  'sounds/music/music5.mp3'
+];
+let currentTrackIndex = 0;
+const musicPlayer = new Audio(); 
+musicPlayer.loop = false;
+let audioAutoplayBlocked = false; // We handle the loop to change tracks
+// --- END NEW ---
+
+/**
+ * Updates the music player's volume/mute state from game.settings
+ */
+function updateMusicPlayerState() {
+  if (game.settings.isMusicMuted) {
+    musicPlayer.volume = 0;
+  } else {
+    musicPlayer.volume = game.settings.musicVolume;
+  }
+}
+
+/**
+ * Plays the next track in the playlist.
+ */
+function playNextTrack() {
+  if (musicPlaylist.length === 0) return; 
+
+  currentTrackIndex = (currentTrackIndex + 1) % musicPlaylist.length;
+  musicPlayer.src = musicPlaylist[currentTrackIndex];
+
+  updateMusicPlayerState(); // Apply current volume settings
+
+  const playPromise = musicPlayer.play();
+
+  if (playPromise !== undefined) {
+    playPromise.catch(error => {
+      console.warn("Music autoplay blocked. User must interact to enable sound.");
+
+      // --- NEW "CLICK ANYWHERE" FIX ---
+      if (!audioAutoplayBlocked) { // Only add this listener ONCE
+        audioAutoplayBlocked = true;
+
+        // Listen for the *first* click or tap anywhere
+        const interactionListener = () => {
+          resumeMusicAfterInteraction();
+          // Clean up this listener so it doesn't run again
+          document.removeEventListener('click', interactionListener);
+          document.removeEventListener('touchstart', interactionListener);
+        };
+
+        document.addEventListener('click', interactionListener);
+        document.addEventListener('touchstart', interactionListener);
+      }
+      // --- END NEW ---
+
+    });
+  }
+}
+
+/**
+ * Starts the music playlist for the first time.
+ */
+function startMusicPlaylist() {
+  // Set up the listener for *all future songs*
+  musicPlayer.addEventListener('ended', playNextTrack);
+
+  // Set the volume before playing
+  updateMusicPlayerState(); 
+
+  // --- NEW: Pick a random song to start ---
+  currentTrackIndex = Math.floor(Math.random() * musicPlaylist.length);
+  musicPlayer.src = musicPlaylist[currentTrackIndex];
+  // --- END NEW ---
+
+  // Manually start the first song (we copy this logic from playNextTrack)
+  const playPromise = musicPlayer.play();
+
+  if (playPromise !== undefined) {
+    playPromise.catch(error => {
+      console.warn("Music autoplay blocked. User must interact to enable sound.");
+
+      // --- This is the "click anywhere" fix ---
+      if (!audioAutoplayBlocked) { 
+        audioAutoplayBlocked = true;
+
+        const interactionListener = () => {
+          resumeMusicAfterInteraction();
+          document.removeEventListener('click', interactionListener);
+          document.removeEventListener('touchstart', interactionListener);
+        };
+
+        document.addEventListener('click', interactionListener);
+        document.addEventListener('touchstart', interactionListener);
+      }
+      // --- End fix ---
+
+    });
+  }
+}
+
+/**
+ * Tries to resume music playback after a user interaction.
+ */
+function resumeMusicAfterInteraction() {
+  // Check if music is supposed to be on but is paused
+  if (!game.settings.isMusicMuted && musicPlayer.paused) {
+    const resumePromise = musicPlayer.play();
+
+    if (resumePromise !== undefined) {
+      resumePromise.then(() => {
+        // SUCCESS! Autoplay is now unblocked.
+        audioAutoplayBlocked = false; 
+      }).catch(e => {
+        // Still failed? Oh well.
+        console.warn("Could not resume music.", e);
+      });
+    }
+  }
+}
+
 const VALID_ITEMS = [
   'Copper Ore',
   'Copper Bar',
@@ -5332,34 +5476,82 @@ function saveSettings() {
  * Loads settings from localStorage into game.settings
  */
 function loadSettings() {
-  const saved = localStorage.getItem('rusticGameSettings');
-  if (saved) {
-    game.settings = JSON.parse(saved);
+  const savedJSON = localStorage.getItem('rusticGameSettings');
+  if (savedJSON) {
+    const saved = JSON.parse(savedJSON);
+
+    // --- NEW: Migration logic ---
+    // Check for old properties
+    if (typeof saved.volume === 'number') {
+      game.settings.sfxVolume = saved.volume;
+    }
+    if (typeof saved.isMuted === 'boolean') {
+      game.settings.isSfxMuted = saved.isMuted;
+    }
+
+    // Load new properties if they exist
+    if (typeof saved.sfxVolume === 'number') {
+      game.settings.sfxVolume = saved.sfxVolume;
+    }
+    if (typeof saved.isSfxMuted === 'boolean') {
+      game.settings.isSfxMuted = saved.isSfxMuted;
+    }
+    if (typeof saved.musicVolume === 'number') {
+      game.settings.musicVolume = saved.musicVolume;
+    }
+    if (typeof saved.isMusicMuted === 'boolean') {
+      game.settings.isMusicMuted = saved.isMusicMuted;
+    }
+    // --- END Migration ---
   }
-  // Apply the loaded (or default) settings to the UI
+
   applySettingsUI();
+
+  // --- NEW: Apply music settings to player ---
+  // This ensures music volume is correct on load
+  if (typeof updateMusicPlayerState === 'function') {
+    updateMusicPlayerState();
+  }
 }
 
 /**
  * Updates the UI elements in the settings modal
  */
 function applySettingsUI() {
-  const slider = document.getElementById('volumeSlider');
-  const muteBtn = document.getElementById('muteBtn');
+  const sfxSlider = document.getElementById('sfxVolumeSlider');
+  const sfxMute = document.getElementById('sfxMuteBtn');
+  const musicSlider = document.getElementById('musicVolumeSlider');
+  const musicMute = document.getElementById('musicMuteBtn');
 
-  if (slider) {
-    slider.value = game.settings.volume;
-    // Visually mute the slider if the game is muted
-    slider.disabled = game.settings.isMuted;
+  // --- SFX Controls ---
+  if (sfxSlider) {
+    sfxSlider.value = game.settings.sfxVolume;
+    sfxSlider.disabled = game.settings.isSfxMuted;
   }
-  if (muteBtn) {
-    muteBtn.textContent = game.settings.isMuted ? 'Unmute' : 'Mute';
-    if (game.settings.isMuted) {
-      muteBtn.style.background = 'var(--gold)';
-      muteBtn.style.color = '#000';
+  if (sfxMute) {
+    sfxMute.textContent = game.settings.isSfxMuted ? 'Unmute' : 'Mute';
+    if (game.settings.isSfxMuted) {
+      sfxMute.style.background = 'var(--gold)';
+      sfxMute.style.color = '#000';
     } else {
-      muteBtn.style.background = 'var(--accent)';
-      muteBtn.style.color = '#fff';
+      sfxMute.style.background = 'var(--accent)';
+      sfxMute.style.color = '#fff';
+    }
+  }
+
+  // --- Music Controls ---
+  if (musicSlider) {
+    musicSlider.value = game.settings.musicVolume;
+    musicSlider.disabled = game.settings.isMusicMuted;
+  }
+  if (musicMute) {
+    musicMute.textContent = game.settings.isMusicMuted ? 'Unmute' : 'Mute';
+    if (game.settings.isMusicMuted) {
+      musicMute.style.background = 'var(--gold)';
+      musicMute.style.color = '#000';
+    } else {
+      musicMute.style.background = 'var(--accent)';
+      musicMute.style.color = '#fff';
     }
   }
 }
@@ -5388,10 +5580,10 @@ function closeSettings() {
  * @param {string} src - The path to the sound file
  */
 function playGlobalSound(src) {
-  if (game.settings.isMuted) return; // Muted
+  if (game.settings.isSfxMuted) return; // Use new sfxMuted setting
   try {
     const sound = new Audio(src);
-    sound.volume = game.settings.volume;
+    sound.volume = game.settings.sfxVolume; // Use new sfxVolume setting
     sound.play();
   } catch (e) {
     console.warn("Could not play sound", src, e);
@@ -5638,33 +5830,77 @@ inventoryGrid.addEventListener('dragend', (e) => {
   // --- NEW: Settings Modal Listeners ---
   const settingsBtn = document.getElementById('settingsBtn');
   const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-  const volumeSlider = document.getElementById('volumeSlider');
-  const muteBtn = document.getElementById('muteBtn');
+
+  // --- SFX ---
+  const sfxVolumeSlider = document.getElementById('sfxVolumeSlider');
+  const sfxMuteBtn = document.getElementById('sfxMuteBtn');
+
+  // --- Music ---
+  const musicVolumeSlider = document.getElementById('musicVolumeSlider');
+  const musicMuteBtn = document.getElementById('musicMuteBtn');
 
   if (settingsBtn) settingsBtn.onclick = openSettings;
   if (closeSettingsBtn) closeSettingsBtn.onclick = closeSettings;
 
-  if (volumeSlider) {
-    volumeSlider.addEventListener('input', (e) => {
+  // --- SFX Slider Listener ---
+  if (sfxVolumeSlider) {
+    sfxVolumeSlider.addEventListener('input', (e) => {
       const newVolume = parseFloat(e.target.value);
-      game.settings.volume = newVolume;
+      game.settings.sfxVolume = newVolume;
       // If they change volume, assume they want to unmute
-      if (game.settings.isMuted) {
-        game.settings.isMuted = false;
+      if (game.settings.isSfxMuted) {
+        game.settings.isSfxMuted = false;
         applySettingsUI();
       }
       saveSettings(); // Save on change
     });
   }
 
-  if (muteBtn) {
-    muteBtn.onclick = () => {
-      game.settings.isMuted = !game.settings.isMuted;
+  // --- SFX Mute Listener ---
+  if (sfxMuteBtn) {
+    sfxMuteBtn.onclick = () => {
+      game.settings.isSfxMuted = !game.settings.isSfxMuted;
       applySettingsUI(); // Update button text/slider state
       saveSettings(); // Save the new mute state
     };
   }
-  // --- END: Settings Listeners ---
+
+  // --- Music Slider Listener ---
+  if (musicVolumeSlider) {
+    musicVolumeSlider.addEventListener('input', (e) => {
+      const newVolume = parseFloat(e.target.value);
+      game.settings.musicVolume = newVolume;
+      // If they change volume, assume they want to unmute
+      if (game.settings.isMusicMuted) {
+        game.settings.isMusicMuted = false;
+        applySettingsUI();
+      }
+      updateMusicPlayerState(); // Update live music volume
+      saveSettings(); // Save on change
+    });
+  }
+
+  // --- Music Mute Listener ---
+  if (musicMuteBtn) {
+    musicMuteBtn.onclick = () => {
+      game.settings.isMusicMuted = !game.settings.isMusicMuted;
+      applySettingsUI(); // Update button text/slider state
+      updateMusicPlayerState(); // Update live music volume/mute
+
+      // --- This is a bonus fix for autoplay ---
+      // If music isn't playing yet, this click will start it.
+      if (!game.settings.isMusicMuted && musicPlayer.paused) {
+          musicPlayer.play().then(() => {
+            audioAutoplayBlocked = false; 
+          }).catch(e => console.warn("Could not start music."));
+      }
+      // --- End bonus fix ---
+
+      saveSettings(); // Save the new mute state
+    };
+  }
+
+
   
 });
 
@@ -6158,6 +6394,7 @@ window.showSaveIndicator = function() {
         authScreen.style.display = 'none';
         gameScreen.style.display = 'block';
         loadSettings();
+        startMusicPlaylist();
 
       }, (error) => {
         console.error("Player listener error:", error);
