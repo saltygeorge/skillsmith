@@ -6363,10 +6363,11 @@ window.showSaveIndicator = function() {
                 addLocalChatMessage("Usage: /setlevel [playername] [skill] [1-99]", 'error');
                 return true;
             }
-            if (skill !== 'mining' && skill !== 'blacksmith') {
-                 addLocalChatMessage("Unknown skill. Use 'mining' or 'blacksmith'.", 'error');
-                 return true;
-            }
+            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking'];
+if (!validSkills.includes(skill)) {
+     addLocalChatMessage("Unknown skill. Use: mining, blacksmith, attack, strength, defence, vitality, or cooking.", 'error');
+     return true;
+}
             const newTotalXP = getTotalXPForLevel(level); 
             const newSkillData = { level: level, xp: 0, totalXP: newTotalXP };
             if (targetName === game.name.toLowerCase()) {
