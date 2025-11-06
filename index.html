@@ -1287,9 +1287,11 @@ const game = {
   defence: { level: 1, xp: 0, totalXP: 0 }, 
   vitality: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW VITALITY SKILL +++
   cooking: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW COOKING SKILL +++
+  woodcutting: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW WOODCUTTING SKILL +++
   miningActive: false,
-  blacksmithingActive: false, // +++ NEW: Add missing cookingActive state +++
+  blacksmithingActive: false,
   cookingActive: false,
+  woodcuttingActive: false, // +++ NEW WOODCUTTING STATE +++
   progressFrame: null,
   wasMiningBeforeTrade: false,
   shopOpen: false, 
@@ -1301,6 +1303,7 @@ const game = {
   enemyCombatInterval: null,
   wasMiningBeforeCombat: false, // Renamed from 'wasMiningBeforeTrade'
   wasSmithingBeforeCombat: false,
+  wasWoodcuttingBeforeCombat: false,
   
   // +++ NEW SESSION LOCK +++
   // This is a unique ID for this specific tab
@@ -1468,6 +1471,8 @@ function resumeMusicAfterInteraction() {
 }
 
 const VALID_ITEMS = [
+  'Softwood', // +++ NEW +++
+  'Oak',      // +++ NEW +++
   'Copper Ore',
   'Copper Bar',
   'Copper Chestplate',
@@ -1660,6 +1665,21 @@ const IRON_SHORTSWORD_BAR_COST = 5;
 const IRON_SHORTSWORD_XP = 150;
 const IRON_SHORTSWORD_TIME_MS = 7000;
 
+// --- NEW: Woodcutting Level Requirements ---
+const SOFTWOOD_TREE_LVL = 1;
+const OAK_TREE_LVL = 10;
+
+// --- NEW: Woodcutting Chop Constants ---
+const SOFTWOOD_CHOP_TIME_MS = 1500;
+const SOFTWOOD_CHOP_XP = 15;
+const SOFTWOOD_CHOP_ITEM = 'Softwood';
+
+const OAK_CHOP_TIME_MS = 3000;
+const OAK_CHOP_XP = 35;
+const OAK_CHOP_ITEM = 'Oak';
+
+const CHOP_COOLDOWN_SOFTWOOD_MS = 1000;
+const CHOP_COOLDOWN_OAK_MS = 1500;
 // --- NEW: Central Item Stat Definitions ---
 const ITEM_STATS = {
   'Copper Helmet': {
@@ -1953,6 +1973,10 @@ function renderInventoryGrid(){
           imgName = 'ironboots';
       } else if (item.name === 'Iron Shortsword') {
           imgName = 'ironshortsword';
+      } else if (item.name === 'Softwood') { // +++ NEW +++
+          imgName = 'softwood';
+      } else if (item.name === 'Oak') { // +++ NEW +++
+          imgName = 'oak';
       }
       
       img.src = `images/${imgName}.png`;
@@ -2537,6 +2561,7 @@ function updateSkillUI(){
   createSkillIcon('Defence', 'defence', 'defenseskillicon.png'); 
   createSkillIcon('Vitality', 'vitality', 'vitalityskillicon.png'); // +++ NEW VITALITY SKILL CALL +++
   createSkillIcon('Cooking', 'cooking', 'cookingskillicon.png'); // +++ NEW COOKING SKILL CALL +++
+  createSkillIcon('Woodcutting', 'woodcutting', 'woodcuttingskillicon.png'); // +++ NEW WOODCUTTING SKILL CALL +++
 }
 
 function showItemPopup(text, progressElementId, delay = 0) {
@@ -2595,7 +2620,8 @@ function addXP(skill, amount, delay = 0){
   let barId = '';
   if (skill === 'mining') barId = 'mineProgress';
   if (skill === 'blacksmith') barId = 'smithProgress';
-  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking') { // Don't show popup for blacksmith, it will be handled manually
+  if (skill === 'woodcutting') barId = 'woodcutProgress'; // +++ NEW +++
+  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting') { // Don't show popup for skilling actions
     if (delay > 0) {
       setTimeout(() => {
         showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
@@ -4237,6 +4263,240 @@ function openMineHub() {
   }
 }
 
+// --- NEW: Woodcutting Hub UI ---
+function openForestHub() {
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining(); 
+  stopBlacksmithing();
+  stopCookingChicken();
+  stopWoodcutting();
+  const wrapper = document.getElementById('mainContentWrapper');
+  
+  const woodcuttingLvl = game.woodcutting.level;
+  const oakLocked = woodcuttingLvl < OAK_TREE_LVL;
+
+  wrapper.innerHTML = `
+    <h2>Forest</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Choose a tree to chop.</div>
+    
+    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+      
+      <button id="softwoodTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/softwood.png" alt="Softwood Tree" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+      </button>
+      
+      <button id="oakTreeBtn" class="primary ${oakLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/oak.png" alt="Oak Tree" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+      </button>
+
+    </div>
+
+    <div class="action-buttons" style="margin-top: 14px;">
+      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
+    </div>
+  `;
+
+  const softwoodBtn = document.getElementById('softwoodTreeBtn');
+  const oakBtn = document.getElementById('oakTreeBtn');
+  const returnBtn = document.getElementById('returnToActionsBtn');
+
+  if (softwoodBtn) {
+    softwoodBtn.onclick = openSoftwoodTree;
+    softwoodBtn.onmouseenter = (event) => {
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Softwood Tree</div>Lvl Required: 1');
+    };
+    softwoodBtn.onmouseleave = hideTooltip;
+  }
+
+  if (oakBtn) {
+    const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Oak Tree</div>Requires Woodcutting Lvl: ${OAK_TREE_LVL}`;
+    if (oakLocked) {
+      oakBtn.onclick = null;
+      oakBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
+    } else {
+      oakBtn.onclick = openOakTree;
+      oakBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
+    }
+    oakBtn.onmouseleave = hideTooltip;
+  }
+
+  if (returnBtn) {
+    returnBtn.onclick = backToActions;
+  }
+}
+
+// --- NEW: Softwood Tree UI ---
+function openSoftwoodTree(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopBlacksmithing();
+  stopMining();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Chop - Softwood Tree</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A common, pliable tree.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="woodcutProgress"></div>
+        <div class="progress-text" id="woodcutProgressText"></div> </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startChopBtn" class="primary">Start Chopping</button>
+      <button id="stopChopBtn" class="primary" style="background:#555; display:none;">Stop Chopping</button>
+      <button onclick="openForestHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startChopBtn').onclick = startChoppingSoftwood;
+  document.getElementById('stopChopBtn').onclick = stopWoodcutting;
+}
+
+// --- NEW: Oak Tree UI ---
+function openOakTree(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopBlacksmithing();
+  stopMining();
+  const wrapper = document.getElementById('mainContentWrapper');
+  wrapper.innerHTML = `
+    <h2>Chop - Oak Tree</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A strong, sturdy oak.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="woodcutProgress"></div>
+        <div class="progress-text" id="woodcutProgressText"></div> </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startChopBtn" class="primary">Start Chopping</button>
+      <button id="stopChopBtn" class="primary" style="background:#555; display:none;">Stop Chopping</button>
+      <button onclick="openForestHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startChopBtn').onclick = startChoppingOak;
+  document.getElementById('stopChopBtn').onclick = stopWoodcutting;
+}
+
+// --- NEW: Stop Woodcutting Logic ---
+function stopWoodcutting(){
+  game.woodcuttingActive = false;
+  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  
+  const textEl = document.getElementById('woodcutProgressText');
+  if (textEl) textEl.innerText = '';
+
+  const bar = document.getElementById('woodcutProgress');
+  if(bar) bar.style.width = '0%';
+  const startBtn = document.getElementById('startChopBtn');
+  if(startBtn) startBtn.style.display = 'inline-block';
+  const stopBtn = document.getElementById('stopChopBtn');
+  if(stopBtn) stopBtn.style.display = 'none';
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+// --- NEW: Woodcutting Cooldown Loop ---
+function woodcuttingCooldownLoop(timestamp, startTime, duration, progressTextId, nextLoopFunction) {
+  if (!game.woodcuttingActive) {
+    const textEl = document.getElementById(progressTextId);
+    if (textEl) textEl.innerText = '';
+    return;
+  }
+
+  const elapsed = timestamp - startTime;
+  const remainingMs = duration - elapsed;
+
+  if (remainingMs <= 0) {
+    const textEl = document.getElementById(progressTextId);
+    if (textEl) textEl.innerText = '';
+    game.progressFrame = requestAnimationFrame((now) => nextLoopFunction(now, now));
+  } else {
+    const remainingSecs = (remainingMs / 1000).toFixed(1);
+    const textEl = document.getElementById(progressTextId);
+    if (textEl) textEl.innerText = `${remainingSecs}s`;
+    
+    game.progressFrame = requestAnimationFrame((now) => 
+      woodcuttingCooldownLoop(now, startTime, duration, progressTextId, nextLoopFunction)
+    );
+  }
+}
+
+// --- NEW: Softwood Logic ---
+async function startChoppingSoftwood() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.woodcuttingActive) return; 
+  game.woodcuttingActive = true;
+  const startBtn = document.getElementById('startChopBtn');
+  const stopBtn = document.getElementById('stopChopBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => softwoodChoppingLoop(now, now));
+}
+
+function softwoodChoppingLoop(timestamp, startTime) {
+  if (!game.woodcuttingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / SOFTWOOD_CHOP_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    addItem(SOFTWOOD_CHOP_ITEM, 1);
+    addXP('woodcutting', SOFTWOOD_CHOP_XP);
+
+    showItemPopup(`+${SOFTWOOD_CHOP_XP} Woodcutting XP`, 'woodcutProgress', 0);
+    showItemPopup(`+1 ${SOFTWOOD_CHOP_ITEM}`, 'woodcutProgress', 450);
+    
+    const bar = document.getElementById('woodcutProgress');
+    if (bar) bar.style.width = '0%';
+    
+    game.progressFrame = requestAnimationFrame((now) => 
+      woodcuttingCooldownLoop(now, now, CHOP_COOLDOWN_SOFTWOOD_MS, 'woodcutProgressText', softwoodChoppingLoop)
+    );
+  } else {
+    const bar = document.getElementById('woodcutProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => softwoodChoppingLoop(now, startTime));
+  }
+}
+
+// --- NEW: Oak Logic ---
+async function startChoppingOak() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.woodcuttingActive) return; 
+  game.woodcuttingActive = true;
+  const startBtn = document.getElementById('startChopBtn');
+  const stopBtn = document.getElementById('stopChopBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => oakChoppingLoop(now, now));
+}
+
+function oakChoppingLoop(timestamp, startTime) {
+  if (!game.woodcuttingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / OAK_CHOP_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    addItem(OAK_CHOP_ITEM, 1);
+    addXP('woodcutting', OAK_CHOP_XP);
+
+    showItemPopup(`+${OAK_CHOP_XP} Woodcutting XP`, 'woodcutProgress', 0);
+    showItemPopup(`+1 ${OAK_CHOP_ITEM}`, 'woodcutProgress', 450);
+    
+    const bar = document.getElementById('woodcutProgress');
+    if (bar) bar.style.width = '0%';
+    
+    game.progressFrame = requestAnimationFrame((now) => 
+      woodcuttingCooldownLoop(now, now, CHOP_COOLDOWN_OAK_MS, 'woodcutProgressText', oakChoppingLoop)
+    );
+  } else {
+    const bar = document.getElementById('woodcutProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => oakChoppingLoop(now, startTime));
+  }
+}
+
 function openCombatHub() {
   game.shopOpen = false; 
   hideTooltip();
@@ -4315,6 +4575,10 @@ function openCombatInterface(enemyName) {
   if (game.blacksmithingActive) {
     stopBlacksmithing();
     game.wasSmithingBeforeCombat = true;
+  }
+  if (game.woodcuttingActive) { // +++ NEW +++
+    stopWoodcutting();
+    game.wasWoodcuttingBeforeCombat = true;
   }
   
   // Define our enemy
@@ -4507,9 +4771,12 @@ function returnToFarm() {
   } else if (game.wasSmithingBeforeCombat) {
     // This is more complex, might need to know *which* item
     openBlacksmithHub(); // Just return to hub for now
+  } else if (game.wasWoodcuttingBeforeCombat) { // +++ NEW +++
+    openForestHub(); // Return to Forest hub
   }
   game.wasMiningBeforeCombat = false;
   game.wasSmithingBeforeCombat = false;
+  game.wasWoodcuttingBeforeCombat = false; // +++ NEW +++
 }
 
 // NEW: Helper function to update the enemy's HP bar
@@ -4734,6 +5001,7 @@ function backToActions(){
   stopMining();
   stopBlacksmithing();
   stopCookingChicken();
+  stopWoodcutting(); // +++ NEW +++
   game.shopOpen = false;
   // --- End of cleanup code ---
 
@@ -4746,6 +5014,7 @@ function backToActions(){
       <img id="combatActionIcon" src="images/combatareas.png" alt="Combat Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
       <img id="kitchenActionIcon" src="images/kitchenbutton.png" alt="Kitchen" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
       <img id="bankActionIcon" src="images/bankbutton.png" alt="Bank" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="forestActionIcon" src="images/foresticon.png" alt="Forest" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
     </div>
   `;
   const minesIcon = document.getElementById('minesActionIcon');
@@ -4754,6 +5023,7 @@ function backToActions(){
   const combatIcon = document.getElementById('combatActionIcon'); // +++ NEW ICON REFERENCE +++
   const kitchenIcon = document.getElementById('kitchenActionIcon');
   const bankIcon = document.getElementById('bankActionIcon');
+  const forestIcon = document.getElementById('forestActionIcon'); // +++ NEW +++
   
   if (minesIcon) {
     minesIcon.onclick = openMineHub;
@@ -4806,7 +5076,15 @@ if (kitchenIcon) {
   }
   // +++ END NEW BANK LOGIC +++
 
-  // +++ NEW PRELOAD CALL +++
+  // +++ NEW FOREST ICON LOGIC +++
+  if (forestIcon) {
+    forestIcon.onclick = openForestHub;
+    forestIcon.onmouseenter = (event) => {
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Forest</div>');
+    };
+    forestIcon.onmouseleave = hideTooltip;
+  }
+  // +++ END NEW FOREST LOGIC +++
   const assetsToPreload = [
     // Mine Hub
     'images/coppervein.png',
@@ -4826,7 +5104,10 @@ if (kitchenIcon) {
     // Combat Hub
     'images/farm.png',
     // Kitchen Hub
-    'images/cookedchicken.png'
+    'images/cookedchicken.png',
+    // Forest Hub
+    'images/softwood.png',
+    'images/oak.png'
   ];
   preloadImages(assetsToPreload);
   // +++ END PRELOAD CALL +++
@@ -5004,6 +5285,8 @@ function renderBankGrid() {
       else if (item.name === 'Iron Chestplate') imgName = 'ironchestplate';
       else if (item.name === 'Iron Boots') imgName = 'ironboots';
       else if (item.name === 'Iron Shortsword') imgName = 'ironshortsword';
+      else if (item.name === 'Softwood') imgName = 'softwood'; // +++ NEW +++
+      else if (item.name === 'Oak') imgName = 'oak'; // +++ NEW +++
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
       img.onerror = function(){ this.style.opacity='0.08'; };
@@ -5502,10 +5785,12 @@ function resetGameState() {
   game.mining = { level: 1, xp: 0, totalXP: 0 };
   game.blacksmith = { level: 1, xp: 0, totalXP: 0 };
   game.cooking = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
+  game.woodcutting = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
   game.miningActive = false;
   game.blacksmithingActive = false; // +++ NEW +++
   game.cookingActive = false;
-  game.shopOpen = false; 
+  game.woodcuttingActive = false; // +++ NEW +++
+  game.shopOpen = false;
   game.isAdmin = false;
   
   // +++ NEW: Reset session state +++
@@ -6258,7 +6543,13 @@ window.showSaveIndicator = function() {
           xp: game.cooking.xp,
           totalXP: game.cooking.totalXP
         },
-        // +++ END NEW VITALITY SAVE LOGIC +++
+        // +++ NEW WOODCUTTING SAVE LOGIC +++
+        woodcutting: {
+          level: game.woodcutting.level,
+          xp: game.woodcutting.xp,
+          totalXP: game.woodcutting.totalXP
+        },
+        // +++ END NEW WOODCUTTING SAVE LOGIC +++
         playerAttackStyle: game.playerAttackStyle, // <-- ADD THIS
         updatedAt: new Date().toISOString()
         // We don't save activeSession here, that's handled by the lock functions
@@ -6331,7 +6622,7 @@ window.showSaveIndicator = function() {
         
         // If we are the active tab, AND we are busy (mining, dragging, etc.),
         // do not sync data. This prevents rollbacks.
-        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.cookingActive || game.isDragging)) {
+        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.cookingActive || game.woodcuttingActive || game.isDragging)) {
           return;
         }
         
@@ -6461,6 +6752,16 @@ window.showSaveIndicator = function() {
           game.cooking = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW VITALITY LOADING LOGIC +++
+        
+        // +++ NEW WOODCUTTING LOADING LOGIC +++
+        if (data.woodcutting) {
+          game.woodcutting.level = data.woodcutting.level || 1;
+          game.woodcutting.xp = data.woodcutting.xp || 0;
+          game.woodcutting.totalXP = data.woodcutting.totalXP || getTotalXPForLevel(data.woodcutting.level - 1) + data.woodcutting.xp || 0; 
+        } else {
+          game.woodcutting = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        // +++ END NEW WOODCUTTING LOADING LOGIC +++
 
         setText('charName', game.name);
         updateHPUI(); // This now calculates maxHP using game.vitality.level
@@ -6527,6 +6828,7 @@ window.showSaveIndicator = function() {
         defence: { level: 1, xp: 0, totalXP: 0 }, 
         vitality: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW VITALITY FOR NEW ACCOUNTS +++
         cooking: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW COOKING FOR NEW ACCOUNTS +++
+        woodcutting: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW WOODCUTTING FOR NEW ACCOUNTS +++
         playerAttackStyle: 'strength',
         activeSession: null, // +++ ADD THIS
         createdAt: new Date().toISOString()
@@ -7004,9 +7306,9 @@ window.showSaveIndicator = function() {
                 addLocalChatMessage("Usage: /setlevel [playername] [skill] [1-99]", 'error');
                 return true;
             }
-            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking'];
+            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking', 'woodcutting'];
 if (!validSkills.includes(skill)) {
-     addLocalChatMessage("Unknown skill. Use: mining, blacksmith, attack, strength, defence, vitality, or cooking.", 'error');
+     addLocalChatMessage("Unknown skill. Use: mining, blacksmith, attack, strength, defence, vitality, cooking, or woodcutting.", 'error');
      return true;
 }
             const newTotalXP = getTotalXPForLevel(level); 
@@ -7650,8 +7952,9 @@ if (!validSkills.includes(skill)) {
         const defenceXp = data.defence?.totalXP || 0;
         const vitalityXp = data.vitality?.totalXP || 0;
         const cookingXp = data.cooking?.totalXP || 0;
+        const woodcuttingXp = data.woodcutting?.totalXP || 0; // +++ NEW +++
 
-        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp;
+        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp + woodcuttingXp;
         // --- END OF FIX ---
 
         players.push({
