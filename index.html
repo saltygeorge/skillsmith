@@ -1337,7 +1337,7 @@ const IRON_CHEST_LVL = 18;
 
 // --- NEW: Iron Smithing Constants ---
 const IRON_BAR_ORE_COST = 1; // 1 Iron Ore
-const IRON_BAR_COAL_COST = 1; // 1 Coal Ore
+const IRON_BAR_COAL_COST = 2; // 1 Coal Ore
 const IRON_BAR_XP = 30;
 const IRON_BAR_TIME_MS = 6000;
 
@@ -3044,10 +3044,20 @@ async function ironShortswordCraftingLoop(timestamp, startTime) {
     const bar = document.getElementById('shortswordProgress');
     if (bar) bar.style.width = '0%';
     
-    // --- THIS IS THE FIX ---
-    // Crafting an item is a single action. Stop after one.
+   // Check for materials for the *next* loop
+let totalBarsAfter = 0;
+for (const slot of game.inventory) {
+    if (slot && slot.name === 'Iron Bar') {
+        totalBarsAfter += slot.qty;
+    }
+}
+if (totalBarsAfter < IRON_SHORTSWORD_BAR_COST) {
+    await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another shortsword.");
     stopBlacksmithing();
-    // --- END FIX ---
+    return;
+}
+// Continue looping
+game.progressFrame = requestAnimationFrame((now) => ironShortswordCraftingLoop(now, now));
 
   } else {
     const bar = document.getElementById('shortswordProgress');
