@@ -3522,7 +3522,7 @@ function openBlacksmithHub() {
       <button id="smithIronTab">Iron</button>
     </div>
 
-    <div id="smithingItemsContainer" class="action-buttons" style="margin-top: 0; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
+    <div id="smithingItemsContainer" class="action-buttons" style="margin-top: 0; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
       <!-- Items will be rendered here by JS -->
     </div>
     
@@ -3559,15 +3559,22 @@ function renderSmithingItems(metalType) {
   const smithLvl = game.blacksmith.level;
   
   // --- Helper function for locked buttons (moved inside) ---
-  const setupSmithButton = (btnId, locked, onclick, levelReq, tooltipText) => {
+  const setupSmithButton = (btnId, locked, onclick, levelReq, tooltipText, itemName) => { // Added itemName
     const btn = document.getElementById(btnId);
     if (btn) {
+      // Create the new tooltip header
+      const nameHtml = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">${itemName}</div>`;
+      
       if (locked) {
         btn.onclick = null;
-        btn.onmouseenter = (event) => showTooltip(event, `Requires Blacksmith Lvl: ${levelReq}`);
+        // Add name to the locked tooltip
+        const lockedTT = nameHtml + `Requires Blacksmith Lvl: ${levelReq}`;
+        btn.onmouseenter = (event) => showTooltip(event, lockedTT);
       } else {
         btn.onclick = onclick;
-        btn.onmouseenter = (event) => showTooltip(event, tooltipText);
+        // Add name to the unlocked tooltip
+        const unlockedTT = nameHtml + tooltipText;
+        btn.onmouseenter = (event) => showTooltip(event, unlockedTT);
       }
       btn.onmouseleave = hideTooltip;
     }
@@ -3582,34 +3589,29 @@ function renderSmithingItems(metalType) {
     const copperChestLocked = smithLvl < COPPER_CHEST_LVL;
     
     container.innerHTML = `
-      <button id="copperBarBtn" class="primary ${copperBarLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="copperBarBtn" class="primary ${copperBarLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/copperbar.png" alt="Copper Bar" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Copper Bar</span>
       </button>
-      <button id="copperShortswordBtn" class="primary ${copperSwordLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="copperShortswordBtn" class="primary ${copperSwordLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/coppershortsword.png" alt="Copper Shortsword" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Copper Shortsword</span>
       </button>
-      <button id="copperBootsBtn" class="primary ${copperBootsLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="copperBootsBtn" class="primary ${copperBootsLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/copperboots.png" alt="Copper Boots" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Copper Boots</span>
       </button>
-      <button id="copperHelmetBtn" class="primary ${copperHelmetLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="copperHelmetBtn" class="primary ${copperHelmetLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/copperhelmet.png" alt="Copper Helmet" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Copper Helmet</span>
       </button>
-      <button id="copperChestplateBtn" class="primary ${copperChestLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="copperChestplateBtn" class="primary ${copperChestLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/copperchestplate.png" alt="Copper Chestplate" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Copper Chestplate</span>
       </button>
     `;
     
     // --- Re-attach listeners for copper items ---
-    setupSmithButton('copperBarBtn', copperBarLocked, openCopperBarSmith, COPPER_BAR_LVL, 'Requires: 2 Copper Ore');
-    setupSmithButton('copperShortswordBtn', copperSwordLocked, openCopperShortswordSmith, COPPER_SWORD_LVL, `Requires: ${SHORTSWORD_BAR_COST} Copper Bars`);
-    setupSmithButton('copperBootsBtn', copperBootsLocked, openCopperBootsSmith, COPPER_BOOTS_LVL, `Requires: ${BOOTS_BAR_COST} Copper Bars`);
-    setupSmithButton('copperHelmetBtn', copperHelmetLocked, openCopperHelmetSmith, COPPER_HELMET_LVL, `Requires: ${HELMET_BAR_COST} Copper Bars`);
-    setupSmithButton('copperChestplateBtn', copperChestLocked, openCopperChestplateSmith, COPPER_CHEST_LVL, `Requires: ${CHESTPLATE_BAR_COST} Copper Bars`);
+    setupSmithButton('copperBarBtn', copperBarLocked, openCopperBarSmith, COPPER_BAR_LVL, 'Requires: 2 Copper Ore', 'Copper Bar');
+    setupSmithButton('copperShortswordBtn', copperSwordLocked, openCopperShortswordSmith, COPPER_SWORD_LVL, `Requires: ${SHORTSWORD_BAR_COST} Copper Bars`, 'Copper Shortsword');
+    setupSmithButton('copperBootsBtn', copperBootsLocked, openCopperBootsSmith, COPPER_BOOTS_LVL, `Requires: ${BOOTS_BAR_COST} Copper Bars`, 'Copper Boots');
+    setupSmithButton('copperHelmetBtn', copperHelmetLocked, openCopperHelmetSmith, COPPER_HELMET_LVL, `Requires: ${HELMET_BAR_COST} Copper Bars`, 'Copper Helmet');
+    setupSmithButton('copperChestplateBtn', copperChestLocked, openCopperChestplateSmith, COPPER_CHEST_LVL, `Requires: ${CHESTPLATE_BAR_COST} Copper Bars`, 'Copper Chestplate');
     
   } else if (metalType === 'iron') {
     // --- Iron Level Locks ---
@@ -3620,34 +3622,29 @@ function renderSmithingItems(metalType) {
     const ironChestLocked = smithLvl < IRON_CHEST_LVL;
     
     container.innerHTML = `
-      <button id="ironBarBtn" class="primary ${ironBarLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="ironBarBtn" class="primary ${ironBarLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/ironbar.png" alt="Iron Bar" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Iron Bar</span>
       </button>
-      <button id="ironShortswordBtn" class="primary ${ironSwordLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="ironShortswordBtn" class="primary ${ironSwordLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/ironshortsword.png" alt="Iron Shortsword" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Iron Shortsword</span>
       </button>
-      <button id="ironBootsBtn" class="primary ${ironBootsLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="ironBootsBtn" class="primary ${ironBootsLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/ironboots.png" alt="Iron Boots" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Iron Boots</span>
       </button>
-      <button id="ironHelmetBtn" class="primary ${ironHelmetLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="ironHelmetBtn" class="primary ${ironHelmetLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/ironhelmet.png" alt="Iron Helmet" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Iron Helmet</span>
       </button>
-      <button id="ironChestplateBtn" class="primary ${ironChestLocked ? 'locked-item' : ''}" style="display: flex; align-items: center; gap: 10px;">
+      <button id="ironChestplateBtn" class="primary ${ironChestLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/ironchestplate.png" alt="Iron Chestplate" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Iron Chestplate</span>
       </button>
     `;
     
     // --- Re-attach listeners for iron items ---
-    setupSmithButton('ironBarBtn', ironBarLocked, openIronBarSmith, IRON_BAR_LVL, `Requires: ${IRON_BAR_ORE_COST} Iron Ore, ${IRON_BAR_COAL_COST} Coal Ore`);
-    setupSmithButton('ironShortswordBtn', ironSwordLocked, openIronShortswordSmith, IRON_SWORD_LVL, `Requires: ${IRON_SHORTSWORD_BAR_COST} Iron Bars`);
-    setupSmithButton('ironBootsBtn', ironBootsLocked, openIronBootsSmith, IRON_BOOTS_LVL, `Requires: ${IRON_BOOTS_BAR_COST} Iron Bars`);
-    setupSmithButton('ironHelmetBtn', ironHelmetLocked, openIronHelmetSmith, IRON_HELMET_LVL, `Requires: ${IRON_HELMET_BAR_COST} Iron Bars`);
-    setupSmithButton('ironChestplateBtn', ironChestLocked, openIronChestplateSmith, IRON_CHEST_LVL, `Requires: ${IRON_CHESTPLATE_BAR_COST} Iron Bars`);
+    setupSmithButton('ironBarBtn', ironBarLocked, openIronBarSmith, IRON_BAR_LVL, `Requires: ${IRON_BAR_ORE_COST} Iron Ore, ${IRON_BAR_COAL_COST} Coal Ore`, 'Iron Bar');
+    setupSmithButton('ironShortswordBtn', ironSwordLocked, openIronShortswordSmith, IRON_SWORD_LVL, `Requires: ${IRON_SHORTSWORD_BAR_COST} Iron Bars`, 'Iron Shortsword');
+    setupSmithButton('ironBootsBtn', ironBootsLocked, openIronBootsSmith, IRON_BOOTS_LVL, `Requires: ${IRON_BOOTS_BAR_COST} Iron Bars`, 'Iron Boots');
+    setupSmithButton('ironHelmetBtn', ironHelmetLocked, openIronHelmetSmith, IRON_HELMET_LVL, `Requires: ${IRON_HELMET_BAR_COST} Iron Bars`, 'Iron Helmet');
+    setupSmithButton('ironChestplateBtn', ironChestLocked, openIronChestplateSmith, IRON_CHEST_LVL, `Requires: ${IRON_CHESTPLATE_BAR_COST} Iron Bars`, 'Iron Chestplate');
   }
 }
 
