@@ -4227,9 +4227,9 @@ function openMineHub() {
   // --- MODIFIED LISTENERS ---
   if (copperBtn) {
     copperBtn.onclick = openCopperMine;
-    copperBtn.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div>Lvl Required: 1');
-    };
+    // --- FIX: Changed tooltip text for consistency ---
+    const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div>Requires Mining Lvl: 1`;
+    copperBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
     copperBtn.onmouseleave = hideTooltip;
   }
 
@@ -4303,9 +4303,9 @@ function openForestHub() {
 
   if (softwoodBtn) {
     softwoodBtn.onclick = openSoftwoodTree;
-    softwoodBtn.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Softwood Tree</div>Lvl Required: 1');
-    };
+     // --- FIX: Changed tooltip text for consistency ---
+    const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Softwood Tree</div>Requires Woodcutting Lvl: ${SOFTWOOD_TREE_LVL}`;
+    softwoodBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
     softwoodBtn.onmouseleave = hideTooltip;
   }
 
