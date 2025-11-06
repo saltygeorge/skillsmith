@@ -5001,30 +5001,35 @@ function backToActions(){
   stopMining();
   stopBlacksmithing();
   stopCookingChicken();
-  stopWoodcutting(); // +++ NEW +++
+  stopWoodcutting();
   game.shopOpen = false;
   // --- End of cleanup code ---
 
   const wrapper = document.getElementById('mainContentWrapper');
+  
+  // --- HTML BUTTONS REORDERED ---
   wrapper.innerHTML = `
     <div id="actionScreen" style="display: flex; gap: 10px; flex-wrap: wrap;">
       <img id="minesActionIcon" src="images/mines.png" alt="Mines" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-      <img id="blacksmithActionIcon" src="images/blacksmithicon.png" alt="Blacksmith" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-      <img id="shopActionIcon" src="images/shopbutton.png" alt="Shop" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-      <img id="combatActionIcon" src="images/combatareas.png" alt="Combat Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-      <img id="kitchenActionIcon" src="images/kitchenbutton.png" alt="Kitchen" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-      <img id="bankActionIcon" src="images/bankbutton.png" alt="Bank" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
       <img id="forestActionIcon" src="images/foresticon.png" alt="Forest" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="blacksmithActionIcon" src="images/blacksmithicon.png" alt="Blacksmith" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="kitchenActionIcon" src="images/kitchenbutton.png" alt="Kitchen" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="combatActionIcon" src="images/combatareas.png" alt="Combat Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="shopActionIcon" src="images/shopbutton.png" alt="Shop" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+      <img id="bankActionIcon" src="images/bankbutton.png" alt="Bank" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
     </div>
   `;
-  const minesIcon = document.getElementById('minesActionIcon');
-  const blacksmithIcon = document.getElementById('blacksmithActionIcon');
-  const shopIcon = document.getElementById('shopActionIcon'); 
-  const combatIcon = document.getElementById('combatActionIcon'); // +++ NEW ICON REFERENCE +++
-  const kitchenIcon = document.getElementById('kitchenActionIcon');
-  const bankIcon = document.getElementById('bankActionIcon');
-  const forestIcon = document.getElementById('forestActionIcon'); // +++ NEW +++
   
+  // --- JAVASCRIPT VARIABLES REORDERED ---
+  const minesIcon = document.getElementById('minesActionIcon');
+  const forestIcon = document.getElementById('forestActionIcon');
+  const blacksmithIcon = document.getElementById('blacksmithActionIcon');
+  const kitchenIcon = document.getElementById('kitchenActionIcon');
+  const combatIcon = document.getElementById('combatActionIcon');
+  const shopIcon = document.getElementById('shopActionIcon'); 
+  const bankIcon = document.getElementById('bankActionIcon');
+  
+  // --- JAVASCRIPT LISTENERS REORDERED ---
   if (minesIcon) {
     minesIcon.onclick = openMineHub;
     minesIcon.onmouseenter = (event) => {
@@ -5032,6 +5037,15 @@ function backToActions(){
     };
     minesIcon.onmouseleave = hideTooltip;
   }
+  
+  if (forestIcon) {
+    forestIcon.onclick = openForestHub;
+    forestIcon.onmouseenter = (event) => {
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Forest</div>');
+    };
+    forestIcon.onmouseleave = hideTooltip;
+  }
+
   if (blacksmithIcon) {
     blacksmithIcon.onclick = openBlacksmithHub; 
     blacksmithIcon.onmouseenter = (event) => {
@@ -5039,6 +5053,23 @@ function backToActions(){
     };
     blacksmithIcon.onmouseleave = hideTooltip;
   }
+  
+  if (kitchenIcon) {
+    kitchenIcon.onclick = openKitchenHub; 
+    kitchenIcon.onmouseenter = (event) => {
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Kitchen</div>');
+    };
+    kitchenIcon.onmouseleave = hideTooltip;
+  }
+
+  if (combatIcon) {
+    combatIcon.onclick = openCombatHub; 
+    combatIcon.onmouseenter = (event) => {
+      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Combat Areas</div>');
+    };
+    combatIcon.onmouseleave = hideTooltip;
+  }
+  
   if (shopIcon) {
     shopIcon.onclick = openShop; 
     shopIcon.onmouseenter = (event) => {
@@ -5047,26 +5078,6 @@ function backToActions(){
     shopIcon.onmouseleave = hideTooltip;
   }
   
-  // +++ NEW COMBAT ICON LOGIC +++
-  if (combatIcon) {
-    combatIcon.onclick = openCombatHub; 
-    combatIcon.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Combat Areas</div>');
-    };
-    combatIcon.onmouseleave = hideTooltip;
-  }
-  // +++ END NEW COMBAT LOGIC +++
-if (kitchenIcon) {
-    kitchenIcon.onclick = openKitchenHub; 
-    kitchenIcon.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Kitchen</div>');
-    };
-    kitchenIcon.onmouseleave = hideTooltip;
-  }
-  
-
-
-  // +++ NEW BANK ICON LOGIC +++
   if (bankIcon) {
     bankIcon.onclick = openBank; // This function now exists
     bankIcon.onmouseenter = (event) => {
@@ -5074,17 +5085,8 @@ if (kitchenIcon) {
     };
     bankIcon.onmouseleave = hideTooltip;
   }
-  // +++ END NEW BANK LOGIC +++
 
-  // +++ NEW FOREST ICON LOGIC +++
-  if (forestIcon) {
-    forestIcon.onclick = openForestHub;
-    forestIcon.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Forest</div>');
-    };
-    forestIcon.onmouseleave = hideTooltip;
-  }
-  // +++ END NEW FOREST LOGIC +++
+  // --- PRELOAD CALL (Unchanged) ---
   const assetsToPreload = [
     // Mine Hub
     'images/coppervein.png',
@@ -5093,7 +5095,7 @@ if (kitchenIcon) {
     // Blacksmith Hub
     'images/copperbar.png',
     'images/coppershortsword.png',
-    'images/copperboots.png',
+    'images.copperboots.png',
     'images/copperhelmet.png',
     'images/copperchestplate.png',
     'images/ironbar.png',
@@ -5110,7 +5112,6 @@ if (kitchenIcon) {
     'images/oak.png'
   ];
   preloadImages(assetsToPreload);
-  // +++ END PRELOAD CALL +++
 }
 
 function _createModal(title, contentHtml, buttons) {
