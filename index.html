@@ -5118,9 +5118,37 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.addEventListener('mousemove', moveTooltip);
   
   const inventoryGrid = document.getElementById('inventoryGrid');
+  const inventoryGridWrap = document.getElementById('inventoryGridWrap');
   let draggedItemIndex = null;
   let currentDragOverSlot = null;
   
+if (inventoryGridWrap) {
+  inventoryGridWrap.addEventListener('dragover', (e) => {
+    // Only scroll if we are actively dragging an item
+    if (!game.isDragging) return;
+
+    // We must prevent default for dragover to work
+    e.preventDefault(); 
+
+    const rect = inventoryGridWrap.getBoundingClientRect();
+    const clientY = e.clientY;
+
+    const scrollSpeed = 10; // Pixels to scroll per frame
+    const threshold = 50;   // 50px trigger zone from the edge
+
+    const topThreshold = rect.top + threshold;
+    const bottomThreshold = rect.bottom - threshold;
+
+    if (clientY < topThreshold) {
+      // Mouse is near the top, scroll up
+      inventoryGridWrap.scrollTop -= scrollSpeed;
+    } else if (clientY > bottomThreshold) {
+      // Mouse is near the bottom, scroll down
+      inventoryGridWrap.scrollTop += scrollSpeed;
+    }
+  });
+}
+
   inventoryGrid.addEventListener('dragstart', (e) => {
     if (e.target && e.target.classList.contains('inv-slot') && e.target.draggable) {
       draggedItemIndex = parseInt(e.target.dataset.slotIndex);
