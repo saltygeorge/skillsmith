@@ -8559,6 +8559,13 @@ if (!validSkills.includes(skill)) {
     // Run the preloader
     preloadAllAssets(MASTER_ASSET_LIST).then(() => {
       console.log('[Preloader] All assets loaded.');
+
+      // +++ NEW: Force-decode the combat GIF +++
+      const primeImg = document.createElement('img');
+      primeImg.src = 'images/chickenanim.gif';
+      primeImg.style.cssText = 'position:absolute; left:-9999px; top:-9999px;';
+      document.body.appendChild(primeImg);
+      // +++ END NEW +++
       
       const loadingScreen = document.getElementById('loadingScreen');
       const authScreen = document.getElementById('authScreen');
