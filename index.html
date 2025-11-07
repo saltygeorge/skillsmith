@@ -143,7 +143,7 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(var(--slot-size), 1fr));
   gap: var(--slot-gap);
-  padding: var(--slot-gap); 
+  padding: 0; 
   align-content: start;
 }
 .inv-slot {
@@ -671,7 +671,7 @@ button.primary:hover { background: var(--accent-hover); }
 }
 /* --- END: Item Context Menu --- */
 
-#bankGrid {
+#bankGrid, #shopGrid {
   /* Set the number of columns */
   grid-template-columns: repeat(5, var(--slot-size)); 
   
@@ -744,6 +744,17 @@ button.primary:hover { background: var(--accent-hover); }
   scrollbar-color: var(--accent) var(--panel-bg);
   /* 4-row height */
   height: calc((var(--slot-size) + var(--slot-gap)) * 4 + var(--slot-gap));
+}
+
+#shopGridWrap {
+  /* This wrap will now auto-size to its content */
+  overflow-y: hidden; /* Prevent scrollbar */
+  overflow-x: hidden;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  height: auto; /* <-- THIS IS THE FIX */
+  padding: var(--slot-gap);
+  box-sizing: border-box;
 }
 
 #gameModalOverlay {
@@ -1198,22 +1209,20 @@ button.primary:hover { background: var(--accent-hover); }
           
           <div id="hubShop" class="hub-screen">
             <h2>General Store</h2>
-            <div style="display: flex; gap: 20px; margin-top: 16px; width: 100%;">
-              <div style="flex: 1; background:rgba(0,0,0,0.1); border-radius:6px; padding: 10px 15px;">
-                <h3 style="margin:0 0 10px 0; color: var(--gold);">Sell Items</h3>
-                <p style="margin:0 0 10px 0;">Click an item in your inventory to sell it.</p>
-                <ul style="margin: 5px 0 0 20px; padding: 0;">
-                  <li style="margin-top:5px;">Copper Ore - 1 Gold each</li>
-                </ul>
-              </div>
-              <div style="flex: 1; background:rgba(0,0,0,0.1); border-radius:6px; padding: 10px 15px;">
-                <h3 style="margin:0 0 10px 0; color: var(--gold);">Buy Items</h3>
-                <div class="action-buttons" style="margin: 0; flex-direction: column; align-items: flex-start; gap: 8px;">
-                  <button id="buyPickaxeBtn" class="primary" style="width: 100%; text-align: left;">Bronze Pickaxe - 10 Gold</button>
-                  <button id="buyAxeBtn" class="primary" style="width: 100%; text-align: left;">Bronze Axe - 10 Gold</button>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 16px; width: 100%;">
+            
+              <div style="background:rgba(0,0,0,0.1); border-radius:6px; padding: 10px 15px; display: flex; flex-direction: column;">
+                <h3 style="margin:0 0 10px 0; color: var(--gold); text-align: center;">Items for Sale</h3>
+                
+                <div class="inventory-grid-wrap" id="shopGridWrap">
+                  <div class="inventory-grid" id="shopGrid">
+                    </div>
                 </div>
               </div>
+              
             </div>
+            
             <div class="action-buttons" style="margin-top:20px;">
               <button id="hubShop_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
@@ -1892,6 +1901,12 @@ const ITEM_STATS = {
     speed: 2
   }
 };
+const SHOP_INVENTORY = new Array(20).fill(null);
+SHOP_INVENTORY[0] = { name: 'Bronze Pickaxe', price: 10 };
+SHOP_INVENTORY[1] = { name: 'Bronze Axe', price: 10 };
+// You can add more items here like:
+// SHOP_INVENTORY[2] = { name: 'Some Item', price: 50 };
+
 // --- END: Item Stat Definitions ---
 
 function setText(id, text){ const el=document.getElementById(id); if(el) el.innerText=text; }
@@ -6281,6 +6296,68 @@ function playGlobalSound(src) {
     console.warn("Could not play sound", src, e);
   }
 }
+
+/**
+ * Renders the Shop grid UI
+ */
+function renderShopGrid() {
+  const grid = document.getElementById('shopGrid');
+  if (!grid) return;
+  
+  grid.innerHTML = '';
+  for(let i = 0; i < SHOP_INVENTORY.length; i++) {
+    const item = SHOP_INVENTORY[i];
+    const slot = document.createElement('div');
+    slot.className = 'inv-slot';
+    
+    if(item) {
+      slot.draggable = true; 
+      slot.addEventListener('dragstart', (e) => handleShopDragStart(e, item));
+      slot.addEventListener('dragend', () => {
+        draggedShopItem = null;
+        game.isDragging = false; 
+        const draggingEl = document.querySelector('.inv-slot.dragging');
+        if (draggingEl) draggingEl.classList.remove('dragging');
+      });
+      
+      slot.onclick = () => buyShopItem(item.name, item.price); 
+
+      const img = document.createElement('img');
+      let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
+      if (item.name === 'Bronze Pickaxe') imgName = 'bronzepickaxe';
+      else if (item.name === 'Bronze Axe') imgName = 'bronzeaxe';
+      // Add more image name fixes here if needed
+      
+      img.src = `images/${imgName}.png`;
+      img.alt = item.name;
+      img.onerror = function(){ this.style.opacity='0.08'; };
+      slot.appendChild(img);
+      
+      // Don't show an amount, just the item
+
+      const tooltipContent = `
+        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
+        <div style="color:#fff;">Price: ${item.price} Gold</div>
+        <div style="color:#aaffaa; margin-top: 5px;">Click or Drag to buy...</div>
+      `;
+      slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+      slot.onmouseleave = hideTooltip;
+    }
+    grid.appendChild(slot);
+  }
+}
+
+/**
+ * Handles starting a drag from the shop
+ */
+function handleShopDragStart(e, item) {
+  draggedShopItem = { name: item.name, price: item.price };
+  e.dataTransfer.effectAllowed = 'move';
+  game.isDragging = true;
+  setTimeout(() => {
+    e.target.closest('.inv-slot').classList.add('dragging');
+  }, 0);
+}
 // --- END: Settings Functions ---
 
 
@@ -6354,8 +6431,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('hubCombat_ReturnBtn').onclick = backToActions;
   
   // --- Hub Shop Listeners ---
-  document.getElementById('buyPickaxeBtn').onclick = () => buyShopItem('Bronze Pickaxe', 10);
-  document.getElementById('buyAxeBtn').onclick = () => buyShopItem('Bronze Axe', 10);
   document.getElementById('hubShop_ReturnBtn').onclick = backToActions;
   
   // --- Hub Bank Listeners ---
@@ -6422,6 +6497,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const bankGridWrap = document.getElementById('bankGridWrap'); // <-- ADD THIS
   let draggedItemIndex = null;
   let currentDragOverSlot = null;
+  let draggedShopItem = null; // <-- ADD THIS
   
 if (inventoryGridWrap) {
   inventoryGridWrap.addEventListener('dragover', (e) => {
@@ -6543,6 +6619,7 @@ inventoryGrid.addEventListener('dragend', (e) => {
     // 3. Reset all global drag state variables
     draggedItemIndex = null;
     draggedBankItem = null;
+    draggedShopItem = null; // <-- ADD THIS
     game.isDragging = false;
   });
 
@@ -6555,7 +6632,7 @@ inventoryGrid.addEventListener('dragend', (e) => {
       currentDragOverSlot.classList.remove('drag-over');
       currentDragOverSlot = null;
     }
-    const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
+    const draggingEl = document.querySelector('.inv-slot.dragging'); // <-- FIX: Check ALL dragging
     if (draggingEl) {
       draggingEl.classList.remove('dragging');
     }
@@ -6563,13 +6640,21 @@ inventoryGrid.addEventListener('dragend', (e) => {
     if (!dropSlot) {
       draggedItemIndex = null;
       draggedBankItem = null;
+      draggedShopItem = null; // <-- ADD
       game.isDragging = false;
       return;
     }
     
     const dropIndex = parseInt(dropSlot.dataset.slotIndex);
 
-    if (draggedBankItem && draggedBankItem.source === 'bank') {
+    // +++ NEW: Check for Shop Drag +++
+    if (draggedShopItem) {
+      // This is a BUY action
+      await buyShopItem(draggedShopItem.name, draggedShopItem.price);
+
+    } else if (draggedBankItem && draggedBankItem.source === 'bank') {
+    // +++ END NEW +++
+
       // --- BANK -> INVENTORY (Withdrawal) ---
       await dragWithdrawItem(draggedBankItem.fromIndex, dropIndex);
 
@@ -6674,6 +6759,7 @@ inventoryGrid.addEventListener('dragend', (e) => {
     // Final cleanup
     draggedItemIndex = null;
     draggedBankItem = null;
+    draggedShopItem = null; // <-- ADD
     game.isDragging = false;
   });
   
@@ -7376,6 +7462,10 @@ window.showSaveIndicator = function() {
         // +++ NEW: Pre-render the bank UI on load +++
         renderBankGrid();
         updateBankGoldUI();
+        // +++ END NEW +++
+
+        // +++ NEW: Pre-render the Shop UI on load +++
+        renderShopGrid();
         // +++ END NEW +++
         
         if (isFirstLoad) {
