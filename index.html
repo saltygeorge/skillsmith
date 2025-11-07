@@ -6216,10 +6216,7 @@ function showMainScreen(screenIdToShow) {
   const wrapper = document.getElementById('mainContentWrapper');
   const dynamicHub = document.getElementById('hubDynamic');
   
-  if (screenIdToShow !== 'hubDynamic') {
-    // Clear dynamic content if we're not showing it
-    dynamicHub.innerHTML = '';
-  }
+  // --- We removed the 'if' block that was clearing the HTML ---
 
   // Toggle the screens
   hubScreenIds.forEach(id => {
