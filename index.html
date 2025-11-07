@@ -996,11 +996,29 @@ button.primary:hover { background: var(--accent-hover); }
   cursor: pointer;
 }
 
+/* --- NEW: Hub Screen Toggler --- */
+.hub-screen {
+  display: none; /* Hide all hubs by default */
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+.hub-screen.active {
+  display: flex; /* Show the active one */
+}
+/* --- END NEW --- */
+
 </style>
 </head>
 <body>
 
-<div id="authScreen" style="display:flex; align-items:center; justify-content:center; width:100%;">
+<div id="loadingScreen" style="display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: #3f2b21; z-index: 10000;">
+  <div style="text-align: center; color: var(--gold); font-size: 20px; font-weight: bold;">
+    Loading assets...
+  </div>
+</div>
+
+<div id="authScreen" style="display:none; align-items:center; justify-content:center; width:100%;">
   <div style="background:rgba(0,0,0,0.15); padding:26px; border-radius:12px; text-align:center;">
     <h1>Login or Register</h1>
     <input id="authEmail" placeholder="Email" style="padding:10px; font-size:16px; border-radius:8px; border:none; margin-bottom:8px;"><br>
@@ -1111,9 +1129,146 @@ button.primary:hover { background: var(--accent-hover); }
       </div>
 
       <div class="main" id="mainArea">
+
         <div id="mainContentWrapper">
+        
+          <div id="hubActions" class="hub-screen">
+            <div id="actionScreen" style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <img id="minesActionIcon" src="images/mines.png" alt="Mines" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="forestActionIcon" src="images/foresticon.png" alt="Forest" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="blacksmithActionIcon" src="images/blacksmithicon.png" alt="Blacksmith" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="kitchenActionIcon" src="images/kitchenbutton.png" alt="Kitchen" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="combatActionIcon" src="images/combatareas.png" alt="Combat Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="shopActionIcon" src="images/shopbutton.png" alt="Shop" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="bankActionIcon" src="images/bankbutton.png" alt="Bank" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+            </div>
           </div>
-        <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
+
+          <div id="hubMine" class="hub-screen">
+            <h2>Mine</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Choose a vein to mine.</div>
+            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+              <button id="copperVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/coppervein.png" alt="Copper Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+              </button>
+              <button id="ironVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/ironvein.png" alt="Iron Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+              </button>
+              <button id="coalVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/coalvein.png" alt="Coal Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+              </button>
+            </div>
+            <div class="action-buttons" style="margin-top: 14px;">
+              <button id="hubMine_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
+            </div>
+          </div>
+          
+          <div id="hubBlacksmith" class="hub-screen">
+            <div class="tabs" style="margin-top: 0; margin-bottom: 14px; width: 100%;">
+              <button id="smithCopperTab" class="active">Copper</button>
+              <button id="smithIronTab">Iron</button>
+            </div>
+            <div id="smithingItemsContainer" class="action-buttons" style="margin-top: 0; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+              </div>
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+              <button id="hubBlacksmith_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
+            </div>
+          </div>
+          
+          <div id="hubForest" class="hub-screen">
+            <h2>Forest</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Choose a tree to chop.</div>
+            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+              <button id="softwoodTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/softwood.png" alt="Softwood Tree" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+              </button>
+              <button id="oakTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/oak.png" alt="Oak Tree" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+              </button>
+            </div>
+            <div class="action-buttons" style="margin-top: 14px;">
+              <button id="hubForest_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
+            </div>
+          </div>
+          
+          <div id="hubKitchen" class="hub-screen">
+            <h2>Kitchen</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Choose something to cook.</div>
+            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
+              <button id="cookChickenBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+                <img src="images/cookedchicken.png" alt="Cooked Chicken" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+                <span>Cooked Chicken</span>
+              </button>
+              <button id="hubKitchen_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
+            </div>
+          </div>
+          
+          <div id="hubCombat" class="hub-screen">
+            <h2>Combat Areas</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Choose an area to start fighting.</div>
+            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
+              <button id="farmAreaBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
+                <img src="images/farm.png" alt="Farm Area" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+                <span>The Farm</span>
+              </button>
+              <button id="hubCombat_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
+            </div>
+          </div>
+          
+          <div id="hubShop" class="hub-screen">
+            <h2>General Store</h2>
+            <div style="display: flex; gap: 20px; margin-top: 16px; width: 100%;">
+              <div style="flex: 1; background:rgba(0,0,0,0.1); border-radius:6px; padding: 10px 15px;">
+                <h3 style="margin:0 0 10px 0; color: var(--gold);">Sell Items</h3>
+                <p style="margin:0 0 10px 0;">Click an item in your inventory to sell it.</p>
+                <ul style="margin: 5px 0 0 20px; padding: 0;">
+                  <li style="margin-top:5px;">Copper Ore - 1 Gold each</li>
+                </ul>
+              </div>
+              <div style="flex: 1; background:rgba(0,0,0,0.1); border-radius:6px; padding: 10px 15px;">
+                <h3 style="margin:0 0 10px 0; color: var(--gold);">Buy Items</h3>
+                <div class="action-buttons" style="margin: 0; flex-direction: column; align-items: flex-start; gap: 8px;">
+                  <button id="buyPickaxeBtn" class="primary" style="width: 100%; text-align: left;">Bronze Pickaxe - 10 Gold</button>
+                  <button id="buyAxeBtn" class="primary" style="width: 100%; text-align: left;">Bronze Axe - 10 Gold</button>
+                </div>
+              </div>
+            </div>
+            <div class="action-buttons" style="margin-top:20px;">
+              <button id="hubShop_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+          
+          <div id="hubBank" class="hub-screen">
+            <div id="bankContainer" style="width: 100%;">
+              <div class="bank-content-wrapper"> 
+                <div id="bankGoldPanel">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="number" id="bankGoldInput" min="0" placeholder="Amount...">
+                    <button id="bankDepositGoldBtn" class="primary">Deposit</button>
+                    <button id="bankWithdrawGoldBtn" class="primary">Withdraw</button>
+                  </div>
+                  <div>
+                    <div>Banked Gold</div>
+                    <div id="bankStoredGold" class="gold-display">0</div>
+                  </div>
+                </div>
+                <div id="bankPanel">
+                  <h3>Bank Storage</h3>
+                  <div class="inventory-grid-wrap" id="bankGridWrap">
+                    <div class="inventory-grid" id="bankGrid"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="action-buttons" style="margin-top:0px; align-self: flex-start;">
+                <button id="hubBank_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="hubDynamic" class="hub-screen">
+            </div>
+
+        </div> <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
       </div>
 
       <div class="sidebar" id="leaderboardPanel">
@@ -1347,19 +1502,6 @@ const musicPlayer = new Audio();
 musicPlayer.loop = false;
 let audioAutoplayBlocked = false; // We handle the loop to change tracks
 // --- END NEW ---
-// +++ PASTE THE FUNCTION HERE +++
-/**
- * Preloads an array of image URLs in the background.
- * @param {string[]} urls - An array of image paths to preload.
- */
-function preloadImages(urls) {
-  if (!Array.isArray(urls)) return;
-  
-  urls.forEach(url => {
-    const img = new Image();
-    img.src = url;
-  });
-}
 
 /**
  * Finds the highest tier tool of a specific type in the player's inventory.
@@ -2813,167 +2955,16 @@ function stopMining(){
 // +++ NEW CRAFTING FUNCTION BLOCK TO INSERT +++
 const CHESTPLATE_TIME_MS = 10000; 
 
-async function startChestplateCrafting() {
-  if (!game.isSessionActive) {
-    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
-    return;
-  }
-  if (game.blacksmithingActive) return;
-
-  // --- Check total bars across all stacks ---
-  let totalBars = 0;
-  for (const slot of game.inventory) {
-      if (slot && slot.name === 'Copper Bar') {
-          totalBars += slot.qty;
-      }
-  }
-
-  if (totalBars < CHESTPLATE_BAR_COST) {
-      await showGameAlert("Not Enough Materials", `You need at least ${CHESTPLATE_BAR_COST} Copper Bars to craft a chestplate.`);
-      return;
-  }
-  
-  game.blacksmithingActive = true;
-  const startBtn = document.getElementById('startChestplateBtn');
-  const stopBtn = document.getElementById('stopChestplateBtn');
-  if (startBtn) startBtn.style.display = 'none';
-  if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, now));
-}
-
-async function chestplateCraftingLoop(timestamp, startTime) {
-  if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / CHESTPLATE_TIME_MS) * 100;
-
-  if (progress >= 100) {
-    // --- Check materials again before consuming ---
-    let totalBars = 0;
-    for (const slot of game.inventory) {
-        if (slot && slot.name === 'Copper Bar') {
-            totalBars += slot.qty;
-        }
-    }
-    if (totalBars < CHESTPLATE_BAR_COST) {
-        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
-        stopBlacksmithing();
-        return;
-    }
-    
-    removeItem('Copper Bar', CHESTPLATE_BAR_COST); // Consume 10 bars
-    addItem('Copper Chestplate', 1); // Add 1 chestplate
-    addXP('blacksmith', CHESTPLATE_XP); // Award Blacksmith XP
-    
-    // NEW: Create two separate, delayed popups
-    showItemPopup(`+${CHESTPLATE_XP} Blacksmith XP`, 'chestplateProgress', 0);
-    showItemPopup(`+1 Copper Chestplate`, 'chestplateProgress', 450);
-    
-    const bar = document.getElementById('chestplateProgress');
-    if (bar) bar.style.width = '0%';
-    
-    // --- Check *again* for next loop ---
-    let totalBarsAfter = 0;
-    for (const slot of game.inventory) {
-        if (slot && slot.name === 'Copper Bar') {
-            totalBarsAfter += slot.qty;
-        }
-    }
-    if (totalBarsAfter < CHESTPLATE_BAR_COST) {
-        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another chestplate.");
-        stopBlacksmithing();
-        return;
-    }
-    game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, now));
-  } else {
-    const bar = document.getElementById('chestplateProgress');
-    if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, startTime));
-  }
-}
 // +++ END NEW CRAFTING FUNCTION +++
 
 
-async function startShortswordCrafting() {
-  if (!game.isSessionActive) {
-    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
-    return;
-  }
-  if (game.blacksmithingActive) return;
-
-  let totalBars = 0;
-  for (const slot of game.inventory) {
-      if (slot && slot.name === 'Copper Bar') {
-          totalBars += slot.qty;
-      }
-  }
-
-  if (totalBars < SHORTSWORD_BAR_COST) {
-      await showGameAlert("Not Enough Materials", `You need at least ${SHORTSWORD_BAR_COST} Copper Bars to craft a shortsword.`);
-      return;
-  }
-  
-  game.blacksmithingActive = true;
-  const startBtn = document.getElementById('startShortswordBtn');
-  const stopBtn = document.getElementById('stopShortswordBtn');
-  if (startBtn) startBtn.style.display = 'none';
-  if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, now));
-}
-
-async function shortswordCraftingLoop(timestamp, startTime) {
-  if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / SHORTSWORD_TIME_MS) * 100;
-
-  if (progress >= 100) {
-    let totalBars = 0;
-    for (const slot of game.inventory) {
-        if (slot && slot.name === 'Copper Bar') {
-            totalBars += slot.qty;
-        }
-    }
-    if (totalBars < SHORTSWORD_BAR_COST) {
-        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
-        stopBlacksmithing();
-        return;
-    }
-    
-    removeItem('Copper Bar', SHORTSWORD_BAR_COST); // Consume 5 bars
-    addItem('Copper Shortsword', 1); // Add 1 shortsword
-    addXP('blacksmith', SHORTSWORD_XP); // Award Blacksmith XP
-    
-    // NEW: Create two separate, delayed popups
-    showItemPopup(`+${SHORTSWORD_XP} Blacksmith XP`, 'shortswordProgress', 0);
-    showItemPopup(`+1 Copper Shortsword`, 'shortswordProgress', 450);
-    
-    const bar = document.getElementById('shortswordProgress');
-    if (bar) bar.style.width = '0%';
-    
-    let totalBarsAfter = 0;
-    for (const slot of game.inventory) {
-        if (slot && slot.name === 'Copper Bar') {
-            totalBarsAfter += slot.qty;
-        }
-    }
-    if (totalBarsAfter < SHORTSWORD_BAR_COST) {
-        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another shortsword.");
-        stopBlacksmithing();
-        return;
-    }
-    game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, now));
-  } else {
-    const bar = document.getElementById('shortswordProgress');
-    if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, startTime));
-  }
-}
 // +++ END NEW SHORTSWORD CRAFTING FUNCTION +++
 
 function openCopperHelmetSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic');
   wrapper.innerHTML = `
     <h2>Smithing - Copper Helmet</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${HELMET_BAR_COST} Copper Bars.</div>
@@ -2989,80 +2980,7 @@ function openCopperHelmetSmith(){
   `;
   document.getElementById('startHelmetBtn').onclick = startHelmetCrafting;
   document.getElementById('stopHelmetBtn').onclick = () => stopBlacksmithing('helmetProgress', 'startHelmetBtn', 'stopHelmetBtn'); 
-}
-
-async function startHelmetCrafting() {
-  if (!game.isSessionActive) {
-    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
-    return;
-  }
-  if (game.blacksmithingActive) return;
-
-  let totalBars = 0;
-  for (const slot of game.inventory) {
-      if (slot && slot.name === 'Copper Bar') {
-          totalBars += slot.qty;
-      }
-  }
-
-  if (totalBars < HELMET_BAR_COST) {
-      await showGameAlert("Not Enough Materials", `You need at least ${HELMET_BAR_COST} Copper Bars to craft a helmet.`);
-      return;
-  }
-  
-  game.blacksmithingActive = true;
-  const startBtn = document.getElementById('startHelmetBtn');
-  const stopBtn = document.getElementById('stopHelmetBtn');
-  if (startBtn) startBtn.style.display = 'none';
-  if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, now));
-}
-
-async function helmetCraftingLoop(timestamp, startTime) {
-  if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / HELMET_TIME_MS) * 100;
-
-  if (progress >= 100) {
-    let totalBars = 0;
-    for (const slot of game.inventory) {
-        if (slot && slot.name === 'Copper Bar') {
-            totalBars += slot.qty;
-        }
-    }
-    if (totalBars < HELMET_BAR_COST) {
-        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
-        stopBlacksmithing();
-        return;
-    }
-    
-    removeItem('Copper Bar', HELMET_BAR_COST);
-    addItem('Copper Helmet', 1);
-    addXP('blacksmith', HELMET_XP);
-    
-    showItemPopup(`+${HELMET_XP} Blacksmith XP`, 'helmetProgress', 0);
-    showItemPopup(`+1 Copper Helmet`, 'helmetProgress', 450);
-    
-    const bar = document.getElementById('helmetProgress');
-    if (bar) bar.style.width = '0%';
-    
-    let totalBarsAfter = 0;
-    for (const slot of game.inventory) {
-        if (slot && slot.name === 'Copper Bar') {
-            totalBarsAfter += slot.qty;
-        }
-    }
-    if (totalBarsAfter < HELMET_BAR_COST) {
-        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another helmet.");
-        stopBlacksmithing();
-        return;
-    }
-    game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, now));
-  } else {
-    const bar = document.getElementById('helmetProgress');
-    if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, startTime));
-  }
+  showMainScreen('hubDynamic');
 }
 // +++ END NEW HELMET CRAFTING FUNCTION +++
 
@@ -3071,7 +2989,7 @@ function openCopperBootsSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Copper Boots</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${BOOTS_BAR_COST} Copper Bars.</div>
@@ -3087,6 +3005,7 @@ function openCopperBootsSmith(){
   `;
   document.getElementById('startBootsBtn').onclick = startBootsCrafting;
   document.getElementById('stopBootsBtn').onclick = () => stopBlacksmithing('bootsProgress', 'startBootsBtn', 'stopBootsBtn'); 
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 async function startBootsCrafting() {
@@ -3191,6 +3110,7 @@ async function startIronBarCrafting() {
   game.progressFrame = requestAnimationFrame((now) => ironBarCraftingLoop(now, now));
 }
 
+
 async function ironBarCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
   const elapsed = timestamp - startTime;
@@ -3264,6 +3184,7 @@ async function startIronHelmetCrafting() {
   if (stopBtn) stopBtn.style.display = 'inline-block';
   game.progressFrame = requestAnimationFrame((now) => ironHelmetCraftingLoop(now, now));
 }
+
 
 async function ironHelmetCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
@@ -3403,6 +3324,7 @@ async function startIronBootsCrafting() {
   game.progressFrame = requestAnimationFrame((now) => ironBootsCraftingLoop(now, now));
 }
 
+
 async function ironBootsCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
   const elapsed = timestamp - startTime;
@@ -3471,6 +3393,7 @@ async function startIronShortswordCrafting() {
   if (stopBtn) stopBtn.style.display = 'inline-block';
   game.progressFrame = requestAnimationFrame((now) => ironShortswordCraftingLoop(now, now));
 }
+
 
 async function ironShortswordCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
@@ -3725,7 +3648,7 @@ function openCookChicken(){
   hideTooltip();
   stopMining();
   stopBlacksmithing(); // Also stop smithing
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Cooking - Chicken</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: 1 Raw Chicken.</div>
@@ -3741,47 +3664,18 @@ function openCookChicken(){
   `;
   document.getElementById('startCookBtn').onclick = startCookingChicken;
   document.getElementById('stopCookBtn').onclick = stopCookingChicken;
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 function openKitchenHub() {
-  game.shopOpen = false;
-  hideTooltip();
-  stopMining();
-  stopBlacksmithing();
-  stopCookingChicken(); // Stop cooking
-  const wrapper = document.getElementById('mainContentWrapper');
-  wrapper.innerHTML = `
-    <h2>Kitchen</h2>
-    <div style="margin-top:8px; color:#efe3cf;">Choose something to cook.</div>
-    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
-      <button id="cookChickenBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
-        <img src="images/cookedchicken.png" alt="Cooked Chicken" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>Cooked Chicken</span>
-      </button>
-      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
-    </div>
-  `;
-  const cookChickenBtn = document.getElementById('cookChickenBtn');
-  const returnBtn = document.getElementById('returnToActionsBtn');
-  
-  if (cookChickenBtn) {
-    cookChickenBtn.onclick = openCookChicken;
-    cookChickenBtn.onmouseenter = (event) => {
-      showTooltip(event, 'Requires: 1 Raw Chicken');
-    };
-    cookChickenBtn.onmouseleave = hideTooltip;
-  }
-  
-  if (returnBtn) {
-    returnBtn.onclick = backToActions;
-  }
+  showMainScreen('hubKitchen');
 }
 
 function openCopperBarSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Copper Bar</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: 2 Copper Ore.</div>
@@ -3797,6 +3691,7 @@ function openCopperBarSmith(){
   `;
   document.getElementById('startSmithBtn').onclick = startBlacksmithing;
   document.getElementById('stopSmithBtn').onclick = stopBlacksmithing;
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 // +++ NEW COPPER CHESTPLATE UI +++
@@ -3804,7 +3699,7 @@ function openCopperChestplateSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Copper Chestplate</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${CHESTPLATE_BAR_COST} Copper Bars.</div>
@@ -3820,6 +3715,7 @@ function openCopperChestplateSmith(){
   `;
   document.getElementById('startChestplateBtn').onclick = startChestplateCrafting;
   document.getElementById('stopChestplateBtn').onclick = () => stopBlacksmithing('chestplateProgress', 'startChestplateBtn', 'stopChestplateBtn');
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 // +++ END NEW COPPER CHESTPLATE UI +++
 
@@ -3828,7 +3724,7 @@ function openCopperShortswordSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Copper Shortsword</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${SHORTSWORD_BAR_COST} Copper Bars.</div>
@@ -3844,6 +3740,7 @@ function openCopperShortswordSmith(){
   `;
   document.getElementById('startShortswordBtn').onclick = startShortswordCrafting;
   document.getElementById('stopShortswordBtn').onclick = () => stopBlacksmithing('shortswordProgress', 'startShortswordBtn', 'stopShortswordBtn');
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 // +++ END NEW COPPER SHORTSWORD UI +++
 
@@ -3852,7 +3749,7 @@ function openIronBarSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Iron Bar</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_BAR_ORE_COST} Iron Ore, ${IRON_BAR_COAL_COST} Coal Ore.</div>
@@ -3868,6 +3765,7 @@ function openIronBarSmith(){
   `;
   document.getElementById('startSmithBtn').onclick = startIronBarCrafting;
   document.getElementById('stopSmithBtn').onclick = stopBlacksmithing;
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 // --- NEW: Iron Helmet UI ---
@@ -3875,7 +3773,7 @@ function openIronHelmetSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Iron Helmet</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_HELMET_BAR_COST} Iron Bars.</div>
@@ -3891,6 +3789,7 @@ function openIronHelmetSmith(){
   `;
   document.getElementById('startHelmetBtn').onclick = startIronHelmetCrafting;
   document.getElementById('stopHelmetBtn').onclick = () => stopBlacksmithing('helmetProgress', 'startHelmetBtn', 'stopHelmetBtn');
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 // --- NEW: Iron Chestplate UI ---
@@ -3898,7 +3797,7 @@ function openIronChestplateSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Iron Chestplate</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_CHESTPLATE_BAR_COST} Iron Bars.</div>
@@ -3914,6 +3813,7 @@ function openIronChestplateSmith(){
   `;
   document.getElementById('startChestplateBtn').onclick = startIronChestplateCrafting;
   document.getElementById('stopChestplateBtn').onclick = () => stopBlacksmithing('chestplateProgress', 'startChestplateBtn', 'stopChestplateBtn');
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 // --- NEW: Iron Boots UI ---
@@ -3921,7 +3821,7 @@ function openIronBootsSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Iron Boots</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_BOOTS_BAR_COST} Iron Bars.</div>
@@ -3937,6 +3837,7 @@ function openIronBootsSmith(){
   `;
   document.getElementById('startBootsBtn').onclick = startIronBootsCrafting;
   document.getElementById('stopBootsBtn').onclick = () => stopBlacksmithing('bootsProgress', 'startBootsBtn', 'stopBootsBtn');
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 // --- NEW: Iron Shortsword UI ---
@@ -3944,7 +3845,7 @@ function openIronShortswordSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Iron Shortsword</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_SHORTSWORD_BAR_COST} Iron Bars.</div>
@@ -3960,6 +3861,7 @@ function openIronShortswordSmith(){
   `;
   document.getElementById('startShortswordBtn').onclick = startIronShortswordCrafting;
   document.getElementById('stopShortswordBtn').onclick = () => stopBlacksmithing('shortswordProgress', 'startShortswordBtn', 'stopShortswordBtn');
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
   }
 
 // +++ NEW: COPPER AXE UI +++
@@ -3967,7 +3869,7 @@ function openCopperAxeSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Copper Axe</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${COPPER_AXE_BAR_COST} Copper Bars, ${COPPER_AXE_WOOD_COST} Softwood.</div>
@@ -3983,8 +3885,10 @@ function openCopperAxeSmith(){
   `;
   document.getElementById('startAxeBtn').onclick = startCopperAxeCrafting;
   document.getElementById('stopAxeBtn').onclick = () => stopBlacksmithing('axeProgress', 'startAxeBtn', 'stopAxeBtn');
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
+// This is the logic function, now separate
 async function startCopperAxeCrafting() {
   if (!game.isSessionActive) {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
@@ -4061,7 +3965,7 @@ function openCopperPickaxeSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Copper Pickaxe</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${COPPER_PICKAXE_BAR_COST} Copper Bars, ${COPPER_PICKAXE_WOOD_COST} Softwood.</div>
@@ -4077,6 +3981,7 @@ function openCopperPickaxeSmith(){
   `;
   document.getElementById('startPickaxeBtn').onclick = startCopperPickaxeCrafting;
   document.getElementById('stopPickaxeBtn').onclick = () => stopBlacksmithing('pickaxeProgress', 'startPickaxeBtn', 'stopPickaxeBtn');
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 async function startCopperPickaxeCrafting() {
@@ -4155,7 +4060,7 @@ function openIronAxeSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Iron Axe</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_AXE_BAR_COST} Iron Bars, ${IRON_AXE_WOOD_COST} Oak.</div>
@@ -4171,6 +4076,7 @@ function openIronAxeSmith(){
   `;
   document.getElementById('startAxeBtn').onclick = startIronAxeCrafting;
   document.getElementById('stopAxeBtn').onclick = () => stopBlacksmithing('axeProgress', 'startAxeBtn', 'stopAxeBtn');
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 async function startIronAxeCrafting() {
@@ -4249,7 +4155,7 @@ function openIronPickaxeSmith(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Smithing - Iron Pickaxe</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_PICKAXE_BAR_COST} Iron Bars, ${IRON_PICKAXE_WOOD_COST} Oak.</div>
@@ -4265,6 +4171,7 @@ function openIronPickaxeSmith(){
   `;
   document.getElementById('startPickaxeBtn').onclick = startIronPickaxeCrafting;
   document.getElementById('stopPickaxeBtn').onclick = () => stopBlacksmithing('pickaxeProgress', 'startPickaxeBtn', 'stopPickaxeBtn');
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 async function startIronPickaxeCrafting() {
@@ -4341,46 +4248,7 @@ async function ironPickaxeCraftingLoop(timestamp, startTime) {
 // +++ END NEW COPPER SHORTSWORD UI +++
 
 function openBlacksmithHub() {
-  game.shopOpen = false;
-  hideTooltip();
-  stopMining();
-  stopBlacksmithing();
-  const wrapper = document.getElementById('mainContentWrapper');
-  
-  wrapper.innerHTML = `
-    <div class="tabs" style="margin-top: 0; margin-bottom: 14px;">
-      <button id="smithCopperTab" class="active">Copper</button>
-      <button id="smithIronTab">Iron</button>
-    </div>
-
-    <div id="smithingItemsContainer" class="action-buttons" style="margin-top: 0; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
-      <!-- Items will be rendered here by JS -->
-    </div>
-    
-    <div class="action-buttons" style="margin-top: 14px;">
-      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
-    </div>
-  `;
-  
-  const copperTab = document.getElementById('smithCopperTab');
-  const ironTab = document.getElementById('smithIronTab');
-  
-  copperTab.onclick = () => {
-    copperTab.classList.add('active');
-    ironTab.classList.remove('active');
-    renderSmithingItems('copper');
-  };
-  
-  ironTab.onclick = () => {
-    ironTab.classList.add('active');
-    copperTab.classList.remove('active');
-    renderSmithingItems('iron');
-  };
-
-  document.getElementById('returnToActionsBtn').onclick = backToActions;
-  
-  // Render copper items by default
-  renderSmithingItems('copper');
+  showMainScreen('hubBlacksmith');
 }
 
 function renderSmithingItems(metalType) {
@@ -4499,11 +4367,13 @@ function renderSmithingItems(metalType) {
   }
 }
 
+// --- NEW: Coal Mine UI ---
+
 function openCopperMine(){
   game.shopOpen = false; 
   hideTooltip();
   stopBlacksmithing();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Mine - Copper Vein</h2>
     <div style="margin-top:8px; color:#efe3cf;">A common copper vein.</div>
@@ -4519,15 +4389,18 @@ function openCopperMine(){
   `;
   document.getElementById('startMineBtn').onclick = startMining;
   document.getElementById('stopMineBtn').onclick = stopMining;
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
-// --- NEW: Coal Mine UI ---
+
+
+
 function openCoalMine(){
   game.shopOpen = false; 
   hideTooltip();
   stopMining();
   stopBlacksmithing();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Mine - Coal Vein</h2>
     <div style="margin-top:8px; color:#efe3cf;">A dark, crumbly coal vein.</div>
@@ -4543,6 +4416,7 @@ function openCoalMine(){
   `;
   document.getElementById('startMineBtn').onclick = () => startCoalMining();
   document.getElementById('stopMineBtn').onclick = stopMining;
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 // --- NEW: Coal Mine Logic ---
@@ -4602,7 +4476,7 @@ function openIronMine(){
   hideTooltip();
   stopMining();
   stopBlacksmithing();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Mine - Iron Vein</h2>
     <div style="margin-top:8px; color:#efe3cf;">A sturdy iron vein.</div>
@@ -4618,6 +4492,7 @@ function openIronMine(){
   `;
   document.getElementById('startMineBtn').onclick = () => startIronMining();
   document.getElementById('stopMineBtn').onclick = stopMining;
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 // --- NEW: Iron Mine Logic ---
@@ -4672,147 +4547,12 @@ function ironMiningLoop(timestamp, startTime) {
 }
 
 function openMineHub() {
-  game.shopOpen = false; 
-  hideTooltip();
-  stopMining(); 
-  stopBlacksmithing();
-  const wrapper = document.getElementById('mainContentWrapper');
-  
-  const miningLvl = game.mining.level;
-  const coalLocked = miningLvl < COAL_MINE_LVL;
-  const ironLocked = miningLvl < IRON_MINE_LVL;
-
-  // --- HTML REORDERED ---
-  wrapper.innerHTML = `
-    <h2>Mine</h2>
-    <div style="margin-top:8px; color:#efe3cf;">Choose a vein to mine.</div>
-    
-    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
-      
-      <button id="copperVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/coppervein.png" alt="Copper Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-      </button>
-      
-      <button id="ironVeinBtn" class="primary ${ironLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/ironvein.png" alt="Iron Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-      </button>
-
-      <button id="coalVeinBtn" class="primary ${coalLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/coalvein.png" alt="Coal Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-      </button>
-    </div>
-
-    <div class="action-buttons" style="margin-top: 14px;">
-      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
-    </div>
-  `;
-  // --- END HTML ---
-
-  // --- VARIABLES REORDERED ---
-  const copperBtn = document.getElementById('copperVeinBtn');
-  const ironBtn = document.getElementById('ironVeinBtn');
-  const coalBtn = document.getElementById('coalVeinBtn');
-  const returnBtn = document.getElementById('returnToActionsBtn');
-
-  // --- LISTENERS REORDERED ---
-  if (copperBtn) {
-    copperBtn.onclick = openCopperMine;
-    const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div>Requires Mining Lvl: 1`;
-    copperBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
-    copperBtn.onmouseleave = hideTooltip;
-  }
-
-  if (ironBtn) {
-    const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Iron Vein</div>Requires Mining Lvl: ${IRON_MINE_LVL}`;
-    if (ironLocked) {
-      ironBtn.onclick = null;
-      ironBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
-    } else {
-      ironBtn.onclick = openIronMine;
-      ironBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
-    }
-    ironBtn.onmouseleave = hideTooltip;
-  }
-
-  if (coalBtn) {
-    const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Coal Vein</div>Requires Mining Lvl: ${COAL_MINE_LVL}`;
-    if (coalLocked) {
-      coalBtn.onclick = null;
-      coalBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
-    } else {
-      coalBtn.onclick = openCoalMine;
-      coalBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
-    }
-    coalBtn.onmouseleave = hideTooltip;
-  }
-  // --- END LISTENERS ---
-
-  if (returnBtn) {
-    returnBtn.onclick = backToActions;
-  }
+  showMainScreen('hubMine');
 }
 
 // --- NEW: Woodcutting Hub UI ---
 function openForestHub() {
-  game.shopOpen = false; 
-  hideTooltip();
-  stopMining(); 
-  stopBlacksmithing();
-  stopCookingChicken();
-  stopWoodcutting();
-  const wrapper = document.getElementById('mainContentWrapper');
-  
-  const woodcuttingLvl = game.woodcutting.level;
-  const oakLocked = woodcuttingLvl < OAK_TREE_LVL;
-
-  wrapper.innerHTML = `
-    <h2>Forest</h2>
-    <div style="margin-top:8px; color:#efe3cf;">Choose a tree to chop.</div>
-    
-    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
-      
-      <button id="softwoodTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/softwood.png" alt="Softwood Tree" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-      </button>
-      
-      <button id="oakTreeBtn" class="primary ${oakLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/oak.png" alt="Oak Tree" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-      </button>
-
-    </div>
-
-    <div class="action-buttons" style="margin-top: 14px;">
-      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
-    </div>
-  `;
-
-  const softwoodBtn = document.getElementById('softwoodTreeBtn');
-  const oakBtn = document.getElementById('oakTreeBtn');
-  const returnBtn = document.getElementById('returnToActionsBtn');
-
-  if (softwoodBtn) {
-    softwoodBtn.onclick = openSoftwoodTree;
-     // --- FIX: Changed tooltip text for consistency ---
-    const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Softwood Tree</div>Requires Woodcutting Lvl: ${SOFTWOOD_TREE_LVL}`;
-    softwoodBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
-    softwoodBtn.onmouseleave = hideTooltip;
-  }
-
-  if (oakBtn) {
-    const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Oak Tree</div>Requires Woodcutting Lvl: ${OAK_TREE_LVL}`;
-    if (oakLocked) {
-      oakBtn.onclick = null;
-      oakBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
-    } else {
-      oakBtn.onclick = openOakTree;
-      oakBtn.onmouseenter = (event) => showTooltip(event, tooltipContent);
-    }
-    oakBtn.onmouseleave = hideTooltip;
-  }
-
-  if (returnBtn) {
-    returnBtn.onclick = backToActions;
-  }
+  showMainScreen('hubForest');
 }
 
 // --- NEW: Softwood Tree UI ---
@@ -4821,7 +4561,7 @@ function openSoftwoodTree(){
   hideTooltip();
   stopBlacksmithing();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Chop - Softwood Tree</h2>
     <div style="margin-top:8px; color:#efe3cf;">A common, pliable tree.</div>
@@ -4837,6 +4577,7 @@ function openSoftwoodTree(){
   `;
   document.getElementById('startChopBtn').onclick = startChoppingSoftwood;
   document.getElementById('stopChopBtn').onclick = stopWoodcutting;
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 // --- NEW: Oak Tree UI ---
@@ -4845,7 +4586,7 @@ function openOakTree(){
   hideTooltip();
   stopBlacksmithing();
   stopMining();
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>Chop - Oak Tree</h2>
     <div style="margin-top:8px; color:#efe3cf;">A strong, sturdy oak.</div>
@@ -4861,6 +4602,7 @@ function openOakTree(){
   `;
   document.getElementById('startChopBtn').onclick = startChoppingOak;
   document.getElementById('stopChopBtn').onclick = stopWoodcutting;
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 // --- NEW: Stop Woodcutting Logic ---
@@ -5003,43 +4745,9 @@ function oakChoppingLoop(timestamp, startTime) {
 }
 
 function openCombatHub() {
-  game.shopOpen = false; 
-  hideTooltip();
-  stopMining(); 
-  stopBlacksmithing();
-  const wrapper = document.getElementById('mainContentWrapper');
-  wrapper.innerHTML = `
-    <h2>Combat Areas</h2>
-    <div style="margin-top:8px; color:#efe3cf;">Choose an area to start fighting.</div>
-    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
-      
-      <button id="farmAreaBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
-        <img src="images/farm.png" alt="Farm Area" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-        <span>The Farm</span>
-      </button>
-      
-      <button id="returnToActionsBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
-    </div>
-  `;
-  const farmBtn = document.getElementById('farmAreaBtn');
-  const returnBtn = document.getElementById('returnToActionsBtn');
-  
-  if (farmBtn) {
-    // This now opens the farm area
-    farmBtn.onclick = openFarmCombatArea;
-    farmBtn.onmouseenter = (event) => {
-      showTooltip(event, 'Lvl Required: 1');
-    };
-    farmBtn.onmouseleave = hideTooltip;
-  }
-  if (returnBtn) {
-    returnBtn.onclick = backToActions;
-  }
-
-  // +++ NEW PRELOAD CALL +++
-  // Preload the assets for the *next* screen (openFarmCombatArea)
-  preloadImages(['images/chickenmonster.png']);
-  // +++ END PRELOAD CALL +++
+  showMainScreen('hubCombat');
+  // Preload the assets for the *next* screen
+  // (We can't use preloadImages anymore, but this asset is already in the master list)
 }
 
 function openFarmCombatArea() {
@@ -5048,7 +4756,7 @@ function openFarmCombatArea() {
   stopMining();
   stopBlacksmithing();
   
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   wrapper.innerHTML = `
     <h2>The Farm</h2>
     <div style="margin-top:8px; color:#efe3cf;">A peaceful farm, mostly.</div>
@@ -5062,12 +4770,7 @@ function openFarmCombatArea() {
       <button onclick="openCombatHub()" class="primary" style="background:#666;">Return</button>
     </div>
   `;
-
-  // +++ NEW PRELOAD CALL +++
-  // Preload the assets for the *next* screen (openCombatInterface)
-  // Use the actual GIF name from your combat code
-  preloadImages(['images/chickenanim.gif']);
-  // +++ END PRELOAD CALL +++
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
 // NEW: Function to build and open the main combat UI
@@ -5103,7 +4806,7 @@ function openCombatInterface(enemyName) {
     return;
   }
   
-  const wrapper = document.getElementById('mainContentWrapper');
+  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
   
   // --- This is the new UI layout you described ---
   wrapper.innerHTML = `
@@ -5163,8 +4866,8 @@ function openCombatInterface(enemyName) {
 
   // Set the default active style button
   setAttackStyle(game.playerAttackStyle, true); 
+  showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
-
 function setAttackStyle(style, isInitialization = false) {
   game.playerAttackStyle = style;
   
@@ -5501,128 +5204,7 @@ function enemyAttackTurn() {
 }
 
 function backToActions(){
-  // --- This is the cleanup code that was missing ---
-  hideTooltip();
-  stopMining();
-  stopBlacksmithing();
-  stopCookingChicken();
-  stopWoodcutting();
-  game.shopOpen = false;
-  // --- End of cleanup code ---
-
-  const wrapper = document.getElementById('mainContentWrapper');
-  
-  // --- HTML BUTTONS REORDERED ---
-  wrapper.innerHTML = `
-    <div id="actionScreen" style="display: flex; gap: 10px; flex-wrap: wrap;">
-      <img id="minesActionIcon" src="images/mines.png" alt="Mines" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-      <img id="forestActionIcon" src="images/foresticon.png" alt="Forest" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-      <img id="blacksmithActionIcon" src="images/blacksmithicon.png" alt="Blacksmith" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-      <img id="kitchenActionIcon" src="images/kitchenbutton.png" alt="Kitchen" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-      <img id="combatActionIcon" src="images/combatareas.png" alt="Combat Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-      <img id="shopActionIcon" src="images/shopbutton.png" alt="Shop" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-      <img id="bankActionIcon" src="images/bankbutton.png" alt="Bank" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-    </div>
-  `;
-  
-  // --- JAVASCRIPT VARIABLES REORDERED ---
-  const minesIcon = document.getElementById('minesActionIcon');
-  const forestIcon = document.getElementById('forestActionIcon');
-  const blacksmithIcon = document.getElementById('blacksmithActionIcon');
-  const kitchenIcon = document.getElementById('kitchenActionIcon');
-  const combatIcon = document.getElementById('combatActionIcon');
-  const shopIcon = document.getElementById('shopActionIcon'); 
-  const bankIcon = document.getElementById('bankActionIcon');
-  
-  // --- JAVASCRIPT LISTENERS REORDERED ---
-  if (minesIcon) {
-    minesIcon.onclick = openMineHub;
-    minesIcon.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Mine</div>');
-    };
-    minesIcon.onmouseleave = hideTooltip;
-  }
-  
-  if (forestIcon) {
-    forestIcon.onclick = openForestHub;
-    forestIcon.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Forest</div>');
-    };
-    forestIcon.onmouseleave = hideTooltip;
-  }
-
-  if (blacksmithIcon) {
-    blacksmithIcon.onclick = openBlacksmithHub; 
-    blacksmithIcon.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Blacksmith</div>');
-    };
-    blacksmithIcon.onmouseleave = hideTooltip;
-  }
-  
-  if (kitchenIcon) {
-    kitchenIcon.onclick = openKitchenHub; 
-    kitchenIcon.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Kitchen</div>');
-    };
-    kitchenIcon.onmouseleave = hideTooltip;
-  }
-
-  if (combatIcon) {
-    combatIcon.onclick = openCombatHub; 
-    combatIcon.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Combat Areas</div>');
-    };
-    combatIcon.onmouseleave = hideTooltip;
-  }
-  
-  if (shopIcon) {
-    shopIcon.onclick = openShop; 
-    shopIcon.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Shop</div>');
-    };
-    shopIcon.onmouseleave = hideTooltip;
-  }
-  
-  if (bankIcon) {
-    bankIcon.onclick = openBank; // This function now exists
-    bankIcon.onmouseenter = (event) => {
-      showTooltip(event, '<div style="font-weight:bold; color:var(--gold);">Bank</div>');
-    };
-    bankIcon.onmouseleave = hideTooltip;
-  }
-
-  // --- PRELOAD CALL (Unchanged) ---
-  const assetsToPreload = [
-    // Mine Hub
-    'images/coppervein.png',
-    'images/coalvein.png',
-    'images/ironvein.png',
-    // Blacksmith Hub
-    'images/copperbar.png',
-    'images/coppershortsword.png',
-    'images.copperboots.png',
-    'images/copperhelmet.png',
-    'images/copperchestplate.png',
-    'images/ironbar.png',
-    'images/ironshortsword.png',
-    'images/ironboots.png',
-    'images/ironhelmet.png',
-    'images/ironchestplate.png',
-    // Combat Hub
-    'images/farm.png',
-    // Kitchen Hub
-    'images/cookedchicken.png',
-    // Forest Hub
-    'images/softwood.png',
-    'images/oak.png',
-    
-    // +++ NEW: Add tools to preload +++
-    'images/copperpickaxe.png',
-    'images/copperaxe.png',
-    'images/ironpickaxe.png',
-    'images/ironaxe.png'
-  ];
-  preloadImages(assetsToPreload);
+  showMainScreen('hubActions');
 }
 
 function _createModal(title, contentHtml, buttons) {
@@ -5853,54 +5435,7 @@ function updateBankGoldUI() {
  * Main function to open the Bank UI
  */
 function openBank() {
-  hideTooltip();
-  stopMining();
-  stopBlacksmithing();
-  stopCookingChicken();
-  game.shopOpen = false; 
-
-  const wrapper = document.getElementById('mainContentWrapper');
-  
-  // --- This is the original HTML, without the extra inventory panel ---
-  wrapper.innerHTML = `
-    <div id="bankContainer">
-      
-      <div class="bank-content-wrapper"> 
-        <div id="bankGoldPanel">
-          
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <input type="number" id="bankGoldInput" min="0" placeholder="Amount...">
-            <button class="primary" onclick="depositGold()">Deposit</button>
-            <button class="primary" onclick="withdrawGold()">Withdraw</button>
-          </div>
-          
-          <div>
-            <div>Banked Gold</div>
-            <div id="bankStoredGold" class="gold-display">0</div>
-          </div>
-        </div>
-
-        <div id="bankPanel">
-          <h3>Bank Storage</h3>
-          <div class="inventory-grid-wrap" id="bankGridWrap">
-            <div class="inventory-grid" id="bankGrid"></div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="action-buttons" style="margin-top:0px; align-self: flex-start;">
-        <button id="returnToActionsBtn" class="primary" style="background:#666;">Return</button>
-      </div>
-    </div>
-  `;
-  // --- END MODIFICATION ---
-
-  document.getElementById('returnToActionsBtn').onclick = backToActions;
-  
-  // Initial render
-  renderBankGrid();
-  // We no longer call renderBankInventoryGrid() here
-  updateBankGoldUI();
+  showMainScreen('hubBank');
 }
 // --- Bank Drag-and-Drop Handlers ---
 
@@ -6288,41 +5823,7 @@ async function buyShopItem(itemName, price) {
 }
 
 function openShop() {
-  hideTooltip();
-  stopMining();
-  stopBlacksmithing();
-  game.shopOpen = true; 
-  const wrapper = document.getElementById('mainContentWrapper');
-  wrapper.innerHTML = `
-    <h2>General Store</h2>
-    <div style="display: flex; gap: 20px; margin-top: 16px;">
-      
-      <div style="flex: 1; background:rgba(0,0,0,0.1); border-radius:6px; padding: 10px 15px;">
-        <h3 style="margin:0 0 10px 0; color: var(--gold);">Sell Items</h3>
-        <p style="margin:0 0 10px 0;">Click an item in your inventory to sell it.</p>
-        <ul style="margin: 5px 0 0 20px; padding: 0;">
-          <li style="margin-top:5px;">Copper Ore - 1 Gold each</li>
-        </ul>
-      </div>
-
-      <div style="flex: 1; background:rgba(0,0,0,0.1); border-radius:6px; padding: 10px 15px;">
-        <h3 style="margin:0 0 10px 0; color: var(--gold);">Buy Items</h3>
-        <div class="action-buttons" style="margin: 0; flex-direction: column; align-items: flex-start; gap: 8px;">
-          <button id="buyPickaxeBtn" class="primary" style="width: 100%; text-align: left;">Bronze Pickaxe - 10 Gold</button>
-          <button id="buyAxeBtn" class="primary" style="width: 100%; text-align: left;">Bronze Axe - 10 Gold</button>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="action-buttons" style="margin-top:20px;">
-      <button id="returnToActionsBtn" class="primary" style="background:#666;">Return</button>
-    </div>
-  `;
-  
-  document.getElementById('returnToActionsBtn').onclick = backToActions;
-  document.getElementById('buyPickaxeBtn').onclick = () => buyShopItem('Bronze Pickaxe', 10);
-  document.getElementById('buyAxeBtn').onclick = () => buyShopItem('Bronze Axe', 10);
+  showMainScreen('hubShop');
 }
 
 function resetGameState() {
@@ -6488,6 +5989,68 @@ function closeSettings() {
  * The new global sound player that respects settings
  * @param {string} src - The path to the sound file
  */
+// +++ NEW: Hub Screen Toggler Function +++
+const hubScreenIds = ['hubActions', 'hubMine', 'hubBlacksmith', 'hubForest', 'hubKitchen', 'hubCombat', 'hubShop', 'hubBank', 'hubDynamic'];
+function showMainScreen(screenIdToShow) {
+  // Stop all skilling actions
+  stopMining();
+  stopBlacksmithing();
+  stopCookingChicken();
+  stopWoodcutting();
+  game.shopOpen = false;
+  hideTooltip();
+
+  // Get the wrapper and clear dynamic content
+  const wrapper = document.getElementById('mainContentWrapper');
+  const dynamicHub = document.getElementById('hubDynamic');
+  
+  if (screenIdToShow !== 'hubDynamic') {
+    // Clear dynamic content if we're not showing it
+    dynamicHub.innerHTML = '';
+  }
+
+  // Toggle the screens
+  hubScreenIds.forEach(id => {
+    const screen = document.getElementById(id);
+    if (screen) {
+      if (id === screenIdToShow) {
+        screen.classList.add('active');
+      } else {
+        screen.classList.remove('active');
+      }
+    }
+  });
+
+  // Special case: if we're showing the blacksmith hub, render its items
+  if (screenIdToShow === 'hubBlacksmith') {
+    renderSmithingItems('copper'); // Default to copper
+  }
+  
+  // Special case: if we're showing the mine hub, apply level locks
+  if (screenIdToShow === 'hubMine') {
+    const miningLvl = game.mining.level;
+    document.getElementById('ironVeinBtn').classList.toggle('locked-item', miningLvl < IRON_MINE_LVL);
+    document.getElementById('coalVeinBtn').classList.toggle('locked-item', miningLvl < COAL_MINE_LVL);
+  }
+  
+  // Special case: if we're showing the forest hub, apply level locks
+  if (screenIdToShow === 'hubForest') {
+    const woodcuttingLvl = game.woodcutting.level;
+    document.getElementById('oakTreeBtn').classList.toggle('locked-item', woodcuttingLvl < OAK_TREE_LVL);
+  }
+  
+  // Special case: if we're showing the shop
+  if (screenIdToShow === 'hubShop') {
+    game.shopOpen = true;
+  }
+  
+  // Special case: if we're showing the bank
+  if (screenIdToShow === 'hubBank') {
+    renderBankGrid();
+    updateBankGoldUI();
+  }
+}
+
 function playGlobalSound(src) {
   if (game.settings.isSfxMuted) return; // Use new sfxMuted setting
   try {
@@ -6500,24 +6063,137 @@ function playGlobalSound(src) {
 }
 // --- END: Settings Functions ---
 
-/**
- * The new global sound player that respects settings
- * @param {string} src - The path to the sound file
- */
-function playGlobalSound(src) {
-  if (game.settings.isSfxMuted) return; // Use new sfxMuted setting
-  try {
-    const sound = new Audio(src);
-    sound.volume = game.settings.sfxVolume; // Use new sfxVolume setting
-    sound.play();
-  } catch (e) {
-    console.warn("Could not play sound", src, e);
-  }
-}
-
 
 // --- MODIFIED: Added isDragging logic ---
 document.addEventListener('DOMContentLoaded', ()=>{
+  
+  // +++ ADD THIS ENTIRE BLOCK OF LISTENERS +++
+  
+  // --- Hub Actions (Main Hub) ---
+  document.getElementById('minesActionIcon').onclick = openMineHub;
+  document.getElementById('forestActionIcon').onclick = openForestHub;
+  document.getElementById('blacksmithActionIcon').onclick = openBlacksmithHub;
+  document.getElementById('kitchenActionIcon').onclick = openKitchenHub;
+  document.getElementById('combatActionIcon').onclick = openCombatHub;
+  document.getElementById('shopActionIcon').onclick = openShop;
+  document.getElementById('bankActionIcon').onclick = openBank;
+  
+  // --- Hub Mine Listeners ---
+  document.getElementById('copperVeinBtn').onclick = openCopperMine;
+  document.getElementById('ironVeinBtn').onclick = () => {
+    // We check the level *before* trying to open the screen
+    if (game.mining.level >= IRON_MINE_LVL) {
+        openIronMine();
+    } else {
+        showTooltip(document.getElementById('ironVeinBtn'), 'Requires Mining Lvl: 5');
+        setTimeout(hideTooltip, 1500); // Show a quick "locked" tooltip
+    }
+  };
+  document.getElementById('coalVeinBtn').onclick = () => {
+    // We check the level *before* trying to open the screen
+    if (game.mining.level >= COAL_MINE_LVL) {
+        openCoalMine();
+    } else {
+        showTooltip(document.getElementById('coalVeinBtn'), 'Requires Mining Lvl: 10');
+        setTimeout(hideTooltip, 1500); // Show a quick "locked" tooltip
+    }
+  };
+  document.getElementById('hubMine_ReturnBtn').onclick = backToActions;
+  
+  // --- Hub Blacksmith Listeners ---
+  document.getElementById('smithCopperTab').onclick = () => {
+    document.getElementById('smithCopperTab').classList.add('active');
+    document.getElementById('smithIronTab').classList.remove('active');
+    renderSmithingItems('copper');
+  };
+  document.getElementById('smithIronTab').onclick = () => {
+    document.getElementById('smithIronTab').classList.add('active');
+    document.getElementById('smithCopperTab').classList.remove('active');
+    renderSmithingItems('iron');
+  };
+  document.getElementById('hubBlacksmith_ReturnBtn').onclick = backToActions;
+
+  // --- Hub Forest Listeners ---
+  document.getElementById('softwoodTreeBtn').onclick = openSoftwoodTree;
+  document.getElementById('oakTreeBtn').onclick = () => {
+    // We check the level *before* trying to open the screen
+    if (game.woodcutting.level >= OAK_TREE_LVL) {
+        openOakTree();
+    } else {
+        showTooltip(document.getElementById('oakTreeBtn'), 'Requires Woodcutting Lvl: 10');
+        setTimeout(hideTooltip, 1500); // Show a quick "locked" tooltip
+    }
+  };
+  document.getElementById('hubForest_ReturnBtn').onclick = backToActions;
+
+  // --- Hub Kitchen Listeners ---
+  document.getElementById('cookChickenBtn').onclick = openCookChicken;
+  document.getElementById('hubKitchen_ReturnBtn').onclick = backToActions;
+
+  // --- Hub Combat Listeners ---
+  document.getElementById('farmAreaBtn').onclick = openFarmCombatArea;
+  document.getElementById('hubCombat_ReturnBtn').onclick = backToActions;
+  
+  // --- Hub Shop Listeners ---
+  document.getElementById('buyPickaxeBtn').onclick = () => buyShopItem('Bronze Pickaxe', 10);
+  document.getElementById('buyAxeBtn').onclick = () => buyShopItem('Bronze Axe', 10);
+  document.getElementById('hubShop_ReturnBtn').onclick = backToActions;
+  
+  // --- Hub Bank Listeners ---
+  document.getElementById('bankDepositGoldBtn').onclick = depositGold;
+  document.getElementById('bankWithdrawGoldBtn').onclick = withdrawGold;
+  document.getElementById('hubBank_ReturnBtn').onclick = backToActions;
+
+  // --- Tooltips for Hub Icons ---
+  document.getElementById('minesActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Mine</div>');
+  document.getElementById('minesActionIcon').onmouseleave = hideTooltip;
+  document.getElementById('forestActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Forest</div>');
+  document.getElementById('forestActionIcon').onmouseleave = hideTooltip;
+  document.getElementById('blacksmithActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Blacksmith</div>');
+  document.getElementById('blacksmithActionIcon').onmouseleave = hideTooltip;
+  document.getElementById('kitchenActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Kitchen</div>');
+  document.getElementById('kitchenActionIcon').onmouseleave = hideTooltip;
+  document.getElementById('combatActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Combat Areas</div>');
+  document.getElementById('combatActionIcon').onmouseleave = hideTooltip;
+  document.getElementById('shopActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Shop</div>');
+  document.getElementById('shopActionIcon').onmouseleave = hideTooltip;
+  document.getElementById('bankActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Bank</div>');
+  document.getElementById('bankActionIcon').onmouseleave = hideTooltip;
+  
+  // --- Tooltips for Hub Mine ---
+  document.getElementById('copperVeinBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div>Requires Mining Lvl: 1');
+  document.getElementById('copperVeinBtn').onmouseleave = hideTooltip;
+  document.getElementById('ironVeinBtn').onmouseenter = (e) => {
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Iron Vein</div>Requires Mining Lvl: ${IRON_MINE_LVL}`;
+    showTooltip(e, tt);
+  };
+  document.getElementById('ironVeinBtn').onmouseleave = hideTooltip;
+  document.getElementById('coalVeinBtn').onmouseenter = (e) => {
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Coal Vein</div>Requires Mining Lvl: ${COAL_MINE_LVL}`;
+    showTooltip(e, tt);
+  };
+  document.getElementById('coalVeinBtn').onmouseleave = hideTooltip;
+  
+  // --- Tooltips for Hub Forest ---
+  document.getElementById('softwoodTreeBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Softwood Tree</div>Requires Woodcutting Lvl: ${SOFTWOOD_TREE_LVL}`);
+  document.getElementById('softwoodTreeBtn').onmouseleave = hideTooltip;
+  document.getElementById('oakTreeBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Oak Tree</div>Requires Woodcutting Lvl: ${OAK_TREE_LVL}`);
+  document.getElementById('oakTreeBtn').onmouseleave = hideTooltip;
+
+  // --- Tooltips for Hub Kitchen ---
+  document.getElementById('cookChickenBtn').onmouseenter = (e) => showTooltip(e, 'Requires: 1 Raw Chicken');
+  document.getElementById('cookChickenBtn').onmouseleave = hideTooltip;
+
+  // --- Tooltips for Hub Combat ---
+  document.getElementById('farmAreaBtn').onmouseenter = (e) => showTooltip(e, 'Lvl Required: 1');
+  document.getElementById('farmAreaBtn').onmouseleave = hideTooltip;
+
+  // +++ END NEW LISTENER BLOCK +++
+  
+  
+  // preloadAllGameAssets(); // <-- This line should already be here
+  showTab('inventory'); 
+  window.resetGameState = resetGameState;
   showTab('inventory'); 
   window.resetGameState = resetGameState;
   document.addEventListener('mousemove', moveTooltip);
@@ -6843,6 +6519,129 @@ window.showSaveIndicator = function() {
 </script>
 
 <div id="itemContextMenu"></div>
+
+<script>
+  (function() {
+    // This is the master list of all critical assets
+    const MASTER_ASSET_LIST = [
+      // Main UI & Background
+      'images/brick_background.png',
+      'images/gearicon.png',
+      'images/goldpouch.png',
+      
+      // Main Hub Icons
+      'images/mines.png',
+      'images/foresticon.png',
+      'images/blacksmithicon.png',
+      'images/kitchenbutton.png',
+      'images/combatareas.png',
+      'images/shopbutton.png',
+      'images/bankbutton.png',
+  
+      // Equipment Placeholders
+      'images/helmet.png',
+      'images/weapon.png',
+      'images/chestplate.png',
+      'images/boots.png',
+  
+      // Skill Icons
+      'images/miningskillicon.png',
+      'images/blacksmithskillicon.png',
+      'images/attackskillicon.png',
+      'images/strengthskillicon.png',
+      'images/defenseskillicon.png',
+      'images/vitalityskillicon.png',
+      'images/cookingskillicon.png',
+      'images/woodcuttingskillicon.png',
+      
+      // Resource/Hub Icons
+      'images/coppervein.png',
+      'images/ironvein.png',
+      'images/coalvein.png',
+      'images/farm.png',
+  
+      // Items: Tools
+      'images/bronzepickaxe.png',
+      'images/bronzeaxe.png',
+      'images/copperpickaxe.png',
+      'images/copperaxe.png',
+      'images/ironpickaxe.png',
+      'images/ironaxe.png',
+  
+      // Items: Ores & Bars
+      'images/copperore.png',
+      'images/copperbar.png',
+      'images/coalore.png',
+      'images/ironore.png',
+      'images/ironbar.png',
+  
+      // Items: Wood
+      'images/softwood.png',
+      'images/oak.png',
+  
+      // Items: Food
+      'images/rawchicken.png',
+      'images/cookedchicken.png',
+      'images/burntchicken.png',
+  
+      // Items: Copper Armor/Weapon
+      'images/copperhelmet.png',
+      'images/copperchestplate.png',
+      'images/copperboots.png',
+      'images/coppershortsword.png',
+  
+      // Items: Iron Armor/Weapon
+      'images/ironhelmet.png',
+      'images/ironchestplate.png',
+      'images/ironboots.png',
+      'images/ironshortsword.png',
+  
+      // Combat
+      'images/chickenmonster.png',
+      'images/chickenanim.gif'
+    ];
+
+    /**
+     * This function creates a 'Promise' that only resolves
+     * when the image has fully loaded (or failed).
+     */
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null); // Don't fail the whole load
+        img.src = src;
+      });
+    }
+
+    /**
+     * This function loads all images in the list at the same time
+     * and waits for all of them to finish.
+     */
+    async function preloadAllAssets(urls) {
+      const promises = urls.map(url => loadImage(url));
+      await Promise.all(promises);
+    }
+
+    // --- Start the preload ---
+    console.log(`[Preloader] Starting preload of ${MASTER_ASSET_LIST.length} assets...`);
+    preloadAllAssets(MASTER_ASSET_LIST).then(() => {
+      // --- This runs ONLY after all images are loaded ---
+      console.log('[Preloader] All assets loaded.');
+      
+      const loadingScreen = document.getElementById('loadingScreen');
+      const authScreen = document.getElementById('authScreen');
+
+      if (loadingScreen) {
+        loadingScreen.style.display = 'none'; // Hide loading
+      }
+      if (authScreen) {
+        authScreen.style.display = 'flex'; // Show login
+      }
+    });
+
+  })();
+</script>
 
 <script type="module">
   // Firebase imports (CDN modules)
@@ -8657,7 +8456,122 @@ if (!validSkills.includes(skill)) {
   }
 };
 
+  (function() {
+    // --- This is the new master preloader ---
 
+    // Define all critical images your game needs to start
+    const MASTER_ASSET_LIST = [
+      'images/brick_background.png',
+      'images/gearicon.png',
+      'images/helmet.png',
+      'images/weapon.png',
+      'images/chestplate.png',
+      'images/boots.png',
+      'images/goldpouch.png',
+      'images/mines.png',
+      'images/foresticon.png',
+      'images/blacksmithicon.png',
+      'images/kitchenbutton.png',
+      'images/combatareas.png',
+      'images/shopbutton.png',
+      'images/bankbutton.png',
+      'images/miningskillicon.png',
+      'images/blacksmithskillicon.png',
+      'images/attackskillicon.png',
+      'images/strengthskillicon.png',
+      'images/defenseskillicon.png',
+      'images/vitalityskillicon.png',
+      'images/cookingskillicon.png',
+      'images/woodcuttingskillicon.png',
+      'images/copperore.png',
+      'images/copperbar.png',
+      'images/coppershortsword.png',
+      'images/copperhelmet.png',
+      'images/copperchestplate.png',
+      'images/copperboots.png',
+      'images/rawchicken.png',
+      'images/cookedchicken.png',
+      'images/burntchicken.png',
+      'images/chickenmonster.png',
+      'images/chickenanim.gif',
+      'images/coppervein.png',
+      'images/coalvein.png',
+      'images/ironvein.png',
+      'images/farm.png',
+      'images/softwood.png',
+      'images/oak.png',
+      'images/bronzepickaxe.png',
+      'images/bronzeaxe.png',
+      'images/copperpickaxe.png',
+      'images/copperaxe.png',
+      'images/ironpickaxe.png',
+      'images/ironaxe.png',
+      'images/ironore.png',
+      'images/ironbar.png',
+      'images/ironshortsword.png',
+      'images/ironhelmet.png',
+      'images/ironchestplate.png',
+      'images/ironboots.png'
+    ];
+
+    /**
+     * Preloads all assets and shows a loading screen
+     * @param {string[]} assetList - Array of image paths
+     * @returns {Promise}
+     */
+    function preloadAllAssets(assetList) {
+      const authScreen = document.getElementById('authScreen');
+      if (authScreen) authScreen.style.display = 'none';
+
+      // Find the existing loading screen
+      const loadingScreen = document.getElementById('loadingScreen');
+      loadingScreen.style.display = 'flex'; // Make sure it's visible
+      
+      const loadingText = loadingScreen.querySelector('div');
+      const progressText = document.createElement('p');
+      progressText.id = 'loadingProgress';
+      progressText.innerText = '0 / ' + assetList.length;
+      if(loadingText) loadingText.appendChild(progressText);
+
+
+      let loadedCount = 0;
+      const promises = assetList.map(src => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            loadedCount++;
+            if (progressText) {
+              progressText.innerText = loadedCount + ' / ' + assetList.length;
+            }
+            resolve();
+          };
+          img.onerror = () => {
+            console.warn(`[Preloader] Failed to load: ${src}`);
+            resolve(); // Resolve anyway so the game doesn't hang
+          };
+          img.src = src;
+        });
+      });
+
+      return Promise.all(promises);
+    }
+
+    // Run the preloader
+    preloadAllAssets(MASTER_ASSET_LIST).then(() => {
+      console.log('[Preloader] All assets loaded.');
+      
+      const loadingScreen = document.getElementById('loadingScreen');
+      const authScreen = document.getElementById('authScreen');
+
+      if (loadingScreen) {
+        loadingScreen.style.display = 'none'; // Hide loading
+      }
+      if (authScreen) {
+        authScreen.style.display = 'flex'; // Show login
+      }
+    });
+
+  })();
 </script>
 </body>
 </html>
