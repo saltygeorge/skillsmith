@@ -589,10 +589,6 @@ button.primary:hover { background: var(--accent-hover); }
   border-radius: 8px;
 }
 
-#combat-equip-panel {
-  /* Removed the fixed flex-basis of 300px */
-  /* This panel will now shrink to fit its content */
-}
 
 #combat-action-panel {
   /* flex-grow: 1; has been removed */
@@ -1151,11 +1147,11 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="copperVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/coppervein.png" alt="Copper Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
               </button>
-              <button id="ironVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-                <img src="images/ironvein.png" alt="Iron Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
-              </button>
               <button id="coalVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/coalvein.png" alt="Coal Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+              </button>
+              <button id="ironVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/ironvein.png" alt="Iron Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
               </button>
             </div>
             <div class="action-buttons" style="margin-top: 14px;">
@@ -1782,8 +1778,8 @@ const BOOTS_XP = 26; // 4 bars (~6.5xp/bar)
 const BOOTS_TIME_MS = 4000; // 4 bars (1s/bar)
 
 // --- NEW: Mining Level Requirements ---
-const COAL_MINE_LVL = 10;
-const IRON_MINE_LVL = 5;
+const COAL_MINE_LVL = 5;
+const IRON_MINE_LVL = 10;
 
 // --- NEW: Coal/Iron Mining Constants ---
 const COAL_MINE_TIME_MS = 2000;
@@ -4423,8 +4419,8 @@ function openCoalMine(){
 async function startCoalMining() {
   // +++ NEW: Tool Check +++
   const bestPickaxe = getBestTool('pickaxe');
-  if (bestPickaxe < 3) { // Requires Iron (Tier 3)
-    await showGameAlert("Tool Required", "You need at least an Iron Pickaxe in your inventory to mine this.");
+  if (bestPickaxe < 2) { // Requires Copper (Tier 2)
+    await showGameAlert("Tool Required", "You need at least a Copper Pickaxe in your inventory to mine this.");
     return;
   }
   // +++ END NEW +++
@@ -6085,7 +6081,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (game.mining.level >= IRON_MINE_LVL) {
         openIronMine();
     } else {
-        showTooltip(document.getElementById('ironVeinBtn'), 'Requires Mining Lvl: 5');
+        showTooltip(document.getElementById('ironVeinBtn'), 'Requires Mining Lvl: 10');
         setTimeout(hideTooltip, 1500); // Show a quick "locked" tooltip
     }
   };
@@ -6094,7 +6090,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (game.mining.level >= COAL_MINE_LVL) {
         openCoalMine();
     } else {
-        showTooltip(document.getElementById('coalVeinBtn'), 'Requires Mining Lvl: 10');
+        showTooltip(document.getElementById('coalVeinBtn'), 'Requires Mining Lvl: 5');
         setTimeout(hideTooltip, 1500); // Show a quick "locked" tooltip
     }
   };
