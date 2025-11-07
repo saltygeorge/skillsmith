@@ -340,21 +340,6 @@ button.primary:hover { background: var(--accent-hover); }
   100% { transform: translateY(-46px); opacity: 0; }
 }
 
-@media(max-width:900px) {
-  .container { flex-direction: column; align-items: center; }
-  #top-row-panels, #bottom-row-chat {
-      flex-direction: column;
-      width: 95%;
-  }
-  .sidebar, .main, .chat-panel { 
-      width: 100%;
-      box-sizing: border-box;
-  }
-  .sidebar-spacer {
-      display: none;
-  }
-}
-
 /* --- Trade Modal --- */
 #tradeModal { display: none; }
 .trade-content {
@@ -750,15 +735,15 @@ button.primary:hover { background: var(--accent-hover); }
   text-align: center;
 }
 #bankGridWrap {
-  flex: 1;
+  /* flex: 1; <-- REMOVED */
   overflow-y: auto;
   overflow-x: hidden;
   background: rgba(0,0,0,0.2);
   border-radius: 6px;
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--panel-bg);
-  /* Taller 8-row height */
-  height: calc((var(--slot-size) + var(--slot-gap)) * 8 + var(--slot-gap));
+  /* 4-row height */
+  height: calc((var(--slot-size) + var(--slot-gap)) * 4 + var(--slot-gap));
 }
 
 #gameModalOverlay {
@@ -1422,7 +1407,7 @@ const game = {
   gold: 0,
   // --- NEW BANK PROPERTIES ---
   bank: [],
-  bankCapacity: 20, // Example: 40 slots
+  bankCapacity: 60, // Example: 80 slots
   bankGold: 0,
   // --- END NEW ---
   equipment: {
@@ -2981,6 +2966,80 @@ function openCopperHelmetSmith(){
 }
 // +++ END NEW HELMET CRAFTING FUNCTION +++
 
+async function startHelmetCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Copper Bar') {
+          totalBars += slot.qty;
+      }
+  }
+
+  if (totalBars < HELMET_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${HELMET_BAR_COST} Copper Bars to craft a helmet.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startHelmetBtn');
+  const stopBtn = document.getElementById('stopHelmetBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, now));
+}
+
+async function helmetCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / HELMET_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBars += slot.qty;
+        }
+    }
+    if (totalBars < HELMET_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
+        stopBlacksmithing('helmetProgress', 'startHelmetBtn', 'stopHelmetBtn');
+        return;
+    }
+    
+    removeItem('Copper Bar', HELMET_BAR_COST);
+    addItem('Copper Helmet', 1);
+    addXP('blacksmith', HELMET_XP);
+    
+    showItemPopup(`+${HELMET_XP} Blacksmith XP`, 'helmetProgress', 0);
+    showItemPopup(`+1 Copper Helmet`, 'helmetProgress', 450);
+    
+    const bar = document.getElementById('helmetProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBarsAfter += slot.qty;
+        }
+    }
+    if (totalBarsAfter < HELMET_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another helmet.");
+        stopBlacksmithing('helmetProgress', 'startHelmetBtn', 'stopHelmetBtn');
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('helmetProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, startTime));
+  }
+}
+
 // +++ NEW COPPER BOOTS UI +++
 function openCopperBootsSmith(){
   game.shopOpen = false; 
@@ -3716,6 +3775,80 @@ function openCopperChestplateSmith(){
 }
 // +++ END NEW COPPER CHESTPLATE UI +++
 
+async function startChestplateCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Copper Bar') {
+          totalBars += slot.qty;
+      }
+  }
+
+  if (totalBars < CHESTPLATE_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${CHESTPLATE_BAR_COST} Copper Bars to craft a chestplate.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startChestplateBtn');
+  const stopBtn = document.getElementById('stopChestplateBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, now));
+}
+
+async function chestplateCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / CHESTPLATE_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBars += slot.qty;
+        }
+    }
+    if (totalBars < CHESTPLATE_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
+        stopBlacksmithing('chestplateProgress', 'startChestplateBtn', 'stopChestplateBtn');
+        return;
+    }
+    
+    removeItem('Copper Bar', CHESTPLATE_BAR_COST);
+    addItem('Copper Chestplate', 1);
+    addXP('blacksmith', CHESTPLATE_XP);
+    
+    showItemPopup(`+${CHESTPLATE_XP} Blacksmith XP`, 'chestplateProgress', 0);
+    showItemPopup(`+1 Copper Chestplate`, 'chestplateProgress', 450);
+    
+    const bar = document.getElementById('chestplateProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBarsAfter += slot.qty;
+        }
+    }
+    if (totalBarsAfter < CHESTPLATE_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another chestplate.");
+        stopBlacksmithing('chestplateProgress', 'startChestplateBtn', 'stopChestplateBtn');
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('chestplateProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, startTime));
+  }
+}
+
 // +++ NEW COPPER SHORTSWORD UI +++
 function openCopperShortswordSmith(){
   game.shopOpen = false; 
@@ -3740,6 +3873,80 @@ function openCopperShortswordSmith(){
   showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 // +++ END NEW COPPER SHORTSWORD UI +++
+
+async function startShortswordCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Copper Bar') {
+          totalBars += slot.qty;
+      }
+  }
+
+  if (totalBars < SHORTSWORD_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${SHORTSWORD_BAR_COST} Copper Bars to craft a shortsword.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startShortswordBtn');
+  const stopBtn = document.getElementById('stopShortswordBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, now));
+}
+
+async function shortswordCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / SHORTSWORD_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBars += slot.qty;
+        }
+    }
+    if (totalBars < SHORTSWORD_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
+        stopBlacksmithing('shortswordProgress', 'startShortswordBtn', 'stopShortswordBtn');
+        return;
+    }
+    
+    removeItem('Copper Bar', SHORTSWORD_BAR_COST);
+    addItem('Copper Shortsword', 1);
+    addXP('blacksmith', SHORTSWORD_XP);
+    
+    showItemPopup(`+${SHORTSWORD_XP} Blacksmith XP`, 'shortswordProgress', 0);
+    showItemPopup(`+1 Copper Shortsword`, 'shortswordProgress', 450);
+    
+    const bar = document.getElementById('shortswordProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBarsAfter += slot.qty;
+        }
+    }
+    if (totalBarsAfter < SHORTSWORD_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another shortsword.");
+        stopBlacksmithing('shortswordProgress', 'startShortswordBtn', 'stopShortswordBtn');
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('shortswordProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, startTime));
+  }
+}
 
 // --- NEW: Iron Bar UI ---
 function openIronBarSmith(){
@@ -6215,6 +6422,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   
   const inventoryGrid = document.getElementById('inventoryGrid');
   const inventoryGridWrap = document.getElementById('inventoryGridWrap');
+  const bankGridWrap = document.getElementById('bankGridWrap'); // <-- ADD THIS
   let draggedItemIndex = null;
   let currentDragOverSlot = null;
   
@@ -6235,12 +6443,41 @@ if (inventoryGridWrap) {
     const topThreshold = rect.top + threshold;
     const bottomThreshold = rect.bottom - threshold;
 
+    // --- This is the inventory scroll logic ---
     if (clientY < topThreshold) {
       // Mouse is near the top, scroll up
       inventoryGridWrap.scrollTop -= scrollSpeed;
     } else if (clientY > bottomThreshold) {
       // Mouse is near the bottom, scroll down
       inventoryGridWrap.scrollTop += scrollSpeed;
+    }
+  });
+}
+
+// --- This is the new bank scroll logic (placed *after*) ---
+if (bankGridWrap) {
+  bankGridWrap.addEventListener('dragover', (e) => {
+    // Only scroll if we are actively dragging an item
+    if (!game.isDragging) return;
+
+    // We must prevent default for dragover to work
+    e.preventDefault(); 
+
+    const rect = bankGridWrap.getBoundingClientRect();
+    const clientY = e.clientY;
+
+    const scrollSpeed = 10; // Pixels to scroll per frame
+    const threshold = 50;   // 50px trigger zone from the edge
+
+    const topThreshold = rect.top + threshold;
+    const bottomThreshold = rect.bottom - threshold;
+
+    if (clientY < topThreshold) {
+      // Mouse is near the top, scroll up
+      bankGridWrap.scrollTop -= scrollSpeed;
+    } else if (clientY > bottomThreshold) {
+      // Mouse is near the bottom, scroll down
+      bankGridWrap.scrollTop += scrollSpeed;
     }
   });
 }
@@ -7138,6 +7375,11 @@ window.showSaveIndicator = function() {
         renderInventoryGrid();
         updateSkillUI();
         updateGoldUI(); 
+        
+        // +++ NEW: Pre-render the bank UI on load +++
+        renderBankGrid();
+        updateBankGoldUI();
+        // +++ END NEW +++
         
         if (isFirstLoad) {
           window.renderLeaderboards(); 
