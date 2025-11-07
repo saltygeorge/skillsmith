@@ -1907,6 +1907,46 @@ SHOP_INVENTORY[1] = { name: 'Bronze Axe', price: 10 };
 // You can add more items here like:
 // SHOP_INVENTORY[2] = { name: 'Some Item', price: 50 };
 
+// --- NEW: Item Sell Prices ---
+const ITEM_SELL_PRICES = {
+  // Ores & Resources
+  'Copper Ore': 1,
+  'Coal Ore': 2,
+  'Iron Ore': 4,
+  'Softwood': 1,
+  'Oak': 3,
+  
+  // Bars
+  'Copper Bar': 3,
+  'Iron Bar': 10,
+  
+  // Food
+  'Raw Chicken': 1,
+  'Cooked Chicken': 2,
+  'Burnt Chicken': 1,
+  
+  // Bronze Tools (Shop items)
+  'Bronze Pickaxe': 4,
+  'Bronze Axe': 4,
+  
+  // Copper Items
+  'Copper Pickaxe': 15,
+  'Copper Axe': 15,
+  'Copper Helmet': 20,
+  'Copper Chestplate': 40,
+  'Copper Boots': 15,
+  'Copper Shortsword': 20,
+  
+  // Iron Items
+  'Iron Pickaxe': 50,
+  'Iron Axe': 50,
+  'Iron Helmet': 60,
+  'Iron Chestplate': 120,
+  'Iron Boots': 55,
+  'Iron Shortsword': 65
+};
+// --- END: Item Sell Prices ---
+
 // --- END: Item Stat Definitions ---
 
 function setText(id, text){ const el=document.getElementById(id); if(el) el.innerText=text; }
@@ -2321,13 +2361,15 @@ function removeItem(name, qty = 1) {
 
 async function handleSellItemClick(itemName, currentQty) {
   if (!game.shopOpen) return;
-  let sellPrice = 0;
-  if (itemName === 'Copper Ore') {
-    sellPrice = 1;
-  } else {
+  
+  // --- MODIFIED: Look up sell price in the new map ---
+  const sellPrice = ITEM_SELL_PRICES[itemName] || 0;
+
+  if (sellPrice <= 0) {
     await showGameAlert("Cannot Sell", "This shop doesn't buy that item."); // Replaced alert
     return;
   }
+  // --- END MODIFICATION ---
   
   let totalQty = 0;
   for (const slot of game.inventory) {
@@ -2343,7 +2385,7 @@ async function handleSellItemClick(itemName, currentQty) {
     // --- MODIFICATION HERE ---
     const input = await showGamePrompt(
       `Sell ${itemName}`, 
-      `How many ${itemName} do you want to sell? (You have: ${totalQty})`, 
+      `How many ${itemName} do you want to sell? (You have: ${totalQty}) (Price: ${sellPrice}ea)`, 
       totalQty
     );
     if (input === null) return;
@@ -6311,14 +6353,14 @@ function renderShopGrid() {
     slot.className = 'inv-slot';
     
     if(item) {
-      slot.draggable = true; 
-      slot.addEventListener('dragstart', (e) => handleShopDragStart(e, item));
-      slot.addEventListener('dragend', () => {
-        draggedShopItem = null;
-        game.isDragging = false; 
-        const draggingEl = document.querySelector('.inv-slot.dragging');
-        if (draggingEl) draggingEl.classList.remove('dragging');
-      });
+      // slot.draggable = true; // <-- DISABLED
+      // slot.addEventListener('dragstart', (e) => handleShopDragStart(e, item)); // <-- DISABLED
+      // slot.addEventListener('dragend', () => { // <-- DISABLED
+      //   draggedShopItem = null;
+      //   game.isDragging = false; 
+      //   const draggingEl = document.querySelector('.inv-slot.dragging');
+      //   if (draggingEl) draggingEl.classList.remove('dragging');
+      // }); // <-- DISABLED
       
       slot.onclick = () => buyShopItem(item.name, item.price); 
 
@@ -6338,8 +6380,8 @@ function renderShopGrid() {
       const tooltipContent = `
         <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
         <div style="color:#fff;">Price: ${item.price} Gold</div>
-        <div style="color:#aaffaa; margin-top: 5px;">Click or Drag to buy...</div>
-      `;
+        <div style="color:#aaffaa; margin-top: 5px;">Click to buy...</div>
+      `; // <-- UPDATED TOOLTIP
       slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
       slot.onmouseleave = hideTooltip;
     }
@@ -6347,17 +6389,6 @@ function renderShopGrid() {
   }
 }
 
-/**
- * Handles starting a drag from the shop
- */
-function handleShopDragStart(e, item) {
-  draggedShopItem = { name: item.name, price: item.price };
-  e.dataTransfer.effectAllowed = 'move';
-  game.isDragging = true;
-  setTimeout(() => {
-    e.target.closest('.inv-slot').classList.add('dragging');
-  }, 0);
-}
 // --- END: Settings Functions ---
 
 
