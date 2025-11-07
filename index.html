@@ -1455,6 +1455,7 @@ const game = {
   wasMiningBeforeCombat: false, // Renamed from 'wasMiningBeforeTrade'
   wasSmithingBeforeCombat: false,
   wasWoodcuttingBeforeCombat: false,
+  lastSmithingTab: 'copper',
   
   // +++ NEW SESSION LOCK +++
   // This is a unique ID for this specific tab
@@ -5829,7 +5830,7 @@ function resetGameState() {
   game.hp = 10;
   game.maxHP = 10;
   game.inventory = new Array(game.inventoryCapacity).fill(null);
-  game.gold = 0; 
+  game.gold = 100; 
   // +++ NEW +++
   game.bank = new Array(game.bankCapacity).fill(null);
   game.bankGold = 0;
@@ -5837,8 +5838,16 @@ function resetGameState() {
   // +++ END NEW +++
   game.mining = { level: 1, xp: 0, totalXP: 0 };
   game.blacksmith = { level: 1, xp: 0, totalXP: 0 };
-  game.cooking = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
-  game.woodcutting = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
+  game.cooking = { level: 1, xp: 0, totalXP: 0 };
+  game.woodcutting = { level: 1, xp: 0, totalXP: 0 };
+  
+  // +++ ADD THESE 4 MISSING LINES +++
+  game.attack = { level: 1, xp: 0, totalXP: 0 };
+  game.strength = { level: 1, xp: 0, totalXP: 0 };
+  game.defence = { level: 1, xp: 0, totalXP: 0 };
+  game.vitality = { level: 1, xp: 0, totalXP: 0 };
+  // +++ END OF FIX +++
+
   game.miningActive = false;
   game.blacksmithingActive = false; // +++ NEW +++
   game.cookingActive = false;
@@ -6019,7 +6028,18 @@ function showMainScreen(screenIdToShow) {
 
   // Special case: if we're showing the blacksmith hub, render its items
   if (screenIdToShow === 'hubBlacksmith') {
-    renderSmithingItems('copper'); // Default to copper
+    // --- FIX: Use the last saved tab ---
+    const lastTab = game.lastSmithingTab || 'copper';
+    renderSmithingItems(lastTab);
+    // Also set the active button class
+    if (lastTab === 'iron') {
+      document.getElementById('smithIronTab').classList.add('active');
+      document.getElementById('smithCopperTab').classList.remove('active');
+    } else {
+      document.getElementById('smithCopperTab').classList.add('active');
+      document.getElementById('smithIronTab').classList.remove('active');
+    }
+    // --- END FIX ---
   }
   
   // Special case: if we're showing the mine hub, apply level locks
@@ -6081,8 +6101,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (game.mining.level >= IRON_MINE_LVL) {
         openIronMine();
     } else {
-        showTooltip(document.getElementById('ironVeinBtn'), 'Requires Mining Lvl: 10');
-        setTimeout(hideTooltip, 1500); // Show a quick "locked" tooltip
+        // Do nothing if locked, the CSS class handles the visuals.
     }
   };
   document.getElementById('coalVeinBtn').onclick = () => {
@@ -6090,8 +6109,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (game.mining.level >= COAL_MINE_LVL) {
         openCoalMine();
     } else {
-        showTooltip(document.getElementById('coalVeinBtn'), 'Requires Mining Lvl: 5');
-        setTimeout(hideTooltip, 1500); // Show a quick "locked" tooltip
+        // Do nothing if locked, the CSS class handles the visuals.
     }
   };
   document.getElementById('hubMine_ReturnBtn').onclick = backToActions;
@@ -6100,11 +6118,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('smithCopperTab').onclick = () => {
     document.getElementById('smithCopperTab').classList.add('active');
     document.getElementById('smithIronTab').classList.remove('active');
+    game.lastSmithingTab = 'copper'; // <-- ADD THIS LINE
     renderSmithingItems('copper');
   };
   document.getElementById('smithIronTab').onclick = () => {
     document.getElementById('smithIronTab').classList.add('active');
     document.getElementById('smithCopperTab').classList.remove('active');
+    game.lastSmithingTab = 'iron'; // <-- ADD THIS LINE
     renderSmithingItems('iron');
   };
   document.getElementById('hubBlacksmith_ReturnBtn').onclick = backToActions;
@@ -6116,8 +6136,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (game.woodcutting.level >= OAK_TREE_LVL) {
         openOakTree();
     } else {
-        showTooltip(document.getElementById('oakTreeBtn'), 'Requires Woodcutting Lvl: 10');
-        setTimeout(hideTooltip, 1500); // Show a quick "locked" tooltip
+        // Do nothing if locked, the CSS class handles the visuals.
     }
   };
   document.getElementById('hubForest_ReturnBtn').onclick = backToActions;
@@ -7166,7 +7185,7 @@ window.showSaveIndicator = function() {
         hp: 10,
         maxHP: 10,
         inventory: [],
-        gold: 0, 
+        gold: 100, 
         // +++ NEW +++
         bank: [],
         bankGold: 0,
@@ -8564,14 +8583,15 @@ if (!validSkills.includes(skill)) {
       // +++ END NEW +++
       
       const loadingScreen = document.getElementById('loadingScreen');
-      const authScreen = document.getElementById('authScreen');
-
+      
       if (loadingScreen) {
         loadingScreen.style.display = 'none'; // Hide loading
       }
-      if (authScreen) {
-        authScreen.style.display = 'flex'; // Show login
-      }
+
+      // --- We removed the code that shows the authScreen ---
+      // The onAuthStateChanged listener will now handle showing
+      // the correct screen (login OR game) without a flash.
+
     });
 
   })();
