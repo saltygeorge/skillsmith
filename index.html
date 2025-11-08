@@ -1135,6 +1135,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="minesActionIcon" src="images/mines.png" alt="Mines" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="forestActionIcon" src="images/foresticon.png" alt="Forest" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="blacksmithActionIcon" src="images/blacksmithicon.png" alt="Blacksmith" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="fletchingActionIcon" src="images/fletchingworkbench.png" alt="Fletching" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="kitchenActionIcon" src="images/kitchenbutton.png" alt="Kitchen" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="combatActionIcon" src="images/combatareas.png" alt="Combat Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="shopActionIcon" src="images/shopbutton.png" alt="Shop" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
@@ -1170,6 +1171,14 @@ button.primary:hover { background: var(--accent-hover); }
               </div>
             <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubBlacksmith_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubFletching" class="hub-screen">
+            <div id="fletchingItemsContainer" class="action-buttons" style="margin-top: 0; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+              </div>
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+              <button id="hubFletching_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
           
@@ -1455,6 +1464,9 @@ const game = {
   wasMiningBeforeCombat: false, // Renamed from 'wasMiningBeforeTrade'
   wasSmithingBeforeCombat: false,
   wasWoodcuttingBeforeCombat: false,
+  fletching: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW FLETCHING SKILL +++
+  fletchingActive: false, // +++ NEW FLETCHING STATE +++
+  wasFletchingBeforeCombat: false, // +++ NEW FLETCHING STATE +++
   lastSmithingTab: 'copper',
   
   // +++ NEW SESSION LOCK +++
@@ -1653,7 +1665,12 @@ const VALID_ITEMS = [
   'Iron Helmet',
   'Iron Chestplate',
   'Iron Boots',
-  'Iron Shortsword'
+  'Iron Shortsword',
+  'Feather', // +++ NEW +++
+  'Arrow Shaft', // +++ NEW +++
+  'Copper Arrow Tip', // +++ NEW +++
+  'Unbound Arrow', // +++ NEW +++
+  'Copper Arrow' // +++ NEW +++
 ];
 
 const XP_TABLE = [
@@ -1800,6 +1817,7 @@ const COPPER_BAR_LVL = 1;
 const COPPER_PICKAXE_LVL = 2;
 const COPPER_AXE_LVL = 2;
 const COPPER_SWORD_LVL = 3;
+const BLACKSMITH_COPPER_TIPS_LVL = 4; // +++ NEW +++
 const COPPER_BOOTS_LVL = 5;
 const COPPER_HELMET_LVL = 6;
 const COPPER_CHEST_LVL = 8;
@@ -1811,6 +1829,35 @@ const IRON_SWORD_LVL = 13;
 const IRON_BOOTS_LVL = 15;
 const IRON_HELMET_LVL = 16;
 const IRON_CHEST_LVL = 18;
+
+// --- NEW: Fletching Level Requirements ---
+const FLETCHING_SHAFT_LVL = 1;
+const FLETCHING_UNBOUND_LVL = 1;
+const FLETCHING_COPPER_ARROW_LVL = 1;
+
+// --- NEW: Fletching Crafting Constants ---
+const ARROW_SHAFT_WOOD_COST = 4;
+const ARROW_SHAFT_YIELD = 10;
+const ARROW_SHAFT_XP = 10;
+const ARROW_SHAFT_TIME_MS = 3000;
+
+const UNBOUND_ARROW_SHAFT_COST = 10;
+const UNBOUND_ARROW_FEATHER_COST = 10;
+const UNBOUND_ARROW_YIELD = 10;
+const UNBOUND_ARROW_XP = 20;
+const UNBOUND_ARROW_TIME_MS = 4000;
+
+const COPPER_ARROW_UNBOUND_COST = 10;
+const COPPER_ARROW_TIP_COST = 10;
+const COPPER_ARROW_YIELD = 10;
+const COPPER_ARROW_XP = 30;
+const COPPER_ARROW_TIME_MS = 4000;
+
+// --- NEW: Smithing Constants (Arrow Tips) ---
+const COPPER_ARROW_TIP_BAR_COST = 4;
+const COPPER_ARROW_TIP_YIELD = 10;
+const COPPER_ARROW_TIP_XP = 20;
+const COPPER_ARROW_TIP_TIME_MS = 3000;
 
 // --- NEW: Iron Smithing Constants ---
 const IRON_BAR_ORE_COST = 1; // 1 Iron Ore
@@ -1949,7 +1996,14 @@ const ITEM_SELL_PRICES = {
   'Iron Helmet': 60,
   'Iron Chestplate': 120,
   'Iron Boots': 55,
-  'Iron Shortsword': 65
+  'Iron Shortsword': 65,
+
+  // Fletching Items
+  'Feather': 1,
+  'Arrow Shaft': 1,
+  'Copper Arrow Tip': 2,
+  'Unbound Arrow': 3,
+  'Copper Arrow': 5
 };
 // --- END: Item Sell Prices ---
 
@@ -2230,6 +2284,16 @@ function renderInventoryGrid(){
           imgName = 'ironpickaxe';
       } else if (item.name === 'Iron Axe') { // +++ NEW +++
           imgName = 'ironaxe';
+      } else if (item.name === 'Feather') { // +++ NEW +++
+          imgName = 'feather';
+      } else if (item.name === 'Arrow Shaft') { // +++ NEW +++
+          imgName = 'arrowshaft';
+      } else if (item.name === 'Copper Arrow Tip') { // +++ NEW +++
+          imgName = 'copperarrowtip';
+      } else if (item.name === 'Unbound Arrow') { // +++ NEW +++
+          imgName = 'unboundarrow';
+      } else if (item.name === 'Copper Arrow') { // +++ NEW +++
+          imgName = 'copperarrow';
       }
       
       img.src = `images/${imgName}.png`;
@@ -2817,6 +2881,7 @@ function updateSkillUI(){
   createSkillIcon('Vitality', 'vitality', 'vitalityskillicon.png'); // +++ NEW VITALITY SKILL CALL +++
   createSkillIcon('Cooking', 'cooking', 'cookingskillicon.png'); // +++ NEW COOKING SKILL CALL +++
   createSkillIcon('Woodcutting', 'woodcutting', 'woodcuttingskillicon.png'); // +++ NEW WOODCUTTING SKILL CALL +++
+  createSkillIcon('Fletching', 'fletching', 'fletchingskillicon.jpeg'); // +++ NEW FLETCHING SKILL CALL +++
 }
 
 function showItemPopup(text, progressElementId, delay = 0) {
@@ -4518,6 +4583,453 @@ function openBlacksmithHub() {
   showMainScreen('hubBlacksmith');
 }
 
+// +++ NEW: COPPER ARROW TIP UI (Blacksmith) +++
+function openSmithCopperArrowTip(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Smithing - Copper Arrow Tip</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${COPPER_ARROW_TIP_BAR_COST} Copper Bars. Yields ${COPPER_ARROW_TIP_YIELD}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="arrowTipProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startArrowTipBtn" class="primary">Start Crafting</button>
+      <button id="stopArrowTipBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startArrowTipBtn').onclick = startSmithingCopperArrowTip;
+  document.getElementById('stopArrowTipBtn').onclick = () => stopBlacksmithing('arrowTipProgress', 'startArrowTipBtn', 'stopArrowTipBtn');
+  showMainScreen('hubDynamic');
+}
+
+async function startSmithingCopperArrowTip() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Copper Bar') {
+          totalBars += slot.qty;
+      }
+  }
+
+  if (totalBars < COPPER_ARROW_TIP_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${COPPER_ARROW_TIP_BAR_COST} Copper Bars.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startArrowTipBtn');
+  const stopBtn = document.getElementById('stopArrowTipBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => smithingCopperArrowTipLoop(now, now));
+}
+
+async function smithingCopperArrowTipLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / COPPER_ARROW_TIP_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBars += slot.qty;
+        }
+    }
+    if (totalBars < COPPER_ARROW_TIP_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
+        stopBlacksmithing('arrowTipProgress', 'startArrowTipBtn', 'stopArrowTipBtn');
+        return;
+    }
+    
+    removeItem('Copper Bar', COPPER_ARROW_TIP_BAR_COST);
+    addItem('Copper Arrow Tip', COPPER_ARROW_TIP_YIELD);
+    addXP('blacksmith', COPPER_ARROW_TIP_XP);
+    
+    showItemPopup(`+${COPPER_ARROW_TIP_XP} Blacksmith XP`, 'arrowTipProgress', 0);
+    showItemPopup(`+${COPPER_ARROW_TIP_YIELD} Copper Arrow Tip`, 'arrowTipProgress', 450);
+    
+    const bar = document.getElementById('arrowTipProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBarsAfter += slot.qty;
+        }
+    }
+    if (totalBarsAfter < COPPER_ARROW_TIP_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft more.");
+        stopBlacksmithing('arrowTipProgress', 'startArrowTipBtn', 'stopArrowTipBtn');
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => smithingCopperArrowTipLoop(now, now));
+  } else {
+    const bar = document.getElementById('arrowTipProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => smithingCopperArrowTipLoop(now, startTime));
+  }
+}
+// +++ END: COPPER ARROW TIP UI (Blacksmith) +++
+
+
+// +++ NEW: FLETCHING HUB FUNCTIONS +++
+function openFletchingHub() {
+  showMainScreen('hubFletching');
+  // Render the items for the hub
+  renderFletchingItems();
+}
+
+function stopFletching(progressId = 'fletchProgress', startBtnId = 'startFletchBtn', stopBtnId = 'stopFletchBtn'){
+  game.fletchingActive = false;
+  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  const bar = document.getElementById(progressId);
+  if(bar) bar.style.width = '0%';
+  const startBtn = document.getElementById(startBtnId);
+  if(startBtn) startBtn.style.display = 'inline-block';
+  const stopBtn = document.getElementById(stopBtnId);
+  if(stopBtn) stopBtn.style.display = 'none';
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function renderFletchingItems() {
+  const container = document.getElementById('fletchingItemsContainer');
+  if (!container) return;
+  
+  const fletchLvl = game.fletching.level;
+  
+  const setupFletchButton = (btnId, locked, onclick, levelReq, tooltipText, itemName) => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      const nameHtml = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">${itemName}</div>`;
+      if (locked) {
+        btn.onclick = null;
+        const lockedTT = nameHtml + `Requires Fletching Lvl: ${levelReq}`;
+        btn.onmouseenter = (event) => showTooltip(event, lockedTT);
+      } else {
+        btn.onclick = onclick;
+        const unlockedTT = nameHtml + tooltipText;
+        btn.onmouseenter = (event) => showTooltip(event, unlockedTT);
+      }
+      btn.onmouseleave = hideTooltip;
+    }
+  };
+  
+  // --- Fletching Level Locks ---
+  const shaftLocked = fletchLvl < FLETCHING_SHAFT_LVL;
+  const unboundLocked = fletchLvl < FLETCHING_UNBOUND_LVL;
+  const copperArrowLocked = fletchLvl < FLETCHING_COPPER_ARROW_LVL;
+  
+  container.innerHTML = `
+    <button id="fletchShaftBtn" class="primary ${shaftLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/arrowshaft.png" alt="Arrow Shaft" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="fletchUnboundBtn" class="primary ${unboundLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/unboundarrow.png" alt="Unbound Arrow" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="fletchCopperArrowBtn" class="primary ${copperArrowLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/copperarrow.png" alt="Copper Arrow" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+    </button>
+  `;
+  
+  // --- Re-attach listeners for fletching items ---
+  setupFletchButton('fletchShaftBtn', shaftLocked, openFletchArrowShaft, FLETCHING_SHAFT_LVL, `Requires: ${ARROW_SHAFT_WOOD_COST} Softwood (Yields ${ARROW_SHAFT_YIELD})`, 'Arrow Shaft');
+  setupFletchButton('fletchUnboundBtn', unboundLocked, openFletchUnboundArrow, FLETCHING_UNBOUND_LVL, `Requires: ${UNBOUND_ARROW_SHAFT_COST} Arrow Shaft, ${UNBOUND_ARROW_FEATHER_COST} Feather (Yields ${UNBOUND_ARROW_YIELD})`, 'Unbound Arrow');
+  setupFletchButton('fletchCopperArrowBtn', copperArrowLocked, openFletchCopperArrow, FLETCHING_COPPER_ARROW_LVL, `Requires: ${COPPER_ARROW_UNBOUND_COST} Unbound Arrow, ${COPPER_ARROW_TIP_COST} Copper Arrow Tip (Yields ${COPPER_ARROW_YIELD})`, 'Copper Arrow');
+}
+
+// --- Arrow Shaft UI & Logic ---
+function openFletchArrowShaft(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Fletching - Arrow Shaft</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${ARROW_SHAFT_WOOD_COST} Softwood. Yields ${ARROW_SHAFT_YIELD}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="fletchProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startFletchBtn" class="primary">Start Fletching</button>
+      <button id="stopFletchBtn" class="primary" style="background:#555; display:none;">Stop Fletching</button>
+      <button onclick="openFletchingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startFletchBtn').onclick = startFletchingArrowShaft;
+  document.getElementById('stopFletchBtn').onclick = () => stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn'); 
+  showMainScreen('hubDynamic');
+}
+
+async function startFletchingArrowShaft() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.fletchingActive) return;
+
+  let totalWood = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Softwood') totalWood += slot.qty;
+  }
+
+  if (totalWood < ARROW_SHAFT_WOOD_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${ARROW_SHAFT_WOOD_COST} Softwood.`);
+      return;
+  }
+  
+  game.fletchingActive = true;
+  document.getElementById('startFletchBtn').style.display = 'none';
+  document.getElementById('stopFletchBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => fletchingArrowShaftLoop(now, now));
+}
+
+async function fletchingArrowShaftLoop(timestamp, startTime) {
+  if (!game.fletchingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / ARROW_SHAFT_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalWood = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Softwood') totalWood += slot.qty;
+    }
+    if (totalWood < ARROW_SHAFT_WOOD_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Softwood.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    
+    removeItem('Softwood', ARROW_SHAFT_WOOD_COST);
+    addItem('Arrow Shaft', ARROW_SHAFT_YIELD);
+    addXP('fletching', ARROW_SHAFT_XP);
+    
+    showItemPopup(`+${ARROW_SHAFT_XP} Fletching XP`, 'fletchProgress', 0);
+    showItemPopup(`+${ARROW_SHAFT_YIELD} Arrow Shaft`, 'fletchProgress', 450);
+    
+    document.getElementById('fletchProgress').style.width = '0%';
+    
+    let totalWoodAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Softwood') totalWoodAfter += slot.qty;
+    }
+    if (totalWoodAfter < ARROW_SHAFT_WOOD_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Softwood to make more.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => fletchingArrowShaftLoop(now, now));
+  } else {
+    document.getElementById('fletchProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => fletchingArrowShaftLoop(now, startTime));
+  }
+}
+
+// --- Unbound Arrow UI & Logic ---
+function openFletchUnboundArrow(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Fletching - Unbound Arrow</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${UNBOUND_ARROW_SHAFT_COST} Arrow Shaft, ${UNBOUND_ARROW_FEATHER_COST} Feather. Yields ${UNBOUND_ARROW_YIELD}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="fletchProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startFletchBtn" class="primary">Start Fletching</button>
+      <button id="stopFletchBtn" class="primary" style="background:#555; display:none;">Stop Fletching</button>
+      <button onclick="openFletchingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startFletchBtn').onclick = startFletchingUnboundArrow;
+  document.getElementById('stopFletchBtn').onclick = () => stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn'); 
+  showMainScreen('hubDynamic');
+}
+
+async function startFletchingUnboundArrow() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.fletchingActive) return;
+
+  let totalShafts = 0;
+  let totalFeathers = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Arrow Shaft') totalShafts += slot.qty;
+      if (slot && slot.name === 'Feather') totalFeathers += slot.qty;
+  }
+
+  if (totalShafts < UNBOUND_ARROW_SHAFT_COST || totalFeathers < UNBOUND_ARROW_FEATHER_COST) {
+      await showGameAlert("Not Enough Materials", `You need ${UNBOUND_ARROW_SHAFT_COST} Arrow Shafts and ${UNBOUND_ARROW_FEATHER_COST} Feathers.`);
+      return;
+  }
+  
+  game.fletchingActive = true;
+  document.getElementById('startFletchBtn').style.display = 'none';
+  document.getElementById('stopFletchBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => fletchingUnboundArrowLoop(now, now));
+}
+
+async function fletchingUnboundArrowLoop(timestamp, startTime) {
+  if (!game.fletchingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / UNBOUND_ARROW_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalShafts = 0;
+    let totalFeathers = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Arrow Shaft') totalShafts += slot.qty;
+        if (slot && slot.name === 'Feather') totalFeathers += slot.qty;
+    }
+    if (totalShafts < UNBOUND_ARROW_SHAFT_COST || totalFeathers < UNBOUND_ARROW_FEATHER_COST) {
+        await showGameAlert("Out of Materials", "You've run out of materials.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    
+    removeItem('Arrow Shaft', UNBOUND_ARROW_SHAFT_COST);
+    removeItem('Feather', UNBOUND_ARROW_FEATHER_COST);
+    addItem('Unbound Arrow', UNBOUND_ARROW_YIELD);
+    addXP('fletching', UNBOUND_ARROW_XP);
+    
+    showItemPopup(`+${UNBOUND_ARROW_XP} Fletching XP`, 'fletchProgress', 0);
+    showItemPopup(`+${UNBOUND_ARROW_YIELD} Unbound Arrow`, 'fletchProgress', 450);
+    
+    document.getElementById('fletchProgress').style.width = '0%';
+    
+    let totalShaftsAfter = 0;
+    let totalFeathersAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Arrow Shaft') totalShaftsAfter += slot.qty;
+        if (slot && slot.name === 'Feather') totalFeathersAfter += slot.qty;
+    }
+    if (totalShaftsAfter < UNBOUND_ARROW_SHAFT_COST || totalFeathersAfter < UNBOUND_ARROW_FEATHER_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough materials to make more.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => fletchingUnboundArrowLoop(now, now));
+  } else {
+    document.getElementById('fletchProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => fletchingUnboundArrowLoop(now, startTime));
+  }
+}
+
+// --- Copper Arrow UI & Logic ---
+function openFletchCopperArrow(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Fletching - Copper Arrow</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${COPPER_ARROW_UNBOUND_COST} Unbound Arrow, ${COPPER_ARROW_TIP_COST} Copper Arrow Tip. Yields ${COPPER_ARROW_YIELD}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="fletchProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startFletchBtn" class="primary">Start Fletching</button>
+      <button id="stopFletchBtn" class="primary" style="background:#555; display:none;">Stop Fletching</button>
+      <button onclick="openFletchingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startFletchBtn').onclick = startFletchingCopperArrow;
+  document.getElementById('stopFletchBtn').onclick = () => stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn'); 
+  showMainScreen('hubDynamic');
+}
+
+async function startFletchingCopperArrow() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.fletchingActive) return;
+
+  let totalUnbound = 0;
+  let totalTips = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Unbound Arrow') totalUnbound += slot.qty;
+      if (slot && slot.name === 'Copper Arrow Tip') totalTips += slot.qty;
+  }
+
+  if (totalUnbound < COPPER_ARROW_UNBOUND_COST || totalTips < COPPER_ARROW_TIP_COST) {
+      await showGameAlert("Not Enough Materials", `You need ${COPPER_ARROW_UNBOUND_COST} Unbound Arrows and ${COPPER_ARROW_TIP_COST} Copper Arrow Tips.`);
+      return;
+  }
+  
+  game.fletchingActive = true;
+  document.getElementById('startFletchBtn').style.display = 'none';
+  document.getElementById('stopFletchBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => fletchingCopperArrowLoop(now, now));
+}
+
+async function fletchingCopperArrowLoop(timestamp, startTime) {
+  if (!game.fletchingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / COPPER_ARROW_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalUnbound = 0;
+    let totalTips = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Unbound Arrow') totalUnbound += slot.qty;
+        if (slot && slot.name === 'Copper Arrow Tip') totalTips += slot.qty;
+    }
+    if (totalUnbound < COPPER_ARROW_UNBOUND_COST || totalTips < COPPER_ARROW_TIP_COST) {
+        await showGameAlert("Out of Materials", "You've run out of materials.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    
+    removeItem('Unbound Arrow', COPPER_ARROW_UNBOUND_COST);
+    removeItem('Copper Arrow Tip', COPPER_ARROW_TIP_COST);
+    addItem('Copper Arrow', COPPER_ARROW_YIELD);
+    addXP('fletching', COPPER_ARROW_XP);
+    
+    showItemPopup(`+${COPPER_ARROW_XP} Fletching XP`, 'fletchProgress', 0);
+    showItemPopup(`+${COPPER_ARROW_YIELD} Copper Arrow`, 'fletchProgress', 450);
+    
+    document.getElementById('fletchProgress').style.width = '0%';
+    
+    let totalUnboundAfter = 0;
+    let totalTipsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Unbound Arrow') totalUnboundAfter += slot.qty;
+        if (slot && slot.name === 'Copper Arrow Tip') totalTipsAfter += slot.qty;
+    }
+    if (totalUnboundAfter < COPPER_ARROW_UNBOUND_COST || totalTipsAfter < COPPER_ARROW_TIP_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough materials to make more.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => fletchingCopperArrowLoop(now, now));
+  } else {
+    document.getElementById('fletchProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => fletchingCopperArrowLoop(now, startTime));
+  }
+}
+// +++ END: FLETCHING HUB FUNCTIONS +++
+
 function renderSmithingItems(metalType) {
   const container = document.getElementById('smithingItemsContainer');
   if (!container) return;
@@ -4555,6 +5067,7 @@ function renderSmithingItems(metalType) {
     const copperBootsLocked = smithLvl < COPPER_BOOTS_LVL;
     const copperHelmetLocked = smithLvl < COPPER_HELMET_LVL;
     const copperChestLocked = smithLvl < COPPER_CHEST_LVL;
+    const copperTipsLocked = smithLvl < BLACKSMITH_COPPER_TIPS_LVL; // +++ NEW +++
     
     container.innerHTML = `
       <button id="copperBarBtn" class="primary ${copperBarLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
@@ -4578,6 +5091,9 @@ function renderSmithingItems(metalType) {
       <button id="copperChestplateBtn" class="primary ${copperChestLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/copperchestplate.png" alt="Copper Chestplate" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
       </button>
+      <button id="copperArrowTipBtn" class="primary ${copperTipsLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/copperarrowtip.png" alt="Copper Arrow Tip" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+      </button>
     `;
     
     // --- Re-attach listeners for copper items ---
@@ -4588,6 +5104,7 @@ function renderSmithingItems(metalType) {
     setupSmithButton('copperBootsBtn', copperBootsLocked, openCopperBootsSmith, COPPER_BOOTS_LVL, `Requires: ${BOOTS_BAR_COST} Copper Bars`, 'Copper Boots');
     setupSmithButton('copperHelmetBtn', copperHelmetLocked, openCopperHelmetSmith, COPPER_HELMET_LVL, `Requires: ${HELMET_BAR_COST} Copper Bars`, 'Copper Helmet');
     setupSmithButton('copperChestplateBtn', copperChestLocked, openCopperChestplateSmith, COPPER_CHEST_LVL, `Requires: ${CHESTPLATE_BAR_COST} Copper Bars`, 'Copper Chestplate');
+    setupSmithButton('copperArrowTipBtn', copperTipsLocked, openSmithCopperArrowTip, BLACKSMITH_COPPER_TIPS_LVL, `Requires: ${COPPER_ARROW_TIP_BAR_COST} Copper Bars (Yields ${COPPER_ARROW_TIP_YIELD})`, 'Copper Arrow Tip'); // +++ NEW +++
     
   } else if (metalType === 'iron') {
     // --- Iron Level Locks ---
@@ -5055,6 +5572,10 @@ function openCombatInterface(enemyName) {
     stopWoodcutting();
     game.wasWoodcuttingBeforeCombat = true;
   }
+  if (game.fletchingActive) { // +++ NEW +++
+    stopFletching();
+    game.wasFletchingBeforeCombat = true;
+  }
   
   // Define our enemy
   if (enemyName === 'Chicken') {
@@ -5248,10 +5769,13 @@ function returnToFarm() {
     openBlacksmithHub(); // Just return to hub for now
   } else if (game.wasWoodcuttingBeforeCombat) { // +++ NEW +++
     openForestHub(); // Return to Forest hub
+  } else if (game.wasFletchingBeforeCombat) { // +++ NEW +++
+    openFletchingHub(); // Return to Fletching hub
   }
   game.wasMiningBeforeCombat = false;
   game.wasSmithingBeforeCombat = false;
   game.wasWoodcuttingBeforeCombat = false; // +++ NEW +++
+  game.wasFletchingBeforeCombat = false; // +++ NEW +++
 }
 
 // NEW: Helper function to update the enemy's HP bar
@@ -5412,8 +5936,14 @@ function playerAttackTurn() {
 
   // --- 5. Check for Enemy Death ---
   if (game.currentEnemy.currentHp <= 0) {
+    // --- NEW: Multi-item loot drop ---
     addItem('Raw Chicken', 1);
+    const featherQty = Math.floor(Math.random() * 5) + 2; // 2 to 6 Feathers
+    addItem('Feather', featherQty);
+    
     showItemPopup('+1 Raw Chicken', null, 900);
+    showItemPopup(`+${featherQty} Feather`, null, 1350); // Show feather popup slightly after
+    // --- END NEW ---
     
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
     updateEnemyCombatUI();
@@ -5654,6 +6184,11 @@ function renderBankGrid() {
       else if (item.name === 'Copper Axe') imgName = 'copperaxe'; // +++ NEW +++
       else if (item.name === 'Iron Pickaxe') imgName = 'ironpickaxe'; // +++ NEW +++
       else if (item.name === 'Iron Axe') imgName = 'ironaxe'; // +++ NEW +++
+      else if (item.name === 'Feather') imgName = 'feather'; // +++ NEW +++
+      else if (item.name === 'Arrow Shaft') imgName = 'arrowshaft'; // +++ NEW +++
+      else if (item.name === 'Copper Arrow Tip') imgName = 'copperarrowtip'; // +++ NEW +++
+      else if (item.name === 'Unbound Arrow') imgName = 'unboundarrow'; // +++ NEW +++
+      else if (item.name === 'Copper Arrow') imgName = 'copperarrow'; // +++ NEW +++
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
       img.onerror = function(){ this.style.opacity='0.08'; };
@@ -6096,6 +6631,7 @@ function openShop() {
 function resetGameState() {
   stopMining(); 
   stopBlacksmithing();
+  stopFletching(); // +++ NEW +++
   game.name = '';
   game.hp = 10;
   game.maxHP = 10;
@@ -6110,6 +6646,7 @@ function resetGameState() {
   game.blacksmith = { level: 1, xp: 0, totalXP: 0 };
   game.cooking = { level: 1, xp: 0, totalXP: 0 };
   game.woodcutting = { level: 1, xp: 0, totalXP: 0 };
+  game.fletching = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
   
   // +++ ADD THESE 4 MISSING LINES +++
   game.attack = { level: 1, xp: 0, totalXP: 0 };
@@ -6122,6 +6659,7 @@ function resetGameState() {
   game.blacksmithingActive = false; // +++ NEW +++
   game.cookingActive = false;
   game.woodcuttingActive = false; // +++ NEW +++
+  game.fletchingActive = false; // +++ NEW +++
   game.shopOpen = false;
   game.isAdmin = false;
   
@@ -6265,13 +6803,14 @@ function closeSettings() {
  * @param {string} src - The path to the sound file
  */
 // +++ NEW: Hub Screen Toggler Function +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubBlacksmith', 'hubForest', 'hubKitchen', 'hubCombat', 'hubShop', 'hubBank', 'hubDynamic'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubBlacksmith', 'hubFletching', 'hubForest', 'hubKitchen', 'hubCombat', 'hubShop', 'hubBank', 'hubDynamic']; // +++ ADDED hubFletching
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
   stopBlacksmithing();
   stopCookingChicken();
   stopWoodcutting();
+  stopFletching(); // +++ NEW +++
   game.shopOpen = false;
   hideTooltip();
 
@@ -6411,6 +6950,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('combatActionIcon').onclick = openCombatHub;
   document.getElementById('shopActionIcon').onclick = openShop;
   document.getElementById('bankActionIcon').onclick = openBank;
+  document.getElementById('fletchingActionIcon').onclick = openFletchingHub; // +++ NEW +++
   
   // --- Hub Mine Listeners ---
   document.getElementById('copperVeinBtn').onclick = openCopperMine;
@@ -6446,6 +6986,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     renderSmithingItems('iron');
   };
   document.getElementById('hubBlacksmith_ReturnBtn').onclick = backToActions;
+
+  // --- Hub Fletching Listeners ---
+  document.getElementById('hubFletching_ReturnBtn').onclick = backToActions;
 
   // --- Hub Forest Listeners ---
   document.getElementById('softwoodTreeBtn').onclick = openSoftwoodTree;
@@ -6490,6 +7033,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('shopActionIcon').onmouseleave = hideTooltip;
   document.getElementById('bankActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Bank</div>');
   document.getElementById('bankActionIcon').onmouseleave = hideTooltip;
+  document.getElementById('fletchingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Fletching</div>'); // +++ NEW +++
+  document.getElementById('fletchingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
   
   // --- Tooltips for Hub Mine ---
   document.getElementById('copperVeinBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div>Requires Mining Lvl: 1');
@@ -6978,7 +7523,16 @@ window.showSaveIndicator = function() {
   
       // Combat
       'images/chickenmonster.png',
-      'images/chickenanim.gif'
+      'images/chickenanim.gif',
+
+      // Fletching
+      'images/fletchingskillicon.jpeg',
+      'images/fletchingworkbench.png',
+      'images/feather.png',
+      'images/arrowshaft.png',
+      'images/copperarrowtip.png',
+      'images/unboundarrow.png',
+      'images/copperarrow.png'
     ];
 
     /**
@@ -7285,6 +7839,13 @@ window.showSaveIndicator = function() {
           totalXP: game.woodcutting.totalXP
         },
         // +++ END NEW WOODCUTTING SAVE LOGIC +++
+        // +++ NEW FLETCHING SAVE LOGIC +++
+        fletching: {
+          level: game.fletching.level,
+          xp: game.fletching.xp,
+          totalXP: game.fletching.totalXP
+        },
+        // +++ END NEW FLETCHING SAVE LOGIC +++
         playerAttackStyle: game.playerAttackStyle, // <-- ADD THIS
         updatedAt: new Date().toISOString()
         // We don't save activeSession here, that's handled by the lock functions
@@ -7357,7 +7918,7 @@ window.showSaveIndicator = function() {
         
         // If we are the active tab, AND we are busy (mining, dragging, etc.),
         // do not sync data. This prevents rollbacks.
-        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.cookingActive || game.woodcuttingActive || game.isDragging)) {
+        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.cookingActive || game.woodcuttingActive || game.fletchingActive || game.isDragging)) {
           return;
         }
         
@@ -7497,6 +8058,16 @@ window.showSaveIndicator = function() {
           game.woodcutting = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW WOODCUTTING LOADING LOGIC +++
+        
+        // +++ NEW FLETCHING LOADING LOGIC +++
+        if (data.fletching) {
+          game.fletching.level = data.fletching.level || 1;
+          game.fletching.xp = data.fletching.xp || 0;
+          game.fletching.totalXP = data.fletching.totalXP || getTotalXPForLevel(data.fletching.level - 1) + data.fletching.xp || 0; 
+        } else {
+          game.fletching = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        // +++ END NEW FLETCHING LOADING LOGIC +++
 
         setText('charName', game.name);
         updateHPUI(); // This now calculates maxHP using game.vitality.level
@@ -7573,6 +8144,7 @@ window.showSaveIndicator = function() {
         vitality: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW VITALITY FOR NEW ACCOUNTS +++
         cooking: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW COOKING FOR NEW ACCOUNTS +++
         woodcutting: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW WOODCUTTING FOR NEW ACCOUNTS +++
+        fletching: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW FLETCHING FOR NEW ACCOUNTS +++
         playerAttackStyle: 'strength',
         activeSession: null, // +++ ADD THIS
         createdAt: new Date().toISOString()
@@ -8050,9 +8622,9 @@ window.showSaveIndicator = function() {
                 addLocalChatMessage("Usage: /setlevel [playername] [skill] [1-99]", 'error');
                 return true;
             }
-            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking', 'woodcutting'];
+            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking', 'woodcutting', 'fletching'];
 if (!validSkills.includes(skill)) {
-     addLocalChatMessage("Unknown skill. Use: mining, blacksmith, attack, strength, defence, vitality, cooking, or woodcutting.", 'error');
+     addLocalChatMessage("Unknown skill. Use: mining, blacksmith, attack, strength, defence, vitality, cooking, woodcutting, or fletching.", 'error');
      return true;
 }
             const newTotalXP = getTotalXPForLevel(level); 
@@ -8697,8 +9269,9 @@ if (!validSkills.includes(skill)) {
         const vitalityXp = data.vitality?.totalXP || 0;
         const cookingXp = data.cooking?.totalXP || 0;
         const woodcuttingXp = data.woodcutting?.totalXP || 0; // +++ NEW +++
+        const fletchingXp = data.fletching?.totalXP || 0; // +++ NEW +++
 
-        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp + woodcuttingXp;
+        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp + woodcuttingXp + fletchingXp;
         // --- END OF FIX ---
 
         players.push({
@@ -8900,7 +9473,14 @@ if (!validSkills.includes(skill)) {
       'images/ironshortsword.png',
       'images/ironhelmet.png',
       'images/ironchestplate.png',
-      'images/ironboots.png'
+      'images/ironboots.png',
+      'images/fletchingskillicon.jpeg', // +++ CHANGED TO .jpeg +++
+      'images/fletchingworkbench.png',
+      'images/feather.png',
+      'images/arrowshaft.png',
+      'images/copperarrowtip.png',
+      'images/unboundarrow.png',
+      'images/copperarrow.png'
     ];
 
     /**
