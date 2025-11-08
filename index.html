@@ -6529,6 +6529,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   window.resetGameState = resetGameState;
   document.addEventListener('mousemove', moveTooltip);
   
+  // --- NEW: Prevent Right-Click Menu ---
+  // This listens for the 'contextmenu' event (right-click) on the entire page
+  // and stops the browser from showing its default menu.
+  document.addEventListener('contextmenu', (e) => {
+    e.preventDefault(); 
+  });
+  // --- END NEW ---
+  
   const inventoryGrid = document.getElementById('inventoryGrid');
   const inventoryGridWrap = document.getElementById('inventoryGridWrap');
   const bankGridWrap = document.getElementById('bankGridWrap'); // <-- ADD THIS
