@@ -2803,7 +2803,7 @@ function updateSkillUI(){
   // Clear the tab and set up the header/container
   skillsTab.innerHTML = `
     <div style="font-size:14px; margin-bottom:12px;">Skills</div>
-    <div id="skillIconsContainer" style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: flex-start;">
+    <div id="skillIconsContainer" style="display: grid; grid-template-columns: repeat(3, 80px); gap: 15px; justify-content: center;">
       </div>
   `;
 
