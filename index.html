@@ -4743,9 +4743,9 @@ function renderFletchingItems() {
   `;
   
   // --- Re-attach listeners for fletching items ---
-  setupFletchButton('fletchShaftBtn', shaftLocked, openFletchArrowShaft, FLETCHING_SHAFT_LVL, `Requires: ${ARROW_SHAFT_WOOD_COST} Softwood (Yields ${ARROW_SHAFT_YIELD})`, 'Arrow Shaft');
-  setupFletchButton('fletchUnboundBtn', unboundLocked, openFletchUnboundArrow, FLETCHING_UNBOUND_LVL, `Requires: ${UNBOUND_ARROW_SHAFT_COST} Arrow Shaft, ${UNBOUND_ARROW_FEATHER_COST} Feather (Yields ${UNBOUND_ARROW_YIELD})`, 'Unbound Arrow');
-  setupFletchButton('fletchCopperArrowBtn', copperArrowLocked, openFletchCopperArrow, FLETCHING_COPPER_ARROW_LVL, `Requires: ${COPPER_ARROW_UNBOUND_COST} Unbound Arrow, ${COPPER_ARROW_TIP_COST} Copper Arrow Tip (Yields ${COPPER_ARROW_YIELD})`, 'Copper Arrow');
+  setupFletchButton('fletchShaftBtn', shaftLocked, openFletchArrowShaft, FLETCHING_SHAFT_LVL, `Requires: ${ARROW_SHAFT_WOOD_COST} Softwood`, `Arrow Shaft x${ARROW_SHAFT_YIELD}`);
+  setupFletchButton('fletchUnboundBtn', unboundLocked, openFletchUnboundArrow, FLETCHING_UNBOUND_LVL, `Requires: ${UNBOUND_ARROW_SHAFT_COST} Arrow Shafts, <br>${UNBOUND_ARROW_FEATHER_COST} Feathers`, `Unbound Arrow x${UNBOUND_ARROW_YIELD}`);
+  setupFletchButton('fletchCopperArrowBtn', copperArrowLocked, openFletchCopperArrow, FLETCHING_COPPER_ARROW_LVL, `Requires: ${COPPER_ARROW_UNBOUND_COST} Unbound Arrows, <br>${COPPER_ARROW_TIP_COST} Copper Arrow Tips`, `Copper Arrow x${COPPER_ARROW_YIELD}`);
 }
 
 // --- Arrow Shaft UI & Logic ---
@@ -5104,7 +5104,7 @@ function renderSmithingItems(metalType) {
     setupSmithButton('copperBootsBtn', copperBootsLocked, openCopperBootsSmith, COPPER_BOOTS_LVL, `Requires: ${BOOTS_BAR_COST} Copper Bars`, 'Copper Boots');
     setupSmithButton('copperHelmetBtn', copperHelmetLocked, openCopperHelmetSmith, COPPER_HELMET_LVL, `Requires: ${HELMET_BAR_COST} Copper Bars`, 'Copper Helmet');
     setupSmithButton('copperChestplateBtn', copperChestLocked, openCopperChestplateSmith, COPPER_CHEST_LVL, `Requires: ${CHESTPLATE_BAR_COST} Copper Bars`, 'Copper Chestplate');
-    setupSmithButton('copperArrowTipBtn', copperTipsLocked, openSmithCopperArrowTip, BLACKSMITH_COPPER_TIPS_LVL, `Requires: ${COPPER_ARROW_TIP_BAR_COST} Copper Bars (Yields ${COPPER_ARROW_TIP_YIELD})`, 'Copper Arrow Tip'); // +++ NEW +++
+    setupSmithButton('copperArrowTipBtn', copperTipsLocked, openSmithCopperArrowTip, BLACKSMITH_COPPER_TIPS_LVL, `Requires: ${COPPER_ARROW_TIP_BAR_COST} Copper Bars`, `Copper Arrow Tip x${COPPER_ARROW_TIP_YIELD}`); // +++ NEW +++
     
   } else if (metalType === 'iron') {
     // --- Iron Level Locks ---
@@ -7033,7 +7033,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('shopActionIcon').onmouseleave = hideTooltip;
   document.getElementById('bankActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Bank</div>');
   document.getElementById('bankActionIcon').onmouseleave = hideTooltip;
-  document.getElementById('fletchingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Fletching</div>'); // +++ NEW +++
+  document.getElementById('fletchingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Fletching Bench</div>'); // +++ NEW +++
   document.getElementById('fletchingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
   
   // --- Tooltips for Hub Mine ---
