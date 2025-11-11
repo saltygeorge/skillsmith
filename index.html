@@ -1148,13 +1148,13 @@ button.primary:hover { background: var(--accent-hover); }
             <div style="margin-top:8px; color:#efe3cf;">Choose a vein to mine.</div>
             <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
               <button id="copperVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-                <img src="images/coppervein.png" alt="Copper Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+                <img src="images/coppervein.png" alt="Copper Vein" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
               <button id="coalVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-                <img src="images/coalvein.png" alt="Coal Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+                <img src="images/coalvein.png" alt="Coal Vein" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
               <button id="ironVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-                <img src="images/ironvein.png" alt="Iron Vein" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+                <img src="images/ironvein.png" alt="Iron Vein" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
             </div>
             <div class="action-buttons" style="margin-top: 14px;">
@@ -1187,10 +1187,10 @@ button.primary:hover { background: var(--accent-hover); }
             <div style="margin-top:8px; color:#efe3cf;">Choose a tree to chop.</div>
             <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
               <button id="softwoodTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-                <img src="images/softwood.png" alt="Softwood Tree" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+                <img src="images/softwood.png" alt="Softwood Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
               <button id="oakTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-                <img src="images/oak.png" alt="Oak Tree" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+                <img src="images/oak.png" alt="Oak Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
             </div>
             <div class="action-buttons" style="margin-top: 14px;">
@@ -1203,7 +1203,7 @@ button.primary:hover { background: var(--accent-hover); }
             <div style="margin-top:8px; color:#efe3cf;">Choose something to cook.</div>
             <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
               <button id="cookChickenBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
-                <img src="images/cookedchicken.png" alt="Cooked Chicken" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+                <img src="images/cookedchicken.png" alt="Cooked Chicken" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
                 <span>Cooked Chicken</span>
               </button>
               <button id="hubKitchen_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
@@ -1215,7 +1215,7 @@ button.primary:hover { background: var(--accent-hover); }
             <div style="margin-top:8px; color:#efe3cf;">Choose an area to start fighting.</div>
             <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
               <button id="farmAreaBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
-                <img src="images/farm.png" alt="Farm Area" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+                <img src="images/farm.png" alt="Farm Area" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
                 <span>The Farm</span>
               </button>
               <button id="hubCombat_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
@@ -4732,13 +4732,13 @@ function renderFletchingItems() {
   
   container.innerHTML = `
     <button id="fletchShaftBtn" class="primary ${shaftLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-      <img src="images/arrowshaft.png" alt="Arrow Shaft" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+      <img src="images/arrowshaft.png" alt="Arrow Shaft" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
     </button>
     <button id="fletchUnboundBtn" class="primary ${unboundLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-      <img src="images/unboundarrow.png" alt="Unbound Arrow" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+      <img src="images/unboundarrow.png" alt="Unbound Arrow" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
     </button>
     <button id="fletchCopperArrowBtn" class="primary ${copperArrowLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-      <img src="images/copperarrow.png" alt="Copper Arrow" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+      <img src="images/copperarrow.png" alt="Copper Arrow" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
     </button>
   `;
   
@@ -5071,28 +5071,28 @@ function renderSmithingItems(metalType) {
     
     container.innerHTML = `
       <button id="copperBarBtn" class="primary ${copperBarLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/copperbar.png" alt="Copper Bar" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/copperbar.png" alt="Copper Bar" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="copperPickaxeBtn" class="primary ${copperPickaxeLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/copperpickaxe.png" alt="Copper Pickaxe" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/copperpickaxe.png" alt="Copper Pickaxe" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="copperAxeBtn" class="primary ${copperAxeLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/copperaxe.png" alt="Copper Axe" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/copperaxe.png" alt="Copper Axe" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="copperShortswordBtn" class="primary ${copperSwordLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/coppershortsword.png" alt="Copper Shortsword" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/coppershortsword.png" alt="Copper Shortsword" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="copperBootsBtn" class="primary ${copperBootsLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/copperboots.png" alt="Copper Boots" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/copperboots.png" alt="Copper Boots" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="copperHelmetBtn" class="primary ${copperHelmetLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/copperhelmet.png" alt="Copper Helmet" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/copperhelmet.png" alt="Copper Helmet" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="copperChestplateBtn" class="primary ${copperChestLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/copperchestplate.png" alt="Copper Chestplate" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/copperchestplate.png" alt="Copper Chestplate" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="copperArrowTipBtn" class="primary ${copperTipsLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/copperarrowtip.png" alt="Copper Arrow Tip" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/copperarrowtip.png" alt="Copper Arrow Tip" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
     `;
     
@@ -5118,25 +5118,25 @@ function renderSmithingItems(metalType) {
     
     container.innerHTML = `
       <button id="ironBarBtn" class="primary ${ironBarLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/ironbar.png" alt="Iron Bar" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/ironbar.png" alt="Iron Bar" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="ironPickaxeBtn" class="primary ${ironPickaxeLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/ironpickaxe.png" alt="Iron Pickaxe" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/ironpickaxe.png" alt="Iron Pickaxe" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="ironAxeBtn" class="primary ${ironAxeLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/ironaxe.png" alt="Iron Axe" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/ironaxe.png" alt="Iron Axe" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="ironShortswordBtn" class="primary ${ironSwordLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/ironshortsword.png" alt="Iron Shortsword" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/ironshortsword.png" alt="Iron Shortsword" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="ironBootsBtn" class="primary ${ironBootsLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/ironboots.png" alt="Iron Boots" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/ironboots.png" alt="Iron Boots" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="ironHelmetBtn" class="primary ${ironHelmetLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/ironhelmet.png" alt="Iron Helmet" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/ironhelmet.png" alt="Iron Helmet" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
       <button id="ironChestplateBtn" class="primary ${ironChestLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-        <img src="images/ironchestplate.png" alt="Iron Chestplate" style="width: 40px; height: 40px; border-radius: 4px; object-fit: contain;">
+        <img src="images/ironchestplate.png" alt="Iron Chestplate" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
     `;
     
@@ -7444,138 +7444,6 @@ window.showSaveIndicator = function() {
 </script>
 
 <div id="itemContextMenu"></div>
-
-<script>
-  (function() {
-    // This is the master list of all critical assets
-    const MASTER_ASSET_LIST = [
-      // Main UI & Background
-      'images/brick_background.png',
-      'images/gearicon.png',
-      'images/goldpouch.png',
-      
-      // Main Hub Icons
-      'images/mines.png',
-      'images/foresticon.png',
-      'images/blacksmithicon.png',
-      'images/kitchenbutton.png',
-      'images/combatareas.png',
-      'images/shopbutton.png',
-      'images/bankbutton.png',
-  
-      // Equipment Placeholders
-      'images/helmet.png',
-      'images/weapon.png',
-      'images/chestplate.png',
-      'images/boots.png',
-  
-      // Skill Icons
-      'images/miningskillicon.png',
-      'images/blacksmithskillicon.png',
-      'images/attackskillicon.png',
-      'images/strengthskillicon.png',
-      'images/defenseskillicon.png',
-      'images/vitalityskillicon.png',
-      'images/cookingskillicon.png',
-      'images/woodcuttingskillicon.png',
-      
-      // Resource/Hub Icons
-      'images/coppervein.png',
-      'images/ironvein.png',
-      'images/coalvein.png',
-      'images/farm.png',
-  
-      // Items: Tools
-      'images/bronzepickaxe.png',
-      'images/bronzeaxe.png',
-      'images/copperpickaxe.png',
-      'images/copperaxe.png',
-      'images/ironpickaxe.png',
-      'images/ironaxe.png',
-  
-      // Items: Ores & Bars
-      'images/copperore.png',
-      'images/copperbar.png',
-      'images/coalore.png',
-      'images/ironore.png',
-      'images/ironbar.png',
-  
-      // Items: Wood
-      'images/softwood.png',
-      'images/oak.png',
-  
-      // Items: Food
-      'images/rawchicken.png',
-      'images/cookedchicken.png',
-      'images/burntchicken.png',
-  
-      // Items: Copper Armor/Weapon
-      'images/copperhelmet.png',
-      'images/copperchestplate.png',
-      'images/copperboots.png',
-      'images/coppershortsword.png',
-  
-      // Items: Iron Armor/Weapon
-      'images/ironhelmet.png',
-      'images/ironchestplate.png',
-      'images/ironboots.png',
-      'images/ironshortsword.png',
-  
-      // Combat
-      'images/chickenmonster.png',
-      'images/chickenanim.gif',
-
-      // Fletching
-      'images/fletchingskillicon.jpeg',
-      'images/fletchingworkbench.png',
-      'images/feather.png',
-      'images/arrowshaft.png',
-      'images/copperarrowtip.png',
-      'images/unboundarrow.png',
-      'images/copperarrow.png'
-    ];
-
-    /**
-     * This function creates a 'Promise' that only resolves
-     * when the image has fully loaded (or failed).
-     */
-    function loadImage(src) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null); // Don't fail the whole load
-        img.src = src;
-      });
-    }
-
-    /**
-     * This function loads all images in the list at the same time
-     * and waits for all of them to finish.
-     */
-    async function preloadAllAssets(urls) {
-      const promises = urls.map(url => loadImage(url));
-      await Promise.all(promises);
-    }
-
-    // --- Start the preload ---
-    console.log(`[Preloader] Starting preload of ${MASTER_ASSET_LIST.length} assets...`);
-    preloadAllAssets(MASTER_ASSET_LIST).then(() => {
-      // --- This runs ONLY after all images are loaded ---
-      console.log('[Preloader] All assets loaded.');
-      
-      const loadingScreen = document.getElementById('loadingScreen');
-      const authScreen = document.getElementById('authScreen');
-
-      if (loadingScreen) {
-        loadingScreen.style.display = 'none'; // Hide loading
-      }
-      if (authScreen) {
-        authScreen.style.display = 'flex'; // Show login
-      }
-    });
-
-  })();
-</script>
 
 <script type="module">
   // Firebase imports (CDN modules)
