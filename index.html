@@ -117,14 +117,17 @@ body {
 #equipmentTab {
   display: flex;
   flex-direction: column;
-  /* justify-content: center;  <- REMOVED */
   flex-grow: 1;
-  /* padding-top: 70px; <- REMOVED */
+  justify-content: space-between; /* This pushes the button to the bottom */
 }
 
 .equipment-character { display: flex; justify-content: center; }
-.character-frame { display: flex; flex-direction: column; align-items: center; }
-.equipment-row { display: flex; justify-content: center; margin: 6px 0; gap: 10px; }
+.character-frame { 
+  display: grid;
+  grid-template-columns: repeat(3, var(--slot-size));
+  gap: var(--slot-gap);
+  /* All the old flexbox and width properties are gone */
+}
 .equipment-slot {
   width: var(--slot-size); height: var(--slot-size);
   background: #c69c6d;
@@ -578,6 +581,7 @@ button.primary:hover { background: var(--accent-hover); }
   background: rgba(0,0,0,0.15);
   padding: 15px;
   border-radius: 8px;
+  justify-content: center; /* <-- ADDED THIS to center the buttons */
 }
 
 
@@ -819,7 +823,7 @@ button.primary:hover { background: var(--accent-hover); }
 }
 
 #equipmentStats {
-  margin-top: 20px; /* Space below the character model */
+  /* This style is now used by the pop-up panel */
   padding: 10px;
   background: rgba(0,0,0,0.15);
   border-radius: 6px;
@@ -1006,6 +1010,45 @@ button.primary:hover { background: var(--accent-hover); }
 }
 /* --- END NEW --- */
 
+/* --- NEW: Stats Panel --- */
+#statsPanel {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  background: var(--panel-bg);
+  border: 4px solid #453625;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
+  border-radius: 10px;
+  padding: 15px;
+  z-index: 3500; /* Above inventory, below modals */
+  box-sizing: border-box;
+}
+#statsPanelHeader {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--gold);
+  margin: -5px -5px 10px -5px;
+  padding: 5px 10px;
+  border-bottom: 2px solid var(--accent);
+  cursor: move; /* Indicates it's draggable */
+}
+#statsPanelContent {
+  /* We can re-use the .stat-row styles here */
+  padding: 10px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 6px;
+}
+#statsPanelFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+/* --- END: Stats Panel --- */
+
+
 </style>
 </head>
 <body>
@@ -1067,40 +1110,44 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="equipmentTab">
             <div class="equipment-character">
               <div class="character-frame">
-                <div class="equipment-row">
-                  <div class="equipment-slot" id="helmet">
-                    <img src="images/helmet.png" alt="Helmet">
-                  </div>
+                <div class="equipment-slot" id="necklace">
+                  <img src="images/necklace.png" alt="Necklace">
                 </div>
-                <div class="equipment-row" style="align-items:center;">
-                  <div class="equipment-slot" id="weapon">
-                    <img src="images/weapon.png" alt="Weapon">
-                  </div>
-                  <div class="equipment-slot" id="chest">
-                    <img src="images/chestplate.png" alt="Chest">
-                  </div>
+                <div class="equipment-slot" id="helmet">
+                  <img src="images/helmet.png" alt="Helmet">
                 </div>
-                <div class="equipment-row">
-                  <div class="equipment-slot" id="boots">
-                    <img src="images/boots.png" alt="Boots">
-                  </div>
+                <div class="equipment-slot" id="cape">
+                  <img src="images/cape.png" alt="Cape">
+                </div>
+                <div class="equipment-slot" id="weapon">
+                  <img src="images/weapon.png" alt="Weapon">
+                </div>
+                <div class="equipment-slot" id="chest">
+                  <img src="images/chestplate.png" alt="Chest">
+                </div>
+                <div class="equipment-slot" id="shield">
+                  <img src="images/shield.png" alt="Shield">
+                </div>
+                <div class="equipment-slot" id="ring1">
+                  <img src="images/ring.png" alt="Ring 1">
+                </div>
+                <div class="equipment-slot" id="legs">
+                  <img src="images/legs.png" alt="Legs">
+                </div>
+                <div class="equipment-slot" id="ring2">
+                  <img src="images/ring.png" alt="Ring 2">
+                </div>
+                <div class="equipment-slot" id="arrows">
+                  <img src="images/arrows.png" alt="Arrows">
+                </div>
+                <div class="equipment-slot" id="boots">
+                  <img src="images/boots.png" alt="Boots">
                 </div>
               </div>
             </div>
 
-            <div id="equipmentStats">
-              <div class="stat-row">
-                <span class="stat-label">Physical Damage</span>
-                <span class="stat-value" id="stat-phys-dmg">0</span>
-              </div>
-              <div class="stat-row">
-                <span class="stat-label">Armor</span>
-                <span class="stat-value" id="stat-armor">0</span>
-              </div>
-              <div class="stat-row">
-                <span class="stat-label">Attack Speed</span>
-                <span class="stat-value" id="stat-speed">4.0s</span>
-              </div>
+            <div id="statsButtonContainer" style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button class="primary" id="toggleStatsBtn">Stats</button>
             </div>
             </div>
           
@@ -1435,9 +1482,16 @@ const game = {
   bankGold: 0,
   // --- END NEW ---
   equipment: {
+    necklace: null, // <-- NEW
     helmet: null,
-    chest: null,
+    cape: null,     // <-- NEW
     weapon: null,
+    chest: null,
+    shield: null,   // <-- NEW
+    ring1: null,    // <-- NEW
+    legs: null,     // <-- NEW
+    ring2: null,    // <-- NEW
+    arrows: null,   // <-- NEW
     boots: null
   },
   mining: { level: 1, xp: 0, totalXP: 0 },
@@ -1670,7 +1724,9 @@ const VALID_ITEMS = [
   'Arrow Shaft', // +++ NEW +++
   'Copper Arrow Tip', // +++ NEW +++
   'Unbound Arrow', // +++ NEW +++
-  'Copper Arrow' // +++ NEW +++
+  'Copper Arrow', // +++ NEW +++
+  'Copper Platelegs', // +++ NEW +++
+  'Iron Platelegs' // +++ NEW +++
 ];
 
 const XP_TABLE = [
@@ -1795,6 +1851,12 @@ const BOOTS_BAR_COST = 4;
 const BOOTS_XP = 26; // 4 bars (~6.5xp/bar)
 const BOOTS_TIME_MS = 4000; // 4 bars (1s/bar)
 
+// +++ NEW PLATELEGS CONSTANTS +++
+const COPPER_PLATELEGS_BAR_COST = 6;
+const COPPER_PLATELEGS_XP = 39; // 6 bars (~6.5xp/bar)
+const COPPER_PLATELEGS_TIME_MS = 6000; // 6 bars (1s/bar)
+// +++ END NEW CONSTANTS +++
+
 // --- NEW: Mining Level Requirements ---
 const COAL_MINE_LVL = 5;
 const IRON_MINE_LVL = 10;
@@ -1820,6 +1882,7 @@ const COPPER_SWORD_LVL = 3;
 const BLACKSMITH_COPPER_TIPS_LVL = 4; // +++ NEW +++
 const COPPER_BOOTS_LVL = 5;
 const COPPER_HELMET_LVL = 6;
+const COPPER_PLATELEGS_LVL = 7; // +++ NEW +++
 const COPPER_CHEST_LVL = 8;
 
 const IRON_BAR_LVL = 11;
@@ -1828,6 +1891,7 @@ const IRON_AXE_LVL = 12;
 const IRON_SWORD_LVL = 13;
 const IRON_BOOTS_LVL = 15;
 const IRON_HELMET_LVL = 16;
+const IRON_PLATELEGS_LVL = 17; // +++ NEW +++
 const IRON_CHEST_LVL = 18;
 
 // --- NEW: Fletching Level Requirements ---
@@ -1876,6 +1940,12 @@ const IRON_CHESTPLATE_TIME_MS = 12000;
 const IRON_BOOTS_BAR_COST = 4;
 const IRON_BOOTS_XP = 120; 
 const IRON_BOOTS_TIME_MS = 6000; 
+
+// +++ NEW PLATELEGS CONSTANTS +++
+const IRON_PLATELEGS_BAR_COST = 6;
+const IRON_PLATELEGS_XP = 180; // 6 bars (30xp/bar)
+const IRON_PLATELEGS_TIME_MS = 9000; // 6 bars (1.5s/bar)
+// +++ END NEW CONSTANTS +++ 
 
 const IRON_SHORTSWORD_BAR_COST = 5;
 const IRON_SHORTSWORD_XP = 150;
@@ -1933,6 +2003,9 @@ const ITEM_STATS = {
   'Copper Boots': {
     armor: 1
   },
+  'Copper Platelegs': {
+    armor: 1
+  },
   'Copper Shortsword': {
     damage: 1,
     styleBonus: 1, // Bonus for 'attack' style
@@ -1946,6 +2019,9 @@ const ITEM_STATS = {
     armor: 3
   },
   'Iron Boots': {
+    armor: 2
+  },
+  'Iron Platelegs': {
     armor: 2
   },
   'Iron Shortsword': {
@@ -1987,6 +2063,7 @@ const ITEM_SELL_PRICES = {
   'Copper Axe': 15,
   'Copper Helmet': 20,
   'Copper Chestplate': 40,
+  'Copper Platelegs': 25, // +++ NEW +++
   'Copper Boots': 15,
   'Copper Shortsword': 20,
   
@@ -1995,6 +2072,7 @@ const ITEM_SELL_PRICES = {
   'Iron Axe': 50,
   'Iron Helmet': 60,
   'Iron Chestplate': 120,
+  'Iron Platelegs': 75, // +++ NEW +++
   'Iron Boots': 55,
   'Iron Shortsword': 65,
 
@@ -2111,14 +2189,24 @@ function renderEquipment() {
   // --- 1. Calculate current stats ---
   const stats = getPlayerCombatStats();
   
-  // --- 2. Update the Stats Display ---
-  // Show *only* the bonus from equipment, as requested
-  setText('stat-phys-dmg', `+${stats.equipmentDamage}`);
-  setText('stat-armor', `+${stats.equipmentArmor}`);
-  setText('stat-speed', `+${stats.equipmentSpeed}`); // <-- THIS LINE IS CHANGED
+  // --- 2. Update the Stats Display (in the new panel) ---
+  setText('stat-phys-dmg-panel', `+${stats.equipmentDamage}`);
+  setText('stat-armor-panel', `+${stats.equipmentArmor}`);
+  // --- MODIFICATION: Show final attack speed, not bonus ---
+  const finalSpeedInSeconds = (stats.attackSpeed / 1000).toFixed(1);
+  setText('stat-speed-panel', `${finalSpeedInSeconds}s`);
+  // --- END MODIFICATION ---
 
   // --- 3. Update Equipment Slots & Tooltips ---
-  const slots = ['helmet', 'chest', 'weapon', 'boots'];
+  // <-- UPDATED this array with all new slots -->
+  const slots = [
+    'necklace', 'helmet', 'cape', 
+    'weapon', 'chest', 'shield', 
+    'ring1', 'legs', 'ring2', 
+    'arrows', 'boots'
+  ];
+  
+  // <-- UPDATED this map with existing item images -->
   const itemImageMap = {
     'Copper Helmet': 'copperhelmet',
     'Copper Chestplate': 'copperchestplate',
@@ -2127,7 +2215,9 @@ function renderEquipment() {
     'Iron Helmet': 'ironhelmet',
     'Iron Chestplate': 'ironchestplate',
     'Iron Shortsword': 'ironshortsword',
-    'Iron Boots': 'ironboots'
+    'Iron Boots': 'ironboots',
+    'Copper Platelegs': 'copperplatelegs', // +++ NEW +++
+    'Iron Platelegs': 'ironplatelegs' // +++ NEW +++
   };
 
   slots.forEach(slotType => {
@@ -2136,8 +2226,7 @@ function renderEquipment() {
     // Get the Main Sidebar Slot
     const mainSlotEl = document.getElementById(slotType);
     
-    // Get the (optional) Combat UI Slot
-    const combatSlotEl = document.getElementById(`combat-${slotType}`);
+    // <-- DELETED: All references to combatSlotEl are gone -->
     
     let imgName = '';
     if (item) {
@@ -2145,9 +2234,17 @@ function renderEquipment() {
     } else {
       // Use placeholder images
       if (slotType === 'helmet') imgName = 'helmet';
-      if (slotType === 'chest') imgName = 'chestplate';
-      if (slotType === 'weapon') imgName = 'weapon';
-      if (slotType === 'boots') imgName = 'boots';
+      else if (slotType === 'chest') imgName = 'chestplate';
+      else if (slotType === 'weapon') imgName = 'weapon';
+      else if (slotType === 'boots') imgName = 'boots';
+      // <-- NEW: Added placeholders for new slots -->
+      else if (slotType === 'necklace') imgName = 'necklace';
+      else if (slotType === 'cape') imgName = 'cape';
+      else if (slotType === 'shield') imgName = 'shield';
+      else if (slotType === 'legs') imgName = 'legs';
+      else if (slotType === 'ring1') imgName = 'ring';
+      else if (slotType === 'ring2') imgName = 'ring';
+      else if (slotType === 'arrows') imgName = 'arrows';
     }
     
     const imgHtml = `<img src="images/${imgName}.png" alt="${slotType}">`;
@@ -2183,25 +2280,7 @@ function renderEquipment() {
       }
     }
     
-    // Update Combat UI Slot (if it exists)
-    if (combatSlotEl) {
-      combatSlotEl.innerHTML = imgHtml;
-      combatSlotEl.onclick = null; 
-      
-      if (item) {
-        combatSlotEl.onmouseenter = (evt) => {
-           const tooltipContent = `
-            <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
-            ${statsHtml}
-          `;
-          showTooltip(evt, tooltipContent);
-        };
-        combatSlotEl.onmouseleave = hideTooltip;
-      } else {
-        combatSlotEl.onmouseenter = null;
-        combatSlotEl.onmouseleave = null;
-      }
-    }
+    // <-- DELETED: The 'Update Combat UI Slot' block is gone -->
   });
 }
 
@@ -2268,6 +2347,10 @@ function renderInventoryGrid(){
           imgName = 'ironboots';
       } else if (item.name === 'Iron Shortsword') {
           imgName = 'ironshortsword';
+      } else if (item.name === 'Copper Platelegs') { // +++ NEW +++
+          imgName = 'copperplatelegs';
+      } else if (item.name === 'Iron Platelegs') { // +++ NEW +++
+          imgName = 'ironplatelegs';
       } else if (item.name === 'Softwood') {
           imgName = 'softwood';
       } else if (item.name === 'Oak') {
@@ -2504,7 +2587,9 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Iron Helmet': 'helmet',
     'Iron Chestplate': 'chest',
     'Iron Shortsword': 'weapon',
-    'Iron Boots': 'boots'
+    'Iron Boots': 'boots',
+    'Copper Platelegs': 'legs', // +++ NEW +++
+    'Iron Platelegs': 'legs' // +++ NEW +++
   };
   const itemSlotType = equipableItems[itemName];
   // --- END NEW ---
@@ -3266,6 +3351,105 @@ async function bootsCraftingLoop(timestamp, startTime) {
   }
 }
 
+// +++ NEW COPPER PLATELEGS UI +++
+function openCopperPlatelegsSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Smithing - Copper Platelegs</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${COPPER_PLATELEGS_BAR_COST} Copper Bars.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="platelegsProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startPlatelegsBtn" class="primary">Start Crafting</button>
+      <button id="stopPlatelegsBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startPlatelegsBtn').onclick = startCopperPlatelegsCrafting;
+  document.getElementById('stopPlatelegsBtn').onclick = () => stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn'); 
+  showMainScreen('hubDynamic');
+}
+
+async function startCopperPlatelegsCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Copper Bar') {
+          totalBars += slot.qty;
+      }
+  }
+
+  if (totalBars < COPPER_PLATELEGS_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${COPPER_PLATELEGS_BAR_COST} Copper Bars to craft platelegs.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startPlatelegsBtn');
+  const stopBtn = document.getElementById('stopPlatelegsBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => copperPlatelegsCraftingLoop(now, now));
+}
+
+async function copperPlatelegsCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / COPPER_PLATELEGS_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBars += slot.qty;
+        }
+    }
+    if (totalBars < COPPER_PLATELEGS_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
+        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn'); // <-- FIX: Pass correct IDs
+        return;
+    }
+    
+    removeItem('Copper Bar', COPPER_PLATELEGS_BAR_COST);
+    addItem('Copper Platelegs', 1);
+    addXP('blacksmith', COPPER_PLATELEGS_XP);
+    
+    showItemPopup(`+${COPPER_PLATELEGS_XP} Blacksmith XP`, 'platelegsProgress', 0);
+    showItemPopup(`+1 Copper Platelegs`, 'platelegsProgress', 450);
+    
+    const bar = document.getElementById('platelegsProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Copper Bar') {
+            totalBarsAfter += slot.qty;
+        }
+    }
+    if (totalBarsAfter < COPPER_PLATELEGS_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft more platelegs.");
+        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn'); // <-- FIX: Pass correct IDs
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => copperPlatelegsCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('platelegsProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => copperPlatelegsCraftingLoop(now, startTime));
+  }
+}
+// +++ END NEW COPPER PLATELEGS +++
+
 // --- NEW: Iron Bar Crafting Logic ---
 async function startIronBarCrafting() {
   if (!game.isSessionActive) {
@@ -3551,6 +3735,105 @@ async function ironBootsCraftingLoop(timestamp, startTime) {
     game.progressFrame = requestAnimationFrame((now) => ironBootsCraftingLoop(now, startTime));
   }
 }
+
+// +++ NEW IRON PLATELEGS UI +++
+function openIronPlatelegsSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Smithing - Iron Platelegs</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${IRON_PLATELEGS_BAR_COST} Iron Bars.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="platelegsProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startPlatelegsBtn" class="primary">Start Crafting</button>
+      <button id="stopPlatelegsBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startPlatelegsBtn').onclick = startIronPlatelegsCrafting;
+  document.getElementById('stopPlatelegsBtn').onclick = () => stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn'); 
+  showMainScreen('hubDynamic');
+}
+
+async function startIronPlatelegsCrafting() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.blacksmithingActive) return;
+
+  let totalBars = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Iron Bar') {
+          totalBars += slot.qty;
+      }
+  }
+
+  if (totalBars < IRON_PLATELEGS_BAR_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${IRON_PLATELEGS_BAR_COST} Iron Bars to craft platelegs.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  const startBtn = document.getElementById('startPlatelegsBtn');
+  const stopBtn = document.getElementById('stopPlatelegsBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => ironPlatelegsCraftingLoop(now, now));
+}
+
+async function ironPlatelegsCraftingLoop(timestamp, startTime) {
+  if (!game.blacksmithingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / IRON_PLATELEGS_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalBars = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Bar') {
+            totalBars += slot.qty;
+        }
+    }
+    if (totalBars < IRON_PLATELEGS_BAR_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Iron Bars.");
+        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn'); // <-- FIX: Pass correct IDs
+        return;
+    }
+    
+    removeItem('Iron Bar', IRON_PLATELEGS_BAR_COST);
+    addItem('Iron Platelegs', 1);
+    addXP('blacksmith', IRON_PLATELEGS_XP);
+    
+    showItemPopup(`+${IRON_PLATELEGS_XP} Blacksmith XP`, 'platelegsProgress', 0);
+    showItemPopup(`+1 Iron Platelegs`, 'platelegsProgress', 450);
+    
+    const bar = document.getElementById('platelegsProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Bar') {
+            totalBarsAfter += slot.qty;
+        }
+    }
+    if (totalBarsAfter < IRON_PLATELEGS_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft more platelegs.");
+        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn'); // <-- FIX: Pass correct IDs
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => ironPlatelegsCraftingLoop(now, now));
+  } else {
+    const bar = document.getElementById('platelegsProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => ironPlatelegsCraftingLoop(now, startTime));
+  }
+}
+// +++ END NEW IRON PLATELEGS +++
 
 // --- NEW: Iron Shortsword Crafting Logic ---
 async function startIronShortswordCrafting() {
@@ -5066,6 +5349,7 @@ function renderSmithingItems(metalType) {
     const copperSwordLocked = smithLvl < COPPER_SWORD_LVL;
     const copperBootsLocked = smithLvl < COPPER_BOOTS_LVL;
     const copperHelmetLocked = smithLvl < COPPER_HELMET_LVL;
+    const copperPlatelegsLocked = smithLvl < COPPER_PLATELEGS_LVL; // +++ NEW +++
     const copperChestLocked = smithLvl < COPPER_CHEST_LVL;
     const copperTipsLocked = smithLvl < BLACKSMITH_COPPER_TIPS_LVL; // +++ NEW +++
     
@@ -5088,6 +5372,9 @@ function renderSmithingItems(metalType) {
       <button id="copperHelmetBtn" class="primary ${copperHelmetLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/copperhelmet.png" alt="Copper Helmet" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
+      <button id="copperPlatelegsBtn" class="primary ${copperPlatelegsLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/copperplatelegs.png" alt="Copper Platelegs" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+      </button>
       <button id="copperChestplateBtn" class="primary ${copperChestLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/copperchestplate.png" alt="Copper Chestplate" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
@@ -5103,6 +5390,7 @@ function renderSmithingItems(metalType) {
     setupSmithButton('copperShortswordBtn', copperSwordLocked, openCopperShortswordSmith, COPPER_SWORD_LVL, `Requires: ${SHORTSWORD_BAR_COST} Copper Bars`, 'Copper Shortsword');
     setupSmithButton('copperBootsBtn', copperBootsLocked, openCopperBootsSmith, COPPER_BOOTS_LVL, `Requires: ${BOOTS_BAR_COST} Copper Bars`, 'Copper Boots');
     setupSmithButton('copperHelmetBtn', copperHelmetLocked, openCopperHelmetSmith, COPPER_HELMET_LVL, `Requires: ${HELMET_BAR_COST} Copper Bars`, 'Copper Helmet');
+    setupSmithButton('copperPlatelegsBtn', copperPlatelegsLocked, openCopperPlatelegsSmith, COPPER_PLATELEGS_LVL, `Requires: ${COPPER_PLATELEGS_BAR_COST} Copper Bars`, 'Copper Platelegs'); // +++ NEW +++
     setupSmithButton('copperChestplateBtn', copperChestLocked, openCopperChestplateSmith, COPPER_CHEST_LVL, `Requires: ${CHESTPLATE_BAR_COST} Copper Bars`, 'Copper Chestplate');
     setupSmithButton('copperArrowTipBtn', copperTipsLocked, openSmithCopperArrowTip, BLACKSMITH_COPPER_TIPS_LVL, `Requires: ${COPPER_ARROW_TIP_BAR_COST} Copper Bars`, `Copper Arrow Tip x${COPPER_ARROW_TIP_YIELD}`); // +++ NEW +++
     
@@ -5114,6 +5402,7 @@ function renderSmithingItems(metalType) {
     const ironSwordLocked = smithLvl < IRON_SWORD_LVL;
     const ironBootsLocked = smithLvl < IRON_BOOTS_LVL;
     const ironHelmetLocked = smithLvl < IRON_HELMET_LVL;
+    const ironPlatelegsLocked = smithLvl < IRON_PLATELEGS_LVL; // +++ NEW +++
     const ironChestLocked = smithLvl < IRON_CHEST_LVL;
     
     container.innerHTML = `
@@ -5135,6 +5424,9 @@ function renderSmithingItems(metalType) {
       <button id="ironHelmetBtn" class="primary ${ironHelmetLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/ironhelmet.png" alt="Iron Helmet" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
+      <button id="ironPlatelegsBtn" class="primary ${ironPlatelegsLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/ironplatelegs.png" alt="Iron Platelegs" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+      </button>
       <button id="ironChestplateBtn" class="primary ${ironChestLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/ironchestplate.png" alt="Iron Chestplate" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
@@ -5147,6 +5439,7 @@ function renderSmithingItems(metalType) {
     setupSmithButton('ironShortswordBtn', ironSwordLocked, openIronShortswordSmith, IRON_SWORD_LVL, `Requires: ${IRON_SHORTSWORD_BAR_COST} Iron Bars`, 'Iron Shortsword');
     setupSmithButton('ironBootsBtn', ironBootsLocked, openIronBootsSmith, IRON_BOOTS_LVL, `Requires: ${IRON_BOOTS_BAR_COST} Iron Bars`, 'Iron Boots');
     setupSmithButton('ironHelmetBtn', ironHelmetLocked, openIronHelmetSmith, IRON_HELMET_LVL, `Requires: ${IRON_HELMET_BAR_COST} Iron Bars`, 'Iron Helmet');
+    setupSmithButton('ironPlatelegsBtn', ironPlatelegsLocked, openIronPlatelegsSmith, IRON_PLATELEGS_LVL, `Requires: ${IRON_PLATELEGS_BAR_COST} Iron Bars`, 'Iron Platelegs'); // +++ NEW +++
     setupSmithButton('ironChestplateBtn', ironChestLocked, openIronChestplateSmith, IRON_CHEST_LVL, `Requires: ${IRON_CHESTPLATE_BAR_COST} Iron Bars`, 'Iron Chestplate');
   }
 }
@@ -5609,24 +5902,6 @@ function openCombatInterface(enemyName) {
       </div>
       
       <div id="combat-player-area">
-        
-        <div id="combat-equip-panel">
-          <div class="equipment-character">
-            <div class="character-frame">
-              <div class="equipment-row">
-                <div class="equipment-slot" id="combat-helmet">
-                  </div>
-              </div>
-              <div class="equipment-row" style="align-items:center;">
-                <div class="equipment-slot" id="combat-weapon"></div>
-                <div class="equipment-slot" id="combat-chest"></div>
-              </div>
-              <div class="equipment-row">
-                <div class="equipment-slot" id="combat-boots"></div>
-              </div>
-            </div>
-          </div>
-        </div>
         
         <div id="combat-action-panel">
           <p style="margin: 0 0 10px 0; font-weight: bold;">Combat Style:</p>
@@ -6176,6 +6451,8 @@ function renderBankGrid() {
       else if (item.name === 'Iron Chestplate') imgName = 'ironchestplate';
       else if (item.name === 'Iron Boots') imgName = 'ironboots';
       else if (item.name === 'Iron Shortsword') imgName = 'ironshortsword';
+      else if (item.name === 'Copper Platelegs') imgName = 'copperplatelegs'; // +++ NEW +++
+      else if (item.name === 'Iron Platelegs') imgName = 'ironplatelegs'; // +++ NEW +++
       else if (item.name === 'Softwood') imgName = 'softwood';
       else if (item.name === 'Oak') imgName = 'oak';
       else if (item.name === 'Bronze Pickaxe') imgName = 'bronzepickaxe'; // +++ NEW +++
@@ -6640,7 +6917,12 @@ function resetGameState() {
   // +++ NEW +++
   game.bank = new Array(game.bankCapacity).fill(null);
   game.bankGold = 0;
-  game.equipment = { helmet: null, chest: null, weapon: null, boots: null };
+  game.equipment = { 
+    necklace: null, helmet: null, cape: null, 
+    weapon: null, chest: null, shield: null, 
+    ring1: null, legs: null, ring2: null, 
+    arrows: null, boots: null 
+  };
   // +++ END NEW +++
   game.mining = { level: 1, xp: 0, totalXP: 0 };
   game.blacksmith = { level: 1, xp: 0, totalXP: 0 };
@@ -6939,6 +7221,63 @@ function renderShopGrid() {
 
 // --- MODIFIED: Added isDragging logic ---
 document.addEventListener('DOMContentLoaded', ()=>{
+  
+  // --- NEW: Stats Panel Listeners ---
+  const toggleStatsBtn = document.getElementById('toggleStatsBtn');
+  const closeStatsBtn = document.getElementById('closeStatsBtn');
+  const statsPanel = document.getElementById('statsPanel');
+  const statsPanelHeader = document.getElementById('statsPanelHeader');
+
+  if (toggleStatsBtn) {
+    toggleStatsBtn.onclick = () => {
+      if (statsPanel) {
+        // We also run renderEquipment to make sure stats are up-to-date when opening
+        if (typeof renderEquipment === 'function') {
+            renderEquipment();
+        }
+        statsPanel.style.display = (statsPanel.style.display === 'block') ? 'none' : 'block';
+      }
+    };
+  }
+  if (closeStatsBtn) {
+    closeStatsBtn.onclick = () => {
+      if (statsPanel) statsPanel.style.display = 'none';
+    };
+  }
+
+  // --- NEW: Draggable Panel Logic ---
+  let isDraggingPanel = false;
+  let panelOffsetX = 0;
+  let panelOffsetY = 0;
+
+  if (statsPanelHeader) {
+    statsPanelHeader.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return; // Only drag with left click
+      isDraggingPanel = true;
+      const rect = statsPanel.getBoundingClientRect();
+      panelOffsetX = e.clientX - rect.left;
+      panelOffsetY = e.clientY - rect.top;
+      statsPanel.style.transform = ''; // Clear transform to use top/left
+      statsPanel.style.left = rect.left + 'px';
+      statsPanel.style.top = rect.top + 'px';
+      e.preventDefault();
+    });
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDraggingPanel) return;
+    e.preventDefault(); // Prevent text selection
+    statsPanel.style.left = (e.clientX - panelOffsetX) + 'px';
+    statsPanel.style.top = (e.clientY - panelOffsetY) + 'px';
+  });
+
+  document.addEventListener('mouseup', (e) => {
+    if (isDraggingPanel) {
+        isDraggingPanel = false;
+        e.preventDefault();
+    }
+  });
+  // --- END: Stats Panel Listeners & Draggable Logic ---
   
   // +++ ADD THIS ENTIRE BLOCK OF LISTENERS +++
   
@@ -7444,6 +7783,29 @@ window.showSaveIndicator = function() {
 </script>
 
 <div id="itemContextMenu"></div>
+
+<!-- NEW: Stats Panel -->
+<div id="statsPanel">
+  <div id="statsPanelHeader">Player Stats</div>
+  <div id="statsPanelContent">
+    <div class="stat-row">
+      <span class="stat-label">Physical Damage</span>
+      <span class="stat-value" id="stat-phys-dmg-panel">0</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Armor</span>
+      <span class="stat-value" id="stat-armor-panel">0</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Attack Speed</span>
+      <span class="stat-value" id="stat-speed-panel">4.0s</span>
+    </div>
+  </div>
+  <div id="statsPanelFooter">
+    <button id="closeStatsBtn" class="primary" style="background:#666;">Close</button>
+  </div>
+</div>
+<!-- END: Stats Panel -->
 
 <script type="module">
   // Firebase imports (CDN modules)
@@ -9348,7 +9710,9 @@ if (!validSkills.includes(skill)) {
       'images/arrowshaft.png',
       'images/copperarrowtip.png',
       'images/unboundarrow.png',
-      'images/copperarrow.png'
+      'images/copperarrow.png',
+      'images/copperplatelegs.png', // +++ NEW +++
+      'images/ironplatelegs.png' // +++ NEW +++
     ];
 
     /**
