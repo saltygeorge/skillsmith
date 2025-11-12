@@ -8773,7 +8773,15 @@ window.showSaveIndicator = function() {
             msgElement.style.lineHeight = '1.3';
             msgElement.style.wordBreak = 'break-word';
             const sender = document.createElement('strong');
-            sender.style.color = 'var(--gold)'; 
+            
+            // +++ NEW: Admin Color Check +++
+            if (msg.senderUid === ADMIN_UID) {
+              sender.style.color = '#ff4d4d'; // Admin Red
+            } else {
+              sender.style.color = 'var(--gold)'; // Default Gold
+            }
+            // +++ END NEW +++
+            
             sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
             const text = document.createTextNode(msg.text);
             msgElement.appendChild(sender);
@@ -8793,7 +8801,15 @@ window.showSaveIndicator = function() {
             msgElement.style.lineHeight = '1.3';
             msgElement.style.wordBreak = 'break-word';
             const sender = document.createElement('strong');
-            sender.style.color = 'var(--gold)'; 
+            
+            // +++ NEW: Admin Color Check +++
+            if (msg.senderUid === ADMIN_UID) {
+              sender.style.color = '#ff4d4d'; // Admin Red
+            } else {
+              sender.style.color = 'var(--gold)'; // Default Gold
+            }
+            // +++ END NEW +++
+            
             sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
             const text = document.createTextNode(msg.text);
             msgElement.appendChild(sender);
