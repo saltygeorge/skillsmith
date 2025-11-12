@@ -10024,11 +10024,19 @@ if (!validSkills.includes(skill)) {
     preloadAllAssets(MASTER_ASSET_LIST).then(() => {
       console.log('[Preloader] All assets loaded.');
 
-      // +++ NEW: Force-decode the combat GIF +++
+      // +++ NEW: Force-decode combat GIFs +++
+      // This invisibly adds the GIFs to the page, forcing the browser
+      // to decode them before they are needed.
       const primeImg = document.createElement('img');
       primeImg.src = 'images/chickenanim.gif';
-      primeImg.style.cssText = 'position:absolute; left:-9999px; top:-9999px;';
+      primeImg.style.cssText = 'position:absolute; left:-9999px; top:-9999px; width:1px; height:1px;';
       document.body.appendChild(primeImg);
+
+      // +++ ADD THIS BLOCK FOR THE SPIDER +++
+      const primeImg2 = document.createElement('img');
+      primeImg2.src = 'images/spideranim.gif';
+      primeImg2.style.cssText = 'position:absolute; left:-9999px; top:-9999px; width:1px; height:1px;';
+      document.body.appendChild(primeImg2);
       // +++ END NEW +++
       
       const loadingScreen = document.getElementById('loadingScreen');
