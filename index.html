@@ -1327,10 +1327,9 @@ button.primary:hover { background: var(--accent-hover); }
             <h2>Kitchen</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose something to cook.</div>
             <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
-              <button id="cookChickenBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
-                <img src="images/cookedchicken.png" alt="Cooked Chicken" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
-                <span>Cooked Chicken</span>
-              </button>
+              <button id="cookChickenBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+  <img src="images/cookedchicken.png" alt="Cooked Chicken" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+</button>
               <button id="hubKitchen_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
             </div>
           </div>
@@ -1339,14 +1338,12 @@ button.primary:hover { background: var(--accent-hover); }
             <h2>Combat Areas</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose an area to start fighting.</div>
             <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
-              <button id="farmAreaBtn" class="primary" style="display: flex; align-items: center; gap: 10px;">
-                <img src="images/farm.png" alt="Farm Area" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
-                <span>The Farm</span>
-              </button>
-              <button id="caveAreaBtn" class="primary" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-                <img src="images/cave.png" alt="Cave Area" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
-                <span>The Cave</span>
-              </button>
+              <button id="farmAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;">
+  <img src="images/farm.png" alt="Farm Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
+</button>
+              <button id="caveAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; margin-top: 10px;">
+  <img src="images/cave.png" alt="Cave Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
+</button>
               <button id="hubCombat_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
             </div>
           </div>
@@ -7531,9 +7528,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('cookChickenBtn').onmouseleave = hideTooltip;
 
   // --- Tooltips for Hub Combat ---
-  document.getElementById('farmAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Farm</div>Lvl Required: 1');
+  document.getElementById('farmAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Farm</div>');
   document.getElementById('farmAreaBtn').onmouseleave = hideTooltip;
-  document.getElementById('caveAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Cave</div>Lvl Required: 2'); // +++ NEW +++
+  document.getElementById('caveAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Cave</div>'); // +++ MODIFIED +++
   document.getElementById('caveAreaBtn').onmouseleave = hideTooltip; // +++ NEW +++
 
   // +++ END NEW LISTENER BLOCK +++
