@@ -8,17 +8,49 @@
  /* --- Base / Background --- */
 :root {
   --panel-bg: rgba(64, 40, 20, 0.95); /* Deeper, earthier brown */
+  /* --- ADD THIS LINE --- */
+  --panel-noise: linear-gradient(rgba(0,0,0,0.03), rgba(0,0,0,0.03));
+  
   --accent: #6d452d; /* Darker, richer wood tone */
   --accent-hover: #8a5a3a; /* Darker hover effect */
   --gold: #b5a642;
   --slot-size: 60px;
   --slot-gap: 10px;
 }
+
+/* --- NEW MASTER PANEL STYLE --- */
+.sidebar, 
+.main, 
+.chat-panel, 
+.trade-content, 
+#sessionLockOverlay div, 
+#deathOverlay div, 
+.settings-modal, 
+.game-modal, 
+#statsPanel {
+  /* 1. Original brown color */
+  background-color: var(--panel-bg);
+  
+  /* 2. Subtle noise texture on top */
+  background-image: var(--panel-noise);
+  
+  /* 3. New 3D "Bevel" Border */
+  border: 4px solid #453625; /* Fallback */
+  border-top-color: #7c644c;    /* Lighter top */
+  border-left-color: #7c644c;   /* Lighter left */
+  border-bottom-color: #3f2b21; /* Darker bottom */
+  border-right-color: #3f2b21;  /* Darker right */
+  
+  /* 4. Same shadow and radius */
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
+  border-radius: 10px;
+}
+
 body {
   margin: 0;
   font-family: "Garamond", serif;
   background: #3f2b21;
-  background-image: url('images/brick_background.png');
+  background-image: url('images/brickbackground.png');
   background-size: cover;
   background-attachment: fixed;
   background-position: center center;
@@ -81,11 +113,7 @@ body {
 /* --- Sidebar --- */
 .sidebar {
   width: calc((var(--slot-size) * 4) + (var(--slot-gap) * 3) + 32px + 8px);
-  background: var(--panel-bg);
   padding: 16px;
-  border-radius: 10px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
-  border: 4px solid #453625;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -135,6 +163,7 @@ body {
   border: 2px solid rgba(170,140,100,0.55);
   box-shadow: 0 3px 8px rgba(0,0,0,0.35);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
+  position: relative; /* <-- THIS IS THE FIX */
 }
 .equipment-slot img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
@@ -214,14 +243,10 @@ body {
 /* --- Main area --- */
 .main {
   flex: 1;
-  background: var(--panel-bg);
   padding: 18px;
-  border-radius: 10px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
-  border: 4px solid #453625;
   min-height: 500px; 
   position: relative;
-  
+
   /* --- NEW: Added flex properties --- */
   display: flex;
   flex-direction: column;
@@ -261,11 +286,7 @@ body {
 
 /* --- Chat Panel --- */
 .chat-panel {
-  background: var(--panel-bg);
   padding: 18px;
-  border-radius: 10px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
-  border: 4px solid #453625;
   display: flex; 
   flex-direction: column;
   min-height: 200px;
@@ -349,13 +370,31 @@ button.primary:hover { background: var(--accent-hover); }
   100% { transform: translateY(-46px); opacity: 0; }
 }
 
+/* --- NEW WARNING POPUP --- */
+.warning-popup {
+  position: absolute;
+  background: rgba(221, 68, 68, 0.9); /* Red background */
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 800;
+  pointer-events: none;
+  z-index: 1501; /* Above XP popup */
+  transform-origin: center;
+  animation: fadeOutWarning 3000ms ease-out forwards; /* 3 second animation */
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+@keyframes fadeOutWarning {
+  0% { transform: translateY(0); opacity: 1; }
+  80% { transform: translateY(-30px); opacity: 1; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
+/* --- END NEW --- */
+
 /* --- Trade Modal --- */
 #tradeModal { display: none; }
 .trade-content {
-  background: var(--panel-bg);
-  border: 4px solid #453625;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
-  border-radius: 10px;
   padding: 20px;
   width: 90%;
   max-width: 1300px;
@@ -485,11 +524,7 @@ button.primary:hover { background: var(--accent-hover); }
   text-align: center;
 }
 #sessionLockOverlay div {
-  background: var(--panel-bg);
-  border: 4px solid #453625;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
   padding: 30px 40px;
-  border-radius: 10px;
   max-width: 400px;
 }
 #sessionLockOverlay h2 {
@@ -511,11 +546,7 @@ button.primary:hover { background: var(--accent-hover); }
   text-align: center;
 }
 #deathOverlay div {
-  background: var(--panel-bg);
-  border: 4px solid #453625;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
   padding: 30px 40px;
-  border-radius: 10px;
   max-width: 400px;
 }
 #deathOverlay h2 {
@@ -782,10 +813,6 @@ button.primary:hover { background: var(--accent-hover); }
   box-sizing: border-box;
 }
 .game-modal {
-  background: var(--panel-bg);
-  border: 4px solid #453625;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
-  border-radius: 10px;
   padding: 20px;
   width: 100%;
   max-width: 450px;
@@ -939,10 +966,6 @@ button.primary:hover { background: var(--accent-hover); }
   align-items: center;
 }
 .settings-modal {
-  background: var(--panel-bg);
-  border: 4px solid #453625;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
-  border-radius: 10px;
   padding: 20px;
   width: 90%;
   max-width: 400px;
@@ -1018,10 +1041,6 @@ button.primary:hover { background: var(--accent-hover); }
   left: 50%;
   transform: translate(-50%, -50%);
   width: 250px;
-  background: var(--panel-bg);
-  border: 4px solid #453625;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.4);
-  border-radius: 10px;
   padding: 15px;
   z-index: 3500; /* Above inventory, below modals */
   box-sizing: border-box;
@@ -1265,9 +1284,20 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="combatActionIcon" src="images/combatareas.png" alt="Combat Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="shopActionIcon" src="images/shopbutton.png" alt="Shop" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="bankActionIcon" src="images/bankbutton.png" alt="Bank" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="craftingActionIcon" src="images/craftingbenchbutton.png" alt="Crafting" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
             </div>
           </div>
 
+          <div id="hubCrafting" class="hub-screen">
+            <h2>Crafting Bench</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Choose an item to craft.</div>
+            <div id="craftingItemsContainer" class="action-buttons" style="margin-top: 14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+              </div>
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+              <button id="hubCrafting_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
+            </div>
+          </div>
+          
           <div id="hubMine" class="hub-screen">
             <h2>Mine</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose a vein to mine.</div>
@@ -1288,7 +1318,9 @@ button.primary:hover { background: var(--accent-hover); }
           </div>
           
           <div id="hubBlacksmith" class="hub-screen">
-            <div class="tabs" style="margin-top: 0; margin-bottom: 14px; width: 100%;">
+            <h2>Blacksmithing</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Choose an item to smith.</div>
+            <div class="tabs" style="margin-top: 14px; margin-bottom: 14px; width: 100%;">
               <button id="smithCopperTab" class="active">Copper</button>
               <button id="smithIronTab">Iron</button>
             </div>
@@ -1300,7 +1332,9 @@ button.primary:hover { background: var(--accent-hover); }
           </div>
 
           <div id="hubFletching" class="hub-screen">
-            <div id="fletchingItemsContainer" class="action-buttons" style="margin-top: 0; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+            <h2>Fletching</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Choose an item to fletch.</div>
+            <div id="fletchingItemsContainer" class="action-buttons" style="margin-top: 14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
               </div>
             <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubFletching_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
@@ -1632,6 +1666,15 @@ const game = {
   fletching: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW FLETCHING SKILL +++
   fletchingActive: false, // +++ NEW FLETCHING STATE +++
   wasFletchingBeforeCombat: false, // +++ NEW FLETCHING STATE +++
+
+  // +++ NEW CRAFTING SKILL +++
+  crafting: { level: 1, xp: 0, totalXP: 0 },
+  craftingActive: false,
+  wasCraftingBeforeCombat: false,
+  
+  // +++ NEW RANGED SKILL +++
+  ranged: { level: 1, xp: 0, totalXP: 0 },
+  
   lastSmithingTab: 'copper',
   lastCombatAreaHub: 'hubActions', // +++ NEW +++
   
@@ -1839,7 +1882,14 @@ const VALID_ITEMS = [
   'Copper Arrow', // +++ NEW +++
   'Copper Platelegs', // +++ NEW +++
   'Iron Platelegs', // +++ NEW +++
-  'Silk' // +++ NEW +++
+  'Silk', // +++ NEW +++
+  
+  // +++ NEW CRAFTING/FLETCHING ITEMS +++
+  'Bow String',
+  'Unstrung Softwood Bow',
+  'Unstrung Oak Bow',
+  'Softwood Bow',
+  'Oak Bow'
 ];
 
 const XP_TABLE = [
@@ -2011,6 +2061,10 @@ const IRON_CHEST_LVL = 18;
 const FLETCHING_SHAFT_LVL = 1;
 const FLETCHING_UNBOUND_LVL = 1;
 const FLETCHING_COPPER_ARROW_LVL = 1;
+const FLETCHING_UNSTRUNG_SOFTWOOD_LVL = 5; // +++ NEW +++
+const FLETCHING_SOFTWOOD_BOW_LVL = 7;      // +++ NEW +++
+const FLETCHING_UNSTRUNG_OAK_LVL = 15;     // +++ NEW +++
+const FLETCHING_OAK_BOW_LVL = 17;          // +++ NEW +++
 
 // --- NEW: Fletching Crafting Constants ---
 const ARROW_SHAFT_WOOD_COST = 4;
@@ -2030,11 +2084,41 @@ const COPPER_ARROW_YIELD = 10;
 const COPPER_ARROW_XP = 30;
 const COPPER_ARROW_TIME_MS = 4000;
 
+// +++ NEW: Bow Fletching Constants +++
+const UNSTRUNG_SOFTWOOD_WOOD_COST = 1;
+const UNSTRUNG_SOFTWOOD_YIELD = 1;
+const UNSTRUNG_SOFTWOOD_XP = 20;
+const UNSTRUNG_SOFTWOOD_TIME_MS = 3000;
+
+const UNSTRUNG_OAK_WOOD_COST = 1;
+const UNSTRUNG_OAK_YIELD = 1;
+const UNSTRUNG_OAK_XP = 35;
+const UNSTRUNG_OAK_TIME_MS = 4000;
+
+const SOFTWOOD_BOW_UNSTRUNG_COST = 1;
+const SOFTWOOD_BOW_STRING_COST = 1;
+const SOFTWOOD_BOW_YIELD = 1;
+const SOFTWOOD_BOW_XP = 25;
+const SOFTWOOD_BOW_TIME_MS = 3000;
+
+const OAK_BOW_UNSTRUNG_COST = 1;
+const OAK_BOW_STRING_COST = 1;
+const OAK_BOW_YIELD = 1;
+const OAK_BOW_XP = 45;
+const OAK_BOW_TIME_MS = 4000;
+
 // --- NEW: Smithing Constants (Arrow Tips) ---
 const COPPER_ARROW_TIP_BAR_COST = 4;
 const COPPER_ARROW_TIP_YIELD = 10;
 const COPPER_ARROW_TIP_XP = 20;
 const COPPER_ARROW_TIP_TIME_MS = 3000;
+
+// +++ NEW: Crafting Skill Constants +++
+const CRAFTING_BOW_STRING_LVL = 1;
+const BOW_STRING_SILK_COST = 2;
+const BOW_STRING_YIELD = 1;
+const BOW_STRING_XP = 15;
+const BOW_STRING_TIME_MS = 2500;
 
 // --- NEW: Iron Smithing Constants ---
 const IRON_BAR_ORE_COST = 1; // 1 Iron Ore
@@ -2141,6 +2225,16 @@ const ITEM_STATS = {
     damage: 2,
     styleBonus: 1, // Bonus for 'attack' style
     speed: 2
+  },
+  
+  // +++ NEW: Bow Stats +++
+  'Softwood Bow': {
+    damage: 2, // No style bonus, just base damage
+    speed: 3  // 3.1s attack speed (4000 - 3*300)
+  },
+  'Oak Bow': {
+    damage: 3,
+    speed: 3
   }
 };
 const SHOP_INVENTORY = new Array(20).fill(null);
@@ -2195,7 +2289,14 @@ const ITEM_SELL_PRICES = {
   'Arrow Shaft': 1,
   'Copper Arrow Tip': 2,
   'Unbound Arrow': 3,
-  'Copper Arrow': 5
+  'Copper Arrow': 5,
+  
+  // +++ NEW CRAFTING/FLETCHING ITEM SELL PRICES +++
+  'Bow String': 3,
+  'Unstrung Softwood Bow': 5,
+  'Unstrung Oak Bow': 10,
+  'Softwood Bow': 10,
+  'Oak Bow': 20
 };
 // --- END: Item Sell Prices ---
 
@@ -2270,27 +2371,59 @@ function getPlayerCombatStats() {
   
   // 3. Calculate Final Stats (Base + Skills + Equipment)
   const finalStats = {};
+  const isRanged = (game.equipment.weapon && (game.equipment.weapon.name.endsWith('Bow')));
+  const style = game.playerAttackStyle;
+
+  // --- NEW: Define Style Bonuses ---
+  let styleDamageBonus = 0;
+  let styleArmorBonus = 0;
+  let styleAccuracyBonus = 0;
+  let offensiveSkillLevel = 0; // This will be Ranged Lvl or Attack Lvl
+
+  if (style === 'aggressive') {
+    styleDamageBonus = 2;   // +2 Max Hit
+    styleAccuracyBonus = -5;  // -5 Accuracy
+  } else if (style === 'accurate') {
+    styleDamageBonus = -1;  // -1 Max Hit
+    styleAccuracyBonus = 10;  // +10 Accuracy
+  } else if (style === 'defence') {
+    styleDamageBonus = -1;  // -1 Max Hit
+    styleArmorBonus = 2;    // +2 Armor
+    styleAccuracyBonus = -5;  // -5 Accuracy
+  }
+  // --- END NEW ---
   
-  // --- NEW: Physical Damage ---
-  // Skill-based damage is now uncapped: 1 + (Strength Lvl / 4)
-  const skillMaxHit = 1 + Math.floor(game.strength.level / 4);
+  // --- Physical Damage ---
+  let skillMaxHit = 0;
+  if (isRanged) {
+    // Ranged damage based on Ranged level
+    skillMaxHit = 1 + Math.floor(game.ranged.level / 4);
+    offensiveSkillLevel = game.ranged.level; // Use Ranged for accuracy
+  } else {
+    // Melee damage based on Strength level
+    skillMaxHit = 1 + Math.floor(game.strength.level / 4);
+    offensiveSkillLevel = game.attack.level; // Use Attack for accuracy
+  }
   
-  // Final Max Hit = Skill Hit + Equipment Hit
-  finalStats.physicalDamage = skillMaxHit + stats.equipmentDamage;
+  // Final Max Hit = Skill Hit + Equipment Hit + Style Bonus
+  finalStats.physicalDamage = Math.max(1, skillMaxHit + stats.equipmentDamage + styleDamageBonus); // Ensure max hit is at least 1
 
   // --- Armor ---
-  // Base armor from Defence level (e.g., 1 per 5 levels)
   const skillArmor = Math.floor(game.defence.level / 5);
-  finalStats.armor = skillArmor + stats.equipmentArmor;
+  finalStats.armor = skillArmor + stats.equipmentArmor + styleArmorBonus; // Add style bonus
   
   // --- Attack Speed ---
   const speedReduction = stats.equipmentSpeed * 300; // 0.3s per speed point
   finalStats.attackSpeed = Math.max(1200, 4000 - speedReduction); // 4.0s base
   
+  // --- NEW: Pass offensive skill and accuracy bonus to attack function ---
+  finalStats.offensiveSkillLevel = offensiveSkillLevel;
+  finalStats.accuracyBonus = styleAccuracyBonus;
+  
   // Also pass through the equipment-only bonuses for the UI display
   finalStats.equipmentDamage = stats.equipmentDamage;
   finalStats.equipmentArmor = stats.equipmentArmor;
-  finalStats.equipmentSpeed = stats.equipmentSpeed; // <-- THIS LINE IS ADDED
+  finalStats.equipmentSpeed = stats.equipmentSpeed;
   
   return finalStats;
 }
@@ -2331,7 +2464,14 @@ function renderEquipment() {
     'Iron Shortsword': 'ironshortsword',
     'Iron Boots': 'ironboots',
     'Copper Platelegs': 'copperplatelegs', // +++ NEW +++
-    'Iron Platelegs': 'ironplatelegs' // +++ NEW +++
+    'Iron Platelegs': 'ironplatelegs', // +++ NEW +++
+
+    // +++ NEW BOWS +++
+    'Softwood Bow': 'softwoodbow',
+    'Oak Bow': 'oakbow',
+    
+    // +++ NEW ARROWS (THIS IS A FIX) +++
+    'Copper Arrow': 'copperarrow'
   };
 
   slots.forEach(slotType => {
@@ -2339,8 +2479,6 @@ function renderEquipment() {
     
     // Get the Main Sidebar Slot
     const mainSlotEl = document.getElementById(slotType);
-    
-    // <-- DELETED: All references to combatSlotEl are gone -->
     
     let imgName = '';
     if (item) {
@@ -2372,16 +2510,34 @@ function renderEquipment() {
       if (itemStats.armor) statsHtml += `<div style="color:#aaffaa;">+${itemStats.armor} Armor</div>`;
       if (itemStats.speed) statsHtml += `<div style="color:#aaffaa;">+${itemStats.speed} Speed</div>`;
     }
+    
+    // --- NEW: Add quantity string for arrows ---
+    let qtyHtml = '';
+    if (item && slotType === 'arrows') {
+        qtyHtml = `<div style="color:#fff;">Amount: ${item.qty.toLocaleString()}</div>`;
+    }
+    // --- END NEW ---
 
     // Update Main Sidebar Slot
     if (mainSlotEl) {
-      mainSlotEl.innerHTML = imgHtml;
+      mainSlotEl.innerHTML = imgHtml; // Set the image first
+      
+      // --- NEW: Add quantity display for arrows ---
+      if (item && slotType === 'arrows' && item.qty > 0) {
+          const amt = document.createElement('div');
+          amt.className = 'inv-amount';
+          amt.innerText = formatAmount(item.qty); 
+          mainSlotEl.appendChild(amt);
+      }
+      // --- END NEW ---
+      
       mainSlotEl.onclick = () => unequipItem(slotType);
       
       if (item) {
         mainSlotEl.onmouseenter = (evt) => {
           const tooltipContent = `
             <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
+            ${qtyHtml} 
             ${statsHtml}
             <div style="color:#ffaaaa; margin-top: 5px;">Click to unequip...</div>
           `;
@@ -2393,8 +2549,6 @@ function renderEquipment() {
         mainSlotEl.onmouseleave = null;
       }
     }
-    
-    // <-- DELETED: The 'Update Combat UI Slot' block is gone -->
   });
 }
 
@@ -2429,73 +2583,52 @@ function renderInventoryGrid(){
       slot.draggable = true;
       const item = slotData;
       const img = document.createElement('img');
-      let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
-      
-      if (item.name === 'Copper Bar') {
-          imgName = 'copperbar';
-      } else if (item.name === 'Copper Chestplate') {
-          imgName = 'copperchestplate';
-      } else if (item.name === 'Copper Shortsword') {
-          imgName = 'coppershortsword';
-      } else if (item.name === 'Raw Chicken') {
-          imgName = 'rawchicken'; 
-      } else if (item.name === 'Copper Helmet') {
-          imgName = 'copperhelmet';
-      } else if (item.name === 'Copper Boots') {
-          imgName = 'copperboots';
-      } else if (item.name === 'Cooked Chicken') {
-          imgName = 'cookedchicken';
-      } else if (item.name === 'Burnt Chicken') {
-          imgName = 'burntchicken';
-      } else if (item.name === 'Coal Ore') {
-          imgName = 'coalore';
-      } else if (item.name === 'Iron Ore') {
-          imgName = 'ironore';
-      } else if (item.name === 'Iron Bar') {
-          imgName = 'ironbar';
-      } else if (item.name === 'Iron Helmet') {
-          imgName = 'ironhelmet';
-      } else if (item.name === 'Iron Chestplate') {
-          imgName = 'ironchestplate';
-      } else if (item.name === 'Iron Boots') {
-          imgName = 'ironboots';
-      } else if (item.name === 'Iron Shortsword') {
-          imgName = 'ironshortsword';
-      } else if (item.name === 'Copper Platelegs') { // +++ NEW +++
-          imgName = 'copperplatelegs';
-      } else if (item.name === 'Iron Platelegs') { // +++ NEW +++
-          imgName = 'ironplatelegs';
-      } else if (item.name === 'Softwood') {
-          imgName = 'softwood';
-      } else if (item.name === 'Oak') {
-          imgName = 'oak';
-      } else if (item.name === 'Bronze Pickaxe') { // +++ NEW +++
-          imgName = 'bronzepickaxe';
-      } else if (item.name === 'Bronze Axe') { // +++ NEW +++
-          imgName = 'bronzeaxe';
-      } else if (item.name === 'Copper Pickaxe') { // +++ NEW +++
-          imgName = 'copperpickaxe';
-      } else if (item.name === 'Copper Axe') { // +++ NEW +++
-          imgName = 'copperaxe';
-      } else if (item.name === 'Iron Pickaxe') { // +++ NEW +++
-          imgName = 'ironpickaxe';
-      } else if (item.name === 'Iron Axe') { // +++ NEW +++
-          imgName = 'ironaxe';
-      } else if (item.name === 'Feather') { // +++ NEW +++
-          imgName = 'feather';
-      } else if (item.name === 'Arrow Shaft') { // +++ NEW +++
-          imgName = 'arrowshaft';
-      } else if (item.name === 'Copper Arrow Tip') { // +++ NEW +++
-          imgName = 'copperarrowtip';
-      } else if (item.name === 'Unbound Arrow') { // +++ NEW +++
-          imgName = 'unboundarrow';
-      } else if (item.name === 'Copper Arrow') { // +++ NEW +++
-          imgName = 'copperarrow';
-      } else if (item.name === 'Silk') { // +++ NEW +++
-          imgName = 'silk';
-      }
-      
-      img.src = `images/${imgName}.png`;
+              let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
+              if (item.name === 'Copper Bar') imgName = 'copperbar';
+              else if (item.name === 'Copper Chestplate') imgName = 'copperchestplate';
+              else if (item.name === 'Copper Shortsword') imgName = 'coppershortsword';
+              else if (item.name === 'Copper Helmet') imgName = 'copperhelmet';
+              else if (item.name === 'Copper Boots') imgName = 'copperboots';
+              else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
+              else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
+              else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
+              else if (item.name === 'Coal Ore') imgName = 'coalore';
+              else if (item.name === 'Iron Ore') imgName = 'ironore';
+              else if (item.name === 'Iron Bar') imgName = 'ironbar';
+              else if (item.name === 'Iron Helmet') imgName = 'ironhelmet';
+              else if (item.name === 'Iron Chestplate') imgName = 'ironchestplate';
+              else if (item.name === 'Iron Boots') imgName = 'ironboots';
+              else if (item.name === 'Iron Shortsword') imgName = 'ironshortsword';
+              else if (item.name === 'Copper Platelegs') imgName = 'copperplatelegs'; // +++ NEW +++
+              else if (item.name === 'Iron Platelegs') imgName = 'ironplatelegs'; // +++ NEW +++
+              else if (item.name === 'Softwood') imgName = 'softwood';
+              else if (item.name === 'Oak') imgName = 'oak';
+              else if (item.name === 'Bronze Pickaxe') imgName = 'bronzepickaxe'; // +++ NEW +++
+              else if (item.name === 'Bronze Axe') imgName = 'bronzeaxe'; // +++ NEW +++
+              else if (item.name === 'Copper Pickaxe') imgName = 'copperpickaxe'; // +++ NEW +++
+              else if (item.name === 'Copper Axe') imgName = 'copperaxe'; // +++ NEW +++
+              else if (item.name === 'Iron Pickaxe') imgName = 'ironpickaxe'; // +++ NEW +++
+              else if (item.name === 'Iron Axe') imgName = 'ironaxe'; // +++ NEW +++
+              else if (item.name === 'Feather') imgName = 'feather'; // +++ NEW +++
+              else if (item.name === 'Arrow Shaft') imgName = 'arrowshaft'; // +++ NEW +++
+              else if (item.name === 'Copper Arrow Tip') imgName = 'copperarrowtip'; // +++ NEW +++
+              else if (item.name === 'Unbound Arrow') imgName = 'unboundarrow'; // +++ NEW +++
+              else if (item.name === 'Copper Arrow') imgName = 'copperarrow'; // +++ NEW +++
+              else if (item.name === 'Silk') imgName = 'silk'; // +++ NEW +++
+              // --- THIS IS THE FIX ---
+              else if (item.name === 'Bow String') {
+                  imgName = 'bowstring';
+              } else if (item.name === 'Unstrung Softwood Bow') {
+                  imgName = 'unstrungsoftwoodbow';
+              } else if (item.name === 'Unstrung Oak Bow') {
+                  imgName = 'unstrungoakbow';
+              } else if (item.name === 'Softwood Bow') {
+                  imgName = 'softwoodbow';
+              } else if (item.name === 'Oak Bow') {
+                  imgName = 'oakbow';
+              }
+              // --- END OF FIX ---
+              img.src = `images/${imgName}.png`;
       img.alt = item.name;
       img.onerror = function(){ this.style.opacity='0.08'; this.style.filter='grayscale(90%)'; };
       slot.appendChild(img);
@@ -2705,7 +2838,14 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Iron Shortsword': 'weapon',
     'Iron Boots': 'boots',
     'Copper Platelegs': 'legs', // +++ NEW +++
-    'Iron Platelegs': 'legs' // +++ NEW +++
+    'Iron Platelegs': 'legs', // +++ NEW +++
+    
+    // +++ NEW BOWS +++
+    'Softwood Bow': 'weapon',
+    'Oak Bow': 'weapon',
+    
+    // +++ NEW ARROWS (THIS IS THE FIX) +++
+    'Copper Arrow': 'arrows'
   };
   const itemSlotType = equipableItems[itemName];
   // --- END NEW ---
@@ -2801,65 +2941,86 @@ async function equipItem(slotType, fromInvIndex) {
   const itemStack = game.inventory[fromInvIndex];
   if (!itemStack) return; // Item doesn't exist
 
-  const itemBeingWorn = game.equipment[slotType]; // This is {qty: 1} or null
+  const itemBeingWorn = game.equipment[slotType]; // This is {name, qty} or null
 
-  // --- NEW: Check for inventory space BEFORE equipping ---
-  if (itemBeingWorn) {
-    // We need to unequip an item. Check if there's space for it.
-    // Can it stack with the item we're equipping?
-    const canStackOnSelf = (itemStack.name === itemBeingWorn.name);
-    
-    // Is there another stack of this item OR an empty slot?
-    const hasStackingSlot = game.inventory.find(slot => slot && slot.name === itemBeingWorn.name && slot !== itemStack);
-    const hasEmptySlot = game.inventory.some(slot => slot === null);
-
-    // If the stack we're clicking is > 1 and it's not the same item,
-    // we can't put the unequipped item back in this slot.
-    if (itemStack.qty > 1 && !canStackOnSelf && !hasStackingSlot && !hasEmptySlot) {
-      await showGameAlert("Inventory Full", "You have no room to unequip your currently worn item.");
-      return;
-    }
-  }
-  // --- END: Space Check ---
-
-  // --- Stop combat to prevent errors ---
+  // --- Stop combat INTERVALS to prevent errors ---
   const wasInCombat = game.inCombat;
   if (wasInCombat) {
-    runFromCombat(false); // Stop loops
-    const fightBtn = document.getElementById('combat-fight-btn');
-    if (fightBtn) fightBtn.disabled = true;
+    // --- THIS IS THE FIX ---
+    // We clear intervals, but DON'T call runFromCombat() which resets HP
+    if (game.playerCombatInterval) clearInterval(game.playerCombatInterval);
+    // if (game.enemyCombatInterval) clearInterval(game.enemyCombatInterval); // <-- DO NOT CLEAR ENEMY TIMER
+    game.playerCombatInterval = null;
+    // game.enemyCombatInterval = null; // <-- DO NOT CLEAR ENEMY TIMER
+    
+    // Disable the RUN button briefly to prevent spam
+    const runBtn = document.getElementById('combat-run-btn');
+    if (runBtn) runBtn.disabled = true;
+    // --- END FIX ---
   }
-  // --- END NEW ---
+  // --- END ---
 
-  // 1. Create the new single item to wear
-  const newItemToEquip = { name: itemStack.name, qty: 1 };
-  
-  // 2. Put the new item on the character
-  game.equipment[slotType] = newItemToEquip;
-  
-  // 3. Decrement the inventory stack
-  itemStack.qty -= 1;
-
-  // 4. Handle the leftovers
-  if (itemStack.qty <= 0) {
-    // The stack is empty. Put the old item (or null) in its place.
-    game.inventory[fromInvIndex] = itemBeingWorn;
-  } else if (itemBeingWorn) {
-    // The stack is NOT empty. We must add the old item back.
-    // Use the "smart" unequip logic: try to stack first, then find empty slot.
-    let stacked = false;
-    for (const slot of game.inventory) {
-      if (slot && slot.name === itemBeingWorn.name) {
-        slot.qty += 1;
-        stacked = true;
-        break;
+  // --- NEW LOGIC FOR STACKABLE ARROWS ---
+  if (slotType === 'arrows') {
+    const itemName = itemStack.name;
+    
+    if (itemBeingWorn && itemBeingWorn.name === itemName) {
+      // --- STACKING ---
+      // We are wearing the same arrows, so just add to the stack.
+      game.equipment[slotType].qty += itemStack.qty; // Add full stack
+      game.inventory[fromInvIndex] = null; // Clear inventory slot
+    } else {
+      // --- SWAPPING ---
+      // We are equipping to an empty slot or swapping with different arrows.
+      game.equipment[slotType] = { name: itemStack.name, qty: itemStack.qty }; // Equip full stack
+      game.inventory[fromInvIndex] = itemBeingWorn; // Put old item (or null) back
+    }
+  } 
+  // --- REGULAR EQUIPMENT LOGIC ---
+  else {
+    // Check for inventory space *before* equipping
+    if (itemBeingWorn) {
+      const canStackOnSelf = (itemStack.name === itemBeingWorn.name);
+      const hasStackingSlot = game.inventory.find(slot => slot && slot.name === itemBeingWorn.name && slot !== itemStack);
+      const hasEmptySlot = game.inventory.some(slot => slot === null);
+      if (itemStack.qty > 1 && !canStackOnSelf && !hasStackingSlot && !hasEmptySlot) {
+        await showGameAlert("Inventory Full", "You have no room to unequip your currently worn item.");
+        // Restart combat if we stopped it
+        if (wasInCombat) setTimeout(restartPlayerAttackInterval, 50); // <-- Use new function
+        return;
       }
     }
-    if (!stacked) {
-      // We already checked for an empty slot, so this is safe.
-      const emptySlot = game.inventory.findIndex(s => s === null);
-      if (emptySlot !== -1) {
-         game.inventory[emptySlot] = itemBeingWorn;
+
+    // 1. Create the new single item to wear
+    const newItemToEquip = { name: itemStack.name, qty: 1 };
+    
+    // 2. Put the new item on the character
+    game.equipment[slotType] = newItemToEquip;
+    
+    // 3. Decrement the inventory stack
+    itemStack.qty -= 1;
+
+    // 4. Handle the leftovers
+    if (itemStack.qty <= 0) {
+      // The stack is empty. Put the old item (or null) in its place.
+      game.inventory[fromInvIndex] = itemBeingWorn;
+    } else if (itemBeingWorn) {
+      // The stack is NOT empty. We must add the old item back.
+      // Use the "smart" unequip logic: try to stack first, then find empty slot.
+      let stacked = false;
+      for (const slot of game.inventory) {
+        if (slot && slot.name === itemBeingWorn.name) {
+          slot.qty += 1;
+          stacked = true;
+          break;
+        }
+      }
+      if (!stacked) {
+        // We already checked for an empty slot, so this is safe.
+        const emptySlot = game.inventory.findIndex(s => s === null);
+        if (emptySlot !== -1) {
+           game.inventory[emptySlot] = itemBeingWorn;
+        }
       }
     }
   }
@@ -2874,9 +3035,10 @@ async function equipItem(slotType, fromInvIndex) {
   
   // 6. Restart combat if we were in it
   if (wasInCombat) {
-    setTimeout(() => {
-      beginCombat(); // Restart with new stats
-    }, 50);
+    // --- THIS IS THE FIX ---
+    // Call the new restart function which does NOT reset enemy HP
+    setTimeout(restartPlayerAttackInterval, 50); 
+    // --- END FIX ---
   }
 }
 
@@ -2897,7 +3059,9 @@ async function unequipItem(slotType) {
   let stacked = false;
   for (const slot of game.inventory) {
     if (slot && slot.name === itemToUnequip.name) {
-      slot.qty += 1;
+      // --- THIS IS THE FIX for stacking arrows ---
+      slot.qty += itemToUnequip.qty; // Add the full stack (works for 1 and for many)
+      // --- END FIX ---
       stacked = true;
       break;
     }
@@ -2917,14 +3081,22 @@ async function unequipItem(slotType) {
   // --- END: Smart unequip logic ---
 
 
-  // --- Stop combat to prevent errors ---
+  // --- Stop combat INTERVALS to prevent errors ---
   const wasInCombat = game.inCombat;
   if (wasInCombat) {
-    runFromCombat(false); // Stop loops
-    const fightBtn = document.getElementById('combat-fight-btn');
-    if (fightBtn) fightBtn.disabled = true;
+    // --- THIS IS THE FIX ---
+    // We clear intervals, but DON'T call runFromCombat() which resets HP
+    if (game.playerCombatInterval) clearInterval(game.playerCombatInterval);
+    // if (game.enemyCombatInterval) clearInterval(game.enemyCombatInterval); // <-- DO NOT CLEAR ENEMY TIMER
+    game.playerCombatInterval = null;
+    // game.enemyCombatInterval = null; // <-- DO NOT CLEAR ENEMY TIMER
+    
+    // Disable the RUN button briefly to prevent spam
+    const runBtn = document.getElementById('combat-run-btn');
+    if (runBtn) runBtn.disabled = true;
+    // --- END FIX ---
   }
-  // --- END NEW ---
+  // --- END ---
   
   // 3. Clear the equipment slot (since item is safely in inventory)
   game.equipment[slotType] = null; 
@@ -2939,9 +3111,10 @@ async function unequipItem(slotType) {
   
   // 5. Restart combat if we were in it
   if (wasInCombat) {
-    setTimeout(() => {
-      beginCombat(); // Restart with new stats
-    }, 50);
+    // --- THIS IS THE FIX ---
+    // Call the new restart function which does NOT reset enemy HP
+    setTimeout(restartPlayerAttackInterval, 50); 
+    // --- END FIX ---
   }
 }
 
@@ -3003,8 +3176,7 @@ function updateSkillUI(){
   
   // Clear the tab and set up the header/container
   skillsTab.innerHTML = `
-    <div style="font-size:14px; margin-bottom:12px;">Skills</div>
-    <div id="skillIconsContainer" style="display: grid; grid-template-columns: repeat(3, 80px); gap: 15px; justify-content: center;">
+    <div id="skillIconsContainer" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; justify-content: center; margin-top: 12px;">
       </div>
   `;
 
@@ -3019,19 +3191,20 @@ function updateSkillUI(){
   const createSkillIcon = (skillName, skillDataKey, iconFileName) => {
     const data = game[skillDataKey];
     const iconWrapper = document.createElement('button');
-    iconWrapper.className = 'primary'; // Use 'primary' class for base styling
+    iconWrapper.className = ''; // <-- FIX: Removed 'primary' class
     iconWrapper.style.cssText = `
       display: flex; 
       flex-direction: column; 
       align-items: center; 
       gap: 5px; 
-      padding: 8px 10px; 
-      height: 80px; /* Fixed height for consistency */
-      width: 80px;  /* Fixed width for consistency */
+      /* padding: 8px 10px; -- REMOVED */
+      /* height: 80px; -- REMOVED */
+      /* width: 80px; -- REMOVED */
       justify-content: center;
       font-size: 13px;
-      background: var(--accent);
-      border: 2px solid #50311f; /* Added a border to define the button */
+      background: transparent; /* <-- FIX: No background */
+      border: none; /* <-- FIX: No border */
+      cursor: pointer; /* <-- Keep this for hover/tooltip */
       transition: all 0.15s ease;
     `;
     
@@ -3065,9 +3238,10 @@ function updateSkillUI(){
 
     // Append level text
     const levelText = document.createElement('span');
-    levelText.innerText = `Lvl ${data.level}`;
+    levelText.innerText = data.level; // <-- FIX: Removed "Lvl "
     levelText.style.fontWeight = 'bold';
     levelText.style.pointerEvents = 'none';
+    levelText.style.color = '#fff'; // <-- THIS IS THE FIX
     iconWrapper.appendChild(levelText);
 
     container.appendChild(iconWrapper);
@@ -3083,6 +3257,10 @@ function updateSkillUI(){
   createSkillIcon('Cooking', 'cooking', 'cookingskillicon.png'); // +++ NEW COOKING SKILL CALL +++
   createSkillIcon('Woodcutting', 'woodcutting', 'woodcuttingskillicon.png'); // +++ NEW WOODCUTTING SKILL CALL +++
   createSkillIcon('Fletching', 'fletching', 'fletchingskillicon.jpeg'); // +++ NEW FLETCHING SKILL CALL +++
+  
+  // +++ NEW SKILL ICONS +++
+  createSkillIcon('Crafting', 'crafting', 'craftingskillicon.png');
+  createSkillIcon('Ranged', 'ranged', 'rangedskillicon.png');
 }
 
 function showItemPopup(text, progressElementId, delay = 0) {
@@ -3116,6 +3294,30 @@ popup.style.lineHeight = '1.4';
   }
 }
 
+// --- NEW WARNING POPUP FUNCTION ---
+/**
+ * Shows a short-lived warning popup in the main area.
+ * @param {string} text - The warning message to display.
+ */
+function showWarningPopup(text) {
+    const main = document.getElementById('mainArea');
+    if (!main) return;
+    const popup = document.createElement('div');
+    popup.className = 'warning-popup';
+    popup.innerHTML = text;
+    
+    // Position it in the top-center of the main panel
+    popup.style.left = '50%';
+    popup.style.top = '60px'; // A bit lower than XP popups
+    popup.style.transform = 'translateX(-50%)';
+    
+    main.appendChild(popup);
+    
+    // Remove after animation (3s)
+    setTimeout(() => popup.remove(), 2950);
+}
+// --- END NEW ---
+
 function addXP(skill, amount, delay = 0){
   if (!game[skill]) {
       console.warn(`Skill "${skill}" does not exist.`);
@@ -3141,8 +3343,11 @@ function addXP(skill, amount, delay = 0){
   let barId = '';
   if (skill === 'mining') barId = 'mineProgress';
   if (skill === 'blacksmith') barId = 'smithProgress';
-  if (skill === 'woodcutting') barId = 'woodcutProgress'; // +++ NEW +++
-  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting') { // Don't show popup for skilling actions
+  if (skill === 'woodcutting') barId = 'woodcutProgress';
+  if (skill === 'crafting') barId = 'craftProgress'; // +++ NEW +++
+  
+  // +++ ADDED 'crafting' AND 'fletching' TO THIS LIST +++
+  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting' && skill !== 'crafting' && skill !== 'fletching') { // Don't show popup for skilling actions
     if (delay > 0) {
       setTimeout(() => {
         showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
@@ -5128,6 +5333,10 @@ function renderFletchingItems() {
   const shaftLocked = fletchLvl < FLETCHING_SHAFT_LVL;
   const unboundLocked = fletchLvl < FLETCHING_UNBOUND_LVL;
   const copperArrowLocked = fletchLvl < FLETCHING_COPPER_ARROW_LVL;
+  const unstrungSoftwoodLocked = fletchLvl < FLETCHING_UNSTRUNG_SOFTWOOD_LVL; // +++ NEW +++
+  const softwoodBowLocked = fletchLvl < FLETCHING_SOFTWOOD_BOW_LVL;         // +++ NEW +++
+  const unstrungOakLocked = fletchLvl < FLETCHING_UNSTRUNG_OAK_LVL;         // +++ NEW +++
+  const oakBowLocked = fletchLvl < FLETCHING_OAK_BOW_LVL;                 // +++ NEW +++
   
   container.innerHTML = `
     <button id="fletchShaftBtn" class="primary ${shaftLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
@@ -5139,12 +5348,31 @@ function renderFletchingItems() {
     <button id="fletchCopperArrowBtn" class="primary ${copperArrowLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
       <img src="images/copperarrow.png" alt="Copper Arrow" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
     </button>
+    
+    <button id="fletchUnstrungSoftwoodBtn" class="primary ${unstrungSoftwoodLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/unstrungsoftwoodbow.png" alt="Unstrung Softwood Bow" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="fletchSoftwoodBowBtn" class="primary ${softwoodBowLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/softwoodbow.png" alt="Softwood Bow" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="fletchUnstrungOakBtn" class="primary ${unstrungOakLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/unstrungoakbow.png" alt="Unstrung Oak Bow" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="fletchOakBowBtn" class="primary ${oakBowLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/oakbow.png" alt="Oak Bow" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
   `;
   
   // --- Re-attach listeners for fletching items ---
   setupFletchButton('fletchShaftBtn', shaftLocked, openFletchArrowShaft, FLETCHING_SHAFT_LVL, `Requires: ${ARROW_SHAFT_WOOD_COST} Softwood`, `Arrow Shaft x${ARROW_SHAFT_YIELD}`);
   setupFletchButton('fletchUnboundBtn', unboundLocked, openFletchUnboundArrow, FLETCHING_UNBOUND_LVL, `Requires: ${UNBOUND_ARROW_SHAFT_COST} Arrow Shafts, <br>${UNBOUND_ARROW_FEATHER_COST} Feathers`, `Unbound Arrow x${UNBOUND_ARROW_YIELD}`);
   setupFletchButton('fletchCopperArrowBtn', copperArrowLocked, openFletchCopperArrow, FLETCHING_COPPER_ARROW_LVL, `Requires: ${COPPER_ARROW_UNBOUND_COST} Unbound Arrows, <br>${COPPER_ARROW_TIP_COST} Copper Arrow Tips`, `Copper Arrow x${COPPER_ARROW_YIELD}`);
+
+  // +++ NEW: Bow Listeners +++
+  setupFletchButton('fletchUnstrungSoftwoodBtn', unstrungSoftwoodLocked, openFletchUnstrungSoftwoodBow, FLETCHING_UNSTRUNG_SOFTWOOD_LVL, `Requires: ${UNSTRUNG_SOFTWOOD_WOOD_COST} Softwood`, `Unstrung Softwood Bow x${UNSTRUNG_SOFTWOOD_YIELD}`);
+  setupFletchButton('fletchSoftwoodBowBtn', softwoodBowLocked, openFletchSoftwoodBow, FLETCHING_SOFTWOOD_BOW_LVL, `Requires: ${SOFTWOOD_BOW_UNSTRUNG_COST} Unstrung Softwood Bow, <br>${SOFTWOOD_BOW_STRING_COST} Bow String`, `Softwood Bow x${SOFTWOOD_BOW_YIELD}`);
+  setupFletchButton('fletchUnstrungOakBtn', unstrungOakLocked, openFletchUnstrungOakBow, FLETCHING_UNSTRUNG_OAK_LVL, `Requires: ${UNSTRUNG_OAK_WOOD_COST} Oak`, `Unstrung Oak Bow x${UNSTRUNG_OAK_YIELD}`);
+  setupFletchButton('fletchOakBowBtn', oakBowLocked, openFletchOakBow, FLETCHING_OAK_BOW_LVL, `Requires: ${OAK_BOW_UNSTRUNG_COST} Unstrung Oak Bow, <br>${OAK_BOW_STRING_COST} Bow String`, `Oak Bow x${OAK_BOW_YIELD}`);
 }
 
 // --- Arrow Shaft UI & Logic ---
@@ -5428,6 +5656,531 @@ async function fletchingCopperArrowLoop(timestamp, startTime) {
   }
 }
 // +++ END: FLETCHING HUB FUNCTIONS +++
+
+// +++ NEW: CRAFTING HUB FUNCTIONS +++
+function openCraftingHub() {
+  showMainScreen('hubCrafting');
+  // Render the items for the hub
+  renderCraftingItems();
+}
+
+/**
+ * Stops the bow string crafting loop (used by other functions)
+ */
+window.stopCraftingBowString = function(){
+  game.craftingActive = false;
+  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  
+  const bar = document.getElementById('craftProgress');
+  if(bar) bar.style.width = '0%';
+  const startBtn = document.getElementById('startCraftBtn');
+  if(startBtn) startBtn.style.display = 'inline-block';
+  const stopBtn = document.getElementById('stopCraftBtn');
+  if(stopBtn) stopBtn.style.display = 'none';
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+/**
+ * Renders the items available at the Crafting Bench
+ */
+function renderCraftingItems() {
+  const container = document.getElementById('craftingItemsContainer');
+  if (!container) return;
+  
+  const craftLvl = game.crafting.level;
+  
+  const setupCraftButton = (btnId, locked, onclick, levelReq, tooltipText, itemName) => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      const nameHtml = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">${itemName}</div>`;
+      if (locked) {
+        btn.onclick = null;
+        const lockedTT = nameHtml + `Requires Crafting Lvl: ${levelReq}`;
+        btn.onmouseenter = (event) => showTooltip(event, lockedTT);
+      } else {
+        btn.onclick = onclick;
+        const unlockedTT = nameHtml + tooltipText;
+        btn.onmouseenter = (event) => showTooltip(event, unlockedTT);
+      }
+      btn.onmouseleave = hideTooltip;
+    }
+  };
+  
+  // --- Crafting Level Locks ---
+  const bowStringLocked = craftLvl < CRAFTING_BOW_STRING_LVL;
+  
+  container.innerHTML = `
+    <button id="craftBowStringBtn" class="primary ${bowStringLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/bowstring.png" alt="Bow String" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+  `;
+  
+  // --- Re-attach listeners for crafting items ---
+  setupCraftButton('craftBowStringBtn', bowStringLocked, openCraftBowString, CRAFTING_BOW_STRING_LVL, `Requires: ${BOW_STRING_SILK_COST} Silk`, `Bow String x${BOW_STRING_YIELD}`);
+}
+
+// --- Bow String UI & Logic ---
+function openCraftBowString(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching(); // Stop other skills
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Bow String</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${BOW_STRING_SILK_COST} Silk. Yields ${BOW_STRING_YIELD}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingBowString;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString; // Use the global-scoped function
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingBowString() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.craftingActive) return;
+
+  let totalSilk = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Silk') totalSilk += slot.qty;
+  }
+
+  if (totalSilk < BOW_STRING_SILK_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${BOW_STRING_SILK_COST} Silk.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => craftingBowStringLoop(now, now));
+}
+
+async function craftingBowStringLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / BOW_STRING_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalSilk = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Silk') totalSilk += slot.qty;
+    }
+    if (totalSilk < BOW_STRING_SILK_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Silk.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Silk', BOW_STRING_SILK_COST);
+    addItem('Bow String', BOW_STRING_YIELD);
+    addXP('crafting', BOW_STRING_XP);
+    
+    showItemPopup(`+${BOW_STRING_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+${BOW_STRING_YIELD} Bow String`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    let totalSilkAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Silk') totalSilkAfter += slot.qty;
+    }
+    if (totalSilkAfter < BOW_STRING_SILK_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Silk to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => craftingBowStringLoop(now, now));
+  } else {
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => craftingBowStringLoop(now, startTime));
+  }
+}
+// +++ END: CRAFTING HUB FUNCTIONS +++
+
+// --- Unstrung Softwood Bow UI & Logic ---
+function openFletchUnstrungSoftwoodBow(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Fletching - Unstrung Softwood Bow</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${UNSTRUNG_SOFTWOOD_WOOD_COST} Softwood. Yields ${UNSTRUNG_SOFTWOOD_YIELD}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="fletchProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startFletchBtn" class="primary">Start Fletching</button>
+      <button id="stopFletchBtn" class="primary" style="background:#555; display:none;">Stop Fletching</button>
+      <button onclick="openFletchingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startFletchBtn').onclick = startFletchingUnstrungSoftwoodBow;
+  document.getElementById('stopFletchBtn').onclick = () => stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn'); 
+  showMainScreen('hubDynamic');
+}
+
+async function startFletchingUnstrungSoftwoodBow() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.fletchingActive) return;
+
+  let totalWood = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Softwood') totalWood += slot.qty;
+  }
+
+  if (totalWood < UNSTRUNG_SOFTWOOD_WOOD_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${UNSTRUNG_SOFTWOOD_WOOD_COST} Softwood.`);
+      return;
+  }
+  
+  game.fletchingActive = true;
+  document.getElementById('startFletchBtn').style.display = 'none';
+  document.getElementById('stopFletchBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungSoftwoodBowLoop(now, now));
+}
+
+async function fletchingUnstrungSoftwoodBowLoop(timestamp, startTime) {
+  if (!game.fletchingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / UNSTRUNG_SOFTWOOD_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalWood = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Softwood') totalWood += slot.qty;
+    }
+    if (totalWood < UNSTRUNG_SOFTWOOD_WOOD_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Softwood.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    
+    removeItem('Softwood', UNSTRUNG_SOFTWOOD_WOOD_COST);
+    addItem('Unstrung Softwood Bow', UNSTRUNG_SOFTWOOD_YIELD);
+    addXP('fletching', UNSTRUNG_SOFTWOOD_XP);
+    
+    showItemPopup(`+${UNSTRUNG_SOFTWOOD_XP} Fletching XP`, 'fletchProgress', 0);
+    showItemPopup(`+${UNSTRUNG_SOFTWOOD_YIELD} Unstrung Softwood Bow`, 'fletchProgress', 450);
+    
+    document.getElementById('fletchProgress').style.width = '0%';
+    
+    let totalWoodAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Softwood') totalWoodAfter += slot.qty;
+    }
+    if (totalWoodAfter < UNSTRUNG_SOFTWOOD_WOOD_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Softwood to make more.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungSoftwoodBowLoop(now, now));
+  } else {
+    document.getElementById('fletchProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungSoftwoodBowLoop(now, startTime));
+  }
+}
+
+// --- Softwood Bow UI & Logic ---
+function openFletchSoftwoodBow(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Fletching - Softwood Bow</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${SOFTWOOD_BOW_UNSTRUNG_COST} Unstrung Softwood Bow, ${SOFTWOOD_BOW_STRING_COST} Bow String. Yields ${SOFTWOOD_BOW_YIELD}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="fletchProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startFletchBtn" class="primary">Start Fletching</button>
+      <button id="stopFletchBtn" class="primary" style="background:#555; display:none;">Stop Fletching</button>
+      <button onclick="openFletchingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startFletchBtn').onclick = startFletchingSoftwoodBow;
+  document.getElementById('stopFletchBtn').onclick = () => stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn'); 
+  showMainScreen('hubDynamic');
+}
+
+async function startFletchingSoftwoodBow() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.fletchingActive) return;
+
+  let totalUnstrung = 0;
+  let totalStrings = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Unstrung Softwood Bow') totalUnstrung += slot.qty;
+      if (slot && slot.name === 'Bow String') totalStrings += slot.qty;
+  }
+
+  if (totalUnstrung < SOFTWOOD_BOW_UNSTRUNG_COST || totalStrings < SOFTWOOD_BOW_STRING_COST) {
+      await showGameAlert("Not Enough Materials", `You need ${SOFTWOOD_BOW_UNSTRUNG_COST} Unstrung Softwood Bow and ${SOFTWOOD_BOW_STRING_COST} Bow String.`);
+      return;
+  }
+  
+  game.fletchingActive = true;
+  document.getElementById('startFletchBtn').style.display = 'none';
+  document.getElementById('stopFletchBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => fletchingSoftwoodBowLoop(now, now));
+}
+
+async function fletchingSoftwoodBowLoop(timestamp, startTime) {
+  if (!game.fletchingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / SOFTWOOD_BOW_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalUnstrung = 0;
+    let totalStrings = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Unstrung Softwood Bow') totalUnstrung += slot.qty;
+        if (slot && slot.name === 'Bow String') totalStrings += slot.qty;
+    }
+    if (totalUnstrung < SOFTWOOD_BOW_UNSTRUNG_COST || totalStrings < SOFTWOOD_BOW_STRING_COST) {
+        await showGameAlert("Out of Materials", "You've run out of materials.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    
+    removeItem('Unstrung Softwood Bow', SOFTWOOD_BOW_UNSTRUNG_COST);
+    removeItem('Bow String', SOFTWOOD_BOW_STRING_COST);
+    addItem('Softwood Bow', SOFTWOOD_BOW_YIELD);
+    addXP('fletching', SOFTWOOD_BOW_XP);
+    
+    showItemPopup(`+${SOFTWOOD_BOW_XP} Fletching XP`, 'fletchProgress', 0);
+    showItemPopup(`+${SOFTWOOD_BOW_YIELD} Softwood Bow`, 'fletchProgress', 450);
+    
+    document.getElementById('fletchProgress').style.width = '0%';
+    
+    let totalUnstrungAfter = 0;
+    let totalStringsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Unstrung Softwood Bow') totalUnstrungAfter += slot.qty;
+        if (slot && slot.name === 'Bow String') totalStringsAfter += slot.qty;
+    }
+    if (totalUnstrungAfter < SOFTWOOD_BOW_UNSTRUNG_COST || totalStringsAfter < SOFTWOOD_BOW_STRING_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough materials to make more.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => fletchingSoftwoodBowLoop(now, now));
+  } else {
+    document.getElementById('fletchProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => fletchingSoftwoodBowLoop(now, startTime));
+  }
+}
+
+// --- Unstrung Oak Bow UI & Logic ---
+function openFletchUnstrungOakBow(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Fletching - Unstrung Oak Bow</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${UNSTRUNG_OAK_WOOD_COST} Oak. Yields ${UNSTRUNG_OAK_YIELD}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="fletchProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startFletchBtn" class="primary">Start Fletching</button>
+      <button id="stopFletchBtn" class="primary" style="background:#555; display:none;">Stop Fletching</button>
+      <button onclick="openFletchingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startFletchBtn').onclick = startFletchingUnstrungOakBow;
+  document.getElementById('stopFletchBtn').onclick = () => stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn'); 
+  showMainScreen('hubDynamic');
+}
+
+async function startFletchingUnstrungOakBow() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.fletchingActive) return;
+
+  let totalWood = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Oak') totalWood += slot.qty;
+  }
+
+  if (totalWood < UNSTRUNG_OAK_WOOD_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${UNSTRUNG_OAK_WOOD_COST} Oak.`);
+      return;
+  }
+  
+  game.fletchingActive = true;
+  document.getElementById('startFletchBtn').style.display = 'none';
+  document.getElementById('stopFletchBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungOakBowLoop(now, now));
+}
+
+async function fletchingUnstrungOakBowLoop(timestamp, startTime) {
+  if (!game.fletchingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / UNSTRUNG_OAK_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalWood = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Oak') totalWood += slot.qty;
+    }
+    if (totalWood < UNSTRUNG_OAK_WOOD_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Oak.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    
+    removeItem('Oak', UNSTRUNG_OAK_WOOD_COST);
+    addItem('Unstrung Oak Bow', UNSTRUNG_OAK_YIELD);
+    addXP('fletching', UNSTRUNG_OAK_XP);
+    
+    showItemPopup(`+${UNSTRUNG_OAK_XP} Fletching XP`, 'fletchProgress', 0);
+    showItemPopup(`+${UNSTRUNG_OAK_YIELD} Unstrung Oak Bow`, 'fletchProgress', 450);
+    
+    document.getElementById('fletchProgress').style.width = '0%';
+    
+    let totalWoodAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Oak') totalWoodAfter += slot.qty;
+    }
+    if (totalWoodAfter < UNSTRUNG_OAK_WOOD_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Oak to make more.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungOakBowLoop(now, now));
+  } else {
+    document.getElementById('fletchProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungOakBowLoop(now, startTime));
+  }
+}
+
+// --- Oak Bow UI & Logic ---
+function openFletchOakBow(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Fletching - Oak Bow</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${OAK_BOW_UNSTRUNG_COST} Unstrung Oak Bow, ${OAK_BOW_STRING_COST} Bow String. Yields ${OAK_BOW_YIELD}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="fletchProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startFletchBtn" class="primary">Start Fletching</button>
+      <button id="stopFletchBtn" class="primary" style="background:#555; display:none;">Stop Fletching</button>
+      <button onclick="openFletchingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startFletchBtn').onclick = startFletchingOakBow;
+  document.getElementById('stopFletchBtn').onclick = () => stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn'); 
+  showMainScreen('hubDynamic');
+}
+
+async function startFletchingOakBow() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.fletchingActive) return;
+
+  let totalUnstrung = 0;
+  let totalStrings = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Unstrung Oak Bow') totalUnstrung += slot.qty;
+      if (slot && slot.name === 'Bow String') totalStrings += slot.qty;
+  }
+
+  if (totalUnstrung < OAK_BOW_UNSTRUNG_COST || totalStrings < OAK_BOW_STRING_COST) {
+      await showGameAlert("Not Enough Materials", `You need ${OAK_BOW_UNSTRUNG_COST} Unstrung Oak Bow and ${OAK_BOW_STRING_COST} Bow String.`);
+      return;
+  }
+  
+  game.fletchingActive = true;
+  document.getElementById('startFletchBtn').style.display = 'none';
+  document.getElementById('stopFletchBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => fletchingOakBowLoop(now, now));
+}
+
+async function fletchingOakBowLoop(timestamp, startTime) {
+  if (!game.fletchingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / OAK_BOW_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalUnstrung = 0;
+    let totalStrings = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Unstrung Oak Bow') totalUnstrung += slot.qty;
+        if (slot && slot.name === 'Bow String') totalStrings += slot.qty;
+    }
+    if (totalUnstrung < OAK_BOW_UNSTRUNG_COST || totalStrings < OAK_BOW_STRING_COST) {
+        await showGameAlert("Out of Materials", "You've run out of materials.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    
+    removeItem('Unstrung Oak Bow', OAK_BOW_UNSTRUNG_COST);
+    removeItem('Bow String', OAK_BOW_STRING_COST);
+    addItem('Oak Bow', OAK_BOW_YIELD);
+    addXP('fletching', OAK_BOW_XP);
+    
+    showItemPopup(`+${OAK_BOW_XP} Fletching XP`, 'fletchProgress', 0);
+    showItemPopup(`+${OAK_BOW_YIELD} Oak Bow`, 'fletchProgress', 450);
+    
+    document.getElementById('fletchProgress').style.width = '0%';
+    
+    let totalUnstrungAfter = 0;
+    let totalStringsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Unstrung Oak Bow') totalUnstrungAfter += slot.qty;
+        if (slot && slot.name === 'Bow String') totalStringsAfter += slot.qty;
+    }
+    if (totalUnstrungAfter < OAK_BOW_UNSTRUNG_COST || totalStringsAfter < OAK_BOW_STRING_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough materials to make more.");
+        stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => fletchingOakBowLoop(now, now));
+  } else {
+    document.getElementById('fletchProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => fletchingOakBowLoop(now, startTime));
+  }
+}
+
 
 function renderSmithingItems(metalType) {
   const container = document.getElementById('smithingItemsContainer');
@@ -5973,6 +6726,10 @@ function openCombatInterface(enemyName) {
     stopFletching();
     game.wasFletchingBeforeCombat = true;
   }
+  if (game.craftingActive) { // +++ NEW +++
+    stopCraftingBowString();
+    game.wasCraftingBeforeCombat = true;
+  }
   
   // Define our enemy
   if (enemyName === 'Chicken') {
@@ -6039,6 +6796,7 @@ function openCombatInterface(enemyName) {
   `;
   
   // --- THIS IS THE FIX ---
+  updateEnemyCombatUI(); // <-- THIS IS THE NEW LINE
   renderEquipment();
   // --- END FIX ---
 
@@ -6084,6 +6842,19 @@ function beginCombat() {
     return;
   }
   
+  // --- NEW ARROW CHECK ---
+  const weapon = game.equipment.weapon;
+  const isRanged = (weapon && weapon.name.endsWith('Bow'));
+  
+  if (isRanged) {
+      const arrows = game.equipment.arrows;
+      if (!arrows || arrows.qty < 1) {
+          showWarningPopup("You don't have any arrows equipped.");
+          return; // Stop the fight from starting
+      }
+  }
+  // --- END NEW CHECK ---
+  
   game.inCombat = true;
   document.getElementById('combat-fight-btn').style.display = 'none'; 
   document.getElementById('combat-run-btn').style.display = 'block'; 
@@ -6097,6 +6868,44 @@ function beginCombat() {
   
   // Enemy (Chicken) attacks every 3.0 seconds
   game.enemyCombatInterval = setInterval(enemyAttackTurn, 3000);
+}
+
+// NEW: Function to restart ONLY the player's attack interval
+function restartPlayerAttackInterval() {
+  if (!game.inCombat || !game.currentEnemy) return; // Should already be in combat
+  
+  // 1. Clear ONLY the player's interval
+  if (game.playerCombatInterval) clearInterval(game.playerCombatInterval);
+  
+  // 2. Get new stats
+  const stats = getPlayerCombatStats();
+  
+  // 3. Restart ONLY the player's interval
+  game.playerCombatInterval = setInterval(playerAttackTurn, stats.attackSpeed);
+  
+  // 4. Re-enable the run button
+  const runBtn = document.getElementById('combat-run-btn');
+  if (runBtn) runBtn.disabled = false;
+}
+
+// NEW: Function to restart combat intervals without resetting the fight
+function restartCombatIntervals() {
+  if (!game.inCombat || !game.currentEnemy) return; // Should already be in combat
+  
+  // 1. Clear existing intervals
+  if (game.playerCombatInterval) clearInterval(game.playerCombatInterval);
+  if (game.enemyCombatInterval) clearInterval(game.enemyCombatInterval);
+  
+  // 2. Get new stats
+  const stats = getPlayerCombatStats();
+  
+  // 3. Restart intervals
+  game.playerCombatInterval = setInterval(playerAttackTurn, stats.attackSpeed);
+  game.enemyCombatInterval = setInterval(enemyAttackTurn, 3000);
+  
+  // 4. Re-enable the run button
+  const runBtn = document.getElementById('combat-run-btn');
+  if (runBtn) runBtn.disabled = false;
 }
 
 // NEW: Function to stop combat
@@ -6161,11 +6970,14 @@ function returnToCombatArea() { // +++ RENAMED FUNCTION +++
     openForestHub(); // Return to Forest hub
   } else if (game.wasFletchingBeforeCombat) { // +++ NEW +++
     openFletchingHub(); // Return to Fletching hub
+  } else if (game.wasCraftingBeforeCombat) { // +++ NEW +++
+    openCraftingHub(); // Return to Crafting hub
   }
   game.wasMiningBeforeCombat = false;
   game.wasSmithingBeforeCombat = false;
   game.wasWoodcuttingBeforeCombat = false; // +++ NEW +++
   game.wasFletchingBeforeCombat = false; // +++ NEW +++
+  game.wasCraftingBeforeCombat = false; // +++ NEW +++
 }
 
 // NEW: Helper function to update the enemy's HP bar
@@ -6270,36 +7082,55 @@ function showDamageSplat(target, amount, type) {
 function playerAttackTurn() {
   if (!game.inCombat || !game.currentEnemy) return;
 
+  // --- NEW: Check for arrows BEFORE attacking ---
+  const weapon = game.equipment.weapon;
+  const isRanged = (weapon && weapon.name.endsWith('Bow'));
+  
+  if (isRanged) {
+      const arrows = game.equipment.arrows;
+      if (!arrows || arrows.qty < 1) {
+          showWarningPopup("You ran out of arrows!");
+          runFromCombat(false); // Stop the fight
+          return; // Exit the function
+      }
+  }
+  // --- END NEW CHECK ---
 
   // --- NEW: Play attack sound ---
-  playGlobalSound('sounds/soundeffects/swordsoundeffect.mp3');
+  if (isRanged) {
+    playGlobalSound('sounds/soundeffects/arrowsoundeffect.mp3');
+  } else {
+    playGlobalSound('sounds/soundeffects/swordsoundeffect.mp3');
+  }
   // --- END NEW ---
   
 
   // --- 1. Get Player's Current Stats ---
   const playerStats = getPlayerCombatStats();
 
-  // --- 2. Calculate Hit Chance ---
-  // Player's Attack vs. Enemy's Defence
-  let hitChance = 70 + (game.attack.level - game.currentEnemy.defence);
+  // --- 2. Calculate Hit Chance (ALL NEW LOGIC) ---
+  const baseHitChance = 70;
+  // Get the correct offensive skill (Ranged or Attack) and style bonus
+  const playerAccuracy = playerStats.offensiveSkillLevel + playerStats.accuracyBonus;
+  const enemyDefence = game.currentEnemy.defence;
+  
+  let hitChance = baseHitChance + (playerAccuracy - enemyDefence);
   hitChance = Math.max(10, Math.min(90, hitChance)); // Clamp between 10% and 90%
 
   if (Math.random() * 100 > hitChance) {
     showDamageSplat('enemy', 0, 'block'); // ENEMY MISS
     return;
   }
+  // --- END NEW HIT CHANCE ---
 
   // --- 3. Calculate Damage (If Hit) ---
-  // Get the final max hit from our stats function
-  // This is (Unarmed 1-4) + (Equip Damage)
+  // Get the final max hit (which already includes style bonuses)
   let maxHit = playerStats.physicalDamage;
   
   // Damage is a random number from 0 to your max hit
   let damage = Math.floor(Math.random() * (maxHit + 1));
 
   // +++ FIX: CAP DAMAGE TO ENEMY'S REMAINING HP +++
-  // Determine the actual damage applied, which is the MINIMUM of the damage rolled
-  // and the enemy's current HP. This prevents over-damage and excess XP.
   let damageApplied = Math.min(damage, game.currentEnemy.currentHp);
 
   if (damageApplied > 0) {
@@ -6311,18 +7142,43 @@ function playerAttackTurn() {
   // Apply damage to enemy
   game.currentEnemy.currentHp -= damageApplied;
   updateEnemyCombatUI();
-
-  // --- 4. Grant XP ---
-  if (damageApplied > 0) {
-    // XP is now calculated based on the *actual* damage applied (damageApplied)
-    let mainXPGained = damageApplied * 4; 
-    let skillToTrain = game.playerAttackStyle; 
-    
-    addXP(skillToTrain, mainXPGained, 0);
-    
-    let vitalityXPGained = Math.ceil(mainXPGained / 2);
-    addXP('vitality', vitalityXPGained, 450);
+  
+  // --- NEW: Consume Arrow AFTER shot ---
+  if (isRanged) {
+      game.equipment.arrows.qty--;
+      if (game.equipment.arrows.qty <= 0) {
+          game.equipment.arrows = null;
+      }
+      renderEquipment(); // Update the UI to show 1 less arrow
   }
+  // --- END NEW ---
+
+  // --- 4. Grant XP (ALL NEW LOGIC) ---
+  if (damageApplied > 0) {
+    let mainXPGained = damageApplied * 4;
+    let vitalityXPGained = Math.ceil(mainXPGained / 2);
+    addXP('vitality', vitalityXPGained, 450); // Always grant Vitality XP
+
+    if (isRanged) {
+        // --- RANGED XP ---
+        if (game.playerAttackStyle === 'defence') {
+            // Split Ranged / Defence
+            let defenceXp = Math.floor(mainXPGained / 2);
+            let rangedXp = Math.ceil(mainXPGained / 2);
+            addXP('defence', defenceXp, 0);
+            addXP('ranged', rangedXp, 0);
+        } else {
+            // Ranged on Accurate or Aggressive
+            addXP('ranged', mainXPGained, 0);
+        }
+    } else {
+        // --- MELEE XP ---
+        // This is the simple, original logic for melee styles
+        // 'accurate' trains attack, 'aggressive' trains strength, 'defence' trains defence
+        addXP(game.playerAttackStyle, mainXPGained, 0);
+    }
+  }
+  // --- END NEW XP LOGIC ---
 
   // --- 5. Check for Enemy Death ---
   if (game.currentEnemy.currentHp <= 0) {
@@ -6557,39 +7413,52 @@ function renderBankGrid() {
       slot.onclick = () => withdrawItem(i); 
 
       const img = document.createElement('img');
-      let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
-      if (item.name === 'Copper Bar') imgName = 'copperbar';
-      else if (item.name === 'Copper Chestplate') imgName = 'copperchestplate';
-      else if (item.name === 'Copper Shortsword') imgName = 'coppershortsword';
-      else if (item.name === 'Copper Helmet') imgName = 'copperhelmet';
-      else if (item.name === 'Copper Boots') imgName = 'copperboots';
-      else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
-      else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
-      else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
-      else if (item.name === 'Coal Ore') imgName = 'coalore';
-      else if (item.name === 'Iron Ore') imgName = 'ironore';
-      else if (item.name === 'Iron Bar') imgName = 'ironbar';
-      else if (item.name === 'Iron Helmet') imgName = 'ironhelmet';
-      else if (item.name === 'Iron Chestplate') imgName = 'ironchestplate';
-      else if (item.name === 'Iron Boots') imgName = 'ironboots';
-      else if (item.name === 'Iron Shortsword') imgName = 'ironshortsword';
-      else if (item.name === 'Copper Platelegs') imgName = 'copperplatelegs'; // +++ NEW +++
-      else if (item.name === 'Iron Platelegs') imgName = 'ironplatelegs'; // +++ NEW +++
-      else if (item.name === 'Softwood') imgName = 'softwood';
-      else if (item.name === 'Oak') imgName = 'oak';
-      else if (item.name === 'Bronze Pickaxe') imgName = 'bronzepickaxe'; // +++ NEW +++
-      else if (item.name === 'Bronze Axe') imgName = 'bronzeaxe'; // +++ NEW +++
-      else if (item.name === 'Copper Pickaxe') imgName = 'copperpickaxe'; // +++ NEW +++
-      else if (item.name === 'Copper Axe') imgName = 'copperaxe'; // +++ NEW +++
-      else if (item.name === 'Iron Pickaxe') imgName = 'ironpickaxe'; // +++ NEW +++
-      else if (item.name === 'Iron Axe') imgName = 'ironaxe'; // +++ NEW +++
-      else if (item.name === 'Feather') imgName = 'feather'; // +++ NEW +++
-      else if (item.name === 'Arrow Shaft') imgName = 'arrowshaft'; // +++ NEW +++
-      else if (item.name === 'Copper Arrow Tip') imgName = 'copperarrowtip'; // +++ NEW +++
-      else if (item.name === 'Unbound Arrow') imgName = 'unboundarrow'; // +++ NEW +++
-      else if (item.name === 'Copper Arrow') imgName = 'copperarrow'; // +++ NEW +++
-      else if (item.name === 'Silk') imgName = 'silk'; // +++ NEW +++
-      img.src = `images/${imgName}.png`;
+              let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
+              if (item.name === 'Copper Bar') imgName = 'copperbar';
+              else if (item.name === 'Copper Chestplate') imgName = 'copperchestplate';
+              else if (item.name === 'Copper Shortsword') imgName = 'coppershortsword';
+              else if (item.name === 'Copper Helmet') imgName = 'copperhelmet';
+              else if (item.name === 'Copper Boots') imgName = 'copperboots';
+              else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
+              else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
+              else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
+              else if (item.name === 'Coal Ore') imgName = 'coalore';
+              else if (item.name === 'Iron Ore') imgName = 'ironore';
+              else if (item.name === 'Iron Bar') imgName = 'ironbar';
+              else if (item.name === 'Iron Helmet') imgName = 'ironhelmet';
+              else if (item.name === 'Iron Chestplate') imgName = 'ironchestplate';
+              else if (item.name === 'Iron Boots') imgName = 'ironboots';
+              else if (item.name === 'Iron Shortsword') imgName = 'ironshortsword';
+              else if (item.name === 'Copper Platelegs') imgName = 'copperplatelegs'; // +++ NEW +++
+              else if (item.name === 'Iron Platelegs') imgName = 'ironplatelegs'; // +++ NEW +++
+              else if (item.name === 'Softwood') imgName = 'softwood';
+              else if (item.name === 'Oak') imgName = 'oak';
+              else if (item.name === 'Bronze Pickaxe') imgName = 'bronzepickaxe'; // +++ NEW +++
+              else if (item.name === 'Bronze Axe') imgName = 'bronzeaxe'; // +++ NEW +++
+              else if (item.name === 'Copper Pickaxe') imgName = 'copperpickaxe'; // +++ NEW +++
+              else if (item.name === 'Copper Axe') imgName = 'copperaxe'; // +++ NEW +++
+              else if (item.name === 'Iron Pickaxe') imgName = 'ironpickaxe'; // +++ NEW +++
+              else if (item.name === 'Iron Axe') imgName = 'ironaxe'; // +++ NEW +++
+              else if (item.name === 'Feather') imgName = 'feather'; // +++ NEW +++
+              else if (item.name === 'Arrow Shaft') imgName = 'arrowshaft'; // +++ NEW +++
+              else if (item.name === 'Copper Arrow Tip') imgName = 'copperarrowtip'; // +++ NEW +++
+              else if (item.name === 'Unbound Arrow') imgName = 'unboundarrow'; // +++ NEW +++
+              else if (item.name === 'Copper Arrow') imgName = 'copperarrow'; // +++ NEW +++
+              else if (item.name === 'Silk') imgName = 'silk'; // +++ NEW +++
+              // --- THIS IS THE MISSING BLOCK ---
+              else if (item.name === 'Bow String') {
+                  imgName = 'bowstring';
+              } else if (item.name === 'Unstrung Softwood Bow') {
+                  imgName = 'unstrungsoftwoodbow';
+              } else if (item.name === 'Unstrung Oak Bow') {
+                  imgName = 'unstrungoakbow';
+              } else if (item.name === 'Softwood Bow') {
+                  imgName = 'softwoodbow';
+              } else if (item.name === 'Oak Bow') {
+                  imgName = 'oakbow';
+              }
+              // --- END OF FIX ---
+              img.src = `images/${imgName}.png`;
       img.alt = item.name;
       img.onerror = function(){ this.style.opacity='0.08'; };
       slot.appendChild(img);
@@ -7032,6 +7901,7 @@ function resetGameState() {
   stopMining(); 
   stopBlacksmithing();
   stopFletching(); // +++ NEW +++
+  stopCraftingBowString(); // +++ NEW (using a specific stop func name) +++
   game.name = '';
   game.hp = 10;
   game.maxHP = 10;
@@ -7053,6 +7923,10 @@ function resetGameState() {
   game.woodcutting = { level: 1, xp: 0, totalXP: 0 };
   game.fletching = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
   
+  // +++ NEW SKILLS +++
+  game.crafting = { level: 1, xp: 0, totalXP: 0 };
+  game.ranged = { level: 1, xp: 0, totalXP: 0 };
+  
   // +++ ADD THESE 4 MISSING LINES +++
   game.attack = { level: 1, xp: 0, totalXP: 0 };
   game.strength = { level: 1, xp: 0, totalXP: 0 };
@@ -7065,6 +7939,7 @@ function resetGameState() {
   game.cookingActive = false;
   game.woodcuttingActive = false; // +++ NEW +++
   game.fletchingActive = false; // +++ NEW +++
+  game.craftingActive = false; // +++ NEW +++
   game.shopOpen = false;
   game.isAdmin = false;
   
@@ -7208,7 +8083,8 @@ function closeSettings() {
  * @param {string} src - The path to the sound file
  */
 // +++ NEW: Hub Screen Toggler Function +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubBlacksmith', 'hubFletching', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic']; // +++ ADDED hubFarm, hubCave
+// +++ ADDED hubCrafting +++
+const hubScreenIds = ['hubActions', 'hubMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -7216,6 +8092,7 @@ function showMainScreen(screenIdToShow) {
   stopCookingChicken();
   stopWoodcutting();
   stopFletching(); // +++ NEW +++
+  stopCraftingBowString(); // +++ NEW +++
   game.shopOpen = false;
   hideTooltip();
 
@@ -7251,6 +8128,11 @@ function showMainScreen(screenIdToShow) {
       document.getElementById('smithIronTab').classList.remove('active');
     }
     // --- END FIX ---
+  }
+  
+  // +++ NEW: Special case for crafting hub +++
+  if (screenIdToShow === 'hubCrafting') {
+    renderCraftingItems();
   }
   
   // Special case: if we're showing the mine hub, apply level locks
@@ -7413,6 +8295,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('shopActionIcon').onclick = openShop;
   document.getElementById('bankActionIcon').onclick = openBank;
   document.getElementById('fletchingActionIcon').onclick = openFletchingHub; // +++ NEW +++
+  document.getElementById('craftingActionIcon').onclick = openCraftingHub; // +++ NEW +++
+  
+  // --- Hub Crafting Listeners ---
+  document.getElementById('hubCrafting_ReturnBtn').onclick = backToActions; // +++ NEW +++
   
   // --- Hub Mine Listeners ---
   document.getElementById('copperVeinBtn').onclick = openCopperMine;
@@ -7502,6 +8388,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('bankActionIcon').onmouseleave = hideTooltip;
   document.getElementById('fletchingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Fletching Bench</div>'); // +++ NEW +++
   document.getElementById('fletchingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
+  document.getElementById('craftingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Crafting Bench</div>'); // +++ NEW +++
+  document.getElementById('craftingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
   
   // --- Tooltips for Hub Mine ---
   document.getElementById('copperVeinBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div>Requires Mining Lvl: 1');
@@ -7952,6 +8840,16 @@ window.showSaveIndicator = function() {
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
   const ADMIN_UID = "qHclRuNSFTTrE19xYd7ilqIPFVe2";
+
+  // +++ NEW: Stub function for resetGameState +++
+  // The real function is defined in the non-module script
+  function stopCraftingBowString() {
+    if (typeof window.stopCraftingBowString === 'function') {
+      window.stopCraftingBowString();
+    } else {
+      game.craftingActive = false;
+    }
+  }
   
   const firebaseConfig = {
     apiKey: "AIzaSyD6sIi0SbPUUjJFJsJB22xBOF7ZD0H7utw",
@@ -8206,6 +9104,20 @@ window.showSaveIndicator = function() {
           totalXP: game.fletching.totalXP
         },
         // +++ END NEW FLETCHING SAVE LOGIC +++
+        
+        // +++ NEW CRAFTING/RANGED SAVE LOGIC +++
+        crafting: {
+          level: game.crafting.level,
+          xp: game.crafting.xp,
+          totalXP: game.crafting.totalXP
+        },
+        ranged: {
+          level: game.ranged.level,
+          xp: game.ranged.xp,
+          totalXP: game.ranged.totalXP
+        },
+        // +++ END NEW SAVE LOGIC +++
+        
         playerAttackStyle: game.playerAttackStyle, // <-- ADD THIS
         updatedAt: new Date().toISOString()
         // We don't save activeSession here, that's handled by the lock functions
@@ -8434,6 +9346,26 @@ window.showSaveIndicator = function() {
           game.fletching = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW FLETCHING LOADING LOGIC +++
+        
+        // +++ NEW CRAFTING LOADING LOGIC +++
+        if (data.crafting) {
+          game.crafting.level = data.crafting.level || 1;
+          game.crafting.xp = data.crafting.xp || 0;
+          game.crafting.totalXP = data.crafting.totalXP || getTotalXPForLevel(data.crafting.level - 1) + data.crafting.xp || 0; 
+        } else {
+          game.crafting = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        // +++ END NEW CRAFTING LOADING LOGIC +++
+        
+        // +++ NEW RANGED LOADING LOGIC +++
+        if (data.ranged) {
+          game.ranged.level = data.ranged.level || 1;
+          game.ranged.xp = data.ranged.xp || 0;
+          game.ranged.totalXP = data.ranged.totalXP || getTotalXPForLevel(data.ranged.level - 1) + data.ranged.xp || 0; 
+        } else {
+          game.ranged = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        // +++ END NEW RANGED LOADING LOGIC +++
 
         setText('charName', game.name);
         updateHPUI(); // This now calculates maxHP using game.vitality.level
@@ -8511,6 +9443,11 @@ window.showSaveIndicator = function() {
         cooking: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW COOKING FOR NEW ACCOUNTS +++
         woodcutting: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW WOODCUTTING FOR NEW ACCOUNTS +++
         fletching: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW FLETCHING FOR NEW ACCOUNTS +++
+        
+        // +++ NEW SKILLS FOR NEW ACCOUNTS +++
+        crafting: { level: 1, xp: 0, totalXP: 0 },
+        ranged: { level: 1, xp: 0, totalXP: 0 },
+        
         playerAttackStyle: 'strength',
         activeSession: null, // +++ ADD THIS
         createdAt: new Date().toISOString()
@@ -9096,9 +10033,10 @@ window.showSaveIndicator = function() {
                 addLocalChatMessage("Usage: /setlevel [playername] [skill] [1-99]", 'error');
                 return true;
             }
-            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking', 'woodcutting', 'fletching'];
+            // +++ NEW: Added 'crafting' and 'ranged' to admin command +++
+            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking', 'woodcutting', 'fletching', 'crafting', 'ranged'];
 if (!validSkills.includes(skill)) {
-     addLocalChatMessage("Unknown skill. Use: mining, blacksmith, attack, strength, defence, vitality, cooking, woodcutting, or fletching.", 'error');
+     addLocalChatMessage("Unknown skill. Use: mining, blacksmith, attack, strength, defence, vitality, cooking, woodcutting, fletching, crafting, or ranged.", 'error');
      return true;
 }
             const newTotalXP = getTotalXPForLevel(level); 
@@ -9772,8 +10710,10 @@ if (!validSkills.includes(skill)) {
         const cookingXp = data.cooking?.totalXP || 0;
         const woodcuttingXp = data.woodcutting?.totalXP || 0; // +++ NEW +++
         const fletchingXp = data.fletching?.totalXP || 0; // +++ NEW +++
+        const craftingXp = data.crafting?.totalXP || 0; // +++ NEW +++
+        const rangedXp = data.ranged?.totalXP || 0; // +++ NEW +++
 
-        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp + woodcuttingXp + fletchingXp;
+        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp + woodcuttingXp + fletchingXp + craftingXp + rangedXp;
         // --- END OF FIX ---
 
         players.push({
@@ -10010,7 +10950,17 @@ if (!validSkills.includes(skill)) {
       'images/cave.png',
       'images/spidermonster.png',
       'images/spideranim.gif',
-      'images/silk.png'
+      'images/silk.png',
+      
+      // +++ NEW ASSETS FOR CRAFTING/RANGED +++
+      'images/craftingskillicon.png',
+      'images/rangedskillicon.png',
+      'images/craftingbenchbutton.png',
+      'images/bowstring.png',
+      'images/unstrungsoftwoodbow.png',
+      'images/unstrungoakbow.png',
+      'images/softwoodbow.png',
+      'images/oakbow.png'
     ];
 
     /**
