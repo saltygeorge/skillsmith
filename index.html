@@ -1048,6 +1048,46 @@ button.primary:hover { background: var(--accent-hover); }
 }
 /* --- END: Stats Panel --- */
 
+/* --- NEW: Updates Panel --- */
+#updatesContent {
+  /* Set a fixed height to make it scrollable */
+  height: 112px; 
+  background: rgba(0,0,0,0.2); 
+  border-radius: 6px; 
+  padding: 8px; 
+  overflow-y: auto; 
+  display: flex; 
+  flex-direction: column; /* Normal top-to-bottom flow */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--panel-bg);
+}
+#updatesContent::-webkit-scrollbar { width: 8px; }
+#updatesContent::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+#updatesContent::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+#updatesContent::-webkit-scrollbar-thumb:hover { background: var(--accent-hover); }
+
+.update-message {
+  margin-bottom: 8px;
+  line-height: 1.4;
+  font-size: 13px;
+  word-break: break-word;
+  /* Add a small border like the leaderboard */
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(255,255,255,0.1);
+}
+.update-message:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+.update-message strong {
+  color: var(--gold);
+  display: block; /* Timestamp on its own line */
+  font-size: 12px;
+  opacity: 0.8;
+  margin-bottom: 3px;
+}
+/* --- END: Updates Panel --- */
+
 
 </style>
 </head>
@@ -1265,10 +1305,27 @@ button.primary:hover { background: var(--accent-hover); }
                 <img src="images/farm.png" alt="Farm Area" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
                 <span>The Farm</span>
               </button>
+              <button id="caveAreaBtn" class="primary" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                <img src="images/cave.png" alt="Cave Area" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+                <span>The Cave</span>
+              </button>
               <button id="hubCombat_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
             </div>
           </div>
           
+          <div id="hubCave" class="hub-screen">
+            <h2>The Cave</h2>
+            <div style="margin-top:8px; color:#efe3cf;">A dark, damp cave.</div>
+            
+            <div style="margin-top:20px; text-align:center; cursor:pointer;" onclick="openCombatInterface('Spider')">
+              <img src="images/spidermonster.png" alt="Spider" style="height: 100px;">
+              <div style="font-weight:bold;">Spider (Lvl 2)</div>
+            </div>
+            
+            <div class="action-buttons" style="margin-top: 14px;">
+              <button id="hubCave_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
           <div id="hubShop" class="hub-screen">
             <h2>General Store</h2>
             
@@ -1317,6 +1374,19 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
           </div>
 
+          <div id="hubFarm" class="hub-screen">
+            <h2>The Farm</h2>
+            <div style="margin-top:8px; color:#efe3cf;">A peaceful farm, mostly.</div>
+            
+            <div style="margin-top:20px; text-align:center; cursor:pointer;" onclick="openCombatInterface('Chicken')">
+              <img src="images/chickenmonster.png" alt="Chicken" style="height: 100px;">
+              <div style="font-weight:bold;">Chicken (Lvl 1)</div>
+            </div>
+            
+            <div class="action-buttons" style="margin-top: 14px;">
+              <button id="hubFarm_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
           <div id="hubDynamic" class="hub-screen">
             </div>
 
@@ -1335,10 +1405,16 @@ button.primary:hover { background: var(--accent-hover); }
         <div id="leaderboardContent">
           <div style="text-align:center; margin-top: 10px; color: #fff; opacity: 0.7;">Loading leaderboard...</div>
         </div>
-        <div id="saveTimerText" style="display: none; margin-top: 10px; text-align: right; font-size: 11px; color: #aaffaa; font-weight: bold;">
-            Progress Saved!
+
+        <h3 style="margin: 20px 0 8px 0; font-size: 18px; color: #fff; border-top: 2px solid var(--accent); padding-top: 15px;">Latest Updates</h3>
+        <div id="updatesContent">
+          <div style="text-align:center; margin-top: 10px; color: #fff; opacity: 0.7;">Loading updates...</div>
         </div>
-      </div>
+        <div style="height: 24px;"> <div id="saveTimerText" style="visibility: hidden; margin-top: 10px; text-align: right; font-size: 11px; color: #aaffaa; font-weight: bold;">
+              Progress Saved!
+          </div>
+        </div>
+        </div>
 
     </div> 
     
@@ -1522,6 +1598,7 @@ const game = {
   fletchingActive: false, // +++ NEW FLETCHING STATE +++
   wasFletchingBeforeCombat: false, // +++ NEW FLETCHING STATE +++
   lastSmithingTab: 'copper',
+  lastCombatAreaHub: 'hubActions', // +++ NEW +++
   
   // +++ NEW SESSION LOCK +++
   // This is a unique ID for this specific tab
@@ -1726,7 +1803,8 @@ const VALID_ITEMS = [
   'Unbound Arrow', // +++ NEW +++
   'Copper Arrow', // +++ NEW +++
   'Copper Platelegs', // +++ NEW +++
-  'Iron Platelegs' // +++ NEW +++
+  'Iron Platelegs', // +++ NEW +++
+  'Silk' // +++ NEW +++
 ];
 
 const XP_TABLE = [
@@ -2038,6 +2116,7 @@ SHOP_INVENTORY[1] = { name: 'Bronze Axe', price: 10 };
 
 // --- NEW: Item Sell Prices ---
 const ITEM_SELL_PRICES = {
+  'Silk': 2, // +++ NEW +++
   // Ores & Resources
   'Copper Ore': 1,
   'Coal Ore': 2,
@@ -2377,6 +2456,8 @@ function renderInventoryGrid(){
           imgName = 'unboundarrow';
       } else if (item.name === 'Copper Arrow') { // +++ NEW +++
           imgName = 'copperarrow';
+      } else if (item.name === 'Silk') { // +++ NEW +++
+          imgName = 'silk';
       }
       
       img.src = `images/${imgName}.png`;
@@ -5828,26 +5909,14 @@ function openCombatHub() {
 }
 
 function openFarmCombatArea() {
-  game.shopOpen = false;
-  hideTooltip();
-  stopMining();
-  stopBlacksmithing();
-  
-  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
-  wrapper.innerHTML = `
-    <h2>The Farm</h2>
-    <div style="margin-top:8px; color:#efe3cf;">A peaceful farm, mostly.</div>
-    
-    <div style="margin-top:20px; text-align:center; cursor:pointer;" onclick="openCombatInterface('Chicken')">
-      <img src="images/chickenmonster.png" alt="Chicken" style="height: 100px;">
-      <div style="font-weight:bold;">Chicken (Lvl 1)</div>
-    </div>
-    
-    <div class="action-buttons" style="margin-top:14px;">
-      <button onclick="openCombatHub()" class="primary" style="background:#666;">Return</button>
-    </div>
-  `;
-  showMainScreen('hubDynamic'); // <-- 2. ADDED
+  game.lastCombatAreaHub = 'hubFarm'; // +++ SET LAST HUB +++
+  showMainScreen('hubFarm');
+}
+
+// +++ NEW CAVE HUB FUNCTION +++
+function openCaveCombatArea() {
+  game.lastCombatAreaHub = 'hubCave'; // +++ SET LAST HUB +++
+  showMainScreen('hubCave');
 }
 
 // NEW: Function to build and open the main combat UI
@@ -5882,6 +5951,17 @@ function openCombatInterface(enemyName) {
       defence: 1, // Low defence
       img: 'images/chickenanim.gif'
     };
+  } else if (enemyName === 'Spider') { // +++ THIS IS THE NEW BLOCK +++
+    game.currentEnemy = {
+      name: 'Spider',
+      level: 2,
+      maxHp: 12,
+      currentHp: 12,
+      attack: 2, 
+      strength: 2, // Max hit is 2
+      defence: 2, 
+      img: 'images/spideranim.gif'
+    };
   } else {
     console.error('Unknown enemy:', enemyName);
     return;
@@ -5915,7 +5995,7 @@ function openCombatInterface(enemyName) {
           <div id="combat-main-actions">
             <button id="combat-fight-btn" class="primary" style="background:#900;" onclick="beginCombat()">Fight</button>
             <button id="combat-run-btn" class="primary" style="background:#080; display:none;" onclick="runFromCombat()">Run</button>
-            <button id="combat-return-btn" class="primary" style="background:#555;" onclick="returnToFarm()">Return</button>
+            <button id="combat-return-btn" class="primary" style="background:#555;" onclick="returnToCombatArea()">Return</button>
           </div>
           
         </div>
@@ -6021,7 +6101,7 @@ function runFromCombat(playerDied = false) {
   }
 }
 
-function returnToFarm() {
+function returnToCombatArea() { // +++ RENAMED FUNCTION +++
   // +++ NEW FIX: Stop combat loops +++
   if (game.inCombat) {
     game.inCombat = false;
@@ -6032,8 +6112,8 @@ function returnToFarm() {
   }
   // +++ END FIX +++
 
-  // 1. Go back to the farm screen
-  openFarmCombatArea(); 
+  // 1. Go back to the correct combat hub screen
+  showMainScreen(game.lastCombatAreaHub); 
   
   // 2. Check if we need to resume skilling
   if (game.wasMiningBeforeCombat) {
@@ -6212,12 +6292,19 @@ function playerAttackTurn() {
   // --- 5. Check for Enemy Death ---
   if (game.currentEnemy.currentHp <= 0) {
     // --- NEW: Multi-item loot drop ---
-    addItem('Raw Chicken', 1);
-    const featherQty = Math.floor(Math.random() * 5) + 2; // 2 to 6 Feathers
-    addItem('Feather', featherQty);
-    
-    showItemPopup('+1 Raw Chicken', null, 900);
-    showItemPopup(`+${featherQty} Feather`, null, 1350); // Show feather popup slightly after
+    if (game.currentEnemy.name === 'Chicken') { // +++ CHECK ENEMY NAME +++
+      addItem('Raw Chicken', 1);
+      const featherQty = Math.floor(Math.random() * 5) + 2; // 2 to 6 Feathers
+      addItem('Feather', featherQty);
+      
+      showItemPopup('+1 Raw Chicken', null, 900);
+      showItemPopup(`+${featherQty} Feather`, null, 1350); // Show feather popup slightly after
+    } else if (game.currentEnemy.name === 'Spider') { // +++ NEW SPIDER DROP +++
+      const silkQty = Math.floor(Math.random() * 3) + 1; // 1 to 3 Silk
+      addItem('Silk', silkQty);
+      
+      showItemPopup(`+${silkQty} Silk`, null, 900);
+    }
     // --- END NEW ---
     
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
@@ -6466,6 +6553,7 @@ function renderBankGrid() {
       else if (item.name === 'Copper Arrow Tip') imgName = 'copperarrowtip'; // +++ NEW +++
       else if (item.name === 'Unbound Arrow') imgName = 'unboundarrow'; // +++ NEW +++
       else if (item.name === 'Copper Arrow') imgName = 'copperarrow'; // +++ NEW +++
+      else if (item.name === 'Silk') imgName = 'silk'; // +++ NEW +++
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
       img.onerror = function(){ this.style.opacity='0.08'; };
@@ -7085,7 +7173,7 @@ function closeSettings() {
  * @param {string} src - The path to the sound file
  */
 // +++ NEW: Hub Screen Toggler Function +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubBlacksmith', 'hubFletching', 'hubForest', 'hubKitchen', 'hubCombat', 'hubShop', 'hubBank', 'hubDynamic']; // +++ ADDED hubFletching
+const hubScreenIds = ['hubActions', 'hubMine', 'hubBlacksmith', 'hubFletching', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic']; // +++ ADDED hubFarm, hubCave
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -7347,8 +7435,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // --- Hub Combat Listeners ---
   document.getElementById('farmAreaBtn').onclick = openFarmCombatArea;
+  document.getElementById('caveAreaBtn').onclick = openCaveCombatArea; // +++ NEW +++
   document.getElementById('hubCombat_ReturnBtn').onclick = backToActions;
   
+  // --- Hub Farm/Cave Return Listeners ---
+  document.getElementById('hubFarm_ReturnBtn').onclick = openCombatHub; // +++ NEW +++
+  document.getElementById('hubCave_ReturnBtn').onclick = openCombatHub; // +++ NEW +++
+
   // --- Hub Shop Listeners ---
   document.getElementById('hubShop_ReturnBtn').onclick = backToActions;
   
@@ -7400,8 +7493,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('cookChickenBtn').onmouseleave = hideTooltip;
 
   // --- Tooltips for Hub Combat ---
-  document.getElementById('farmAreaBtn').onmouseenter = (e) => showTooltip(e, 'Lvl Required: 1');
+  document.getElementById('farmAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Farm</div>Lvl Required: 1');
   document.getElementById('farmAreaBtn').onmouseleave = hideTooltip;
+  document.getElementById('caveAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Cave</div>Lvl Required: 2'); // +++ NEW +++
+  document.getElementById('caveAreaBtn').onmouseleave = hideTooltip; // +++ NEW +++
 
   // +++ END NEW LISTENER BLOCK +++
   
@@ -7772,10 +7867,10 @@ inventoryGrid.addEventListener('dragend', (e) => {
 window.showSaveIndicator = function() {
     const timerEl = document.getElementById('saveTimerText');
     if (timerEl) {
-        timerEl.style.display = 'block';
+        timerEl.style.visibility = 'visible';
         // Hide the message after 2 seconds
         setTimeout(() => {
-            timerEl.style.display = 'none';
+            timerEl.style.visibility = 'hidden';
         }, 2000);
     }
 }
@@ -8099,6 +8194,12 @@ window.showSaveIndicator = function() {
         playerDocListener();
         playerDocListener = null;
       }
+      
+      if (updatesListenerUnsubscribe) {
+        updatesListenerUnsubscribe();
+        updatesListenerUnsubscribe = null;
+      }
+      isUpdatesHistoryLoaded = false;
 
       const ref = doc(db, "players", user.uid);
       let isFirstLoad = true; 
@@ -8419,6 +8520,7 @@ window.showSaveIndicator = function() {
       if (started) {
         initChatListener();
         initTradeListeners();
+        initUpdatesListener();
         // The loadPlayerDataAndStart listener will automatically handle
         // acquiring the lock on first load.
       } else {
@@ -8437,6 +8539,8 @@ window.showSaveIndicator = function() {
       tradeSessionUnsubscribes.forEach(unsub => unsub()); 
       tradeSessionUnsubscribes = []; 
       if (playerDocListener) playerDocListener();
+      if (updatesListenerUnsubscribe) updatesListenerUnsubscribe();
+      isUpdatesHistoryLoaded = false;
       stopSessionHeartbeat();
       // We don't release the lock, just let it go stale.
       
@@ -8484,6 +8588,7 @@ window.showSaveIndicator = function() {
           window.renderLeaderboards();
           initChatListener(); 
           initTradeListeners(); 
+          initUpdatesListener(); 
           // The onSnapshot listener will fire and update the UI
         }
       };
@@ -8494,8 +8599,10 @@ window.showSaveIndicator = function() {
   let isChatHistoryLoaded = false;
   let localMessageQueue = [];
   let chatListenerUnsubscribe = null;
-  let isTradeRequestsLoaded = false;
+  let isTradeRequestsLoaded = false; 
   let playerDocListener = null; 
+  let updatesListenerUnsubscribe = null;
+  let isUpdatesHistoryLoaded = false; 
 
   async function sendChatMessage() {
     const chatInput = document.getElementById('chatInput');
@@ -8556,6 +8663,92 @@ window.showSaveIndicator = function() {
     }
     chatMessagesContainer.prepend(msgElement); 
   }
+  function formatUpdateTimestamp(timestamp) {
+    if (!timestamp) return "Just now";
+    const date = timestamp.toDate();
+    // Formats to: 11/11/25
+    return date.toLocaleString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: '2-digit'
+    });
+  }
+
+  function addUpdateMessageToDOM(doc) {
+    const contentContainer = document.getElementById('updatesContent');
+    if (!contentContainer) return;
+
+    const data = doc.data();
+    const docId = doc.id;
+
+    // --- FIX: Check if this update is already in the DOM ---
+    if (document.getElementById(`update-${docId}`)) {
+      return; // Already exists, do nothing
+    }
+    // --- END FIX ---
+
+    const msgElement = document.createElement('div');
+    msgElement.className = 'update-message';
+    msgElement.id = `update-${docId}`; // --- NEW: Add unique ID ---
+    
+    const formattedDate = formatUpdateTimestamp(data.timestamp);
+    
+    // Create text nodes to prevent HTML injection from the update message
+    const textNode = document.createTextNode(" " + data.text);
+    const strongNode = document.createElement('strong');
+    strongNode.textContent = `${formattedDate}:`;
+    
+    msgElement.appendChild(strongNode);
+    msgElement.appendChild(textNode);
+    
+    // Add to the top of the list
+    contentContainer.prepend(msgElement);
+  }
+
+  function initUpdatesListener() {
+    if (updatesListenerUnsubscribe) {
+      updatesListenerUnsubscribe();
+      updatesListenerUnsubscribe = null;
+    }
+    const contentContainer = document.getElementById('updatesContent');
+    if (!contentContainer) return;
+
+    const q = query(
+      collection(db, "updates"), 
+      orderBy("timestamp", "asc"), // Get oldest first
+      limitToLast(20) // But only the last 20
+    );
+
+    updatesListenerUnsubscribe = onSnapshot(q, (querySnapshot) => {
+      if (!isUpdatesHistoryLoaded) {
+        // First load: clear "loading" and add all docs
+        isUpdatesHistoryLoaded = true;
+        contentContainer.innerHTML = '';
+        // Prepend all docs so they end up in newest-first order
+        querySnapshot.docs.forEach(doc => {
+          addUpdateMessageToDOM(doc); // --- FIX: Pass whole doc ---
+        });
+      } else {
+        // Subsequent loads: only add new ones
+        querySnapshot.docChanges().forEach((change) => {
+          // --- FIX: Show all new messages, including your own ---
+          if (change.type === "added") {
+            addUpdateMessageToDOM(change.doc); // --- FIX: Pass whole doc ---
+          }
+        });
+      }
+
+      // Prune old messages if we have more than 20
+      while (contentContainer.childElementCount > 20) {
+        contentContainer.lastChild.remove(); // Remove from the bottom
+      }
+      
+    }, (error) => {
+      console.error("Updates listener error: ", error);
+      contentContainer.innerHTML = '<div style="color: red; text-align: center;">Error loading updates.</div>';
+    });
+  }
+
   function initChatListener() {
     if (chatListenerUnsubscribe) {
       chatListenerUnsubscribe();
@@ -8885,6 +9078,33 @@ if (!validSkills.includes(skill)) {
             }
             return true;
         }
+        
+        // +++ NEW: Admin /update command +++
+        if (command === 'update') {
+            const messageText = args.join(' ');
+            if (messageText.length === 0) {
+                addLocalChatMessage("Usage: /update [message]", 'error');
+                return true;
+            }
+            if (messageText.length > 512) {
+              addLocalChatMessage("Error: Update message is too long (max 512 chars).", 'error');
+              return true;
+            }
+
+            try {
+              // Add to the new 'updates' collection
+              await addDoc(collection(db, "updates"), {
+                text: messageText,
+                timestamp: serverTimestamp()
+              });
+              addLocalChatMessage("Update posted.", 'system');
+            } catch (e) {
+              console.error("Error posting update: ", e);
+              addLocalChatMessage("Error posting update.", 'error');
+            }
+            return true;
+        }
+        // +++ END NEW +++
     }
     
     // +++ NEW: Check for active session before allowing trade +++
@@ -9477,9 +9697,10 @@ if (!validSkills.includes(skill)) {
   window.renderLeaderboards = async function() {
     const contentContainer = document.getElementById('leaderboardContent'); 
     if (!contentContainer) return;
-    contentContainer.innerHTML = `
-      <div style="text-align:center; margin-top: 20px; color: #fff; opacity: 0.7;">Refreshing...</div>
-    `;
+    
+    // --- FIX: Remove the line that clears innerHTML to prevent flash ---
+    // contentContainer.innerHTML = `...`; // <-- THIS LINE IS DELETED
+    
     try {
       const playersCol = collection(db, "players");
       const q = query(playersCol);
@@ -9539,10 +9760,20 @@ if (!validSkills.includes(skill)) {
   document.addEventListener('DOMContentLoaded', () => {
     if (refreshLeaderboardBtn) {
         refreshLeaderboardBtn.onclick = async () => {
+          // --- NEW: Disable button and show loading text ---
+          refreshLeaderboardBtn.disabled = true;
+          refreshLeaderboardBtn.textContent = '...'; // Use '...' as it's small
+
           if (typeof window.savePlayerData === 'function') {
             await window.savePlayerData();
           }
-          window.renderLeaderboards();
+          
+          // --- NEW: Await the render so we can re-enable the button ---
+          await window.renderLeaderboards(); 
+          
+          // --- NEW: Re-enable button ---
+          refreshLeaderboardBtn.disabled = false;
+          refreshLeaderboardBtn.textContent = 'Refresh';
         };
     }
     const chatSendBtn = document.getElementById('chatSendBtn');
@@ -9722,7 +9953,13 @@ if (!validSkills.includes(skill)) {
       'images/unboundarrow.png',
       'images/copperarrow.png',
       'images/copperplatelegs.png', // +++ NEW +++
-      'images/ironplatelegs.png' // +++ NEW +++
+      'images/ironplatelegs.png', // +++ NEW +++
+      
+      // +++ NEW CAVE/SPIDER ASSETS +++
+      'images/cave.png',
+      'images/spidermonster.png',
+      'images/spideranim.gif',
+      'images/silk.png'
     ];
 
     /**
