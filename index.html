@@ -214,7 +214,7 @@ body {
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 13px;
-  z-index: 2000;
+  z-index: 3501; /* <-- THIS IS THE FIX */
   border: 1px solid rgba(255,255,255,0.06);
   box-shadow: 0 6px 18px rgba(0,0,0,0.45);
   max-width: 240px;
@@ -1035,15 +1035,22 @@ button.primary:hover { background: var(--accent-hover); }
 
 /* --- NEW: Stats Panel --- */
 #statsPanel {
-  display: none; /* Hidden by default */
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 250px;
-  padding: 15px;
-  z-index: 3500; /* Above inventory, below modals */
+  visibility: hidden; /* <-- THIS IS THE FIX: Hide but keep space */
+  display: flex;      /* <-- THIS IS THE FIX: Set the display type */
+  
+  /* This width perfectly matches the .sidebar panel above it */
+  width: calc((var(--slot-size) * 4) + (var(--slot-gap) * 3) + 32px + 8px);
+  
+  /* This height perfectly matches the .chat-panel next to it */
+  min-height: 200px; 
+  
+  /* New layout styles */
+  padding: 16px;
   box-sizing: border-box;
+  flex-direction: column;
+  flex-shrink: 0;
+  
+  /* We remove all the 'position: fixed' rules */
 }
 #statsPanelHeader {
   font-size: 18px;
@@ -1052,7 +1059,7 @@ button.primary:hover { background: var(--accent-hover); }
   margin: -5px -5px 10px -5px;
   padding: 5px 10px;
   border-bottom: 2px solid var(--accent);
-  cursor: move; /* Indicates it's draggable */
+  /* cursor: move;  <-- THIS LINE IS DELETED */
 }
 #statsPanelContent {
   /* We can re-use the .stat-row styles here */
@@ -1447,9 +1454,19 @@ button.primary:hover { background: var(--accent-hover); }
             <h2>The Farm</h2>
             <div style="margin-top:8px; color:#efe3cf;">A peaceful farm, mostly.</div>
             
-            <div style="margin-top:20px; text-align:center; cursor:pointer;" onclick="openCombatInterface('Chicken')">
-              <img src="images/chickenmonster.png" alt="Chicken" style="height: 100px;">
-              <div style="font-weight:bold;">Chicken (Lvl 1)</div>
+            <!-- NEW: Flex container for monsters -->
+            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+              
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Chicken')">
+                <img src="images/chickenmonster.png" alt="Chicken" style="height: 100px;">
+                <div style="font-weight:bold;">Chicken (Lvl 1)</div>
+              </div>
+              
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Cow')">
+                <img src="images/cowmonster.png" alt="Cow" style="height: 100px;">
+                <div style="font-weight:bold;">Cow (Lvl 2)</div>
+              </div>
+            
             </div>
             
             <div class="action-buttons" style="margin-top: 14px;">
@@ -1489,7 +1506,26 @@ button.primary:hover { background: var(--accent-hover); }
     
     <div id="bottom-row-chat">
 
-      <div class="sidebar-spacer"></div>
+      <div id="statsPanel">
+  <div id="statsPanelHeader">Player Stats</div>
+  <div id="statsPanelContent">
+    <div class="stat-row">
+      <span class="stat-label">Physical Damage</span>
+      <span class="stat-value" id="stat-phys-dmg-panel">0</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Armor</span>
+      <span class="stat-value" id="stat-armor-panel">0</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Speed Bonus</span>
+      <span class="stat-value" id="stat-speed-panel">0</span>
+    </div>
+  </div>
+  <div id="statsPanelFooter">
+    <button id="closeStatsBtn" class="primary" style="background:#666;">Close</button>
+  </div>
+</div>
 
       <div class="chat-panel" id="chatPanel">
         <div id="chatMessages">
@@ -1889,7 +1925,15 @@ const VALID_ITEMS = [
   'Unstrung Softwood Bow',
   'Unstrung Oak Bow',
   'Softwood Bow',
-  'Oak Bow'
+  'Oak Bow',
+  
+  // +++ NEW LEATHER ITEMS +++
+  'Cow Hide',
+  'Leather',
+  'Leather Hood',
+  'Leather Body',
+  'Leather Chaps',
+  'Leather Boots'
 ];
 
 const XP_TABLE = [
@@ -2120,6 +2164,33 @@ const BOW_STRING_YIELD = 1;
 const BOW_STRING_XP = 15;
 const BOW_STRING_TIME_MS = 2500;
 
+// +++ NEW: Leather Crafting Constants +++
+const CRAFTING_LEATHER_LVL = 1;
+const LEATHER_HIDE_COST = 1;
+const LEATHER_XP = 5;
+const LEATHER_TIME_MS = 1500;
+
+const CRAFTING_LEATHER_HOOD_LVL = 3;
+const LEATHER_HOOD_LEATHER_COST = 2; // Changed from HIDE_COST
+const LEATHER_HOOD_XP = 20;
+const LEATHER_HOOD_TIME_MS = 3000;
+
+const CRAFTING_LEATHER_BODY_LVL = 7;
+const LEATHER_BODY_LEATHER_COST = 5; // Changed from HIDE_COST
+const LEATHER_BODY_XP = 50;
+const LEATHER_BODY_TIME_MS = 6000;
+
+const CRAFTING_LEATHER_CHAPS_LVL = 5;
+const LEATHER_CHAPS_LEATHER_COST = 3; // Changed from HIDE_COST
+const LEATHER_CHAPS_XP = 30;
+const LEATHER_CHAPS_TIME_MS = 4000;
+
+const CRAFTING_LEATHER_BOOTS_LVL = 1;
+const LEATHER_BOOTS_LEATHER_COST = 1; // Changed from HIDE_COST
+const LEATHER_BOOTS_XP = 10;
+const LEATHER_BOOTS_TIME_MS = 2000;
+
+
 // --- NEW: Iron Smithing Constants ---
 const IRON_BAR_ORE_COST = 1; // 1 Iron Ore
 const IRON_BAR_COAL_COST = 2; // 1 Coal Ore
@@ -2191,50 +2262,84 @@ const AXE_TIERS = { "Bronze Axe": 1, "Copper Axe": 2, "Iron Axe": 3 };
 
 // --- NEW: Central Item Stat Definitions ---
 const ITEM_STATS = {
+  // --- Copper (Fighter) ---
   'Copper Helmet': {
-    armor: 1
+    armor: 1,
+    armorType: 'fighter'
   },
   'Copper Chestplate': {
-    armor: 2
+    armor: 2,
+    armorType: 'fighter'
   },
   'Copper Boots': {
-    armor: 1
+    armor: 1,
+    armorType: 'fighter'
   },
   'Copper Platelegs': {
-    armor: 1
+    armor: 1,
+    armorType: 'fighter'
   },
   'Copper Shortsword': {
     damage: 1,
     styleBonus: 1, // Bonus for 'attack' style
-    speed: 2
+    weaponType: 'melee'
   },
-  // --- NEW: Iron Item Stats ---
+  
+  // --- Iron (Fighter) ---
   'Iron Helmet': {
-    armor: 2
+    armor: 2,
+    armorType: 'fighter'
   },
   'Iron Chestplate': {
-    armor: 3
+    armor: 3,
+    armorType: 'fighter'
   },
   'Iron Boots': {
-    armor: 2
+    armor: 2,
+    armorType: 'fighter'
   },
   'Iron Platelegs': {
-    armor: 2
+    armor: 2,
+    armorType: 'fighter'
   },
   'Iron Shortsword': {
     damage: 2,
     styleBonus: 1, // Bonus for 'attack' style
-    speed: 2
+    weaponType: 'melee'
   },
   
-  // +++ NEW: Bow Stats +++
+  // --- Leather (Ranged) ---
+  'Leather Hood': {
+    armor: 1,
+    speed: 1,
+    armorType: 'ranged'
+  },
+  'Leather Body': {
+    armor: 2,
+    speed: 2,
+    armorType: 'ranged'
+  },
+  'Leather Chaps': {
+    armor: 1,
+    speed: 1,
+    armorType: 'ranged'
+  },
+  'Leather Boots': {
+    armor: 0,
+    speed: 1,
+    armorType: 'ranged'
+  },
+
+  // --- Bows (Ranged) ---
   'Softwood Bow': {
-    damage: 2, // No style bonus, just base damage
-    speed: 3  // 3.1s attack speed (4000 - 3*300)
+    damage: 2,
+    speed: 3,
+    weaponType: 'ranged'
   },
   'Oak Bow': {
     damage: 3,
-    speed: 3
+    speed: 3,
+    weaponType: 'ranged'
   }
 };
 const SHOP_INVENTORY = new Array(20).fill(null);
@@ -2296,7 +2401,13 @@ const ITEM_SELL_PRICES = {
   'Unstrung Softwood Bow': 5,
   'Unstrung Oak Bow': 10,
   'Softwood Bow': 10,
-  'Oak Bow': 20
+  'Oak Bow': 20,
+  'Cow Hide': 4,
+  'Leather': 6,
+  'Leather Hood': 10,
+  'Leather Body': 25,
+  'Leather Chaps': 15,
+  'Leather Boots': 8
 };
 // --- END: Item Sell Prices ---
 
@@ -2342,88 +2453,107 @@ function updateHPUI(){
  * Calculates all player combat stats based on levels and equipment.
  */
 function getPlayerCombatStats() {
-  // 1. Base Stats from *Equipment Only*
-  let stats = {
+  // 1. Get equipped weapon type
+  let equippedWeaponType = 'melee'; // Default
+  if (game.equipment.weapon && ITEM_STATS[game.equipment.weapon.name]) {
+    equippedWeaponType = ITEM_STATS[game.equipment.weapon.name].weaponType || 'melee';
+  }
+  
+  // 2. Base Stats from *Equipment Only*
+  let equipmentStats = {
     equipmentDamage: 0, 
     equipmentArmor: 0, 
     equipmentSpeed: 0,
   };
 
-  // 2. Add Equipment Bonuses
+  // 3. Add Equipment Bonuses (with new penalty logic)
   for (const [slotType, item] of Object.entries(game.equipment)) {
     if (item && ITEM_STATS[item.name]) {
       const itemStats = ITEM_STATS[item.name];
-      stats.equipmentDamage += itemStats.damage || 0;
-      stats.equipmentArmor += itemStats.armor || 0;
-      stats.equipmentSpeed += itemStats.speed || 0;
+      const itemArmorType = itemStats.armorType; // 'fighter', 'ranged', or undefined
 
-      // Special bonus for Copper Shortsword on 'attack' style
-      if (item.name === 'Copper Shortsword' && game.playerAttackStyle === 'attack') {
-        stats.equipmentDamage += itemStats.styleBonus || 0;
+      // --- Add Damage (no penalties) ---
+      equipmentStats.equipmentDamage += itemStats.damage || 0;
+
+      // --- Add Armor (no penalty) ---
+      let armorBonus = itemStats.armor || 0;
+      equipmentStats.equipmentArmor += armorBonus;
+      
+      // --- Add Speed (with penalty) ---
+      let speedBonus = itemStats.speed || 0; // Get the item's base speed
+
+      if (equippedWeaponType === 'melee' && itemArmorType === 'ranged') {
+        // *** NEW MELEE PENALTY ***
+        // Melee user wearing light armor gets a speed penalty.
+        // This flat -3 penalty will add +0.3s to the attack time PER PIECE.
+        speedBonus = -3;
+        
+      } else if (equippedWeaponType === 'ranged' && itemArmorType === 'fighter') {
+        // *** NEW HARSH PENALTY ***
+        // Ranged user wearing heavy armor gets a HUGE speed penalty.
+        // This flat -7.5 penalty will add +0.75s to the attack time PER PIECE.
+        speedBonus = -7.5; 
       }
-      // +++ FIX: Check for Iron Shortsword +++
-      if (item.name === 'Iron Shortsword' && game.playerAttackStyle === 'attack') {
-        stats.equipmentDamage += itemStats.styleBonus || 0;
+      
+      equipmentStats.equipmentSpeed += speedBonus;
+
+      // --- Add Style Bonus (Melee only) ---
+      if (itemStats.weaponType === 'melee' && game.playerAttackStyle === 'attack') {
+        equipmentStats.equipmentDamage += itemStats.styleBonus || 0;
       }
-      // +++ END FIX +++
     }
   }
   
-  // 3. Calculate Final Stats (Base + Skills + Equipment)
+  // 4. Calculate Final Stats (Base + Skills + Equipment)
   const finalStats = {};
-  const isRanged = (game.equipment.weapon && (game.equipment.weapon.name.endsWith('Bow')));
+  const isRanged = (equippedWeaponType === 'ranged');
   const style = game.playerAttackStyle;
 
-  // --- NEW: Define Style Bonuses ---
+  // --- Define Style Bonuses ---
   let styleDamageBonus = 0;
   let styleArmorBonus = 0;
   let styleAccuracyBonus = 0;
   let offensiveSkillLevel = 0; // This will be Ranged Lvl or Attack Lvl
 
   if (style === 'aggressive') {
-    styleDamageBonus = 2;   // +2 Max Hit
-    styleAccuracyBonus = -5;  // -5 Accuracy
+    styleDamageBonus = 2;
+    styleAccuracyBonus = -5;
   } else if (style === 'accurate') {
-    styleDamageBonus = -1;  // -1 Max Hit
-    styleAccuracyBonus = 10;  // +10 Accuracy
+    styleDamageBonus = -1;
+    styleAccuracyBonus = 10;
   } else if (style === 'defence') {
-    styleDamageBonus = -1;  // -1 Max Hit
-    styleArmorBonus = 2;    // +2 Armor
-    styleAccuracyBonus = -5;  // -5 Accuracy
+    styleDamageBonus = -1;
+    styleArmorBonus = 2;
+    styleAccuracyBonus = -5;
   }
-  // --- END NEW ---
   
   // --- Physical Damage ---
   let skillMaxHit = 0;
   if (isRanged) {
-    // Ranged damage based on Ranged level
     skillMaxHit = 1 + Math.floor(game.ranged.level / 4);
-    offensiveSkillLevel = game.ranged.level; // Use Ranged for accuracy
+    offensiveSkillLevel = game.ranged.level;
   } else {
-    // Melee damage based on Strength level
     skillMaxHit = 1 + Math.floor(game.strength.level / 4);
-    offensiveSkillLevel = game.attack.level; // Use Attack for accuracy
+    offensiveSkillLevel = game.attack.level;
   }
-  
-  // Final Max Hit = Skill Hit + Equipment Hit + Style Bonus
-  finalStats.physicalDamage = Math.max(1, skillMaxHit + stats.equipmentDamage + styleDamageBonus); // Ensure max hit is at least 1
+  finalStats.physicalDamage = Math.max(1, skillMaxHit + equipmentStats.equipmentDamage + styleDamageBonus);
 
   // --- Armor ---
   const skillArmor = Math.floor(game.defence.level / 5);
-  finalStats.armor = skillArmor + stats.equipmentArmor + styleArmorBonus; // Add style bonus
+  finalStats.armor = skillArmor + equipmentStats.equipmentArmor + styleArmorBonus;
   
   // --- Attack Speed ---
-  const speedReduction = stats.equipmentSpeed * 300; // 0.3s per speed point
+  const speedReduction = equipmentStats.equipmentSpeed * 100; // 0.1s per speed point
   finalStats.attackSpeed = Math.max(1200, 4000 - speedReduction); // 4.0s base
   
-  // --- NEW: Pass offensive skill and accuracy bonus to attack function ---
+  // --- Pass offensive skill and accuracy bonus ---
   finalStats.offensiveSkillLevel = offensiveSkillLevel;
   finalStats.accuracyBonus = styleAccuracyBonus;
   
   // Also pass through the equipment-only bonuses for the UI display
-  finalStats.equipmentDamage = stats.equipmentDamage;
-  finalStats.equipmentArmor = stats.equipmentArmor;
-  finalStats.equipmentSpeed = stats.equipmentSpeed;
+  finalStats.equipmentDamage = equipmentStats.equipmentDamage;
+  finalStats.equipmentArmor = equipmentStats.equipmentArmor;
+  finalStats.equipmentSpeed = equipmentStats.equipmentSpeed;
   
   return finalStats;
 }
@@ -2439,10 +2569,41 @@ function renderEquipment() {
   // --- 2. Update the Stats Display (in the new panel) ---
   setText('stat-phys-dmg-panel', `+${stats.equipmentDamage}`);
   setText('stat-armor-panel', `+${stats.equipmentArmor}`);
-  // --- MODIFICATION: Show final attack speed, not bonus ---
-  const finalSpeedInSeconds = (stats.attackSpeed / 1000).toFixed(1);
-  setText('stat-speed-panel', `${finalSpeedInSeconds}s`);
+  // --- MODIFICATION: Show equipment speed bonus, not final time ---
+  const speedBonus = stats.equipmentSpeed;
+  const speedText = speedBonus >= 0 ? `+${speedBonus}` : `${speedBonus}`; // Show + sign for positive
+  setText('stat-speed-panel', speedText);
   // --- END MODIFICATION ---
+
+  // --- NEW: Add tooltips to the stats panel rows ---
+  
+  // 1. Get the parent row for each stat
+  const dmgRow = document.getElementById('stat-phys-dmg-panel')?.closest('.stat-row');
+  const armorRow = document.getElementById('stat-armor-panel')?.closest('.stat-row');
+  const speedRow = document.getElementById('stat-speed-panel')?.closest('.stat-row');
+
+  // 2. Damage Tooltip
+  if (dmgRow) {
+    const dmgValue = stats.equipmentDamage >= 0 ? `+${stats.equipmentDamage}` : stats.equipmentDamage;
+    dmgRow.onmouseenter = (evt) => showTooltip(evt, `<div style="color:#aaffaa;">${dmgValue} Physical Damage</div>`);
+    dmgRow.onmouseleave = hideTooltip;
+  }
+
+  // 3. Armor Tooltip
+  if (armorRow) {
+    const armorValue = stats.equipmentArmor >= 0 ? `+${stats.equipmentArmor}` : stats.equipmentArmor;
+    armorRow.onmouseenter = (evt) => showTooltip(evt, `<div style="color:#aaffaa;">${armorValue} Armor</div>`);
+    armorRow.onmouseleave = hideTooltip;
+  }
+
+  // 4. Speed Tooltip (Shows final attack speed in seconds)
+  if (speedRow) {
+    const finalSpeedInSeconds = (stats.attackSpeed / 1000).toFixed(1);
+    speedRow.onmouseenter = (evt) => showTooltip(evt, `<div style="color:#aaffaa;">${finalSpeedInSeconds}s Attack Speed</div>`);
+    speedRow.onmouseleave = hideTooltip;
+  }
+  
+  // --- END NEW ---
 
   // --- 3. Update Equipment Slots & Tooltips ---
   // <-- UPDATED this array with all new slots -->
@@ -2471,7 +2632,12 @@ function renderEquipment() {
     'Oak Bow': 'oakbow',
     
     // +++ NEW ARROWS (THIS IS A FIX) +++
-    'Copper Arrow': 'copperarrow'
+    'Copper Arrow': 'copperarrow',
+    // +++ NEW LEATHER +++
+    'Leather Hood': 'leatherhood',
+    'Leather Body': 'leatherarmor',
+    'Leather Chaps': 'leatherpants',
+    'Leather Boots': 'leatherboots'
   };
 
   slots.forEach(slotType => {
@@ -2627,6 +2793,22 @@ function renderInventoryGrid(){
               } else if (item.name === 'Oak Bow') {
                   imgName = 'oakbow';
               }
+
+// +++ NEW LEATHER +++
+              else if (item.name === 'Cow Hide') {
+                  imgName = 'cowhide';
+              } else if (item.name === 'Leather') {
+                  imgName = 'leather';
+              } else if (item.name === 'Leather Hood') {
+                  imgName = 'leatherhood';
+              } else if (item.name === 'Leather Body') {
+                  imgName = 'leatherarmor';
+              } else if (item.name === 'Leather Chaps') {
+                  imgName = 'leatherpants';
+              } else if (item.name === 'Leather Boots') {
+                  imgName = 'leatherboots';
+              }
+
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
       img.alt = item.name;
@@ -2845,7 +3027,12 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Oak Bow': 'weapon',
     
     // +++ NEW ARROWS (THIS IS THE FIX) +++
-    'Copper Arrow': 'arrows'
+    'Copper Arrow': 'arrows',
+    // +++ NEW LEATHER +++
+    'Leather Hood': 'helmet',
+    'Leather Body': 'chest',
+    'Leather Chaps': 'legs',
+    'Leather Boots': 'boots'
   };
   const itemSlotType = equipableItems[itemName];
   // --- END NEW ---
@@ -5708,15 +5895,41 @@ function renderCraftingItems() {
   
   // --- Crafting Level Locks ---
   const bowStringLocked = craftLvl < CRAFTING_BOW_STRING_LVL;
-  
+  const leatherLocked = craftLvl < CRAFTING_LEATHER_LVL; // +++ NEW +++
+  const leatherBootsLocked = craftLvl < CRAFTING_LEATHER_BOOTS_LVL;
+  const leatherHoodLocked = craftLvl < CRAFTING_LEATHER_HOOD_LVL;
+  const leatherChapsLocked = craftLvl < CRAFTING_LEATHER_CHAPS_LVL;
+  const leatherBodyLocked = craftLvl < CRAFTING_LEATHER_BODY_LVL;
+
   container.innerHTML = `
     <button id="craftBowStringBtn" class="primary ${bowStringLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
       <img src="images/bowstring.png" alt="Bow String" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftLeatherBtn" class="primary ${leatherLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/leather.png" alt="Leather" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftLeatherBootsBtn" class="primary ${leatherBootsLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/leatherboots.png" alt="Leather Boots" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftLeatherHoodBtn" class="primary ${leatherHoodLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/leatherhood.png" alt="Leather Hood" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftLeatherChapsBtn" class="primary ${leatherChapsLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/leatherpants.png" alt="Leather Chaps" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftLeatherBodyBtn" class="primary ${leatherBodyLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/leatherarmor.png" alt="Leather Body" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
     </button>
   `;
   
   // --- Re-attach listeners for crafting items ---
   setupCraftButton('craftBowStringBtn', bowStringLocked, openCraftBowString, CRAFTING_BOW_STRING_LVL, `Requires: ${BOW_STRING_SILK_COST} Silk`, `Bow String x${BOW_STRING_YIELD}`);
+  // +++ NEW/UPDATED LISTENERS +++
+  setupCraftButton('craftLeatherBtn', leatherLocked, openCraftLeather, CRAFTING_LEATHER_LVL, `Requires: ${LEATHER_HIDE_COST} Cow Hide`, 'Leather');
+  setupCraftButton('craftLeatherBootsBtn', leatherBootsLocked, openCraftLeatherBoots, CRAFTING_LEATHER_BOOTS_LVL, `Requires: ${LEATHER_BOOTS_LEATHER_COST} Leather`, 'Leather Boots');
+  setupCraftButton('craftLeatherHoodBtn', leatherHoodLocked, openCraftLeatherHood, CRAFTING_LEATHER_HOOD_LVL, `Requires: ${LEATHER_HOOD_LEATHER_COST} Leather`, 'Leather Hood');
+  setupCraftButton('craftLeatherChapsBtn', leatherChapsLocked, openCraftLeatherChaps, CRAFTING_LEATHER_CHAPS_LVL, `Requires: ${LEATHER_CHAPS_LEATHER_COST} Leather`, 'Leather Chaps');
+  setupCraftButton('craftLeatherBodyBtn', leatherBodyLocked, openCraftLeatherBody, CRAFTING_LEATHER_BODY_LVL, `Requires: ${LEATHER_BODY_LEATHER_COST} Leather`, 'Leather Body');
 }
 
 // --- Bow String UI & Logic ---
@@ -5810,6 +6023,466 @@ async function craftingBowStringLoop(timestamp, startTime) {
   }
 }
 // +++ END: CRAFTING HUB FUNCTIONS +++
+
+// +++ NEW: LEATHER CRAFTING FUNCTIONS +++
+
+// --- Leather Boots UI & Logic ---
+function openCraftLeatherBoots(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Leather Boots</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${LEATHER_BOOTS_LEATHER_COST} Leather.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingLeatherBoots;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString; // Can reuse the same stop function
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingLeatherBoots() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.craftingActive) return;
+
+  let totalLeather = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Leather') totalLeather += slot.qty;
+  }
+
+  if (totalLeather < LEATHER_BOOTS_LEATHER_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${LEATHER_BOOTS_LEATHER_COST} Leather.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => craftingLeatherBootsLoop(now, now));
+}
+
+async function craftingLeatherBootsLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / LEATHER_BOOTS_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalLeather = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Leather') totalLeather += slot.qty;
+    }
+    if (totalLeather < LEATHER_BOOTS_LEATHER_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Leather.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Leather', LEATHER_BOOTS_LEATHER_COST);
+    addItem('Leather Boots', 1);
+    addXP('crafting', LEATHER_BOOTS_XP);
+    
+    showItemPopup(`+${LEATHER_BOOTS_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Leather Boots`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    let totalLeatherAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Leather') totalLeatherAfter += slot.qty;
+    }
+    if (totalLeatherAfter < LEATHER_BOOTS_LEATHER_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Leather to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => craftingLeatherBootsLoop(now, now));
+  } else {
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => craftingLeatherBootsLoop(now, startTime));
+  }
+}
+
+// --- Leather Hood UI & Logic ---
+function openCraftLeatherHood(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Leather Hood</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${LEATHER_HOOD_LEATHER_COST} Leather.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingLeatherHood;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString;
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingLeatherHood() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.craftingActive) return;
+
+  let totalLeather = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Leather') totalLeather += slot.qty;
+  }
+
+  if (totalLeather < LEATHER_HOOD_LEATHER_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${LEATHER_HOOD_LEATHER_COST} Leather.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => craftingLeatherHoodLoop(now, now));
+}
+
+async function craftingLeatherHoodLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / LEATHER_HOOD_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalLeather = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Leather') totalLeather += slot.qty;
+    }
+    if (totalLeather < LEATHER_HOOD_LEATHER_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Leather.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Leather', LEATHER_HOOD_LEATHER_COST);
+    addItem('Leather Hood', 1);
+    addXP('crafting', LEATHER_HOOD_XP);
+    
+    showItemPopup(`+${LEATHER_HOOD_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Leather Hood`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    let totalLeatherAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Leather') totalLeatherAfter += slot.qty;
+    }
+    if (totalLeatherAfter < LEATHER_HOOD_LEATHER_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Leather to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => craftingLeatherHoodLoop(now, now));
+  } else {
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => craftingLeatherHoodLoop(now, startTime));
+  }
+}
+
+// --- Leather Chaps UI & Logic ---
+function openCraftLeatherChaps(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Leather Chaps</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${LEATHER_CHAPS_LEATHER_COST} Leather.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingLeatherChaps;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString;
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingLeatherChaps() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.craftingActive) return;
+
+  let totalLeather = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Leather') totalLeather += slot.qty;
+  }
+
+  if (totalLeather < LEATHER_CHAPS_LEATHER_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${LEATHER_CHAPS_LEATHER_COST} Leather.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => craftingLeatherChapsLoop(now, now));
+}
+
+async function craftingLeatherChapsLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / LEATHER_CHAPS_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalLeather = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Leather') totalLeather += slot.qty;
+    }
+    if (totalLeather < LEATHER_CHAPS_LEATHER_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Leather.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Leather', LEATHER_CHAPS_LEATHER_COST);
+    addItem('Leather Chaps', 1);
+    addXP('crafting', LEATHER_CHAPS_XP);
+    
+    showItemPopup(`+${LEATHER_CHAPS_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Leather Chaps`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    let totalLeatherAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Leather') totalLeatherAfter += slot.qty;
+    }
+    if (totalLeatherAfter < LEATHER_CHAPS_LEATHER_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Leather to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => craftingLeatherChapsLoop(now, now));
+  } else {
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => craftingLeatherChapsLoop(now, startTime));
+  }
+}
+
+// --- Leather Body UI & Logic ---
+function openCraftLeatherBody(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Leather Body</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${LEATHER_BODY_LEATHER_COST} Leather.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingLeatherBody;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString;
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingLeatherBody() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.craftingActive) return;
+
+  let totalLeather = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Leather') totalLeather += slot.qty;
+  }
+
+  if (totalLeather < LEATHER_BODY_LEATHER_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${LEATHER_BODY_LEATHER_COST} Leather.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => craftingLeatherBodyLoop(now, now));
+}
+
+async function craftingLeatherBodyLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / LEATHER_BODY_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalLeather = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Leather') totalLeather += slot.qty;
+    }
+    if (totalLeather < LEATHER_BODY_LEATHER_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Leather.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Leather', LEATHER_BODY_LEATHER_COST);
+    addItem('Leather Body', 1);
+    addXP('crafting', LEATHER_BODY_XP);
+    
+    showItemPopup(`+${LEATHER_BODY_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Leather Body`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    let totalLeatherAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Leather') totalLeatherAfter += slot.qty;
+    }
+    if (totalLeatherAfter < LEATHER_BODY_LEATHER_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Leather to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => craftingLeatherBodyLoop(now, now));
+  } else {
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => craftingLeatherBodyLoop(now, startTime));
+  }
+}
+
+// --- Craft Leather (from Hide) UI & Logic ---
+function openCraftLeather(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Leather</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${LEATHER_HIDE_COST} Cow Hide.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingLeather;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString;
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingLeather() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  if (game.craftingActive) return;
+
+  let totalHide = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Cow Hide') totalHide += slot.qty;
+  }
+
+  if (totalHide < LEATHER_HIDE_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${LEATHER_HIDE_COST} Cow Hide.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => craftingLeatherLoop(now, now));
+}
+
+async function craftingLeatherLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / LEATHER_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalHide = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Cow Hide') totalHide += slot.qty;
+    }
+    if (totalHide < LEATHER_HIDE_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Cow Hide.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Cow Hide', LEATHER_HIDE_COST);
+    addItem('Leather', 1);
+    addXP('crafting', LEATHER_XP);
+    
+    showItemPopup(`+${LEATHER_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Leather`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    let totalHideAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Cow Hide') totalHideAfter += slot.qty;
+    }
+    if (totalHideAfter < LEATHER_HIDE_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Cow Hide to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => craftingLeatherLoop(now, now));
+  } else {
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => craftingLeatherLoop(now, startTime));
+  }
+}
+
+// +++ END: LEATHER CRAFTING FUNCTIONS +++
+
 
 // --- Unstrung Softwood Bow UI & Logic ---
 function openFletchUnstrungSoftwoodBow(){
@@ -6754,6 +7427,19 @@ function openCombatInterface(enemyName) {
       defence: 2, 
       img: 'images/spideranim.gif'
     };
+
+} else if (enemyName === 'Cow') {
+    game.currentEnemy = {
+      name: 'Cow',
+      level: 2,
+      maxHp: 12,
+      currentHp: 12,
+      attack: 2, 
+      strength: 2, // Max hit is 2
+      defence: 2, 
+      img: 'images/cowanim.webp'
+    };
+
   } else {
     console.error('Unknown enemy:', enemyName);
     return;
@@ -7195,7 +7881,13 @@ function playerAttackTurn() {
       addItem('Silk', silkQty);
       
       showItemPopup(`+${silkQty} Silk`, null, 900);
+    } else if (game.currentEnemy.name === 'Cow') {
+      addItem('Cow Hide', 1);
+      showItemPopup(`+1 Cow Hide`, null, 900);
     }
+
+
+    
     // --- END NEW ---
     
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
@@ -7457,6 +8149,22 @@ function renderBankGrid() {
               } else if (item.name === 'Oak Bow') {
                   imgName = 'oakbow';
               }
+
+// +++ NEW LEATHER +++
+              else if (item.name === 'Cow Hide') {
+                  imgName = 'cowhide';
+              } else if (item.name === 'Leather') {
+                  imgName = 'leather';
+              } else if (item.name === 'Leather Hood') {
+                  imgName = 'leatherhood';
+              } else if (item.name === 'Leather Body') {
+                  imgName = 'leatherarmor';
+              } else if (item.name === 'Leather Chaps') {
+                  imgName = 'leatherpants';
+              } else if (item.name === 'Leather Boots') {
+                  imgName = 'leatherboots';
+              }
+
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
       img.alt = item.name;
@@ -8240,38 +8948,52 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if (typeof renderEquipment === 'function') {
             renderEquipment();
         }
-        statsPanel.style.display = (statsPanel.style.display === 'block') ? 'none' : 'block';
+        // --- THIS IS THE FIX ---
+        statsPanel.style.visibility = (statsPanel.style.visibility === 'visible') ? 'hidden' : 'visible';
       }
     };
   }
   if (closeStatsBtn) {
     closeStatsBtn.onclick = () => {
-      if (statsPanel) statsPanel.style.display = 'none';
+      if (statsPanel) statsPanel.style.visibility = 'hidden'; // <-- THIS IS THE FIX
     };
   }
 
   // --- NEW: Draggable Panel Logic ---
-  let isDraggingPanel = false;
-  let panelOffsetX = 0;
-  let panelOffsetY = 0;
+  
 
   if (statsPanelHeader) {
     statsPanelHeader.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return; // Only drag with left click
       isDraggingPanel = true;
+
+      // --- THIS IS THE FIX ---
+      
+      // 1. Get the panel's VISUAL position on screen
       const rect = statsPanel.getBoundingClientRect();
+      
+      // 2. Calculate the mouse's offset from the panel's top-left corner
       panelOffsetX = e.clientX - rect.left;
       panelOffsetY = e.clientY - rect.top;
-      statsPanel.style.transform = ''; // Clear transform to use top/left
-      statsPanel.style.left = rect.left + 'px';
+      
+      // 3. ATOMICALLY (all at once):
+      //    a) Clear the transform that was centering it
+      //    b) Set the top/left to the exact pixel values it was just at
+      statsPanel.style.transform = ''; 
       statsPanel.style.top = rect.top + 'px';
+      statsPanel.style.left = rect.left + 'px';
+      
       e.preventDefault();
     });
   }
 
   document.addEventListener('mousemove', (e) => {
     if (!isDraggingPanel) return;
-    e.preventDefault(); // Prevent text selection
+    e.preventDefault(); 
+
+    // The 'isFirstMove' logic is gone.
+    // We just update the position based on the new mouse coordinates
+    // and the offset we saved on mousedown.
     statsPanel.style.left = (e.clientX - panelOffsetX) + 'px';
     statsPanel.style.top = (e.clientY - panelOffsetY) + 'px';
   });
@@ -8802,28 +9524,6 @@ window.showSaveIndicator = function() {
 
 <div id="itemContextMenu"></div>
 
-<!-- NEW: Stats Panel -->
-<div id="statsPanel">
-  <div id="statsPanelHeader">Player Stats</div>
-  <div id="statsPanelContent">
-    <div class="stat-row">
-      <span class="stat-label">Physical Damage</span>
-      <span class="stat-value" id="stat-phys-dmg-panel">0</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">Armor</span>
-      <span class="stat-value" id="stat-armor-panel">0</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">Attack Speed</span>
-      <span class="stat-value" id="stat-speed-panel">4.0s</span>
-    </div>
-  </div>
-  <div id="statsPanelFooter">
-    <button id="closeStatsBtn" class="primary" style="background:#666;">Close</button>
-  </div>
-</div>
-<!-- END: Stats Panel -->
 
 <script type="module">
   // Firebase imports (CDN modules)
@@ -10960,7 +11660,16 @@ if (!validSkills.includes(skill)) {
       'images/unstrungsoftwoodbow.png',
       'images/unstrungoakbow.png',
       'images/softwoodbow.png',
-      'images/oakbow.png'
+      'images/oakbow.png',
+      // +++ NEW LEATHER ASSETS +++
+      'images/cowhide.png',
+      'images/leatherhood.png',
+      'images/leather.png',
+      'images/leatherarmor.png',
+      'images/leatherpants.png',
+      'images/leatherboots.png',
+      'images/cowmonster.png',
+      'images/cowanim.webp'
     ];
 
     /**
@@ -11029,10 +11738,11 @@ if (!validSkills.includes(skill)) {
       document.body.appendChild(primeImg);
 
       // +++ ADD THIS BLOCK FOR THE SPIDER +++
-      const primeImg2 = document.createElement('img');
-      primeImg2.src = 'images/spideranim.gif';
-      primeImg2.style.cssText = 'position:absolute; left:-9999px; top:-9999px; width:1px; height:1px;';
-      document.body.appendChild(primeImg2);
+      // +++ ADD THIS BLOCK FOR THE COW +++
+      const primeImg3 = document.createElement('img');
+      primeImg3.src = 'images/cowanim.gif';
+      primeImg3.style.cssText = 'position:absolute; left:-9999px; top:-9999px; width:1px; height:1px;';
+      document.body.appendChild(primeImg3);
       // +++ END NEW +++
       
       const loadingScreen = document.getElementById('loadingScreen');
