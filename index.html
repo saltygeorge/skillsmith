@@ -555,6 +555,31 @@ button.primary:hover { background: var(--accent-hover); }
 }
 /* +++ END NEW STYLES +++ */
 
+/* --- NEW: Broadcast Overlay Style --- */
+#broadcastOverlay {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  z-index: 5002; /* Above death/session lock */
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+#broadcastOverlay div {
+  /* This uses the master panel style */
+  padding: 30px 40px;
+  max-width: 400px;
+}
+#broadcastOverlay h2 {
+  margin-top: 0;
+  color: var(--gold);
+}
+/* --- END NEW --- */
+
 #combat-main-container {
   display: flex;
   flex-direction: column;
@@ -793,7 +818,7 @@ button.primary:hover { background: var(--accent-hover); }
   overflow-x: hidden;
   background: rgba(0,0,0,0.2);
   border-radius: 6px;
-  height: auto; /* <-- THIS IS THE FIX */
+  height: auto !important; /* <-- THIS IS THE FIX */
   padding: var(--slot-gap);
   box-sizing: border-box;
 }
@@ -1262,12 +1287,12 @@ button.primary:hover { background: var(--accent-hover); }
             
             <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
             
-              <div id="goldDisplay" style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 0px 8px;">
-                <img src="images/goldpouch.png" alt="Gold" style="width: 60px; height: 60px; object-fit: contain;">
-                <span id="goldAmountText" style="font-weight: bold; font-size: 16px; color: var(--gold); padding-top: 8px;">0</span>
-              </div>
+  <div id="goldDisplay" style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 0px 8px;">
+    <img src="images/goldpouch.png" alt="Gold" style="width: 40px; height: 40px; object-fit: contain;">
+    <span id="goldAmountText" style="font-weight: bold; font-size: 16px; color: var(--gold); padding-top: 0px;">0</span>
+  </div>
               
-            </div>
+</div>
             
           </div>
           
@@ -1284,6 +1309,7 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubActions" class="hub-screen">
             <div id="actionScreen" style="display: flex; gap: 10px; flex-wrap: wrap;">
               <img id="minesActionIcon" src="images/mines.png" alt="Mines" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="fishingActionIcon" src="images/fishingareasbutton.jpeg" alt="Fishing Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="forestActionIcon" src="images/foresticon.png" alt="Forest" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="blacksmithActionIcon" src="images/blacksmithicon.png" alt="Blacksmith" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="fletchingActionIcon" src="images/fletchingworkbench.png" alt="Fletching" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
@@ -1367,11 +1393,27 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubKitchen" class="hub-screen">
             <h2>Kitchen</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose something to cook.</div>
-            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start; gap: 10px;">
+            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+              
               <button id="cookChickenBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-  <img src="images/cookedchicken.png" alt="Cooked Chicken" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
-</button>
-              <button id="hubKitchen_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
+                <img src="images/cookedchicken.png" alt="Cooked Chicken" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+              </button>
+
+              <button id="cookHerringBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/cookedherring.png" alt="Cooked Herring" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+              </button>
+              
+              <button id="cookTroutBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/cookedtrout.png" alt="Cooked Trout" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+              </button>
+              
+              <button id="cookSalmonBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/cookedsalmon.png" alt="Cooked Salmon" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+              </button>
+
+            </div>
+            <div class="action-buttons" style="margin-top: 14px;">
+              <button id="hubKitchen_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
           
@@ -1476,7 +1518,65 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubDynamic" class="hub-screen">
             </div>
 
-        </div> <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
+          <div id="hubFishingAreas" class="hub-screen">
+            <h2>Fishing Areas</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Choose an area to start fishing.</div>
+            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
+              
+              <button id="oceanAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/oceanbutton.png" alt="Ocean Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
+              </button>
+              
+              <button id="riverAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; margin-top: 10px;">
+                <img src="images/riverbutton.jpeg" alt="River Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
+              </button>
+              
+              <button id="hubFishingAreas_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
+            </div>
+          </div>
+          
+          <div id="hubOcean" class="hub-screen">
+            <h2>The Ocean</h2>
+            <div style="margin-top:8px; color:#efe3cf;">The vast, open ocean.</div>
+            
+            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+              
+              <div id="fishHerringBtn" style="text-align:center; cursor:pointer;" onclick="openFishHerring()">
+                <img src="images/herring.png" alt="Herring" style="height: 100px;">
+                
+              </div>
+            
+            </div>
+            
+            <div class="action-buttons" style="margin-top: 14px;">
+              <button id="hubOcean_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+          
+          <div id="hubRiver" class="hub-screen">
+            <h2>The River</h2>
+            <div style="margin-top:8px; color:#efe3cf;">A fast-flowing river.</div>
+            
+            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+              
+              <div id="fishTroutBtn" style="text-align:center; cursor:pointer;" onclick="openFishTrout()">
+                <img src="images/trout.png" alt="Trout" style="height: 100px;">
+              
+              </div>
+              
+              <div id="fishSalmonBtn" style="text-align:center; cursor:pointer;" onclick="openFishSalmon()">
+                <img src="images/salmon.png" alt="Salmon" style="height: 100px;">
+                
+              </div>
+            
+            </div>
+            
+            <div class="action-buttons" style="margin-top: 14px;">
+              <button id="hubRiver_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+          
+          </div> <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
       </div>
 
       <div class="sidebar" id="leaderboardPanel">
@@ -1639,9 +1739,14 @@ button.primary:hover { background: var(--accent-hover); }
       <button id="closeSettingsBtn" class="primary" style="background:#666;">Close</button>
     </div>
   </div>
+ 
+<div id="broadcastOverlay" style="display: none; z-index: 5002;"> <div>
+    <h2 style="color: var(--gold);">System Update</h2>
+    <p id="broadcastMessage" style="font-size: 16px; line-height: 1.5;">
+      A new game update is live! Please refresh your browser to continue.
+    </p>
+    </div>
 </div>
-<!-- END: Settings Modal -->
-
 <script>
 // --- Game State (MODIFIED) ---
 const game = {
@@ -1710,6 +1815,11 @@ const game = {
   
   // +++ NEW RANGED SKILL +++
   ranged: { level: 1, xp: 0, totalXP: 0 },
+  
+  // +++ NEW FISHING SKILL +++
+  fishing: { level: 1, xp: 0, totalXP: 0 },
+  fishingActive: false,
+  wasFishingBeforeCombat: false,
   
   lastSmithingTab: 'copper',
   lastCombatAreaHub: 'hubActions', // +++ NEW +++
@@ -1933,7 +2043,22 @@ const VALID_ITEMS = [
   'Leather Hood',
   'Leather Body',
   'Leather Chaps',
-  'Leather Boots'
+  'Leather Boots',
+  
+  // +++ NEW FISHING ITEMS +++
+  'Herring',
+  'Trout',
+  'Salmon',
+  'Fishing Pole',
+  'Fishing Bait',
+
+  // +++ NEW COOKED FISH +++
+  'Cooked Herring',
+  'Burnt Herring',
+  'Cooked Trout',
+  'Burnt Trout',
+  'Cooked Salmon',
+  'Burnt Salmon'
 ];
 
 const XP_TABLE = [
@@ -2038,6 +2163,19 @@ const XP_TABLE = [
   13034031, // Level 99
   15000000  // Level 100: Custom value
 ];
+
+// --- NEW: Fishing Level Requirements ---
+const HERRING_FISH_LVL = 1;
+const TROUT_FISH_LVL = 5;
+const SALMON_FISH_LVL = 10;
+
+// --- NEW: Fishing Action Constants ---
+const FISHING_TIME_MS = 20000; // 20 seconds per fish
+
+const HERRING_FISH_XP = 10;
+const TROUT_FISH_XP = 20;
+const SALMON_FISH_XP = 35;
+
 
 const CHESTPLATE_BAR_COST = 10;
 const CHESTPLATE_XP = 50; // Defining a standard XP gain for the item
@@ -2345,8 +2483,10 @@ const ITEM_STATS = {
 const SHOP_INVENTORY = new Array(20).fill(null);
 SHOP_INVENTORY[0] = { name: 'Bronze Pickaxe', price: 10 };
 SHOP_INVENTORY[1] = { name: 'Bronze Axe', price: 10 };
+SHOP_INVENTORY[2] = { name: 'Fishing Pole', price: 2500 };
+SHOP_INVENTORY[3] = { name: 'Fishing Bait', price: 10 };
 // You can add more items here like:
-// SHOP_INVENTORY[2] = { name: 'Some Item', price: 50 };
+// SHOP_INVENTORY[4] = { name: 'Some Item', price: 50 };
 
 // --- NEW: Item Sell Prices ---
 const ITEM_SELL_PRICES = {
@@ -2407,7 +2547,24 @@ const ITEM_SELL_PRICES = {
   'Leather Hood': 10,
   'Leather Body': 25,
   'Leather Chaps': 15,
-  'Leather Boots': 8
+  'Leather Boots': 8,
+  
+  // +++ NEW FISHING PRICES +++
+  'Herring': 2,
+  'Trout': 4,
+  'Salmon': 8,
+  
+  // +++ NEW COOKED FISH PRICES +++
+  'Cooked Herring': 3,
+  'Burnt Herring': 1,
+  'Cooked Trout': 6,
+  'Burnt Trout': 2,
+  'Cooked Salmon': 10,
+  'Burnt Salmon': 4,
+  
+  // +++ NEW FISHING REQUIREMENTS SELL PRICES +++
+  'Fishing Pole': 1000,
+  'Fishing Bait': 4
 };
 // --- END: Item Sell Prices ---
 
@@ -2758,6 +2915,16 @@ function renderInventoryGrid(){
               else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
               else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
               else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
+              
+              // +++ NEW COOKED FISH IMAGES +++
+              else if (item.name === 'Cooked Herring') imgName = 'cookedherring';
+              else if (item.name === 'Burnt Herring') imgName = 'burntherring';
+              else if (item.name === 'Cooked Trout') imgName = 'cookedtrout';
+              else if (item.name === 'Burnt Trout') imgName = 'burnttrout';
+              else if (item.name === 'Cooked Salmon') imgName = 'cookedsalmon';
+              else if (item.name === 'Burnt Salmon') imgName = 'burntsalmon';
+              // +++ END NEW +++
+
               else if (item.name === 'Coal Ore') imgName = 'coalore';
               else if (item.name === 'Iron Ore') imgName = 'ironore';
               else if (item.name === 'Iron Bar') imgName = 'ironbar';
@@ -2809,6 +2976,19 @@ function renderInventoryGrid(){
                   imgName = 'leatherboots';
               }
 
+              // +++ NEW FISHING ITEMS +++
+              else if (item.name === 'Herring') {
+                  imgName = 'herring';
+              } else if (item.name === 'Trout') {
+                  imgName = 'trout';
+              } else if (item.name === 'Salmon') {
+                  imgName = 'salmon';
+              } else if (item.name === 'Fishing Pole') {
+                  imgName = 'fishingpole';
+              } else if (item.name === 'Fishing Bait') {
+                  imgName = 'fishingbait';
+              }
+
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
       img.alt = item.name;
@@ -2838,7 +3018,19 @@ function renderInventoryGrid(){
       
       } else if (itemName === 'Cooked Chicken') {
         // This is consumable
-        itemStats = '<div style="color:#aaffaa; margin-top:4px;">+3 HP</div>';
+        itemStats = `<div style="color:#aaffaa; margin-top:4px;">+${COOK_CHICKEN_HEAL} HP</div>`;
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px;">Click to eat...</div>';
+      } else if (itemName === 'Cooked Herring') {
+        // This is consumable
+        itemStats = `<div style="color:#aaffaa; margin-top:4px;">+${COOK_HERRING_HEAL} HP</div>`;
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px;">Click to eat...</div>';
+      } else if (itemName === 'Cooked Trout') {
+        // This is consumable
+        itemStats = `<div style="color:#aaffaa; margin-top:4px;">+${COOK_TROUT_HEAL} HP</div>`;
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px;">Click to eat...</div>';
+      } else if (itemName === 'Cooked Salmon') {
+        // This is consumable
+        itemStats = `<div style="color:#aaffaa; margin-top:4px;">+${COOK_SALMON_HEAL} HP</div>`;
         clickAction = '<div style="color:#aaffaa; margin-top: 5px;">Click to eat...</div>';
       }
       // --- END NEW ---
@@ -2938,6 +3130,29 @@ function removeItem(name, qty = 1) {
     if (amountToRemove === 0) break; // We're done
   }
   return true; // Successfully removed
+}
+
+/**
+ * Checks if the inventory has space for a given item.
+ * Returns true if there is an empty slot OR an existing stack of that item.
+ * @param {string} itemName - The name of the item to check for.
+ * @returns {boolean}
+ */
+function canReceiveItem(itemName) {
+  let hasEmptySlot = false;
+  let hasStack = false;
+
+  for (const slot of game.inventory) {
+    if (slot === null) {
+      hasEmptySlot = true;
+      break; // Found an empty slot, we can stop
+    }
+    if (slot.name === itemName) {
+      hasStack = true;
+      break; // Found an existing stack, we can stop
+    }
+  }
+  return hasEmptySlot || hasStack;
 }
 // =================================================================
 // --- END OF REPLACEMENTS IN THIS SCRIPT BLOCK ---
@@ -3044,8 +3259,8 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     // --- NEW: This is an equipable item! ---
     // We pass the slot *type* (e.g., 'helmet') and the inventory *index*
     equipItem(itemSlotType, slotIndex);
-  } else if (itemName === 'Cooked Chicken') {
-    // Not in shop, not equipable, and it's a chicken. Show eat menu.
+  } else if (itemName === 'Cooked Chicken' || itemName === 'Cooked Herring' || itemName === 'Cooked Trout' || itemName === 'Cooked Salmon') {
+    // Not in shop, not equipable, and it's food. Show eat menu.
     showItemContextMenu(event, itemName);
   }
   // Other items (like ores) do nothing when clicked.
@@ -3058,6 +3273,12 @@ function showItemContextMenu(event, itemName) {
 
   if (itemName === 'Cooked Chicken') {
     menuContent += `<button class="context-menu-btn" onclick="eatCookedChicken()">Eat</button>`;
+  } else if (itemName === 'Cooked Herring') {
+    menuContent += `<button class="context-menu-btn" onclick="eatCookedHerring()">Eat</button>`;
+  } else if (itemName === 'Cooked Trout') {
+    menuContent += `<button class="context-menu-btn" onclick="eatCookedTrout()">Eat</button>`;
+  } else if (itemName === 'Cooked Salmon') {
+    menuContent += `<button class="context-menu-btn" onclick="eatCookedSalmon()">Eat</button>`;
   }
   
   // We can add other options here later (e.g., "Drop")
@@ -3088,18 +3309,18 @@ function hideItemContextMenu() {
 }
 
 // NEW: The logic for eating the chicken
-async function eatCookedChicken() { // <-- ADD 'async'
+async function eatCookedChicken() {
   hideItemContextMenu(); // Close the menu
 
   // Check if HP is full
   if (game.hp >= game.maxHP) {
-    await showGameAlert("HP Full", "Your HP is already full."); // <-- USE 'await showGameAlert'
+    await showGameAlert("HP Full", "Your HP is already full.");
     return;
   }
 
   // Try to remove the item. If successful, heal the player.
   if (removeItem('Cooked Chicken', 1)) {
-    game.hp = Math.min(game.maxHP, game.hp + 3);
+    game.hp = Math.min(game.maxHP, game.hp + COOK_CHICKEN_HEAL); // <-- Use constant
     updateHPUI();
     
     // --- NEW FIX: Re-render inventory and save ---
@@ -3111,6 +3332,63 @@ async function eatCookedChicken() { // <-- ADD 'async'
 
   } else {
     console.warn('Tried to eat Cooked Chicken, but removeItem failed.');
+  }
+}
+
+// +++ NEW: Logic for eating Herring +++
+async function eatCookedHerring() {
+  hideItemContextMenu(); 
+  if (game.hp >= game.maxHP) {
+    await showGameAlert("HP Full", "Your HP is already full.");
+    return;
+  }
+  if (removeItem('Cooked Herring', 1)) {
+    game.hp = Math.min(game.maxHP, game.hp + COOK_HERRING_HEAL);
+    updateHPUI();
+    renderInventoryGrid();
+    if (typeof window.savePlayerData === 'function') {
+        window.savePlayerData();
+    }
+  } else {
+    console.warn('Tried to eat Cooked Herring, but removeItem failed.');
+  }
+}
+
+// +++ NEW: Logic for eating Trout +++
+async function eatCookedTrout() {
+  hideItemContextMenu(); 
+  if (game.hp >= game.maxHP) {
+    await showGameAlert("HP Full", "Your HP is already full.");
+    return;
+  }
+  if (removeItem('Cooked Trout', 1)) {
+    game.hp = Math.min(game.maxHP, game.hp + COOK_TROUT_HEAL);
+    updateHPUI();
+    renderInventoryGrid();
+    if (typeof window.savePlayerData === 'function') {
+        window.savePlayerData();
+    }
+  } else {
+    console.warn('Tried to eat Cooked Trout, but removeItem failed.');
+  }
+}
+
+// +++ NEW: Logic for eating Salmon +++
+async function eatCookedSalmon() {
+  hideItemContextMenu(); 
+  if (game.hp >= game.maxHP) {
+    await showGameAlert("HP Full", "Your HP is already full.");
+    return;
+  }
+  if (removeItem('Cooked Salmon', 1)) {
+    game.hp = Math.min(game.maxHP, game.hp + COOK_SALMON_HEAL);
+    updateHPUI();
+    renderInventoryGrid();
+    if (typeof window.savePlayerData === 'function') {
+        window.savePlayerData();
+    }
+  } else {
+    console.warn('Tried to eat Cooked Salmon, but removeItem failed.');
   }
 }
 
@@ -3437,17 +3715,20 @@ function updateSkillUI(){
   // --- Call the function for each of your skills ---
   createSkillIcon('Mining', 'mining', 'miningskillicon.png');
   createSkillIcon('Blacksmith', 'blacksmith', 'blacksmithskillicon.png');
-  createSkillIcon('Attack', 'attack', 'attackskillicon.png'); 
+  createSkillIcon('Attack', 'attack', 'attackskillicon.jpeg'); 
   createSkillIcon('Strength', 'strength', 'strengthskillicon.png'); 
   createSkillIcon('Defence', 'defence', 'defenseskillicon.png'); 
   createSkillIcon('Vitality', 'vitality', 'vitalityskillicon.png'); // +++ NEW VITALITY SKILL CALL +++
   createSkillIcon('Cooking', 'cooking', 'cookingskillicon.png'); // +++ NEW COOKING SKILL CALL +++
-  createSkillIcon('Woodcutting', 'woodcutting', 'woodcuttingskillicon.png'); // +++ NEW WOODCUTTING SKILL CALL +++
+  createSkillIcon('Woodcutting', 'woodcutting', 'woodcuttingskillicon.jpeg'); // +++ NEW WOODCUTTING SKILL CALL +++
   createSkillIcon('Fletching', 'fletching', 'fletchingskillicon.jpeg'); // +++ NEW FLETCHING SKILL CALL +++
   
   // +++ NEW SKILL ICONS +++
   createSkillIcon('Crafting', 'crafting', 'craftingskillicon.png');
-  createSkillIcon('Ranged', 'ranged', 'rangedskillicon.png');
+  createSkillIcon('Ranged', 'ranged', 'rangedskillicon.jpeg');
+  
+  // +++ NEW FISHING SKILL ICON +++
+  createSkillIcon('Fishing', 'fishing', 'fishingskillicon.jpeg');
 }
 
 function showItemPopup(text, progressElementId, delay = 0) {
@@ -3533,8 +3814,8 @@ function addXP(skill, amount, delay = 0){
   if (skill === 'woodcutting') barId = 'woodcutProgress';
   if (skill === 'crafting') barId = 'craftProgress'; // +++ NEW +++
   
-  // +++ ADDED 'crafting' AND 'fletching' TO THIS LIST +++
-  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting' && skill !== 'crafting' && skill !== 'fletching') { // Don't show popup for skilling actions
+  // +++ ADDED 'crafting', 'fletching', 'fishing' TO THIS LIST +++
+  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting' && skill !== 'crafting' && skill !== 'fletching' && skill !== 'fishing') { // Don't show popup for skilling actions
     if (delay > 0) {
       setTimeout(() => {
         showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
@@ -3601,6 +3882,14 @@ async function startMining() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem(MINE_ITEM)) {
+    await showGameAlert("Inventory Full", "You have no room to mine this.");
+    return;
+  }
+  // +++ END NEW +++
+
   if (game.miningActive) return; 
   game.miningActive = true;
   const startBtn = document.getElementById('startMineBtn');
@@ -3692,6 +3981,14 @@ async function startHelmetCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Copper Helmet')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -3790,6 +4087,14 @@ async function startBootsCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Copper Boots')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -3888,6 +4193,14 @@ async function startCopperPlatelegsCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Copper Platelegs')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -3964,6 +4277,14 @@ async function startIronBarCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Iron Bar')) {
+    await showGameAlert("Inventory Full", "You have no room to smith this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalIronOre = 0;
@@ -4041,6 +4362,14 @@ async function startIronHelmetCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Iron Helmet')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -4111,6 +4440,14 @@ async function startIronChestplateCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Iron Chestplate')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -4180,6 +4517,14 @@ async function startIronBootsCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Iron Boots')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -4273,6 +4618,14 @@ async function startIronPlatelegsCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Iron Platelegs')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -4349,6 +4702,14 @@ async function startIronShortswordCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Iron Shortsword')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -4429,6 +4790,14 @@ async function startBlacksmithing() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem(SMITH_BAR_ITEM)) {
+    await showGameAlert("Inventory Full", "You have no room to smith this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalOre = 0;
@@ -4515,6 +4884,35 @@ function stopBlacksmithing(progressId = 'smithProgress', startBtnId = 'startSmit
 
 const COOK_CHICKEN_TIME_MS = 3000;
 const COOK_CHICKEN_XP = 30;
+const COOK_CHICKEN_HEAL = 3; // <-- ADD THIS
+
+// --- NEW: Herring Cooking Constants ---
+const COOK_HERRING_LVL = 1;
+const COOK_HERRING_TIME_MS = 3000; // Same as chicken
+const COOK_HERRING_XP = 30;        // Same as chicken
+const COOK_HERRING_HEAL = 3;
+const COOK_HERRING_ITEM_RAW = 'Herring';
+const COOK_HERRING_ITEM_COOKED = 'Cooked Herring';
+const COOK_HERRING_ITEM_BURNT = 'Burnt Herring';
+
+// --- NEW: Trout Cooking Constants ---
+const COOK_TROUT_LVL = 5;
+const COOK_TROUT_TIME_MS = 3500; // Slightly longer
+const COOK_TROUT_XP = 40;        // 4 HP heal
+const COOK_TROUT_HEAL = 4;
+const COOK_TROUT_ITEM_RAW = 'Trout';
+const COOK_TROUT_ITEM_COOKED = 'Cooked Trout';
+const COOK_TROUT_ITEM_BURNT = 'Burnt Trout';
+
+// --- NEW: Salmon Cooking Constants ---
+const COOK_SALMON_LVL = 10;
+const COOK_SALMON_TIME_MS = 3500; // Same as trout
+const COOK_SALMON_XP = 45;        // 4 HP heal
+const COOK_SALMON_HEAL = 4;
+const COOK_SALMON_ITEM_RAW = 'Salmon';
+const COOK_SALMON_ITEM_COOKED = 'Cooked Salmon';
+const COOK_SALMON_ITEM_BURNT = 'Burnt Salmon';
+
 
 // --- NEW COOKING FUNCTIONS ---
 async function startCookingChicken() {
@@ -4522,6 +4920,14 @@ async function startCookingChicken() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK (checks for both outcomes) +++
+  if (!canReceiveItem('Cooked Chicken') && !canReceiveItem('Burnt Chicken')) {
+    await showGameAlert("Inventory Full", "You have no room to cook this. Make space for the cooked or burnt item.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.cookingActive) return;
 
   // --- Check for Raw Chicken ---
@@ -4642,6 +5048,376 @@ function openCookChicken(){
   showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
+// +++ NEW: HERRING COOKING UI +++
+function openCookHerring(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Cooking - Herring</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: 1 ${COOK_HERRING_ITEM_RAW}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="cookProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCookBtn" class="primary">Start Cooking</button>
+      <button id="stopCookBtn" class="primary" style="background:#555; display:none;">Stop Cooking</button>
+      <button onclick="openKitchenHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCookBtn').onclick = startCookingHerring;
+  document.getElementById('stopCookBtn').onclick = stopCookingChicken; // Re-uses the same stop function
+  showMainScreen('hubDynamic');
+}
+
+// +++ NEW: TROUT COOKING UI +++
+function openCookTrout(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Cooking - Trout</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: 1 ${COOK_TROUT_ITEM_RAW}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="cookProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCookBtn" class="primary">Start Cooking</button>
+      <button id="stopCookBtn" class="primary" style="background:#555; display:none;">Stop Cooking</button>
+      <button onclick="openKitchenHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCookBtn').onclick = startCookingTrout;
+  document.getElementById('stopCookBtn').onclick = stopCookingChicken; // Re-uses the same stop function
+  showMainScreen('hubDynamic');
+}
+
+// +++ NEW: SALMON COOKING UI +++
+function openCookSalmon(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Cooking - Salmon</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: 1 ${COOK_SALMON_ITEM_RAW}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="cookProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCookBtn" class="primary">Start Cooking</button>
+      <button id="stopCookBtn" class="primary" style="background:#555; display:none;">Stop Cooking</button>
+      <button onclick="openKitchenHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCookBtn').onclick = startCookingSalmon;
+  document.getElementById('stopCookBtn').onclick = stopCookingChicken; // Re-uses the same stop function
+  showMainScreen('hubDynamic');
+}
+
+// +++ NEW: HERRING COOKING LOGIC +++
+async function startCookingHerring() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  // +++ NEW INVENTORY CHECK (checks for both outcomes) +++
+  if (!canReceiveItem(COOK_HERRING_ITEM_COOKED) && !canReceiveItem(COOK_HERRING_ITEM_BURNT)) {
+    await showGameAlert("Inventory Full", "You have no room to cook this. Make space for the cooked or burnt item.");
+    return;
+  }
+  // +++ END NEW +++
+  
+  if (game.cookingActive) return;
+
+  // Check level
+  if (game.cooking.level < COOK_HERRING_LVL) {
+    await showGameAlert("Level Required", `You need a Cooking level of ${COOK_HERRING_LVL} to cook this.`);
+    return;
+  }
+  
+  // Check for Raw Item
+  let totalRaw = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === COOK_HERRING_ITEM_RAW) {
+          totalRaw += slot.qty;
+      }
+  }
+  if (totalRaw < 1) {
+      await showGameAlert("Not Enough Materials", `You need at least 1 ${COOK_HERRING_ITEM_RAW} to cook.`);
+      return;
+  }
+  
+  game.cookingActive = true;
+  const startBtn = document.getElementById('startCookBtn');
+  const stopBtn = document.getElementById('stopCookBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => cookingHerringLoop(now, now));
+}
+
+async function cookingHerringLoop(timestamp, startTime) {
+  if (!game.cookingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / COOK_HERRING_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalRaw = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === COOK_HERRING_ITEM_RAW) {
+            totalRaw += slot.qty;
+        }
+    }
+    if (totalRaw < 1) {
+        await showGameAlert("Out of Materials", `You've run out of ${COOK_HERRING_ITEM_RAW}.`);
+        stopCookingChicken();
+        return;
+    }
+    
+    removeItem(COOK_HERRING_ITEM_RAW, 1);
+    addXP('cooking', COOK_HERRING_XP);
+    
+    // Burn chance: 50% at Lvl 1, 0% at Lvl 10
+    const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (50/9)));
+    
+    if (Math.random() * 100 < successRate) {
+      addItem(COOK_HERRING_ITEM_COOKED, 1);
+      showItemPopup(`+${COOK_HERRING_XP} Cooking XP`, 'cookProgress', 0);
+      showItemPopup(`+1 ${COOK_HERRING_ITEM_COOKED}`, 'cookProgress', 450);
+    } else {
+      addItem(COOK_HERRING_ITEM_BURNT, 1);
+      showItemPopup(`+${COOK_HERRING_XP} Cooking XP`, 'cookProgress', 0);
+      showItemPopup(`+1 ${COOK_HERRING_ITEM_BURNT}`, 'cookProgress', 450);
+    }
+    
+    const bar = document.getElementById('cookProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalRawAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === COOK_HERRING_ITEM_RAW) {
+            totalRawAfter += slot.qty;
+        }
+    }
+    if (totalRawAfter < 1) {
+        await showGameAlert("Not Enough Materials", `You don't have any more ${COOK_HERRING_ITEM_RAW} to cook.`);
+        stopCookingChicken();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => cookingHerringLoop(now, now));
+  } else {
+    const bar = document.getElementById('cookProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => cookingHerringLoop(now, startTime));
+  }
+}
+
+// +++ NEW: TROUT COOKING LOGIC +++
+async function startCookingTrout() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  // +++ NEW INVENTORY CHECK (checks for both outcomes) +++
+  if (!canReceiveItem(COOK_TROUT_ITEM_COOKED) && !canReceiveItem(COOK_TROUT_ITEM_BURNT)) {
+    await showGameAlert("Inventory Full", "You have no room to cook this. Make space for the cooked or burnt item.");
+    return;
+  }
+  // +++ END NEW +++
+  
+  if (game.cookingActive) return;
+
+  // Check level
+  if (game.cooking.level < COOK_TROUT_LVL) {
+    await showGameAlert("Level Required", `You need a Cooking level of ${COOK_TROUT_LVL} to cook this.`);
+    return;
+  }
+  
+  // Check for Raw Item
+  let totalRaw = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === COOK_TROUT_ITEM_RAW) {
+          totalRaw += slot.qty;
+      }
+  }
+  if (totalRaw < 1) {
+      await showGameAlert("Not Enough Materials", `You need at least 1 ${COOK_TROUT_ITEM_RAW} to cook.`);
+      return;
+  }
+  
+  game.cookingActive = true;
+  const startBtn = document.getElementById('startCookBtn');
+  const stopBtn = document.getElementById('stopCookBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => cookingTroutLoop(now, now));
+}
+
+async function cookingTroutLoop(timestamp, startTime) {
+  if (!game.cookingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / COOK_TROUT_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalRaw = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === COOK_TROUT_ITEM_RAW) {
+            totalRaw += slot.qty;
+        }
+    }
+    if (totalRaw < 1) {
+        await showGameAlert("Out of Materials", `You've run out of ${COOK_TROUT_ITEM_RAW}.`);
+        stopCookingChicken();
+        return;
+    }
+    
+    removeItem(COOK_TROUT_ITEM_RAW, 1);
+    addXP('cooking', COOK_TROUT_XP);
+    
+    // Burn chance: 50% at Lvl 5, 0% at Lvl 15
+    const successRate = Math.min(100, 50 + ((game.cooking.level - 5) * (50/9)));
+    
+    if (Math.random() * 100 < successRate || game.cooking.level < COOK_TROUT_LVL) {
+      addItem(COOK_TROUT_ITEM_COOKED, 1);
+      showItemPopup(`+${COOK_TROUT_XP} Cooking XP`, 'cookProgress', 0);
+      showItemPopup(`+1 ${COOK_TROUT_ITEM_COOKED}`, 'cookProgress', 450);
+    } else {
+      addItem(COOK_TROUT_ITEM_BURNT, 1);
+      showItemPopup(`+${COOK_TROUT_XP} Cooking XP`, 'cookProgress', 0);
+      showItemPopup(`+1 ${COOK_TROUT_ITEM_BURNT}`, 'cookProgress', 450);
+    }
+    
+    const bar = document.getElementById('cookProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalRawAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === COOK_TROUT_ITEM_RAW) {
+            totalRawAfter += slot.qty;
+        }
+    }
+    if (totalRawAfter < 1) {
+        await showGameAlert("Not Enough Materials", `You don't have any more ${COOK_TROUT_ITEM_RAW} to cook.`);
+        stopCookingChicken();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => cookingTroutLoop(now, now));
+  } else {
+    const bar = document.getElementById('cookProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => cookingTroutLoop(now, startTime));
+  }
+}
+
+// +++ NEW: SALMON COOKING LOGIC +++
+async function startCookingSalmon() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  // +++ NEW INVENTORY CHECK (checks for both outcomes) +++
+  if (!canReceiveItem(COOK_SALMON_ITEM_COOKED) && !canReceiveItem(COOK_SALMON_ITEM_BURNT)) {
+    await showGameAlert("Inventory Full", "You have no room to cook this. Make space for the cooked or burnt item.");
+    return;
+  }
+  // +++ END NEW +++
+  
+  if (game.cookingActive) return;
+
+  // Check level
+  if (game.cooking.level < COOK_SALMON_LVL) {
+    await showGameAlert("Level Required", `You need a Cooking level of ${COOK_SALMON_LVL} to cook this.`);
+    return;
+  }
+  
+  // Check for Raw Item
+  let totalRaw = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === COOK_SALMON_ITEM_RAW) {
+          totalRaw += slot.qty;
+      }
+  }
+  if (totalRaw < 1) {
+      await showGameAlert("Not Enough Materials", `You need at least 1 ${COOK_SALMON_ITEM_RAW} to cook.`);
+      return;
+  }
+  
+  game.cookingActive = true;
+  const startBtn = document.getElementById('startCookBtn');
+  const stopBtn = document.getElementById('stopCookBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => cookingSalmonLoop(now, now));
+}
+
+async function cookingSalmonLoop(timestamp, startTime) {
+  if (!game.cookingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / COOK_SALMON_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    let totalRaw = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === COOK_SALMON_ITEM_RAW) {
+            totalRaw += slot.qty;
+        }
+    }
+    if (totalRaw < 1) {
+        await showGameAlert("Out of Materials", `You've run out of ${COOK_SALMON_ITEM_RAW}.`);
+        stopCookingChicken();
+        return;
+    }
+    
+    removeItem(COOK_SALMON_ITEM_RAW, 1);
+    addXP('cooking', COOK_SALMON_XP);
+    
+    // Burn chance: 50% at Lvl 10, 0% at Lvl 20
+    const successRate = Math.min(100, 50 + ((game.cooking.level - 10) * (50/9)));
+    
+    if (Math.random() * 100 < successRate || game.cooking.level < COOK_SALMON_LVL) {
+      addItem(COOK_SALMON_ITEM_COOKED, 1);
+      showItemPopup(`+${COOK_SALMON_XP} Cooking XP`, 'cookProgress', 0);
+      showItemPopup(`+1 ${COOK_SALMON_ITEM_COOKED}`, 'cookProgress', 450);
+    } else {
+      addItem(COOK_SALMON_ITEM_BURNT, 1);
+      showItemPopup(`+${COOK_SALMON_XP} Cooking XP`, 'cookProgress', 0);
+      showItemPopup(`+1 ${COOK_SALMON_ITEM_BURNT}`, 'cookProgress', 450);
+    }
+    
+    const bar = document.getElementById('cookProgress');
+    if (bar) bar.style.width = '0%';
+    
+    let totalRawAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === COOK_SALMON_ITEM_RAW) {
+            totalRawAfter += slot.qty;
+        }
+    }
+    if (totalRawAfter < 1) {
+        await showGameAlert("Not Enough Materials", `You don't have any more ${COOK_SALMON_ITEM_RAW} to cook.`);
+        stopCookingChicken();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => cookingSalmonLoop(now, now));
+  } else {
+    const bar = document.getElementById('cookProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => cookingSalmonLoop(now, startTime));
+  }
+}
+
+
 function openKitchenHub() {
   showMainScreen('hubKitchen');
 }
@@ -4699,6 +5475,14 @@ async function startChestplateCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Copper Chestplate')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -4798,6 +5582,14 @@ async function startShortswordCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Copper Shortsword')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -5017,6 +5809,14 @@ async function startCopperAxeCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Copper Axe')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -5112,6 +5912,14 @@ async function startCopperPickaxeCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Copper Pickaxe')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -5207,6 +6015,14 @@ async function startIronAxeCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Iron Axe')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -5302,6 +6118,14 @@ async function startIronPickaxeCrafting() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Iron Pickaxe')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -5403,6 +6227,14 @@ async function startSmithingCopperArrowTip() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Copper Arrow Tip')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.blacksmithingActive) return;
 
   let totalBars = 0;
@@ -5592,6 +6424,14 @@ async function startFletchingArrowShaft() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Arrow Shaft')) {
+    await showGameAlert("Inventory Full", "You have no room to fletch this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.fletchingActive) return;
 
   let totalWood = 0;
@@ -5681,6 +6521,14 @@ async function startFletchingUnboundArrow() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Unbound Arrow')) {
+    await showGameAlert("Inventory Full", "You have no room to fletch this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.fletchingActive) return;
 
   let totalShafts = 0;
@@ -5777,6 +6625,14 @@ async function startFletchingCopperArrow() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Copper Arrow')) {
+    await showGameAlert("Inventory Full", "You have no room to fletch this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.fletchingActive) return;
 
   let totalUnbound = 0;
@@ -5964,6 +6820,14 @@ async function startCraftingBowString() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Bow String')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.craftingActive) return;
 
   let totalSilk = 0;
@@ -6058,6 +6922,14 @@ async function startCraftingLeatherBoots() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Leather Boots')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.craftingActive) return;
 
   let totalLeather = 0;
@@ -6149,6 +7021,14 @@ async function startCraftingLeatherHood() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Leather Hood')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.craftingActive) return;
 
   let totalLeather = 0;
@@ -6240,6 +7120,14 @@ async function startCraftingLeatherChaps() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Leather Chaps')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.craftingActive) return;
 
   let totalLeather = 0;
@@ -6331,6 +7219,14 @@ async function startCraftingLeatherBody() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Leather Body')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.craftingActive) return;
 
   let totalLeather = 0;
@@ -6422,6 +7318,14 @@ async function startCraftingLeather() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Leather')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.craftingActive) return;
 
   let totalHide = 0;
@@ -6484,6 +7388,463 @@ async function craftingLeatherLoop(timestamp, startTime) {
 // +++ END: LEATHER CRAFTING FUNCTIONS +++
 
 
+// =================================================================
+// --- 5. NEW FISHING FUNCTIONS ---
+// =================================================================
+
+/**
+ * Main function to open the Fishing Areas Hub
+ */
+function openFishingHub() {
+  showMainScreen('hubFishingAreas');
+}
+
+/**
+ * Opens the Ocean fishing area
+ */
+function openOceanFishingArea() {
+  showMainScreen('hubOcean');
+}
+
+/**
+ * Opens the River fishing area
+ */
+function openRiverFishingArea() {
+  showMainScreen('hubRiver');
+}
+
+/**
+ * Generic function to stop any fishing action
+ */
+function stopFishing(progressId = 'fishProgress', startBtnId = 'startFishBtn', stopBtnId = 'stopFishBtn') {
+  game.fishingActive = false;
+  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  
+  const bar = document.getElementById(progressId);
+  if(bar) bar.style.width = '0%';
+  const startBtn = document.getElementById(startBtnId);
+  if(startBtn) startBtn.style.display = 'inline-block';
+  const stopBtn = document.getElementById(stopBtnId);
+  if(stopBtn) stopBtn.style.display = 'none';
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+// --- Herring (Ocean) UI & Logic ---
+function openFishHerring(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  stopCraftingBowString();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Fishing - Herring</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A common ocean fish.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="fishProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startFishBtn" class="primary">Start Fishing</button>
+      <button id="stopFishBtn" class="primary" style="background:#555; display:none;">Stop Fishing</button>
+      <button onclick="openOceanFishingArea()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startFishBtn').onclick = startFishingHerring;
+  document.getElementById('stopFishBtn').onclick = stopFishing;
+  showMainScreen('hubDynamic');
+}
+
+async function startFishingHerring() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Herring')) {
+    await showGameAlert("Inventory Full", "You have no room to fish this.");
+    return;
+  }
+  // +++ END NEW +++
+  
+  if (game.fishingActive) return;
+
+  // --- NEW: Check for Fishing Pole ---
+  let hasPole = false;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Fishing Pole') {
+          hasPole = true;
+          break;
+      }
+  }
+  if (!hasPole) {
+      await showGameAlert("Tool Required", "You need a Fishing Pole in your inventory to fish.");
+      return;
+  }
+  // --- END NEW ---
+
+  // --- NEW: Check for Fishing Bait ---
+  let hasBait = false;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Fishing Bait') {
+          hasBait = true;
+          break;
+      }
+  }
+  if (!hasBait) {
+      await showGameAlert("Material Required", "You need Fishing Bait in your inventory to fish.");
+      return;
+  }
+  // --- END NEW ---
+  
+  game.fishingActive = true;
+  document.getElementById('startFishBtn').style.display = 'none';
+  document.getElementById('stopFishBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => fishingHerringLoop(now, now));
+}
+
+async function fishingHerringLoop(timestamp, startTime) {
+  if (!game.fishingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / FISHING_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    
+    // --- NEW: Check for bait ---
+    let hasBait = false;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Fishing Bait') {
+            hasBait = true;
+            break;
+        }
+    }
+    if (!hasBait) {
+        await showGameAlert("Out of Materials", "You've run out of Fishing Bait.");
+        stopFishing();
+        return;
+    }
+    // --- END NEW ---
+
+    removeItem('Fishing Bait', 1); // Consume bait
+    addItem('Herring', 1);
+    addXP('fishing', HERRING_FISH_XP);
+    
+    showItemPopup(`+${HERRING_FISH_XP} Fishing XP`, 'fishProgress', 0);
+    showItemPopup(`+1 Herring`, 'fishProgress', 450);
+    
+    document.getElementById('fishProgress').style.width = '0%';
+    
+    // --- NEW: Check for bait for *next* loop ---
+    let hasBaitAfter = false;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Fishing Bait') {
+            hasBaitAfter = true;
+            break;
+        }
+    }
+    if (!hasBaitAfter) {
+        await showGameAlert("Not Enough Materials", "You don't have any more Fishing Bait.");
+        stopFishing();
+        return;
+    }
+    // --- END NEW ---
+
+    const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
+    const stackIndex = game.inventory.findIndex(slot => slot && slot.name === 'Herring');
+    if (emptySlotIndex === -1 && stackIndex === -1) {
+        await showGameAlert("Inventory Full", "Your inventory is full.");
+        stopFishing();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => fishingHerringLoop(now, now));
+  } else {
+    document.getElementById('fishProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => fishingHerringLoop(now, startTime));
+  }
+}
+
+// --- Trout (River) UI & Logic ---
+function openFishTrout(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  stopCraftingBowString();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Fishing - Trout</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A common river fish.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="fishProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startFishBtn" class="primary">Start Fishing</button>
+      <button id="stopFishBtn" class="primary" style="background:#555; display:none;">Stop Fishing</button>
+      <button onclick="openRiverFishingArea()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startFishBtn').onclick = startFishingTrout;
+  document.getElementById('stopFishBtn').onclick = stopFishing;
+  showMainScreen('hubDynamic');
+}
+
+async function startFishingTrout() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Trout')) {
+    await showGameAlert("Inventory Full", "You have no room to fish this.");
+    return;
+  }
+  // +++ END NEW +++
+  
+  if (game.fishingActive) return;
+
+  // --- NEW: Check for Fishing Pole ---
+  let hasPole = false;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Fishing Pole') {
+          hasPole = true;
+          break;
+      }
+  }
+  if (!hasPole) {
+      await showGameAlert("Tool Required", "You need a Fishing Pole in your inventory to fish.");
+      return;
+  }
+  // --- END NEW ---
+
+  // --- NEW: Check for Fishing Bait ---
+  let hasBait = false;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Fishing Bait') {
+          hasBait = true;
+          break;
+      }
+  }
+  if (!hasBait) {
+      await showGameAlert("Material Required", "You need Fishing Bait in your inventory to fish.");
+      return;
+  }
+  // --- END NEW ---
+  
+  game.fishingActive = true;
+  document.getElementById('startFishBtn').style.display = 'none';
+  document.getElementById('stopFishBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => fishingTroutLoop(now, now));
+}
+
+async function fishingTroutLoop(timestamp, startTime) {
+  if (!game.fishingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / FISHING_TIME_MS) * 100;
+
+  if (progress >= 100) {
+
+    // --- NEW: Check for bait ---
+    let hasBait = false;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Fishing Bait') {
+            hasBait = true;
+            break;
+        }
+    }
+    if (!hasBait) {
+        await showGameAlert("Out of Materials", "You've run out of Fishing Bait.");
+        stopFishing();
+        return;
+    }
+    // --- END NEW ---
+
+    removeItem('Fishing Bait', 1); // Consume bait
+    addItem('Trout', 1);
+    addXP('fishing', TROUT_FISH_XP);
+    
+    showItemPopup(`+${TROUT_FISH_XP} Fishing XP`, 'fishProgress', 0);
+    showItemPopup(`+1 Trout`, 'fishProgress', 450);
+    
+    document.getElementById('fishProgress').style.width = '0%';
+    
+    // --- NEW: Check for bait for *next* loop ---
+    let hasBaitAfter = false;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Fishing Bait') {
+            hasBaitAfter = true;
+            break;
+        }
+    }
+    if (!hasBaitAfter) {
+        await showGameAlert("Not Enough Materials", "You don't have any more Fishing Bait.");
+        stopFishing();
+        return;
+    }
+    // --- END NEW ---
+
+    const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
+    const stackIndex = game.inventory.findIndex(slot => slot && slot.name === 'Trout');
+    if (emptySlotIndex === -1 && stackIndex === -1) {
+        await showGameAlert("Inventory Full", "Your inventory is full.");
+        stopFishing();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => fishingTroutLoop(now, now));
+  } else {
+    document.getElementById('fishProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => fishingTroutLoop(now, startTime));
+  }
+}
+
+// --- Salmon (River) UI & Logic ---
+function openFishSalmon(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  stopCraftingBowString();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Fishing - Salmon</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A large, strong river fish.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="fishProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startFishBtn" class="primary">Start Fishing</button>
+      <button id="stopFishBtn" class="primary" style="background:#555; display:none;">Stop Fishing</button>
+      <button onclick="openRiverFishingArea()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startFishBtn').onclick = startFishingSalmon;
+  document.getElementById('stopFishBtn').onclick = stopFishing;
+  showMainScreen('hubDynamic');
+}
+
+async function startFishingSalmon() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Salmon')) {
+    await showGameAlert("Inventory Full", "You have no room to fish this.");
+    return;
+  }
+  // +++ END NEW +++
+  
+  if (game.fishingActive) return;
+
+  // --- NEW: Check for Fishing Pole ---
+  let hasPole = false;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Fishing Pole') {
+          hasPole = true;
+          break;
+      }
+  }
+  if (!hasPole) {
+      await showGameAlert("Tool Required", "You need a Fishing Pole in your inventory to fish.");
+      return;
+  }
+  // --- END NEW ---
+
+  // --- NEW: Check for Fishing Bait ---
+  let hasBait = false;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Fishing Bait') {
+          hasBait = true;
+          break;
+      }
+  }
+  if (!hasBait) {
+      await showGameAlert("Material Required", "You need Fishing Bait in your inventory to fish.");
+      return;
+  }
+  // --- END NEW ---
+  
+  game.fishingActive = true;
+  document.getElementById('startFishBtn').style.display = 'none';
+  document.getElementById('stopFishBtn').style.display = 'inline-block';
+  game.progressFrame = requestAnimationFrame((now) => fishingSalmonLoop(now, now));
+}
+
+async function fishingSalmonLoop(timestamp, startTime) {
+  if (!game.fishingActive) return; 
+  const elapsed = timestamp - startTime;
+  let progress = (elapsed / FISHING_TIME_MS) * 100;
+
+  if (progress >= 100) {
+    
+    // --- NEW: Check for bait ---
+    let hasBait = false;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Fishing Bait') {
+            hasBait = true;
+            break;
+        }
+    }
+    if (!hasBait) {
+        await showGameAlert("Out of Materials", "You've run out of Fishing Bait.");
+        stopFishing();
+        return;
+    }
+    // --- END NEW ---
+
+    removeItem('Fishing Bait', 1); // Consume bait
+    addItem('Salmon', 1);
+    addXP('fishing', SALMON_FISH_XP);
+    
+    showItemPopup(`+${SALMON_FISH_XP} Fishing XP`, 'fishProgress', 0);
+    showItemPopup(`+1 Salmon`, 'fishProgress', 450);
+    
+    document.getElementById('fishProgress').style.width = '0%';
+    
+    // --- NEW: Check for bait for *next* loop ---
+    let hasBaitAfter = false;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Fishing Bait') {
+            hasBaitAfter = true;
+            break;
+        }
+    }
+    if (!hasBaitAfter) {
+        await showGameAlert("Not Enough Materials", "You don't have any more Fishing Bait.");
+        stopFishing();
+        return;
+    }
+    // --- END NEW ---
+
+    const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
+    const stackIndex = game.inventory.findIndex(slot => slot && slot.name === 'Salmon');
+    if (emptySlotIndex === -1 && stackIndex === -1) {
+        await showGameAlert("Inventory Full", "Your inventory is full.");
+        stopFishing();
+        return;
+    }
+    game.progressFrame = requestAnimationFrame((now) => fishingSalmonLoop(now, now));
+  } else {
+    document.getElementById('fishProgress').style.width = progress + '%';
+    game.progressFrame = requestAnimationFrame((now) => fishingSalmonLoop(now, startTime));
+  }
+}
+
+// =================================================================
+// --- END NEW FISHING FUNCTIONS ---
+// =================================================================
+
+
 // --- Unstrung Softwood Bow UI & Logic ---
 function openFletchUnstrungSoftwoodBow(){
   game.shopOpen = false; 
@@ -6514,6 +7875,14 @@ async function startFletchingUnstrungSoftwoodBow() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Unstrung Softwood Bow')) {
+    await showGameAlert("Inventory Full", "You have no room to fletch this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.fletchingActive) return;
 
   let totalWood = 0;
@@ -6603,6 +7972,14 @@ async function startFletchingSoftwoodBow() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Softwood Bow')) {
+    await showGameAlert("Inventory Full", "You have no room to fletch this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.fletchingActive) return;
 
   let totalUnstrung = 0;
@@ -6699,6 +8076,14 @@ async function startFletchingUnstrungOakBow() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Unstrung Oak Bow')) {
+    await showGameAlert("Inventory Full", "You have no room to fletch this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.fletchingActive) return;
 
   let totalWood = 0;
@@ -6788,6 +8173,14 @@ async function startFletchingOakBow() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem('Oak Bow')) {
+    await showGameAlert("Inventory Full", "You have no room to fletch this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.fletchingActive) return;
 
   let totalUnstrung = 0;
@@ -7052,6 +8445,14 @@ async function startCoalMining() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem(COAL_MINE_ITEM)) {
+    await showGameAlert("Inventory Full", "You have no room to mine this.");
+    return;
+  }
+  // +++ END NEW +++
+
   if (game.miningActive) return; 
   game.miningActive = true;
   const startBtn = document.getElementById('startMineBtn');
@@ -7128,6 +8529,14 @@ async function startIronMining() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem(IRON_MINE_ITEM)) {
+    await showGameAlert("Inventory Full", "You have no room to mine this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.miningActive) return; 
   game.miningActive = true;
   const startBtn = document.getElementById('startMineBtn');
@@ -7281,6 +8690,14 @@ async function startChoppingSoftwood() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem(SOFTWOOD_CHOP_ITEM)) {
+    await showGameAlert("Inventory Full", "You have no room to chop this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.woodcuttingActive) return; 
   game.woodcuttingActive = true;
   const startBtn = document.getElementById('startChopBtn');
@@ -7329,6 +8746,14 @@ async function startChoppingOak() {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
   }
+  
+  // +++ NEW INVENTORY CHECK +++
+  if (!canReceiveItem(OAK_CHOP_ITEM)) {
+    await showGameAlert("Inventory Full", "You have no room to chop this.");
+    return;
+  }
+  // +++ END NEW +++
+  
   if (game.woodcuttingActive) return; 
   game.woodcuttingActive = true;
   const startBtn = document.getElementById('startChopBtn');
@@ -7402,6 +8827,12 @@ function openCombatInterface(enemyName) {
   if (game.craftingActive) { // +++ NEW +++
     stopCraftingBowString();
     game.wasCraftingBeforeCombat = true;
+  }
+  
+  // +++ NEW FISHING CHECK +++
+  if (game.fishingActive) {
+    stopFishing();
+    game.wasFishingBeforeCombat = true;
   }
   
   // Define our enemy
@@ -7658,12 +9089,15 @@ function returnToCombatArea() { // +++ RENAMED FUNCTION +++
     openFletchingHub(); // Return to Fletching hub
   } else if (game.wasCraftingBeforeCombat) { // +++ NEW +++
     openCraftingHub(); // Return to Crafting hub
+  } else if (game.wasFishingBeforeCombat) { // +++ NEW +++
+    openFishingHub(); // Return to Fishing hub
   }
   game.wasMiningBeforeCombat = false;
   game.wasSmithingBeforeCombat = false;
   game.wasWoodcuttingBeforeCombat = false; // +++ NEW +++
   game.wasFletchingBeforeCombat = false; // +++ NEW +++
   game.wasCraftingBeforeCombat = false; // +++ NEW +++
+  game.wasFishingBeforeCombat = false; // +++ NEW +++
 }
 
 // NEW: Helper function to update the enemy's HP bar
@@ -8114,6 +9548,16 @@ function renderBankGrid() {
               else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
               else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
               else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
+              
+              // +++ NEW COOKED FISH IMAGES +++
+              else if (item.name === 'Cooked Herring') imgName = 'cookedherring';
+              else if (item.name === 'Burnt Herring') imgName = 'burntherring';
+              else if (item.name === 'Cooked Trout') imgName = 'cookedtrout';
+              else if (item.name === 'Burnt Trout') imgName = 'burnttrout';
+              else if (item.name === 'Cooked Salmon') imgName = 'cookedsalmon';
+              else if (item.name === 'Burnt Salmon') imgName = 'burntsalmon';
+              // +++ END NEW +++
+
               else if (item.name === 'Coal Ore') imgName = 'coalore';
               else if (item.name === 'Iron Ore') imgName = 'ironore';
               else if (item.name === 'Iron Bar') imgName = 'ironbar';
@@ -8163,6 +9607,19 @@ function renderBankGrid() {
                   imgName = 'leatherpants';
               } else if (item.name === 'Leather Boots') {
                   imgName = 'leatherboots';
+              }
+
+              // +++ NEW FISHING ITEMS +++
+              else if (item.name === 'Herring') {
+                  imgName = 'herring';
+              } else if (item.name === 'Trout') {
+                  imgName = 'trout';
+              } else if (item.name === 'Salmon') {
+                  imgName = 'salmon';
+              } else if (item.name === 'Fishing Pole') {
+                  imgName = 'fishingpole';
+              } else if (item.name === 'Fishing Bait') {
+                  imgName = 'fishingbait';
               }
 
               // --- END OF FIX ---
@@ -8579,21 +10036,49 @@ async function buyShopItem(itemName, price) {
     await showGameAlert("Session Not Active", "This tab is not active. Please take control to perform actions.");
     return;
   }
+  // Check if they can afford at least one
   if (game.gold < price) {
     await showGameAlert("Not Enough Gold", `You need ${price} Gold to buy that.`);
     return;
   }
 
-  // Check for inventory space
+  // --- NEW: Ask for quantity ---
+  const input = await showGamePrompt(
+    `Buy ${itemName}`, 
+    `How many ${itemName} do you want to buy? (Price: ${price}ea)`, 
+    1 // Default value
+  );
+
+  if (input === null) return; // User cancelled
+  const qtyToBuy = parseInt(input);
+
+  if (isNaN(qtyToBuy) || qtyToBuy <= 0) {
+    return; // Invalid number
+  }
+  // --- END NEW ---
+
+  const totalCost = price * qtyToBuy;
+  
+  // Check if they have enough gold for the total purchase
+  if (game.gold < totalCost) {
+    await showGameAlert("Not Enough Gold", `You need ${totalCost} Gold to buy ${qtyToBuy} ${itemName}.`);
+    return;
+  }
+
+  // Check for inventory space (find existing stack OR an empty slot)
+  // Your addItem function is smart, so we just need to make sure
+  // it *can* add (i.e., not full with no matching stacks).
+  const stackIndex = game.inventory.findIndex(slot => slot && slot.name === itemName);
   const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
-  if (emptySlotIndex === -1) {
+  
+  if (stackIndex === -1 && emptySlotIndex === -1) {
      await showGameAlert("Inventory Full", "You have no space in your inventory to buy this.");
      return;
   }
   
-  addGold(-price);
-  addItem(itemName, 1);
-  await showGameAlert("Purchase Complete", `You bought 1 ${itemName} for ${price} Gold.`);
+  addGold(-totalCost);
+  addItem(itemName, qtyToBuy); // Use the new quantity
+  await showGameAlert("Purchase Complete", `You bought ${qtyToBuy} ${itemName} for ${totalCost} Gold.`);
   
   // No need to render, addItem and addGold already do.
   if (typeof window.savePlayerData === 'function') {
@@ -8610,6 +10095,14 @@ function resetGameState() {
   stopBlacksmithing();
   stopFletching(); // +++ NEW +++
   stopCraftingBowString(); // +++ NEW (using a specific stop func name) +++
+  stopFishing(); // +++ NEW +++
+  
+  // +++ NEW: Add combat stop +++
+  if (game.inCombat) {
+    runFromCombat(false); // Stop combat loops
+  }
+  // +++ END NEW +++
+
   game.name = '';
   game.hp = 10;
   game.maxHP = 10;
@@ -8630,6 +10123,7 @@ function resetGameState() {
   game.cooking = { level: 1, xp: 0, totalXP: 0 };
   game.woodcutting = { level: 1, xp: 0, totalXP: 0 };
   game.fletching = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
+  game.fishing = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
   
   // +++ NEW SKILLS +++
   game.crafting = { level: 1, xp: 0, totalXP: 0 };
@@ -8648,6 +10142,7 @@ function resetGameState() {
   game.woodcuttingActive = false; // +++ NEW +++
   game.fletchingActive = false; // +++ NEW +++
   game.craftingActive = false; // +++ NEW +++
+  game.fishingActive = false; // +++ NEW +++
   game.shopOpen = false;
   game.isAdmin = false;
   
@@ -8791,8 +10286,8 @@ function closeSettings() {
  * @param {string} src - The path to the sound file
  */
 // +++ NEW: Hub Screen Toggler Function +++
-// +++ ADDED hubCrafting +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic'];
+// +++ ADDED hubCrafting, hubFishingAreas, hubOcean, hubRiver +++
+const hubScreenIds = ['hubActions', 'hubMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -8801,6 +10296,7 @@ function showMainScreen(screenIdToShow) {
   stopWoodcutting();
   stopFletching(); // +++ NEW +++
   stopCraftingBowString(); // +++ NEW +++
+  stopFishing(); // +++ NEW +++
   game.shopOpen = false;
   hideTooltip();
 
@@ -8855,6 +10351,13 @@ function showMainScreen(screenIdToShow) {
     const woodcuttingLvl = game.woodcutting.level;
     document.getElementById('oakTreeBtn').classList.toggle('locked-item', woodcuttingLvl < OAK_TREE_LVL);
   }
+
+  // +++ NEW: Special case for hubRiver level locks +++
+  if (screenIdToShow === 'hubRiver') {
+    const fishingLvl = game.fishing.level;
+    document.getElementById('fishTroutBtn').classList.toggle('locked-item', fishingLvl < TROUT_FISH_LVL);
+    document.getElementById('fishSalmonBtn').classList.toggle('locked-item', fishingLvl < SALMON_FISH_LVL);
+  }
   
   // Special case: if we're showing the shop
   if (screenIdToShow === 'hubShop') {
@@ -8908,6 +10411,8 @@ function renderShopGrid() {
       let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
       if (item.name === 'Bronze Pickaxe') imgName = 'bronzepickaxe';
       else if (item.name === 'Bronze Axe') imgName = 'bronzeaxe';
+      else if (item.name === 'Fishing Pole') imgName = 'fishingpole';
+      else if (item.name === 'Fishing Bait') imgName = 'fishingbait';
       // Add more image name fixes here if needed
       
       img.src = `images/${imgName}.png`;
@@ -9010,6 +10515,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   
   // --- Hub Actions (Main Hub) ---
   document.getElementById('minesActionIcon').onclick = openMineHub;
+  document.getElementById('fishingActionIcon').onclick = openFishingHub; // +++ NEW +++
   document.getElementById('forestActionIcon').onclick = openForestHub;
   document.getElementById('blacksmithActionIcon').onclick = openBlacksmithHub;
   document.getElementById('kitchenActionIcon').onclick = openKitchenHub;
@@ -9074,6 +10580,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // --- Hub Kitchen Listeners ---
   document.getElementById('cookChickenBtn').onclick = openCookChicken;
+  document.getElementById('cookHerringBtn').onclick = openCookHerring; // +++ NEW +++
+  document.getElementById('cookTroutBtn').onclick = () => { // +++ NEW +++
+    if (game.cooking.level >= COOK_TROUT_LVL) {
+      openCookTrout();
+    } else {
+      document.getElementById('cookTroutBtn').classList.add('locked-item');
+    }
+  };
+  document.getElementById('cookSalmonBtn').onclick = () => { // +++ NEW +++
+    if (game.cooking.level >= COOK_SALMON_LVL) {
+      openCookSalmon();
+    } else {
+      document.getElementById('cookSalmonBtn').classList.add('locked-item');
+    }
+  };
   document.getElementById('hubKitchen_ReturnBtn').onclick = backToActions;
 
   // --- Hub Combat Listeners ---
@@ -9081,9 +10602,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('caveAreaBtn').onclick = openCaveCombatArea; // +++ NEW +++
   document.getElementById('hubCombat_ReturnBtn').onclick = backToActions;
   
+  // --- Hub Fishing Listeners ---
+  document.getElementById('oceanAreaBtn').onclick = openOceanFishingArea;
+  document.getElementById('riverAreaBtn').onclick = openRiverFishingArea;
+  document.getElementById('hubFishingAreas_ReturnBtn').onclick = backToActions;
+  
+  // --- Hub Ocean/River Return Listeners ---
+  document.getElementById('hubOcean_ReturnBtn').onclick = openFishingHub;
+  document.getElementById('hubRiver_ReturnBtn').onclick = openFishingHub;
+  
   // --- Hub Farm/Cave Return Listeners ---
   document.getElementById('hubFarm_ReturnBtn').onclick = openCombatHub; // +++ NEW +++
   document.getElementById('hubCave_ReturnBtn').onclick = openCombatHub; // +++ NEW +++
+
+  // --- Hub Fishing Level Locks (in Listeners) ---
+  document.getElementById('fishTroutBtn').onclick = () => {
+    if (game.fishing.level >= TROUT_FISH_LVL) openFishTrout();
+  };
+  document.getElementById('fishSalmonBtn').onclick = () => {
+    if (game.fishing.level >= SALMON_FISH_LVL) openFishSalmon();
+  };
+  // CSS class is now applied by showMainScreen('hubRiver')
 
   // --- Hub Shop Listeners ---
   document.getElementById('hubShop_ReturnBtn').onclick = backToActions;
@@ -9112,6 +10651,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('fletchingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
   document.getElementById('craftingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Crafting Bench</div>'); // +++ NEW +++
   document.getElementById('craftingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
+  document.getElementById('fishingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Fishing Areas</div>'); // +++ NEW +++
+  document.getElementById('fishingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
   
   // --- Tooltips for Hub Mine ---
   document.getElementById('copperVeinBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div>Requires Mining Lvl: 1');
@@ -9134,14 +10675,46 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('oakTreeBtn').onmouseleave = hideTooltip;
 
   // --- Tooltips for Hub Kitchen ---
-  document.getElementById('cookChickenBtn').onmouseenter = (e) => showTooltip(e, 'Requires: 1 Raw Chicken');
+  document.getElementById('cookChickenBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Chicken</div>Requires: 1 Raw Chicken');
   document.getElementById('cookChickenBtn').onmouseleave = hideTooltip;
+  
+  document.getElementById('cookHerringBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Herring</div>Requires: 1 Herring<br>Cooking Lvl: ${COOK_HERRING_LVL}`);
+  document.getElementById('cookHerringBtn').onmouseleave = hideTooltip;
+  
+  document.getElementById('cookTroutBtn').onmouseenter = (e) => {
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Trout</div>Requires: 1 Trout<br>Cooking Lvl: ${COOK_TROUT_LVL}`;
+    showTooltip(e, tt);
+    document.getElementById('cookTroutBtn').classList.toggle('locked-item', game.cooking.level < COOK_TROUT_LVL);
+  };
+  document.getElementById('cookTroutBtn').onmouseleave = hideTooltip;
+  
+  document.getElementById('cookSalmonBtn').onmouseenter = (e) => {
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Salmon</div>Requires: 1 Salmon<br>Cooking Lvl: ${COOK_SALMON_LVL}`;
+    showTooltip(e, tt);
+    document.getElementById('cookSalmonBtn').classList.toggle('locked-item', game.cooking.level < COOK_SALMON_LVL);
+  };
+  document.getElementById('cookSalmonBtn').onmouseleave = hideTooltip;
+
 
   // --- Tooltips for Hub Combat ---
   document.getElementById('farmAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Farm</div>');
   document.getElementById('farmAreaBtn').onmouseleave = hideTooltip;
   document.getElementById('caveAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Cave</div>'); // +++ MODIFIED +++
   document.getElementById('caveAreaBtn').onmouseleave = hideTooltip; // +++ NEW +++
+  
+  // --- Tooltips for Hub Fishing ---
+  document.getElementById('oceanAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Ocean</div>');
+  document.getElementById('oceanAreaBtn').onmouseleave = hideTooltip;
+  document.getElementById('riverAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The River</div>');
+  document.getElementById('riverAreaBtn').onmouseleave = hideTooltip;
+  
+  // --- Tooltips for Fishing Spots ---
+  document.getElementById('fishHerringBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Fish Herring</div>Requires Fishing Lvl: ${HERRING_FISH_LVL}`);
+  document.getElementById('fishHerringBtn').onmouseleave = hideTooltip;
+  document.getElementById('fishTroutBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Fish Trout</div>Requires Fishing Lvl: ${TROUT_FISH_LVL}`);
+  document.getElementById('fishTroutBtn').onmouseleave = hideTooltip;
+  document.getElementById('fishSalmonBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Fish Salmon</div>Requires Fishing Lvl: ${SALMON_FISH_LVL}`);
+  document.getElementById('fishSalmonBtn').onmouseleave = hideTooltip;
 
   // +++ END NEW LISTENER BLOCK +++
   
@@ -9816,6 +11389,12 @@ window.showSaveIndicator = function() {
           xp: game.ranged.xp,
           totalXP: game.ranged.totalXP
         },
+        // +++ NEW FISHING SAVE LOGIC +++
+        fishing: {
+          level: game.fishing.level,
+          xp: game.fishing.xp,
+          totalXP: game.fishing.totalXP
+        },
         // +++ END NEW SAVE LOGIC +++
         
         playerAttackStyle: game.playerAttackStyle, // <-- ADD THIS
@@ -10066,6 +11645,16 @@ window.showSaveIndicator = function() {
           game.ranged = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW RANGED LOADING LOGIC +++
+        
+        // +++ NEW FISHING LOADING LOGIC +++
+        if (data.fishing) {
+          game.fishing.level = data.fishing.level || 1;
+          game.fishing.xp = data.fishing.xp || 0;
+          game.fishing.totalXP = data.fishing.totalXP || getTotalXPForLevel(data.fishing.level - 1) + data.fishing.xp || 0; 
+        } else {
+          game.fishing = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        // +++ END NEW FISHING LOADING LOGIC +++
 
         setText('charName', game.name);
         updateHPUI(); // This now calculates maxHP using game.vitality.level
@@ -10147,6 +11736,7 @@ window.showSaveIndicator = function() {
         // +++ NEW SKILLS FOR NEW ACCOUNTS +++
         crafting: { level: 1, xp: 0, totalXP: 0 },
         ranged: { level: 1, xp: 0, totalXP: 0 },
+        fishing: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW FISHING FOR NEW ACCOUNTS +++
         
         playerAttackStyle: 'strength',
         activeSession: null, // +++ ADD THIS
@@ -10193,6 +11783,7 @@ window.showSaveIndicator = function() {
         initChatListener();
         initTradeListeners();
         initUpdatesListener();
+        initBroadcastListener(); // +++ ADD THIS LINE +++
         // The loadPlayerDataAndStart listener will automatically handle
         // acquiring the lock on first load.
       } else {
@@ -10212,6 +11803,7 @@ window.showSaveIndicator = function() {
       tradeSessionUnsubscribes = []; 
       if (playerDocListener) playerDocListener();
       if (updatesListenerUnsubscribe) updatesListenerUnsubscribe();
+      if (broadcastListenerUnsubscribe) broadcastListenerUnsubscribe(); // +++ ADD THIS LINE +++
       isUpdatesHistoryLoaded = false;
       stopSessionHeartbeat();
       // We don't release the lock, just let it go stale.
@@ -10275,6 +11867,10 @@ window.showSaveIndicator = function() {
   let playerDocListener = null; 
   let updatesListenerUnsubscribe = null;
   let isUpdatesHistoryLoaded = false; 
+// +++ NEW BROADCAST LISTENER +++
+  let broadcastListenerUnsubscribe = null;
+  let lastBroadcastTimestamp = null;
+
 
   async function sendChatMessage() {
     const chatInput = document.getElementById('chatInput');
@@ -10418,6 +12014,43 @@ window.showSaveIndicator = function() {
     }, (error) => {
       console.error("Updates listener error: ", error);
       contentContainer.innerHTML = '<div style="color: red; text-align: center;">Error loading updates.</div>';
+    });
+  }
+
+  // +++ NEW: BROADCAST LISTENER +++
+  function initBroadcastListener() {
+    if (broadcastListenerUnsubscribe) {
+      broadcastListenerUnsubscribe();
+      broadcastListenerUnsubscribe = null;
+    }
+
+    const broadcastRef = doc(db, "system", "broadcast");
+
+    broadcastListenerUnsubscribe = onSnapshot(broadcastRef, (doc) => {
+      if (!doc.exists()) return; // No broadcast message set
+
+      const data = doc.data();
+      const message = data.message;
+      const timestamp = data.timestamp;
+
+      // If timestamp is null (still pending) or matches the one we've already shown, ignore it
+      if (!timestamp || (lastBroadcastTimestamp && timestamp.toMillis() === lastBroadcastTimestamp.toMillis())) {
+        return;
+      }
+
+      // This is a new message!
+      lastBroadcastTimestamp = timestamp;
+
+      const overlay = document.getElementById('broadcastOverlay');
+      const messageEl = document.getElementById('broadcastMessage');
+
+      if (overlay && messageEl) {
+        messageEl.textContent = message;
+        overlay.style.display = 'flex';
+      }
+
+    }, (error) => {
+      console.error("Broadcast listener error: ", error);
     });
   }
 
@@ -10733,10 +12366,10 @@ window.showSaveIndicator = function() {
                 addLocalChatMessage("Usage: /setlevel [playername] [skill] [1-99]", 'error');
                 return true;
             }
-            // +++ NEW: Added 'crafting' and 'ranged' to admin command +++
-            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking', 'woodcutting', 'fletching', 'crafting', 'ranged'];
+            // +++ NEW: Added 'crafting', 'ranged', 'fishing' to admin command +++
+            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking', 'woodcutting', 'fletching', 'crafting', 'ranged', 'fishing'];
 if (!validSkills.includes(skill)) {
-     addLocalChatMessage("Unknown skill. Use: mining, blacksmith, attack, strength, defence, vitality, cooking, woodcutting, fletching, crafting, or ranged.", 'error');
+     addLocalChatMessage("Unknown skill. Use: mining, blacksmith, attack, strength, defence, vitality, cooking, woodcutting, fletching, crafting, ranged, or fishing.", 'error');
      return true;
 }
             const newTotalXP = getTotalXPForLevel(level); 
@@ -10790,6 +12423,33 @@ if (!validSkills.includes(skill)) {
             } catch (e) {
               console.error("Error posting update: ", e);
               addLocalChatMessage("Error posting update.", 'error');
+            
+            }
+            return true;
+        }
+        
+        // +++ NEW: Admin /messageall command +++
+        if (command === 'messageall') {
+            const messageText = args.join(' ');
+            if (messageText.length === 0) {
+                addLocalChatMessage("Usage: /messageall [message]", 'error');
+                return true;
+            }
+            if (messageText.length > 512) {
+              addLocalChatMessage("Error: Message is too long (max 512 chars).", 'error');
+              return true;
+            }
+
+            try {
+              // Set the broadcast message
+              await setDoc(doc(db, "system", "broadcast"), {
+                message: messageText,
+                timestamp: serverTimestamp()
+              });
+              addLocalChatMessage("Broadcast message sent.", 'system');
+            } catch (e) {
+              console.error("Error sending broadcast: ", e);
+              addLocalChatMessage("Error sending broadcast.", 'error');
             }
             return true;
         }
@@ -10797,6 +12457,7 @@ if (!validSkills.includes(skill)) {
     }
     
     // +++ NEW: Check for active session before allowing trade +++
+    
     if (!game.isSessionActive) {
       addLocalChatMessage("This tab is not active. Take control to trade.", 'error');
       return true; // It's a command, but it's blocked.
@@ -11412,8 +13073,9 @@ if (!validSkills.includes(skill)) {
         const fletchingXp = data.fletching?.totalXP || 0; // +++ NEW +++
         const craftingXp = data.crafting?.totalXP || 0; // +++ NEW +++
         const rangedXp = data.ranged?.totalXP || 0; // +++ NEW +++
+        const fishingXp = data.fishing?.totalXP || 0; // +++ NEW +++
 
-        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp + woodcuttingXp + fletchingXp + craftingXp + rangedXp;
+        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp + woodcuttingXp + fletchingXp + craftingXp + rangedXp + fishingXp;
         // --- END OF FIX ---
 
         players.push({
@@ -11549,6 +13211,34 @@ if (!validSkills.includes(skill)) {
       }
       closeTradeWindow();
     }
+
+    // +++ NEW: STOP ALL ACTIONS +++
+    // This is the fix. Stop all intervals and set active flags to false.
+    if (game.inCombat) {
+      runFromCombat(false);
+    }
+    if (game.miningActive) {
+      stopMining();
+    }
+    if (game.blacksmithingActive) {
+      stopBlacksmithing();
+    }
+    if (game.cookingActive) {
+      stopCookingChicken();
+    }
+    if (game.woodcuttingActive) {
+      stopWoodcutting();
+    }
+    if (game.fletchingActive) {
+      stopFletching();
+    }
+    if (game.craftingActive) {
+      stopCraftingBowString();
+    }
+    if (game.fishingActive) {
+      stopFishing();
+    }
+    // +++ END NEW +++
     
     // 2. +++ NEW CRITICAL FIX +++: Release the session lock explicitly
     if (game.isSessionActive) {
@@ -11601,12 +13291,12 @@ if (!validSkills.includes(skill)) {
       'images/bankbutton.png',
       'images/miningskillicon.png',
       'images/blacksmithskillicon.png',
-      'images/attackskillicon.png',
+      'images/attackskillicon.jpeg',
       'images/strengthskillicon.png',
       'images/defenseskillicon.png',
       'images/vitalityskillicon.png',
       'images/cookingskillicon.png',
-      'images/woodcuttingskillicon.png',
+      'images/woodcuttingskillicon.jpeg',
       'images/copperore.png',
       'images/copperbar.png',
       'images/coppershortsword.png',
@@ -11654,7 +13344,7 @@ if (!validSkills.includes(skill)) {
       
       // +++ NEW ASSETS FOR CRAFTING/RANGED +++
       'images/craftingskillicon.png',
-      'images/rangedskillicon.png',
+      'images/rangedskillicon.jpeg',
       'images/craftingbenchbutton.png',
       'images/bowstring.png',
       'images/unstrungsoftwoodbow.png',
@@ -11669,7 +13359,20 @@ if (!validSkills.includes(skill)) {
       'images/leatherpants.png',
       'images/leatherboots.png',
       'images/cowmonster.png',
-      'images/cowanim.webp'
+      'images/cowanim.webp',
+      
+      // +++ NEW FISHING ASSETS +++
+      'images/fishingskillicon.jpeg',
+      'images/fishingareasbutton.jpeg',
+      'images/oceanbutton.png',
+      'images/riverbutton.jpeg',
+      'images/herring.png',
+      'images/trout.png',
+      'images/salmon.png',
+      
+      // +++ NEW FISHING REQUIREMENTS +++
+      'images/fishingpole.png',
+      'images/fishingbait.png'
     ];
 
     /**
