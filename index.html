@@ -1739,8 +1739,7 @@ button.primary:hover { background: var(--accent-hover); }
       <button id="closeSettingsBtn" class="primary" style="background:#666;">Close</button>
     </div>
   </div>
- 
-<div id="broadcastOverlay" style="display: none; z-index: 5002;"> <div>
+</div> <div id="broadcastOverlay" style="display: none; z-index: 5002;"> <div>
     <h2 style="color: var(--gold);">System Update</h2>
     <p id="broadcastMessage" style="font-size: 16px; line-height: 1.5;">
       A new game update is live! Please refresh your browser to continue.
@@ -12017,7 +12016,7 @@ window.showSaveIndicator = function() {
     });
   }
 
-  // +++ NEW: BROADCAST LISTENER +++
+// +++ NEW: BROADCAST LISTENER (REVISED) +++
   function initBroadcastListener() {
     if (broadcastListenerUnsubscribe) {
       broadcastListenerUnsubscribe();
@@ -12033,20 +12032,40 @@ window.showSaveIndicator = function() {
       const message = data.message;
       const timestamp = data.timestamp;
 
-      // If timestamp is null (still pending) or matches the one we've already shown, ignore it
-      if (!timestamp || (lastBroadcastTimestamp && timestamp.toMillis() === lastBroadcastTimestamp.toMillis())) {
-        return;
+      // Ignore if the message has no timestamp
+      if (!timestamp) return;
+
+      // --- THIS IS THE NEW LOGIC ---
+      if (lastBroadcastTimestamp === null) {
+        // This is the FIRST time the listener is running on page load.
+        // We will "prime" the system by storing the current timestamp,
+        // but we will NOT show the overlay.
+        lastBroadcastTimestamp = timestamp;
+        return; // Exit without showing the pop-up
       }
 
-      // This is a new message!
-      lastBroadcastTimestamp = timestamp;
+      // If we are here, the listener has run at least once.
+      // Now, we only proceed if the timestamp in Firestore is *different*
+      // from the one we already saw.
+      if (timestamp.toMillis() === lastBroadcastTimestamp.toMillis()) {
+        // This is the same message we've already seen. Do nothing.
+        return;
+      }
+      // --- END NEW LOGIC ---
+
+      // If we get this far, it means:
+      // 1. It's not the first page load check.
+      // 2. The timestamp is NEW.
+      // This is a genuine, real-time update.
+      
+      lastBroadcastTimestamp = timestamp; // Store the new timestamp
 
       const overlay = document.getElementById('broadcastOverlay');
       const messageEl = document.getElementById('broadcastMessage');
 
       if (overlay && messageEl) {
         messageEl.textContent = message;
-        overlay.style.display = 'flex';
+        overlay.style.display = 'flex'; // Show the overlay
       }
 
     }, (error) => {
