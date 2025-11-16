@@ -1175,7 +1175,8 @@ button.primary:hover { background: var(--accent-hover); }
 </head>
 <body>
 
-<div id="loadingScreen" style="display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: #3f2b21; z-index: 10000;">
+<div id="loadingScreen" style="display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background-color: #3f2b21;
+ background-image: url('images/tittle.jpeg'); background-size: contain; background-position: center center; background-repeat: no-repeat; z-index: 10000;">
   <!-- Make the container a bit wider to fit the bar -->
   <div style="text-align: center; color: var(--gold); font-size: 20px; font-weight: bold; width: 300px;">
     Loading assets...
@@ -3846,24 +3847,31 @@ function miningCooldownLoop(timestamp, startTime, duration, progressTextId, next
     return;
   }
 
-  const elapsed = timestamp - startTime;
+  const elapsed = Date.now() - startTime; // Use Date.now() for real time
   const remainingMs = duration - elapsed;
 
   if (remainingMs <= 0) {
-    // Cooldown finished, clear text and start the next mining loop
+    // --- COOLDOWN IS COMPLETE ---
     const textEl = document.getElementById(progressTextId);
     if (textEl) textEl.innerText = '';
-    game.progressFrame = requestAnimationFrame((now) => nextLoopFunction(now, now));
+    
+    // --- NEW: Calculate "overdue" time ---
+    const overdueTime = -remainingMs; // (elapsed - duration)
+    const newActionStartTime = Date.now() - overdueTime;
+            
+    // --- THIS IS THE FIX: Immediately call the next loop ---
+    return nextLoopFunction(Date.now(), newActionStartTime);
+    
   } else {
-    // Cooldown active, update timer
+    // --- COOLDOWN IN PROGRESS ---
     const remainingSecs = (remainingMs / 1000).toFixed(1);
     const textEl = document.getElementById(progressTextId);
     if (textEl) textEl.innerText = `${remainingSecs}s`;
     
-    // Continue the cooldown loop
-    game.progressFrame = requestAnimationFrame((now) => 
-      miningCooldownLoop(now, startTime, duration, progressTextId, nextLoopFunction)
-    );
+    // This is now the ONLY setTimeout, for when we are actively waiting
+    game.progressFrame = setTimeout(() => 
+      miningCooldownLoop(Date.now(), startTime, duration, progressTextId, nextLoopFunction)
+    , 16);
   }
 }
 
@@ -3895,44 +3903,47 @@ async function startMining() {
   const stopBtn = document.getElementById('stopMineBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => miningLoop(now, now));
+  game.progressFrame = setTimeout(() => miningLoop(Date.now(), Date.now()), 16);
 }
 
 function miningLoop(timestamp, startTime) {
   if (!game.miningActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / MINE_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime; // Use Date.now() for real time
 
-  if (progress >= 100) {
-    addItem(MINE_ITEM, 1); // Uses new addItem
-    addXP('mining', MINE_XP); // This now adds XP without a popup
-
-    // NEW: Create two separate, delayed popups
+  if (elapsed >= MINE_TIME_MS) {
+    // --- ACTION IS COMPLETE ---
+    addItem(MINE_ITEM, 1); 
+    addXP('mining', MINE_XP); 
     showItemPopup(`+${MINE_XP} Mining XP`, 'mineProgress', 0);
     showItemPopup(`+1 Copper Ore`, 'mineProgress', 450);
     
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = '0%';
     
-    // --- NEW: Start Cooldown ---
-    game.progressFrame = requestAnimationFrame((now) => 
-      miningCooldownLoop(now, now, MINE_COOLDOWN_COPPER_MS, 'mineProgressText', miningLoop)
-    );
-    // --- END NEW ---
+    // --- NEW: Calculate "overdue" time ---
+    const overdueTime = elapsed - MINE_TIME_MS;
+    const newCooldownStartTime = Date.now() - overdueTime;
+            
+    // --- THIS IS THE FIX: Immediately call the cooldown loop ---
+    return miningCooldownLoop(Date.now(), newCooldownStartTime, MINE_COOLDOWN_COPPER_MS, 'mineProgressText', miningLoop);
     
   } else {
+    // --- ACTION IN PROGRESS ---
+    const progress = (elapsed / MINE_TIME_MS) * 100;
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => miningLoop(now, startTime));
+    
+    // This is now the ONLY setTimeout
+    game.progressFrame = setTimeout(() => miningLoop(Date.now(), startTime), 16);
   }
 }
 
 function stopMining(){
   game.miningActive = false;
-  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  if(game.progressFrame) clearTimeout(game.progressFrame); // <-- MODIFIED
   
-  const textEl = document.getElementById('mineProgressText'); // <-- ADD THIS
-  if (textEl) textEl.innerText = '';                        // <-- ADD THIS
+  const textEl = document.getElementById('mineProgressText');
+  if (textEl) textEl.innerText = '';
 
   const bar = document.getElementById('mineProgress');
   if(bar) bar.style.width = '0%';
@@ -4007,15 +4018,14 @@ async function startHelmetCrafting() {
   const stopBtn = document.getElementById('stopHelmetBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => helmetCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 async function helmetCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / HELMET_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= HELMET_TIME_MS) {
     let totalBars = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Copper Bar') {
@@ -4031,13 +4041,15 @@ async function helmetCraftingLoop(timestamp, startTime) {
     removeItem('Copper Bar', HELMET_BAR_COST);
     addItem('Copper Helmet', 1);
     addXP('blacksmith', HELMET_XP);
-    
     showItemPopup(`+${HELMET_XP} Blacksmith XP`, 'helmetProgress', 0);
     showItemPopup(`+1 Copper Helmet`, 'helmetProgress', 450);
     
     const bar = document.getElementById('helmetProgress');
     if (bar) bar.style.width = '0%';
     
+    const overdueTime = elapsed - HELMET_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+
     let totalBarsAfter = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Copper Bar') {
@@ -4049,11 +4061,15 @@ async function helmetCraftingLoop(timestamp, startTime) {
         stopBlacksmithing('helmetProgress', 'startHelmetBtn', 'stopHelmetBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, now));
+    
+    // --- THIS IS THE FIX: Immediately call self to catch up ---
+    return helmetCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / HELMET_TIME_MS) * 100;
     const bar = document.getElementById('helmetProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => helmetCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => helmetCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -4113,15 +4129,14 @@ async function startBootsCrafting() {
   const stopBtn = document.getElementById('stopBootsBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => bootsCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => bootsCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 async function bootsCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / BOOTS_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= BOOTS_TIME_MS) {
     let totalBars = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Copper Bar') {
@@ -4137,12 +4152,14 @@ async function bootsCraftingLoop(timestamp, startTime) {
     removeItem('Copper Bar', BOOTS_BAR_COST);
     addItem('Copper Boots', 1);
     addXP('blacksmith', BOOTS_XP);
-    
     showItemPopup(`+${BOOTS_XP} Blacksmith XP`, 'bootsProgress', 0);
     showItemPopup(`+1 Copper Boots`, 'bootsProgress', 450);
     
     const bar = document.getElementById('bootsProgress');
     if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - BOOTS_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     for (const slot of game.inventory) {
@@ -4155,11 +4172,14 @@ async function bootsCraftingLoop(timestamp, startTime) {
         stopBlacksmithing();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => bootsCraftingLoop(now, now));
+    
+    return bootsCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / BOOTS_TIME_MS) * 100;
     const bar = document.getElementById('bootsProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => bootsCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => bootsCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -4219,15 +4239,14 @@ async function startCopperPlatelegsCrafting() {
   const stopBtn = document.getElementById('stopPlatelegsBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => copperPlatelegsCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => copperPlatelegsCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 async function copperPlatelegsCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / COPPER_PLATELEGS_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= COPPER_PLATELEGS_TIME_MS) {
     let totalBars = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Copper Bar') {
@@ -4236,19 +4255,21 @@ async function copperPlatelegsCraftingLoop(timestamp, startTime) {
     }
     if (totalBars < COPPER_PLATELEGS_BAR_COST) {
         await showGameAlert("Out of Materials", "You've run out of Copper Bars.");
-        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn'); // <-- FIX: Pass correct IDs
+        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn');
         return;
     }
     
     removeItem('Copper Bar', COPPER_PLATELEGS_BAR_COST);
     addItem('Copper Platelegs', 1);
     addXP('blacksmith', COPPER_PLATELEGS_XP);
-    
     showItemPopup(`+${COPPER_PLATELEGS_XP} Blacksmith XP`, 'platelegsProgress', 0);
     showItemPopup(`+1 Copper Platelegs`, 'platelegsProgress', 450);
     
     const bar = document.getElementById('platelegsProgress');
     if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - COPPER_PLATELEGS_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     for (const slot of game.inventory) {
@@ -4258,14 +4279,17 @@ async function copperPlatelegsCraftingLoop(timestamp, startTime) {
     }
     if (totalBarsAfter < COPPER_PLATELEGS_BAR_COST) {
         await showGameAlert("Not Enough Materials", "You don't have enough bars to craft more platelegs.");
-        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn'); // <-- FIX: Pass correct IDs
+        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => copperPlatelegsCraftingLoop(now, now));
+    
+    return copperPlatelegsCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / COPPER_PLATELEGS_TIME_MS) * 100;
     const bar = document.getElementById('platelegsProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => copperPlatelegsCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => copperPlatelegsCraftingLoop(Date.now(), startTime), 16);
   }
 }
 // +++ END NEW COPPER PLATELEGS +++
@@ -4303,16 +4327,15 @@ async function startIronBarCrafting() {
   const stopBtn = document.getElementById('stopSmithBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => ironBarCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => ironBarCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 
 async function ironBarCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / IRON_BAR_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= IRON_BAR_TIME_MS) {
     let totalIronOre = 0;
     let totalCoalOre = 0;
     for (const slot of game.inventory) {
@@ -4329,12 +4352,14 @@ async function ironBarCraftingLoop(timestamp, startTime) {
     removeItem('Coal Ore', IRON_BAR_COAL_COST);
     addItem('Iron Bar', 1);
     addXP('blacksmith', IRON_BAR_XP);
-    
     showItemPopup(`+${IRON_BAR_XP} Blacksmith XP`, 'smithProgress', 0);
     showItemPopup(`+1 Iron Bar`, 'smithProgress', 450);
     
     const bar = document.getElementById('smithProgress');
     if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - IRON_BAR_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalIronAfter = 0;
     let totalCoalAfter = 0;
@@ -4347,11 +4372,14 @@ async function ironBarCraftingLoop(timestamp, startTime) {
         stopBlacksmithing();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => ironBarCraftingLoop(now, now));
+    
+    return ironBarCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / IRON_BAR_TIME_MS) * 100;
     const bar = document.getElementById('smithProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => ironBarCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => ironBarCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -4386,16 +4414,15 @@ async function startIronHelmetCrafting() {
   const stopBtn = document.getElementById('stopHelmetBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => ironHelmetCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => ironHelmetCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 
 async function ironHelmetCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / IRON_HELMET_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= IRON_HELMET_TIME_MS) {
     let totalBars = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
@@ -4409,12 +4436,14 @@ async function ironHelmetCraftingLoop(timestamp, startTime) {
     removeItem('Iron Bar', IRON_HELMET_BAR_COST);
     addItem('Iron Helmet', 1);
     addXP('blacksmith', IRON_HELMET_XP);
-    
     showItemPopup(`+${IRON_HELMET_XP} Blacksmith XP`, 'helmetProgress', 0);
     showItemPopup(`+1 Iron Helmet`, 'helmetProgress', 450);
     
     const bar = document.getElementById('helmetProgress');
     if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - IRON_HELMET_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     for (const slot of game.inventory) {
@@ -4425,11 +4454,14 @@ async function ironHelmetCraftingLoop(timestamp, startTime) {
         stopBlacksmithing();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => ironHelmetCraftingLoop(now, now));
+    
+    return ironHelmetCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / IRON_HELMET_TIME_MS) * 100;
     const bar = document.getElementById('helmetProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => ironHelmetCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => ironHelmetCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -4464,15 +4496,14 @@ async function startIronChestplateCrafting() {
   const stopBtn = document.getElementById('stopChestplateBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => ironChestplateCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => ironChestplateCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 async function ironChestplateCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / IRON_CHESTPLATE_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= IRON_CHESTPLATE_TIME_MS) {
     let totalBars = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
@@ -4486,12 +4517,14 @@ async function ironChestplateCraftingLoop(timestamp, startTime) {
     removeItem('Iron Bar', IRON_CHESTPLATE_BAR_COST);
     addItem('Iron Chestplate', 1);
     addXP('blacksmith', IRON_CHESTPLATE_XP);
-    
     showItemPopup(`+${IRON_CHESTPLATE_XP} Blacksmith XP`, 'chestplateProgress', 0);
     showItemPopup(`+1 Iron Chestplate`, 'chestplateProgress', 450);
     
     const bar = document.getElementById('chestplateProgress');
     if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - IRON_CHESTPLATE_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     for (const slot of game.inventory) {
@@ -4502,11 +4535,14 @@ async function ironChestplateCraftingLoop(timestamp, startTime) {
         stopBlacksmithing();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => ironChestplateCraftingLoop(now, now));
+    
+    return ironChestplateCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / IRON_CHESTPLATE_TIME_MS) * 100;
     const bar = document.getElementById('chestplateProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => ironChestplateCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => ironChestplateCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -4541,16 +4577,15 @@ async function startIronBootsCrafting() {
   const stopBtn = document.getElementById('stopBootsBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => ironBootsCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => ironBootsCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 
 async function ironBootsCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / IRON_BOOTS_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= IRON_BOOTS_TIME_MS) {
     let totalBars = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
@@ -4564,12 +4599,14 @@ async function ironBootsCraftingLoop(timestamp, startTime) {
     removeItem('Iron Bar', IRON_BOOTS_BAR_COST);
     addItem('Iron Boots', 1);
     addXP('blacksmith', IRON_BOOTS_XP);
-    
     showItemPopup(`+${IRON_BOOTS_XP} Blacksmith XP`, 'bootsProgress', 0);
     showItemPopup(`+1 Iron Boots`, 'bootsProgress', 450);
     
     const bar = document.getElementById('bootsProgress');
     if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - IRON_BOOTS_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     for (const slot of game.inventory) {
@@ -4580,11 +4617,14 @@ async function ironBootsCraftingLoop(timestamp, startTime) {
         stopBlacksmithing();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => ironBootsCraftingLoop(now, now));
+    
+    return ironBootsCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / IRON_BOOTS_TIME_MS) * 100;
     const bar = document.getElementById('bootsProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => ironBootsCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => ironBootsCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -4644,15 +4684,14 @@ async function startIronPlatelegsCrafting() {
   const stopBtn = document.getElementById('stopPlatelegsBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => ironPlatelegsCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => ironPlatelegsCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 async function ironPlatelegsCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / IRON_PLATELEGS_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= IRON_PLATELEGS_TIME_MS) {
     let totalBars = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Iron Bar') {
@@ -4661,19 +4700,21 @@ async function ironPlatelegsCraftingLoop(timestamp, startTime) {
     }
     if (totalBars < IRON_PLATELEGS_BAR_COST) {
         await showGameAlert("Out of Materials", "You've run out of Iron Bars.");
-        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn'); // <-- FIX: Pass correct IDs
+        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn');
         return;
     }
     
     removeItem('Iron Bar', IRON_PLATELEGS_BAR_COST);
     addItem('Iron Platelegs', 1);
     addXP('blacksmith', IRON_PLATELEGS_XP);
-    
     showItemPopup(`+${IRON_PLATELEGS_XP} Blacksmith XP`, 'platelegsProgress', 0);
     showItemPopup(`+1 Iron Platelegs`, 'platelegsProgress', 450);
     
     const bar = document.getElementById('platelegsProgress');
     if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - IRON_PLATELEGS_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     for (const slot of game.inventory) {
@@ -4683,14 +4724,17 @@ async function ironPlatelegsCraftingLoop(timestamp, startTime) {
     }
     if (totalBarsAfter < IRON_PLATELEGS_BAR_COST) {
         await showGameAlert("Not Enough Materials", "You don't have enough bars to craft more platelegs.");
-        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn'); // <-- FIX: Pass correct IDs
+        stopBlacksmithing('platelegsProgress', 'startPlatelegsBtn', 'stopPlatelegsBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => ironPlatelegsCraftingLoop(now, now));
+    
+    return ironPlatelegsCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / IRON_PLATELEGS_TIME_MS) * 100;
     const bar = document.getElementById('platelegsProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => ironPlatelegsCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => ironPlatelegsCraftingLoop(Date.now(), startTime), 16);
   }
 }
 // +++ END NEW IRON PLATELEGS +++
@@ -4726,16 +4770,15 @@ async function startIronShortswordCrafting() {
   const stopBtn = document.getElementById('stopShortswordBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => ironShortswordCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => ironShortswordCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 
 async function ironShortswordCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / IRON_SHORTSWORD_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= IRON_SHORTSWORD_TIME_MS) {
     let totalBars = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Iron Bar') totalBars += slot.qty;
@@ -4749,32 +4792,34 @@ async function ironShortswordCraftingLoop(timestamp, startTime) {
     removeItem('Iron Bar', IRON_SHORTSWORD_BAR_COST);
     addItem('Iron Shortsword', 1);
     addXP('blacksmith', IRON_SHORTSWORD_XP);
-    
     showItemPopup(`+${IRON_SHORTSWORD_XP} Blacksmith XP`, 'shortswordProgress', 0);
     showItemPopup(`+1 Iron Shortsword`, 'shortswordProgress', 450);
     
     const bar = document.getElementById('shortswordProgress');
     if (bar) bar.style.width = '0%';
     
-   // Check for materials for the *next* loop
-let totalBarsAfter = 0;
-for (const slot of game.inventory) {
-    if (slot && slot.name === 'Iron Bar') {
-        totalBarsAfter += slot.qty;
+    const overdueTime = elapsed - IRON_SHORTSWORD_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+   
+    let totalBarsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Iron Bar') {
+            totalBarsAfter += slot.qty;
+        }
     }
-}
-if (totalBarsAfter < IRON_SHORTSWORD_BAR_COST) {
-    await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another shortsword.");
-    stopBlacksmithing();
-    return;
-}
-// Continue looping
-game.progressFrame = requestAnimationFrame((now) => ironShortswordCraftingLoop(now, now));
+    if (totalBarsAfter < IRON_SHORTSWORD_BAR_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough bars to craft another shortsword.");
+        stopBlacksmithing();
+        return;
+    }
+    
+    return ironShortswordCraftingLoop(Date.now(), newStartTime);
 
   } else {
+    const progress = (elapsed / IRON_SHORTSWORD_TIME_MS) * 100;
     const bar = document.getElementById('shortswordProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => ironShortswordCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => ironShortswordCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -4816,16 +4861,14 @@ async function startBlacksmithing() {
   const stopBtn = document.getElementById('stopSmithBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => blacksmithingLoop(now, now));
+  game.progressFrame = setTimeout(() => blacksmithingLoop(Date.now(), Date.now()), 16);
 }
 
 async function blacksmithingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / SMITH_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
-    // --- Check total ore again ---
+  if (elapsed >= SMITH_TIME_MS) {
     let totalOre = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Copper Ore') {
@@ -4838,18 +4881,18 @@ async function blacksmithingLoop(timestamp, startTime) {
         return;
     }
     
-    removeItem('Copper Ore', SMITH_ORE_COST); // Uses new removeItem
-    addItem(SMITH_BAR_ITEM, 1); // Uses new addItem
-    addXP('blacksmith', SMITH_XP); // This now adds XP without a popup
-    
-    // NEW: Create two separate, delayed popups
+    removeItem('Copper Ore', SMITH_ORE_COST);
+    addItem(SMITH_BAR_ITEM, 1);
+    addXP('blacksmith', SMITH_XP);
     showItemPopup(`+${SMITH_XP} Blacksmith XP`, 'smithProgress', 0);
     showItemPopup(`+1 Copper Bar`, 'smithProgress', 450);
     
     const bar = document.getElementById('smithProgress');
     if (bar) bar.style.width = '0%';
     
-    // --- Check *again* for next loop ---
+    const overdueTime = elapsed - SMITH_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
     let totalOreAfter = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Copper Ore') {
@@ -4861,17 +4904,20 @@ async function blacksmithingLoop(timestamp, startTime) {
         stopBlacksmithing();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => blacksmithingLoop(now, now));
+    
+    return blacksmithingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / SMITH_TIME_MS) * 100;
     const bar = document.getElementById('smithProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => blacksmithingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => blacksmithingLoop(Date.now(), startTime), 16);
   }
 }
 
 function stopBlacksmithing(progressId = 'smithProgress', startBtnId = 'startSmithBtn', stopBtnId = 'stopSmithBtn'){
   game.blacksmithingActive = false;
-  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  if(game.progressFrame) clearTimeout(game.progressFrame);
   const bar = document.getElementById(progressId);
   if(bar) bar.style.width = '0%';
   const startBtn = document.getElementById(startBtnId);
@@ -4947,16 +4993,14 @@ async function startCookingChicken() {
   const stopBtn = document.getElementById('stopCookBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => cookingChickenLoop(now, now));
+  game.progressFrame = setTimeout(() => cookingChickenLoop(Date.now(), Date.now()), 16);
 }
 
 async function cookingChickenLoop(timestamp, startTime) {
   if (!game.cookingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / COOK_CHICKEN_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
-    // --- Check materials again ---
+  if (elapsed >= COOK_CHICKEN_TIME_MS) {
     let totalRaw = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Raw Chicken') {
@@ -4969,20 +5013,16 @@ async function cookingChickenLoop(timestamp, startTime) {
         return;
     }
     
-    removeItem('Raw Chicken', 1); // Consume 1 raw chicken
-    addXP('cooking', COOK_CHICKEN_XP); // Always award XP (no popup thanks to Step 1)
+    removeItem('Raw Chicken', 1);
+    addXP('cooking', COOK_CHICKEN_XP);
     
-    // Calculate success rate (50% at Lvl 1, 100% at Lvl 10)
     const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (50/9)));
     
-    // NEW: Create two separate, delayed popups
     if (Math.random() * 100 < successRate) {
-      // Success
       addItem('Cooked Chicken', 1);
       showItemPopup(`+${COOK_CHICKEN_XP} Cooking XP`, 'cookProgress', 0);
       showItemPopup(`+1 Cooked Chicken`, 'cookProgress', 450);
     } else {
-      // Burnt
       addItem('Burnt Chicken', 1);
       showItemPopup(`+${COOK_CHICKEN_XP} Cooking XP`, 'cookProgress', 0);
       showItemPopup(`+1 Burnt Chicken`, 'cookProgress', 450);
@@ -4991,7 +5031,9 @@ async function cookingChickenLoop(timestamp, startTime) {
     const bar = document.getElementById('cookProgress');
     if (bar) bar.style.width = '0%';
     
-    // --- Check *again* for next loop ---
+    const overdueTime = elapsed - COOK_CHICKEN_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
     let totalRawAfter = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Raw Chicken') {
@@ -5003,17 +5045,20 @@ async function cookingChickenLoop(timestamp, startTime) {
         stopCookingChicken();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => cookingChickenLoop(now, now));
+    
+    return cookingChickenLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / COOK_CHICKEN_TIME_MS) * 100;
     const bar = document.getElementById('cookProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => cookingChickenLoop(now, startTime));
+    game.progressFrame = setTimeout(() => cookingChickenLoop(Date.now(), startTime), 16);
   }
 }
 
 function stopCookingChicken(){
   game.cookingActive = false;
-  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  if(game.progressFrame) clearTimeout(game.progressFrame);
   const bar = document.getElementById('cookProgress');
   if(bar) bar.style.width = '0%';
   const startBtn = document.getElementById('startCookBtn');
@@ -5161,15 +5206,14 @@ async function startCookingHerring() {
   const stopBtn = document.getElementById('stopCookBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => cookingHerringLoop(now, now));
+  game.progressFrame = setTimeout(() => cookingHerringLoop(Date.now(), Date.now()), 16);
 }
 
 async function cookingHerringLoop(timestamp, startTime) {
   if (!game.cookingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / COOK_HERRING_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= COOK_HERRING_TIME_MS) {
     let totalRaw = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === COOK_HERRING_ITEM_RAW) {
@@ -5185,7 +5229,6 @@ async function cookingHerringLoop(timestamp, startTime) {
     removeItem(COOK_HERRING_ITEM_RAW, 1);
     addXP('cooking', COOK_HERRING_XP);
     
-    // Burn chance: 50% at Lvl 1, 0% at Lvl 10
     const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (50/9)));
     
     if (Math.random() * 100 < successRate) {
@@ -5201,6 +5244,9 @@ async function cookingHerringLoop(timestamp, startTime) {
     const bar = document.getElementById('cookProgress');
     if (bar) bar.style.width = '0%';
     
+    const overdueTime = elapsed - COOK_HERRING_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
     let totalRawAfter = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === COOK_HERRING_ITEM_RAW) {
@@ -5212,11 +5258,14 @@ async function cookingHerringLoop(timestamp, startTime) {
         stopCookingChicken();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => cookingHerringLoop(now, now));
+    
+    return cookingHerringLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / COOK_HERRING_TIME_MS) * 100;
     const bar = document.getElementById('cookProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => cookingHerringLoop(now, startTime));
+    game.progressFrame = setTimeout(() => cookingHerringLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -5259,15 +5308,14 @@ async function startCookingTrout() {
   const stopBtn = document.getElementById('stopCookBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => cookingTroutLoop(now, now));
+  game.progressFrame = setTimeout(() => cookingTroutLoop(Date.now(), Date.now()), 16);
 }
 
 async function cookingTroutLoop(timestamp, startTime) {
   if (!game.cookingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / COOK_TROUT_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= COOK_TROUT_TIME_MS) {
     let totalRaw = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === COOK_TROUT_ITEM_RAW) {
@@ -5283,7 +5331,6 @@ async function cookingTroutLoop(timestamp, startTime) {
     removeItem(COOK_TROUT_ITEM_RAW, 1);
     addXP('cooking', COOK_TROUT_XP);
     
-    // Burn chance: 50% at Lvl 5, 0% at Lvl 15
     const successRate = Math.min(100, 50 + ((game.cooking.level - 5) * (50/9)));
     
     if (Math.random() * 100 < successRate || game.cooking.level < COOK_TROUT_LVL) {
@@ -5299,6 +5346,9 @@ async function cookingTroutLoop(timestamp, startTime) {
     const bar = document.getElementById('cookProgress');
     if (bar) bar.style.width = '0%';
     
+    const overdueTime = elapsed - COOK_TROUT_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
     let totalRawAfter = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === COOK_TROUT_ITEM_RAW) {
@@ -5310,11 +5360,14 @@ async function cookingTroutLoop(timestamp, startTime) {
         stopCookingChicken();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => cookingTroutLoop(now, now));
+    
+    return cookingTroutLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / COOK_TROUT_TIME_MS) * 100;
     const bar = document.getElementById('cookProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => cookingTroutLoop(now, startTime));
+    game.progressFrame = setTimeout(() => cookingTroutLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -5357,15 +5410,14 @@ async function startCookingSalmon() {
   const stopBtn = document.getElementById('stopCookBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => cookingSalmonLoop(now, now));
+  game.progressFrame = setTimeout(() => cookingSalmonLoop(Date.now(), Date.now()), 16);
 }
 
 async function cookingSalmonLoop(timestamp, startTime) {
   if (!game.cookingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / COOK_SALMON_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= COOK_SALMON_TIME_MS) {
     let totalRaw = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === COOK_SALMON_ITEM_RAW) {
@@ -5381,7 +5433,6 @@ async function cookingSalmonLoop(timestamp, startTime) {
     removeItem(COOK_SALMON_ITEM_RAW, 1);
     addXP('cooking', COOK_SALMON_XP);
     
-    // Burn chance: 50% at Lvl 10, 0% at Lvl 20
     const successRate = Math.min(100, 50 + ((game.cooking.level - 10) * (50/9)));
     
     if (Math.random() * 100 < successRate || game.cooking.level < COOK_SALMON_LVL) {
@@ -5397,6 +5448,9 @@ async function cookingSalmonLoop(timestamp, startTime) {
     const bar = document.getElementById('cookProgress');
     if (bar) bar.style.width = '0%';
     
+    const overdueTime = elapsed - COOK_SALMON_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
     let totalRawAfter = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === COOK_SALMON_ITEM_RAW) {
@@ -5408,11 +5462,14 @@ async function cookingSalmonLoop(timestamp, startTime) {
         stopCookingChicken();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => cookingSalmonLoop(now, now));
+    
+    return cookingSalmonLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / COOK_SALMON_TIME_MS) * 100;
     const bar = document.getElementById('cookProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => cookingSalmonLoop(now, startTime));
+    game.progressFrame = setTimeout(() => cookingSalmonLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -5501,15 +5558,14 @@ async function startChestplateCrafting() {
   const stopBtn = document.getElementById('stopChestplateBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => chestplateCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 async function chestplateCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / CHESTPLATE_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= CHESTPLATE_TIME_MS) {
     let totalBars = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Copper Bar') {
@@ -5525,12 +5581,14 @@ async function chestplateCraftingLoop(timestamp, startTime) {
     removeItem('Copper Bar', CHESTPLATE_BAR_COST);
     addItem('Copper Chestplate', 1);
     addXP('blacksmith', CHESTPLATE_XP);
-    
     showItemPopup(`+${CHESTPLATE_XP} Blacksmith XP`, 'chestplateProgress', 0);
     showItemPopup(`+1 Copper Chestplate`, 'chestplateProgress', 450);
     
     const bar = document.getElementById('chestplateProgress');
     if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - CHESTPLATE_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     for (const slot of game.inventory) {
@@ -5543,11 +5601,14 @@ async function chestplateCraftingLoop(timestamp, startTime) {
         stopBlacksmithing('chestplateProgress', 'startChestplateBtn', 'stopChestplateBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, now));
+    
+    return chestplateCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / CHESTPLATE_TIME_MS) * 100;
     const bar = document.getElementById('chestplateProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => chestplateCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => chestplateCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -5608,15 +5669,14 @@ async function startShortswordCrafting() {
   const stopBtn = document.getElementById('stopShortswordBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => shortswordCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 async function shortswordCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / SHORTSWORD_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= SHORTSWORD_TIME_MS) {
     let totalBars = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Copper Bar') {
@@ -5632,12 +5692,14 @@ async function shortswordCraftingLoop(timestamp, startTime) {
     removeItem('Copper Bar', SHORTSWORD_BAR_COST);
     addItem('Copper Shortsword', 1);
     addXP('blacksmith', SHORTSWORD_XP);
-    
     showItemPopup(`+${SHORTSWORD_XP} Blacksmith XP`, 'shortswordProgress', 0);
     showItemPopup(`+1 Copper Shortsword`, 'shortswordProgress', 450);
     
     const bar = document.getElementById('shortswordProgress');
     if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - SHORTSWORD_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     for (const slot of game.inventory) {
@@ -5650,11 +5712,14 @@ async function shortswordCraftingLoop(timestamp, startTime) {
         stopBlacksmithing('shortswordProgress', 'startShortswordBtn', 'stopShortswordBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, now));
+    
+    return shortswordCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / SHORTSWORD_TIME_MS) * 100;
     const bar = document.getElementById('shortswordProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => shortswordCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => shortswordCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -5833,15 +5898,14 @@ async function startCopperAxeCrafting() {
   game.blacksmithingActive = true;
   document.getElementById('startAxeBtn').style.display = 'none';
   document.getElementById('stopAxeBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => copperAxeCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => copperAxeCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 async function copperAxeCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / COPPER_AXE_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= COPPER_AXE_TIME_MS) {
     let totalBars = 0;
     let totalWood = 0;
     for (const slot of game.inventory) {
@@ -5858,11 +5922,13 @@ async function copperAxeCraftingLoop(timestamp, startTime) {
     removeItem('Softwood', COPPER_AXE_WOOD_COST);
     addItem('Copper Axe', 1);
     addXP('blacksmith', COPPER_AXE_XP);
-    
     showItemPopup(`+${COPPER_AXE_XP} Blacksmith XP`, 'axeProgress', 0);
     showItemPopup(`+1 Copper Axe`, 'axeProgress', 450);
     
     document.getElementById('axeProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - COPPER_AXE_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     let totalWoodAfter = 0;
@@ -5875,10 +5941,13 @@ async function copperAxeCraftingLoop(timestamp, startTime) {
         stopBlacksmithing('axeProgress', 'startAxeBtn', 'stopAxeBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => copperAxeCraftingLoop(now, now));
+    
+    return copperAxeCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / COPPER_AXE_TIME_MS) * 100;
     document.getElementById('axeProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => copperAxeCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => copperAxeCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -5936,15 +6005,14 @@ async function startCopperPickaxeCrafting() {
   game.blacksmithingActive = true;
   document.getElementById('startPickaxeBtn').style.display = 'none';
   document.getElementById('stopPickaxeBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => copperPickaxeCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => copperPickaxeCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 async function copperPickaxeCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / COPPER_PICKAXE_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= COPPER_PICKAXE_TIME_MS) {
     let totalBars = 0;
     let totalWood = 0;
     for (const slot of game.inventory) {
@@ -5961,11 +6029,13 @@ async function copperPickaxeCraftingLoop(timestamp, startTime) {
     removeItem('Softwood', COPPER_PICKAXE_WOOD_COST);
     addItem('Copper Pickaxe', 1);
     addXP('blacksmith', COPPER_PICKAXE_XP);
-    
     showItemPopup(`+${COPPER_PICKAXE_XP} Blacksmith XP`, 'pickaxeProgress', 0);
     showItemPopup(`+1 Copper Pickaxe`, 'pickaxeProgress', 450);
     
     document.getElementById('pickaxeProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - COPPER_PICKAXE_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     let totalWoodAfter = 0;
@@ -5978,10 +6048,13 @@ async function copperPickaxeCraftingLoop(timestamp, startTime) {
         stopBlacksmithing('pickaxeProgress', 'startPickaxeBtn', 'stopPickaxeBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => copperPickaxeCraftingLoop(now, now));
+    
+    return copperPickaxeCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / COPPER_PICKAXE_TIME_MS) * 100;
     document.getElementById('pickaxeProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => copperPickaxeCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => copperPickaxeCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -6039,15 +6112,14 @@ async function startIronAxeCrafting() {
   game.blacksmithingActive = true;
   document.getElementById('startAxeBtn').style.display = 'none';
   document.getElementById('stopAxeBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => ironAxeCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => ironAxeCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 async function ironAxeCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / IRON_AXE_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= IRON_AXE_TIME_MS) {
     let totalBars = 0;
     let totalWood = 0;
     for (const slot of game.inventory) {
@@ -6064,11 +6136,13 @@ async function ironAxeCraftingLoop(timestamp, startTime) {
     removeItem('Oak', IRON_AXE_WOOD_COST);
     addItem('Iron Axe', 1);
     addXP('blacksmith', IRON_AXE_XP);
-    
     showItemPopup(`+${IRON_AXE_XP} Blacksmith XP`, 'axeProgress', 0);
     showItemPopup(`+1 Iron Axe`, 'axeProgress', 450);
     
     document.getElementById('axeProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - IRON_AXE_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     let totalWoodAfter = 0;
@@ -6081,10 +6155,13 @@ async function ironAxeCraftingLoop(timestamp, startTime) {
         stopBlacksmithing('axeProgress', 'startAxeBtn', 'stopAxeBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => ironAxeCraftingLoop(now, now));
+    
+    return ironAxeCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / IRON_AXE_TIME_MS) * 100;
     document.getElementById('axeProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => ironAxeCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => ironAxeCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -6142,15 +6219,14 @@ async function startIronPickaxeCrafting() {
   game.blacksmithingActive = true;
   document.getElementById('startPickaxeBtn').style.display = 'none';
   document.getElementById('stopPickaxeBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => ironPickaxeCraftingLoop(now, now));
+  game.progressFrame = setTimeout(() => ironPickaxeCraftingLoop(Date.now(), Date.now()), 16);
 }
 
 async function ironPickaxeCraftingLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / IRON_PICKAXE_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= IRON_PICKAXE_TIME_MS) {
     let totalBars = 0;
     let totalWood = 0;
     for (const slot of game.inventory) {
@@ -6167,11 +6243,13 @@ async function ironPickaxeCraftingLoop(timestamp, startTime) {
     removeItem('Oak', IRON_PICKAXE_WOOD_COST);
     addItem('Iron Pickaxe', 1);
     addXP('blacksmith', IRON_PICKAXE_XP);
-    
     showItemPopup(`+${IRON_PICKAXE_XP} Blacksmith XP`, 'pickaxeProgress', 0);
     showItemPopup(`+1 Iron Pickaxe`, 'pickaxeProgress', 450);
     
     document.getElementById('pickaxeProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - IRON_PICKAXE_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     let totalWoodAfter = 0;
@@ -6184,10 +6262,13 @@ async function ironPickaxeCraftingLoop(timestamp, startTime) {
         stopBlacksmithing('pickaxeProgress', 'startPickaxeBtn', 'stopPickaxeBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => ironPickaxeCraftingLoop(now, now));
+    
+    return ironPickaxeCraftingLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / IRON_PICKAXE_TIME_MS) * 100;
     document.getElementById('pickaxeProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => ironPickaxeCraftingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => ironPickaxeCraftingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -6253,15 +6334,14 @@ async function startSmithingCopperArrowTip() {
   const stopBtn = document.getElementById('stopArrowTipBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => smithingCopperArrowTipLoop(now, now));
+  game.progressFrame = setTimeout(() => smithingCopperArrowTipLoop(Date.now(), Date.now()), 16);
 }
 
 async function smithingCopperArrowTipLoop(timestamp, startTime) {
   if (!game.blacksmithingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / COPPER_ARROW_TIP_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= COPPER_ARROW_TIP_TIME_MS) {
     let totalBars = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Copper Bar') {
@@ -6277,12 +6357,14 @@ async function smithingCopperArrowTipLoop(timestamp, startTime) {
     removeItem('Copper Bar', COPPER_ARROW_TIP_BAR_COST);
     addItem('Copper Arrow Tip', COPPER_ARROW_TIP_YIELD);
     addXP('blacksmith', COPPER_ARROW_TIP_XP);
-    
     showItemPopup(`+${COPPER_ARROW_TIP_XP} Blacksmith XP`, 'arrowTipProgress', 0);
     showItemPopup(`+${COPPER_ARROW_TIP_YIELD} Copper Arrow Tip`, 'arrowTipProgress', 450);
     
     const bar = document.getElementById('arrowTipProgress');
     if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - COPPER_ARROW_TIP_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalBarsAfter = 0;
     for (const slot of game.inventory) {
@@ -6295,11 +6377,14 @@ async function smithingCopperArrowTipLoop(timestamp, startTime) {
         stopBlacksmithing('arrowTipProgress', 'startArrowTipBtn', 'stopArrowTipBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => smithingCopperArrowTipLoop(now, now));
+    
+    return smithingCopperArrowTipLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / COPPER_ARROW_TIP_TIME_MS) * 100;
     const bar = document.getElementById('arrowTipProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => smithingCopperArrowTipLoop(now, startTime));
+    game.progressFrame = setTimeout(() => smithingCopperArrowTipLoop(Date.now(), startTime), 16);
   }
 }
 // +++ END: COPPER ARROW TIP UI (Blacksmith) +++
@@ -6314,7 +6399,7 @@ function openFletchingHub() {
 
 function stopFletching(progressId = 'fletchProgress', startBtnId = 'startFletchBtn', stopBtnId = 'stopFletchBtn'){
   game.fletchingActive = false;
-  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  if(game.progressFrame) clearTimeout(game.progressFrame);
   const bar = document.getElementById(progressId);
   if(bar) bar.style.width = '0%';
   const startBtn = document.getElementById(startBtnId);
@@ -6446,15 +6531,14 @@ async function startFletchingArrowShaft() {
   game.fletchingActive = true;
   document.getElementById('startFletchBtn').style.display = 'none';
   document.getElementById('stopFletchBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => fletchingArrowShaftLoop(now, now));
+  game.progressFrame = setTimeout(() => fletchingArrowShaftLoop(Date.now(), Date.now()), 16);
 }
 
 async function fletchingArrowShaftLoop(timestamp, startTime) {
   if (!game.fletchingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / ARROW_SHAFT_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= ARROW_SHAFT_TIME_MS) {
     let totalWood = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Softwood') totalWood += slot.qty;
@@ -6468,11 +6552,13 @@ async function fletchingArrowShaftLoop(timestamp, startTime) {
     removeItem('Softwood', ARROW_SHAFT_WOOD_COST);
     addItem('Arrow Shaft', ARROW_SHAFT_YIELD);
     addXP('fletching', ARROW_SHAFT_XP);
-    
     showItemPopup(`+${ARROW_SHAFT_XP} Fletching XP`, 'fletchProgress', 0);
     showItemPopup(`+${ARROW_SHAFT_YIELD} Arrow Shaft`, 'fletchProgress', 450);
     
     document.getElementById('fletchProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - ARROW_SHAFT_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalWoodAfter = 0;
     for (const slot of game.inventory) {
@@ -6483,10 +6569,13 @@ async function fletchingArrowShaftLoop(timestamp, startTime) {
         stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => fletchingArrowShaftLoop(now, now));
+    
+    return fletchingArrowShaftLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / ARROW_SHAFT_TIME_MS) * 100;
     document.getElementById('fletchProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => fletchingArrowShaftLoop(now, startTime));
+    game.progressFrame = setTimeout(() => fletchingArrowShaftLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -6545,15 +6634,14 @@ async function startFletchingUnboundArrow() {
   game.fletchingActive = true;
   document.getElementById('startFletchBtn').style.display = 'none';
   document.getElementById('stopFletchBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => fletchingUnboundArrowLoop(now, now));
+  game.progressFrame = setTimeout(() => fletchingUnboundArrowLoop(Date.now(), Date.now()), 16);
 }
 
 async function fletchingUnboundArrowLoop(timestamp, startTime) {
   if (!game.fletchingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / UNBOUND_ARROW_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= UNBOUND_ARROW_TIME_MS) {
     let totalShafts = 0;
     let totalFeathers = 0;
     for (const slot of game.inventory) {
@@ -6570,11 +6658,13 @@ async function fletchingUnboundArrowLoop(timestamp, startTime) {
     removeItem('Feather', UNBOUND_ARROW_FEATHER_COST);
     addItem('Unbound Arrow', UNBOUND_ARROW_YIELD);
     addXP('fletching', UNBOUND_ARROW_XP);
-    
     showItemPopup(`+${UNBOUND_ARROW_XP} Fletching XP`, 'fletchProgress', 0);
     showItemPopup(`+${UNBOUND_ARROW_YIELD} Unbound Arrow`, 'fletchProgress', 450);
     
     document.getElementById('fletchProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - UNBOUND_ARROW_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalShaftsAfter = 0;
     let totalFeathersAfter = 0;
@@ -6587,10 +6677,13 @@ async function fletchingUnboundArrowLoop(timestamp, startTime) {
         stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => fletchingUnboundArrowLoop(now, now));
+    
+    return fletchingUnboundArrowLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / UNBOUND_ARROW_TIME_MS) * 100;
     document.getElementById('fletchProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => fletchingUnboundArrowLoop(now, startTime));
+    game.progressFrame = setTimeout(() => fletchingUnboundArrowLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -6649,15 +6742,14 @@ async function startFletchingCopperArrow() {
   game.fletchingActive = true;
   document.getElementById('startFletchBtn').style.display = 'none';
   document.getElementById('stopFletchBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => fletchingCopperArrowLoop(now, now));
+  game.progressFrame = setTimeout(() => fletchingCopperArrowLoop(Date.now(), Date.now()), 16);
 }
 
 async function fletchingCopperArrowLoop(timestamp, startTime) {
   if (!game.fletchingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / COPPER_ARROW_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= COPPER_ARROW_TIME_MS) {
     let totalUnbound = 0;
     let totalTips = 0;
     for (const slot of game.inventory) {
@@ -6674,11 +6766,13 @@ async function fletchingCopperArrowLoop(timestamp, startTime) {
     removeItem('Copper Arrow Tip', COPPER_ARROW_TIP_COST);
     addItem('Copper Arrow', COPPER_ARROW_YIELD);
     addXP('fletching', COPPER_ARROW_XP);
-    
     showItemPopup(`+${COPPER_ARROW_XP} Fletching XP`, 'fletchProgress', 0);
     showItemPopup(`+${COPPER_ARROW_YIELD} Copper Arrow`, 'fletchProgress', 450);
     
     document.getElementById('fletchProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - COPPER_ARROW_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalUnboundAfter = 0;
     let totalTipsAfter = 0;
@@ -6691,10 +6785,13 @@ async function fletchingCopperArrowLoop(timestamp, startTime) {
         stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => fletchingCopperArrowLoop(now, now));
+    
+    return fletchingCopperArrowLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / COPPER_ARROW_TIME_MS) * 100;
     document.getElementById('fletchProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => fletchingCopperArrowLoop(now, startTime));
+    game.progressFrame = setTimeout(() => fletchingCopperArrowLoop(Date.now(), startTime), 16);
   }
 }
 // +++ END: FLETCHING HUB FUNCTIONS +++
@@ -6711,7 +6808,7 @@ function openCraftingHub() {
  */
 window.stopCraftingBowString = function(){
   game.craftingActive = false;
-  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  if(game.progressFrame) clearTimeout(game.progressFrame);
   
   const bar = document.getElementById('craftProgress');
   if(bar) bar.style.width = '0%';
@@ -6842,15 +6939,14 @@ async function startCraftingBowString() {
   game.craftingActive = true;
   document.getElementById('startCraftBtn').style.display = 'none';
   document.getElementById('stopCraftBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => craftingBowStringLoop(now, now));
+  game.progressFrame = setTimeout(() => craftingBowStringLoop(Date.now(), Date.now()), 16);
 }
 
 async function craftingBowStringLoop(timestamp, startTime) {
   if (!game.craftingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / BOW_STRING_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= BOW_STRING_TIME_MS) {
     let totalSilk = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Silk') totalSilk += slot.qty;
@@ -6864,11 +6960,13 @@ async function craftingBowStringLoop(timestamp, startTime) {
     removeItem('Silk', BOW_STRING_SILK_COST);
     addItem('Bow String', BOW_STRING_YIELD);
     addXP('crafting', BOW_STRING_XP);
-    
     showItemPopup(`+${BOW_STRING_XP} Crafting XP`, 'craftProgress', 0);
     showItemPopup(`+${BOW_STRING_YIELD} Bow String`, 'craftProgress', 450);
     
     document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - BOW_STRING_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalSilkAfter = 0;
     for (const slot of game.inventory) {
@@ -6879,10 +6977,13 @@ async function craftingBowStringLoop(timestamp, startTime) {
         stopCraftingBowString();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => craftingBowStringLoop(now, now));
+    
+    return craftingBowStringLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / BOW_STRING_TIME_MS) * 100;
     document.getElementById('craftProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => craftingBowStringLoop(now, startTime));
+    game.progressFrame = setTimeout(() => craftingBowStringLoop(Date.now(), startTime), 16);
   }
 }
 // +++ END: CRAFTING HUB FUNCTIONS +++
@@ -6944,15 +7045,14 @@ async function startCraftingLeatherBoots() {
   game.craftingActive = true;
   document.getElementById('startCraftBtn').style.display = 'none';
   document.getElementById('stopCraftBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => craftingLeatherBootsLoop(now, now));
+  game.progressFrame = setTimeout(() => craftingLeatherBootsLoop(Date.now(), Date.now()), 16);
 }
 
 async function craftingLeatherBootsLoop(timestamp, startTime) {
   if (!game.craftingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / LEATHER_BOOTS_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= LEATHER_BOOTS_TIME_MS) {
     let totalLeather = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Leather') totalLeather += slot.qty;
@@ -6966,11 +7066,13 @@ async function craftingLeatherBootsLoop(timestamp, startTime) {
     removeItem('Leather', LEATHER_BOOTS_LEATHER_COST);
     addItem('Leather Boots', 1);
     addXP('crafting', LEATHER_BOOTS_XP);
-    
     showItemPopup(`+${LEATHER_BOOTS_XP} Crafting XP`, 'craftProgress', 0);
     showItemPopup(`+1 Leather Boots`, 'craftProgress', 450);
     
     document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - LEATHER_BOOTS_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalLeatherAfter = 0;
     for (const slot of game.inventory) {
@@ -6981,10 +7083,13 @@ async function craftingLeatherBootsLoop(timestamp, startTime) {
         stopCraftingBowString();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => craftingLeatherBootsLoop(now, now));
+    
+    return craftingLeatherBootsLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / LEATHER_BOOTS_TIME_MS) * 100;
     document.getElementById('craftProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => craftingLeatherBootsLoop(now, startTime));
+    game.progressFrame = setTimeout(() => craftingLeatherBootsLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -7043,15 +7148,14 @@ async function startCraftingLeatherHood() {
   game.craftingActive = true;
   document.getElementById('startCraftBtn').style.display = 'none';
   document.getElementById('stopCraftBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => craftingLeatherHoodLoop(now, now));
+  game.progressFrame = setTimeout(() => craftingLeatherHoodLoop(Date.now(), Date.now()), 16);
 }
 
 async function craftingLeatherHoodLoop(timestamp, startTime) {
   if (!game.craftingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / LEATHER_HOOD_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= LEATHER_HOOD_TIME_MS) {
     let totalLeather = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Leather') totalLeather += slot.qty;
@@ -7065,11 +7169,13 @@ async function craftingLeatherHoodLoop(timestamp, startTime) {
     removeItem('Leather', LEATHER_HOOD_LEATHER_COST);
     addItem('Leather Hood', 1);
     addXP('crafting', LEATHER_HOOD_XP);
-    
     showItemPopup(`+${LEATHER_HOOD_XP} Crafting XP`, 'craftProgress', 0);
     showItemPopup(`+1 Leather Hood`, 'craftProgress', 450);
     
     document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - LEATHER_HOOD_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalLeatherAfter = 0;
     for (const slot of game.inventory) {
@@ -7080,10 +7186,13 @@ async function craftingLeatherHoodLoop(timestamp, startTime) {
         stopCraftingBowString();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => craftingLeatherHoodLoop(now, now));
+    
+    return craftingLeatherHoodLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / LEATHER_HOOD_TIME_MS) * 100;
     document.getElementById('craftProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => craftingLeatherHoodLoop(now, startTime));
+    game.progressFrame = setTimeout(() => craftingLeatherHoodLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -7142,15 +7251,14 @@ async function startCraftingLeatherChaps() {
   game.craftingActive = true;
   document.getElementById('startCraftBtn').style.display = 'none';
   document.getElementById('stopCraftBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => craftingLeatherChapsLoop(now, now));
+  game.progressFrame = setTimeout(() => craftingLeatherChapsLoop(Date.now(), Date.now()), 16);
 }
 
 async function craftingLeatherChapsLoop(timestamp, startTime) {
   if (!game.craftingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / LEATHER_CHAPS_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= LEATHER_CHAPS_TIME_MS) {
     let totalLeather = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Leather') totalLeather += slot.qty;
@@ -7164,11 +7272,13 @@ async function craftingLeatherChapsLoop(timestamp, startTime) {
     removeItem('Leather', LEATHER_CHAPS_LEATHER_COST);
     addItem('Leather Chaps', 1);
     addXP('crafting', LEATHER_CHAPS_XP);
-    
     showItemPopup(`+${LEATHER_CHAPS_XP} Crafting XP`, 'craftProgress', 0);
     showItemPopup(`+1 Leather Chaps`, 'craftProgress', 450);
     
     document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - LEATHER_CHAPS_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalLeatherAfter = 0;
     for (const slot of game.inventory) {
@@ -7179,10 +7289,13 @@ async function craftingLeatherChapsLoop(timestamp, startTime) {
         stopCraftingBowString();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => craftingLeatherChapsLoop(now, now));
+    
+    return craftingLeatherChapsLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / LEATHER_CHAPS_TIME_MS) * 100;
     document.getElementById('craftProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => craftingLeatherChapsLoop(now, startTime));
+    game.progressFrame = setTimeout(() => craftingLeatherChapsLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -7241,15 +7354,14 @@ async function startCraftingLeatherBody() {
   game.craftingActive = true;
   document.getElementById('startCraftBtn').style.display = 'none';
   document.getElementById('stopCraftBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => craftingLeatherBodyLoop(now, now));
+  game.progressFrame = setTimeout(() => craftingLeatherBodyLoop(Date.now(), Date.now()), 16);
 }
 
 async function craftingLeatherBodyLoop(timestamp, startTime) {
   if (!game.craftingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / LEATHER_BODY_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= LEATHER_BODY_TIME_MS) {
     let totalLeather = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Leather') totalLeather += slot.qty;
@@ -7263,11 +7375,13 @@ async function craftingLeatherBodyLoop(timestamp, startTime) {
     removeItem('Leather', LEATHER_BODY_LEATHER_COST);
     addItem('Leather Body', 1);
     addXP('crafting', LEATHER_BODY_XP);
-    
     showItemPopup(`+${LEATHER_BODY_XP} Crafting XP`, 'craftProgress', 0);
     showItemPopup(`+1 Leather Body`, 'craftProgress', 450);
     
     document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - LEATHER_BODY_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalLeatherAfter = 0;
     for (const slot of game.inventory) {
@@ -7278,10 +7392,13 @@ async function craftingLeatherBodyLoop(timestamp, startTime) {
         stopCraftingBowString();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => craftingLeatherBodyLoop(now, now));
+    
+    return craftingLeatherBodyLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / LEATHER_BODY_TIME_MS) * 100;
     document.getElementById('craftProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => craftingLeatherBodyLoop(now, startTime));
+    game.progressFrame = setTimeout(() => craftingLeatherBodyLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -7340,15 +7457,14 @@ async function startCraftingLeather() {
   game.craftingActive = true;
   document.getElementById('startCraftBtn').style.display = 'none';
   document.getElementById('stopCraftBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => craftingLeatherLoop(now, now));
+  game.progressFrame = setTimeout(() => craftingLeatherLoop(Date.now(), Date.now()), 16);
 }
 
 async function craftingLeatherLoop(timestamp, startTime) {
   if (!game.craftingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / LEATHER_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= LEATHER_TIME_MS) {
     let totalHide = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Cow Hide') totalHide += slot.qty;
@@ -7362,11 +7478,13 @@ async function craftingLeatherLoop(timestamp, startTime) {
     removeItem('Cow Hide', LEATHER_HIDE_COST);
     addItem('Leather', 1);
     addXP('crafting', LEATHER_XP);
-    
     showItemPopup(`+${LEATHER_XP} Crafting XP`, 'craftProgress', 0);
     showItemPopup(`+1 Leather`, 'craftProgress', 450);
     
     document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - LEATHER_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalHideAfter = 0;
     for (const slot of game.inventory) {
@@ -7377,10 +7495,13 @@ async function craftingLeatherLoop(timestamp, startTime) {
         stopCraftingBowString();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => craftingLeatherLoop(now, now));
+    
+    return craftingLeatherLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / LEATHER_TIME_MS) * 100;
     document.getElementById('craftProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => craftingLeatherLoop(now, startTime));
+    game.progressFrame = setTimeout(() => craftingLeatherLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -7417,7 +7538,7 @@ function openRiverFishingArea() {
  */
 function stopFishing(progressId = 'fishProgress', startBtnId = 'startFishBtn', stopBtnId = 'stopFishBtn') {
   game.fishingActive = false;
-  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  if(game.progressFrame) clearTimeout(game.progressFrame);
   
   const bar = document.getElementById(progressId);
   if(bar) bar.style.width = '0%';
@@ -7502,17 +7623,14 @@ async function startFishingHerring() {
   game.fishingActive = true;
   document.getElementById('startFishBtn').style.display = 'none';
   document.getElementById('stopFishBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => fishingHerringLoop(now, now));
+  game.progressFrame = setTimeout(() => fishingHerringLoop(Date.now(), Date.now()), 16);
 }
 
 async function fishingHerringLoop(timestamp, startTime) {
   if (!game.fishingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / FISHING_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
-    
-    // --- NEW: Check for bait ---
+  if (elapsed >= FISHING_TIME_MS) {
     let hasBait = false;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Fishing Bait') {
@@ -7525,18 +7643,18 @@ async function fishingHerringLoop(timestamp, startTime) {
         stopFishing();
         return;
     }
-    // --- END NEW ---
 
-    removeItem('Fishing Bait', 1); // Consume bait
+    removeItem('Fishing Bait', 1);
     addItem('Herring', 1);
     addXP('fishing', HERRING_FISH_XP);
-    
     showItemPopup(`+${HERRING_FISH_XP} Fishing XP`, 'fishProgress', 0);
     showItemPopup(`+1 Herring`, 'fishProgress', 450);
     
     document.getElementById('fishProgress').style.width = '0%';
     
-    // --- NEW: Check for bait for *next* loop ---
+    const overdueTime = elapsed - FISHING_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
     let hasBaitAfter = false;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Fishing Bait') {
@@ -7549,7 +7667,6 @@ async function fishingHerringLoop(timestamp, startTime) {
         stopFishing();
         return;
     }
-    // --- END NEW ---
 
     const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
     const stackIndex = game.inventory.findIndex(slot => slot && slot.name === 'Herring');
@@ -7558,10 +7675,13 @@ async function fishingHerringLoop(timestamp, startTime) {
         stopFishing();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => fishingHerringLoop(now, now));
+    
+    return fishingHerringLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / FISHING_TIME_MS) * 100;
     document.getElementById('fishProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => fishingHerringLoop(now, startTime));
+    game.progressFrame = setTimeout(() => fishingHerringLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -7639,17 +7759,14 @@ async function startFishingTrout() {
   game.fishingActive = true;
   document.getElementById('startFishBtn').style.display = 'none';
   document.getElementById('stopFishBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => fishingTroutLoop(now, now));
+  game.progressFrame = setTimeout(() => fishingTroutLoop(Date.now(), Date.now()), 16);
 }
 
 async function fishingTroutLoop(timestamp, startTime) {
   if (!game.fishingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / FISHING_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
-
-    // --- NEW: Check for bait ---
+  if (elapsed >= FISHING_TIME_MS) {
     let hasBait = false;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Fishing Bait') {
@@ -7662,18 +7779,18 @@ async function fishingTroutLoop(timestamp, startTime) {
         stopFishing();
         return;
     }
-    // --- END NEW ---
 
-    removeItem('Fishing Bait', 1); // Consume bait
+    removeItem('Fishing Bait', 1);
     addItem('Trout', 1);
     addXP('fishing', TROUT_FISH_XP);
-    
     showItemPopup(`+${TROUT_FISH_XP} Fishing XP`, 'fishProgress', 0);
     showItemPopup(`+1 Trout`, 'fishProgress', 450);
     
     document.getElementById('fishProgress').style.width = '0%';
     
-    // --- NEW: Check for bait for *next* loop ---
+    const overdueTime = elapsed - FISHING_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
     let hasBaitAfter = false;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Fishing Bait') {
@@ -7686,7 +7803,6 @@ async function fishingTroutLoop(timestamp, startTime) {
         stopFishing();
         return;
     }
-    // --- END NEW ---
 
     const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
     const stackIndex = game.inventory.findIndex(slot => slot && slot.name === 'Trout');
@@ -7695,10 +7811,13 @@ async function fishingTroutLoop(timestamp, startTime) {
         stopFishing();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => fishingTroutLoop(now, now));
+    
+    return fishingTroutLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / FISHING_TIME_MS) * 100;
     document.getElementById('fishProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => fishingTroutLoop(now, startTime));
+    game.progressFrame = setTimeout(() => fishingTroutLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -7776,17 +7895,14 @@ async function startFishingSalmon() {
   game.fishingActive = true;
   document.getElementById('startFishBtn').style.display = 'none';
   document.getElementById('stopFishBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => fishingSalmonLoop(now, now));
+  game.progressFrame = setTimeout(() => fishingSalmonLoop(Date.now(), Date.now()), 16);
 }
 
 async function fishingSalmonLoop(timestamp, startTime) {
   if (!game.fishingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / FISHING_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
-    
-    // --- NEW: Check for bait ---
+  if (elapsed >= FISHING_TIME_MS) {
     let hasBait = false;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Fishing Bait') {
@@ -7799,18 +7915,18 @@ async function fishingSalmonLoop(timestamp, startTime) {
         stopFishing();
         return;
     }
-    // --- END NEW ---
 
-    removeItem('Fishing Bait', 1); // Consume bait
+    removeItem('Fishing Bait', 1);
     addItem('Salmon', 1);
     addXP('fishing', SALMON_FISH_XP);
-    
     showItemPopup(`+${SALMON_FISH_XP} Fishing XP`, 'fishProgress', 0);
     showItemPopup(`+1 Salmon`, 'fishProgress', 450);
     
     document.getElementById('fishProgress').style.width = '0%';
     
-    // --- NEW: Check for bait for *next* loop ---
+    const overdueTime = elapsed - FISHING_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
     let hasBaitAfter = false;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Fishing Bait') {
@@ -7823,7 +7939,6 @@ async function fishingSalmonLoop(timestamp, startTime) {
         stopFishing();
         return;
     }
-    // --- END NEW ---
 
     const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
     const stackIndex = game.inventory.findIndex(slot => slot && slot.name === 'Salmon');
@@ -7832,10 +7947,13 @@ async function fishingSalmonLoop(timestamp, startTime) {
         stopFishing();
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => fishingSalmonLoop(now, now));
+    
+    return fishingSalmonLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / FISHING_TIME_MS) * 100;
     document.getElementById('fishProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => fishingSalmonLoop(now, startTime));
+    game.progressFrame = setTimeout(() => fishingSalmonLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -7897,15 +8015,14 @@ async function startFletchingUnstrungSoftwoodBow() {
   game.fletchingActive = true;
   document.getElementById('startFletchBtn').style.display = 'none';
   document.getElementById('stopFletchBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungSoftwoodBowLoop(now, now));
+  game.progressFrame = setTimeout(() => fletchingUnstrungSoftwoodBowLoop(Date.now(), Date.now()), 16);
 }
 
 async function fletchingUnstrungSoftwoodBowLoop(timestamp, startTime) {
   if (!game.fletchingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / UNSTRUNG_SOFTWOOD_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= UNSTRUNG_SOFTWOOD_TIME_MS) {
     let totalWood = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Softwood') totalWood += slot.qty;
@@ -7919,11 +8036,13 @@ async function fletchingUnstrungSoftwoodBowLoop(timestamp, startTime) {
     removeItem('Softwood', UNSTRUNG_SOFTWOOD_WOOD_COST);
     addItem('Unstrung Softwood Bow', UNSTRUNG_SOFTWOOD_YIELD);
     addXP('fletching', UNSTRUNG_SOFTWOOD_XP);
-    
     showItemPopup(`+${UNSTRUNG_SOFTWOOD_XP} Fletching XP`, 'fletchProgress', 0);
     showItemPopup(`+${UNSTRUNG_SOFTWOOD_YIELD} Unstrung Softwood Bow`, 'fletchProgress', 450);
     
     document.getElementById('fletchProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - UNSTRUNG_SOFTWOOD_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalWoodAfter = 0;
     for (const slot of game.inventory) {
@@ -7934,10 +8053,13 @@ async function fletchingUnstrungSoftwoodBowLoop(timestamp, startTime) {
         stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungSoftwoodBowLoop(now, now));
+    
+    return fletchingUnstrungSoftwoodBowLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / UNSTRUNG_SOFTWOOD_TIME_MS) * 100;
     document.getElementById('fletchProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungSoftwoodBowLoop(now, startTime));
+    game.progressFrame = setTimeout(() => fletchingUnstrungSoftwoodBowLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -7996,15 +8118,14 @@ async function startFletchingSoftwoodBow() {
   game.fletchingActive = true;
   document.getElementById('startFletchBtn').style.display = 'none';
   document.getElementById('stopFletchBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => fletchingSoftwoodBowLoop(now, now));
+  game.progressFrame = setTimeout(() => fletchingSoftwoodBowLoop(Date.now(), Date.now()), 16);
 }
 
 async function fletchingSoftwoodBowLoop(timestamp, startTime) {
   if (!game.fletchingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / SOFTWOOD_BOW_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= SOFTWOOD_BOW_TIME_MS) {
     let totalUnstrung = 0;
     let totalStrings = 0;
     for (const slot of game.inventory) {
@@ -8021,11 +8142,13 @@ async function fletchingSoftwoodBowLoop(timestamp, startTime) {
     removeItem('Bow String', SOFTWOOD_BOW_STRING_COST);
     addItem('Softwood Bow', SOFTWOOD_BOW_YIELD);
     addXP('fletching', SOFTWOOD_BOW_XP);
-    
     showItemPopup(`+${SOFTWOOD_BOW_XP} Fletching XP`, 'fletchProgress', 0);
     showItemPopup(`+${SOFTWOOD_BOW_YIELD} Softwood Bow`, 'fletchProgress', 450);
     
     document.getElementById('fletchProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - SOFTWOOD_BOW_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalUnstrungAfter = 0;
     let totalStringsAfter = 0;
@@ -8038,10 +8161,13 @@ async function fletchingSoftwoodBowLoop(timestamp, startTime) {
         stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => fletchingSoftwoodBowLoop(now, now));
+    
+    return fletchingSoftwoodBowLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / SOFTWOOD_BOW_TIME_MS) * 100;
     document.getElementById('fletchProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => fletchingSoftwoodBowLoop(now, startTime));
+    game.progressFrame = setTimeout(() => fletchingSoftwoodBowLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -8098,15 +8224,14 @@ async function startFletchingUnstrungOakBow() {
   game.fletchingActive = true;
   document.getElementById('startFletchBtn').style.display = 'none';
   document.getElementById('stopFletchBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungOakBowLoop(now, now));
+  game.progressFrame = setTimeout(() => fletchingUnstrungOakBowLoop(Date.now(), Date.now()), 16);
 }
 
 async function fletchingUnstrungOakBowLoop(timestamp, startTime) {
   if (!game.fletchingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / UNSTRUNG_OAK_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= UNSTRUNG_OAK_TIME_MS) {
     let totalWood = 0;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Oak') totalWood += slot.qty;
@@ -8120,11 +8245,13 @@ async function fletchingUnstrungOakBowLoop(timestamp, startTime) {
     removeItem('Oak', UNSTRUNG_OAK_WOOD_COST);
     addItem('Unstrung Oak Bow', UNSTRUNG_OAK_YIELD);
     addXP('fletching', UNSTRUNG_OAK_XP);
-    
     showItemPopup(`+${UNSTRUNG_OAK_XP} Fletching XP`, 'fletchProgress', 0);
     showItemPopup(`+${UNSTRUNG_OAK_YIELD} Unstrung Oak Bow`, 'fletchProgress', 450);
     
     document.getElementById('fletchProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - UNSTRUNG_OAK_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalWoodAfter = 0;
     for (const slot of game.inventory) {
@@ -8135,10 +8262,13 @@ async function fletchingUnstrungOakBowLoop(timestamp, startTime) {
         stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungOakBowLoop(now, now));
+    
+    return fletchingUnstrungOakBowLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / UNSTRUNG_OAK_TIME_MS) * 100;
     document.getElementById('fletchProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => fletchingUnstrungOakBowLoop(now, startTime));
+    game.progressFrame = setTimeout(() => fletchingUnstrungOakBowLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -8197,15 +8327,14 @@ async function startFletchingOakBow() {
   game.fletchingActive = true;
   document.getElementById('startFletchBtn').style.display = 'none';
   document.getElementById('stopFletchBtn').style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => fletchingOakBowLoop(now, now));
+  game.progressFrame = setTimeout(() => fletchingOakBowLoop(Date.now(), Date.now()), 16);
 }
 
 async function fletchingOakBowLoop(timestamp, startTime) {
   if (!game.fletchingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / OAK_BOW_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= OAK_BOW_TIME_MS) {
     let totalUnstrung = 0;
     let totalStrings = 0;
     for (const slot of game.inventory) {
@@ -8222,11 +8351,13 @@ async function fletchingOakBowLoop(timestamp, startTime) {
     removeItem('Bow String', OAK_BOW_STRING_COST);
     addItem('Oak Bow', OAK_BOW_YIELD);
     addXP('fletching', OAK_BOW_XP);
-    
     showItemPopup(`+${OAK_BOW_XP} Fletching XP`, 'fletchProgress', 0);
     showItemPopup(`+${OAK_BOW_YIELD} Oak Bow`, 'fletchProgress', 450);
     
     document.getElementById('fletchProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - OAK_BOW_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
     
     let totalUnstrungAfter = 0;
     let totalStringsAfter = 0;
@@ -8239,10 +8370,13 @@ async function fletchingOakBowLoop(timestamp, startTime) {
         stopFletching('fletchProgress', 'startFletchBtn', 'stopFletchBtn');
         return;
     }
-    game.progressFrame = requestAnimationFrame((now) => fletchingOakBowLoop(now, now));
+    
+    return fletchingOakBowLoop(Date.now(), newStartTime);
+
   } else {
+    const progress = (elapsed / OAK_BOW_TIME_MS) * 100;
     document.getElementById('fletchProgress').style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => fletchingOakBowLoop(now, startTime));
+    game.progressFrame = setTimeout(() => fletchingOakBowLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -8458,34 +8592,33 @@ async function startCoalMining() {
   const stopBtn = document.getElementById('stopMineBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => coalMiningLoop(now, now));
+  game.progressFrame = setTimeout(() => coalMiningLoop(Date.now(), Date.now()), 16);
 }
 
 function coalMiningLoop(timestamp, startTime) {
   if (!game.miningActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / COAL_MINE_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= COAL_MINE_TIME_MS) {
     addItem(COAL_MINE_ITEM, 1);
     addXP('mining', COAL_MINE_XP);
-
     showItemPopup(`+${COAL_MINE_XP} Mining XP`, 'mineProgress', 0);
     showItemPopup(`+1 ${COAL_MINE_ITEM}`, 'mineProgress', 450);
     
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = '0%';
     
-    // --- NEW: Start Cooldown ---
-    game.progressFrame = requestAnimationFrame((now) => 
-      miningCooldownLoop(now, now, MINE_COOLDOWN_COAL_MS, 'mineProgressText', coalMiningLoop)
-    );
-    // --- END NEW ---
+    const overdueTime = elapsed - COAL_MINE_TIME_MS;
+    const newCooldownStartTime = Date.now() - overdueTime;
+    
+    // --- THIS IS THE FIX: Immediately call the cooldown loop ---
+    return miningCooldownLoop(Date.now(), newCooldownStartTime, MINE_COOLDOWN_COAL_MS, 'mineProgressText', coalMiningLoop);
     
   } else {
+    const progress = (elapsed / COAL_MINE_TIME_MS) * 100;
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => coalMiningLoop(now, startTime));
+    game.progressFrame = setTimeout(() => coalMiningLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -8542,34 +8675,33 @@ async function startIronMining() {
   const stopBtn = document.getElementById('stopMineBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => ironMiningLoop(now, now));
+  game.progressFrame = setTimeout(() => ironMiningLoop(Date.now(), Date.now()), 16);
 }
 
 function ironMiningLoop(timestamp, startTime) {
   if (!game.miningActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / IRON_MINE_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= IRON_MINE_TIME_MS) {
     addItem(IRON_MINE_ITEM, 1);
     addXP('mining', IRON_MINE_XP);
-
     showItemPopup(`+${IRON_MINE_XP} Mining XP`, 'mineProgress', 0);
     showItemPopup(`+1 ${IRON_MINE_ITEM}`, 'mineProgress', 450);
     
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = '0%';
     
-    // --- NEW: Start Cooldown ---
-    game.progressFrame = requestAnimationFrame((now) => 
-      miningCooldownLoop(now, now, MINE_COOLDOWN_IRON_MS, 'mineProgressText', ironMiningLoop)
-    );
-    // --- END NEW ---
+    const overdueTime = elapsed - IRON_MINE_TIME_MS;
+    const newCooldownStartTime = Date.now() - overdueTime;
+
+    // --- THIS IS THE FIX: Immediately call the cooldown loop ---
+    return miningCooldownLoop(Date.now(), newCooldownStartTime, MINE_COOLDOWN_IRON_MS, 'mineProgressText', ironMiningLoop);
     
   } else {
+    const progress = (elapsed / IRON_MINE_TIME_MS) * 100;
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => ironMiningLoop(now, startTime));
+    game.progressFrame = setTimeout(() => ironMiningLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -8635,7 +8767,7 @@ function openOakTree(){
 // --- NEW: Stop Woodcutting Logic ---
 function stopWoodcutting(){
   game.woodcuttingActive = false;
-  if(game.progressFrame) cancelAnimationFrame(game.progressFrame);
+  if(game.progressFrame) clearTimeout(game.progressFrame);
   
   const textEl = document.getElementById('woodcutProgressText');
   if (textEl) textEl.innerText = '';
@@ -8657,21 +8789,29 @@ function woodcuttingCooldownLoop(timestamp, startTime, duration, progressTextId,
     return;
   }
 
-  const elapsed = timestamp - startTime;
+  const elapsed = Date.now() - startTime; // Use Date.now() for real time
   const remainingMs = duration - elapsed;
 
   if (remainingMs <= 0) {
+    // --- COOLDOWN IS COMPLETE ---
     const textEl = document.getElementById(progressTextId);
     if (textEl) textEl.innerText = '';
-    game.progressFrame = requestAnimationFrame((now) => nextLoopFunction(now, now));
+    
+    const overdueTime = -remainingMs;
+    const newActionStartTime = Date.now() - overdueTime;
+            
+    // --- THIS IS THE FIX: Immediately call the next loop ---
+    return nextLoopFunction(Date.now(), newActionStartTime);
+    
   } else {
+    // --- COOLDOWN IN PROGRESS ---
     const remainingSecs = (remainingMs / 1000).toFixed(1);
     const textEl = document.getElementById(progressTextId);
     if (textEl) textEl.innerText = `${remainingSecs}s`;
     
-    game.progressFrame = requestAnimationFrame((now) => 
-      woodcuttingCooldownLoop(now, startTime, duration, progressTextId, nextLoopFunction)
-    );
+    game.progressFrame = setTimeout(() => 
+      woodcuttingCooldownLoop(Date.now(), startTime, duration, progressTextId, nextLoopFunction)
+    , 16);
   }
 }
 
@@ -8703,31 +8843,33 @@ async function startChoppingSoftwood() {
   const stopBtn = document.getElementById('stopChopBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => softwoodChoppingLoop(now, now));
+  game.progressFrame = setTimeout(() => softwoodChoppingLoop(Date.now(), Date.now()), 16);
 }
 
 function softwoodChoppingLoop(timestamp, startTime) {
   if (!game.woodcuttingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / SOFTWOOD_CHOP_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= SOFTWOOD_CHOP_TIME_MS) {
     addItem(SOFTWOOD_CHOP_ITEM, 1);
     addXP('woodcutting', SOFTWOOD_CHOP_XP);
-
     showItemPopup(`+${SOFTWOOD_CHOP_XP} Woodcutting XP`, 'woodcutProgress', 0);
     showItemPopup(`+1 ${SOFTWOOD_CHOP_ITEM}`, 'woodcutProgress', 450);
     
     const bar = document.getElementById('woodcutProgress');
     if (bar) bar.style.width = '0%';
     
-    game.progressFrame = requestAnimationFrame((now) => 
-      woodcuttingCooldownLoop(now, now, CHOP_COOLDOWN_SOFTWOOD_MS, 'woodcutProgressText', softwoodChoppingLoop)
-    );
+    const overdueTime = elapsed - SOFTWOOD_CHOP_TIME_MS;
+    const newCooldownStartTime = Date.now() - overdueTime;
+    
+    // --- THIS IS THE FIX: Immediately call the cooldown loop ---
+    return woodcuttingCooldownLoop(Date.now(), newCooldownStartTime, CHOP_COOLDOWN_SOFTWOOD_MS, 'woodcutProgressText', softwoodChoppingLoop);
+
   } else {
+    const progress = (elapsed / SOFTWOOD_CHOP_TIME_MS) * 100;
     const bar = document.getElementById('woodcutProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => softwoodChoppingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => softwoodChoppingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -8759,31 +8901,33 @@ async function startChoppingOak() {
   const stopBtn = document.getElementById('stopChopBtn');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'inline-block';
-  game.progressFrame = requestAnimationFrame((now) => oakChoppingLoop(now, now));
+  game.progressFrame = setTimeout(() => oakChoppingLoop(Date.now(), Date.now()), 16);
 }
 
 function oakChoppingLoop(timestamp, startTime) {
   if (!game.woodcuttingActive) return; 
-  const elapsed = timestamp - startTime;
-  let progress = (elapsed / OAK_CHOP_TIME_MS) * 100;
+  const elapsed = Date.now() - startTime;
 
-  if (progress >= 100) {
+  if (elapsed >= OAK_CHOP_TIME_MS) {
     addItem(OAK_CHOP_ITEM, 1);
     addXP('woodcutting', OAK_CHOP_XP);
-
     showItemPopup(`+${OAK_CHOP_XP} Woodcutting XP`, 'woodcutProgress', 0);
     showItemPopup(`+1 ${OAK_CHOP_ITEM}`, 'woodcutProgress', 450);
     
     const bar = document.getElementById('woodcutProgress');
     if (bar) bar.style.width = '0%';
     
-    game.progressFrame = requestAnimationFrame((now) => 
-      woodcuttingCooldownLoop(now, now, CHOP_COOLDOWN_OAK_MS, 'woodcutProgressText', oakChoppingLoop)
-    );
+    const overdueTime = elapsed - OAK_CHOP_TIME_MS;
+    const newCooldownStartTime = Date.now() - overdueTime;
+
+    // --- THIS IS THE FIX: Immediately call the cooldown loop ---
+    return woodcuttingCooldownLoop(Date.now(), newCooldownStartTime, CHOP_COOLDOWN_OAK_MS, 'woodcutProgressText', oakChoppingLoop);
+
   } else {
+    const progress = (elapsed / OAK_CHOP_TIME_MS) * 100;
     const bar = document.getElementById('woodcutProgress');
     if (bar) bar.style.width = progress + '%';
-    game.progressFrame = requestAnimationFrame((now) => oakChoppingLoop(now, startTime));
+    game.progressFrame = setTimeout(() => oakChoppingLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -10153,7 +10297,7 @@ function resetGameState() {
   }
   
   if (game.progressFrame) {
-    cancelAnimationFrame(game.progressFrame);
+    clearTimeout(game.progressFrame);
     game.progressFrame = null;
   }
   setText('charName', 'Player');
