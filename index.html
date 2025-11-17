@@ -1310,6 +1310,7 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubActions" class="hub-screen">
             <div id="actionScreen" style="display: flex; gap: 10px; flex-wrap: wrap;">
               <img id="minesActionIcon" src="images/mines.png" alt="Mines" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="crystalMineActionIcon" src="images/crystalmine.jpeg" alt="Crystal Mine" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="fishingActionIcon" src="images/fishingareasbutton.jpeg" alt="Fishing Areas" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="forestActionIcon" src="images/foresticon.png" alt="Forest" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="blacksmithActionIcon" src="images/blacksmithicon.png" alt="Blacksmith" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
@@ -1348,6 +1349,25 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
             <div class="action-buttons" style="margin-top: 14px;">
               <button id="hubMine_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubCrystalMine" class="hub-screen">
+            <h2>Crystal Mine</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Choose a crystal vein to mine.</div>
+            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+              <button id="earthCrystalBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/earthcrystalvein.png" alt="Earth Crystal" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+              </button>
+              <button id="airCrystalBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/aircrystalvein.png" alt="Air Crystal" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+              </button>
+              <button id="waterCrystalBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/watercrystalvein.png" alt="Water Crystal" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+              </button>
+            </div>
+            <div class="action-buttons" style="margin-top: 14px;">
+              <button id="hubCrystalMine_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
           
@@ -2030,6 +2050,11 @@ const VALID_ITEMS = [
   'Iron Platelegs', // +++ NEW +++
   'Silk', // +++ NEW +++
   
+  // +++ NEW CRYSTAL ITEMS +++
+  'Earth Crystal Shard',
+  'Air Crystal Shard',
+  'Water Crystal Shard',
+
   // +++ NEW CRAFTING/FLETCHING ITEMS +++
   'Bow String',
   'Unstrung Softwood Bow',
@@ -2214,6 +2239,22 @@ const COAL_MINE_ITEM = 'Coal Ore';
 const IRON_MINE_TIME_MS = 3000;
 const IRON_MINE_XP = 35;
 const IRON_MINE_ITEM = 'Iron Ore';
+
+// --- NEW: Crystal Mining Constants ---
+const EARTH_CRYSTAL_LVL = 20;
+const EARTH_CRYSTAL_TIME_MS = 4000;
+const EARTH_CRYSTAL_XP = 50;
+const EARTH_CRYSTAL_ITEM = 'Earth Crystal Shard';
+
+const AIR_CRYSTAL_LVL = 30;
+const AIR_CRYSTAL_TIME_MS = 5000;
+const AIR_CRYSTAL_XP = 65;
+const AIR_CRYSTAL_ITEM = 'Air Crystal Shard';
+
+const WATER_CRYSTAL_LVL = 40;
+const WATER_CRYSTAL_TIME_MS = 6000;
+const WATER_CRYSTAL_XP = 80;
+const WATER_CRYSTAL_ITEM = 'Water Crystal Shard';
 
 const MINE_COOLDOWN_COPPER_MS = 1000; // 1.0s
 const MINE_COOLDOWN_COAL_MS = 1500;   // 1.5s
@@ -2535,6 +2576,11 @@ const ITEM_SELL_PRICES = {
   'Copper Arrow Tip': 2,
   'Unbound Arrow': 3,
   'Copper Arrow': 5,
+
+  // +++ NEW CRYSTAL PRICES +++
+  'Earth Crystal Shard': 5,
+  'Air Crystal Shard': 8,
+  'Water Crystal Shard': 12,
   
   // +++ NEW CRAFTING/FLETCHING ITEM SELL PRICES +++
   'Bow String': 3,
@@ -2948,6 +2994,12 @@ function renderInventoryGrid(){
               else if (item.name === 'Unbound Arrow') imgName = 'unboundarrow'; // +++ NEW +++
               else if (item.name === 'Copper Arrow') imgName = 'copperarrow'; // +++ NEW +++
               else if (item.name === 'Silk') imgName = 'silk'; // +++ NEW +++
+              
+              // +++ NEW CRYSTAL SHARDS +++
+              else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
+              else if (item.name === 'Air Crystal Shard') imgName = 'aircrystalshard';
+              else if (item.name === 'Water Crystal Shard') imgName = 'watercrystalshard';
+
               // --- THIS IS THE FIX ---
               else if (item.name === 'Bow String') {
                   imgName = 'bowstring';
@@ -8709,6 +8761,149 @@ function openMineHub() {
   showMainScreen('hubMine');
 }
 
+function openCrystalMineHub() {
+  showMainScreen('hubCrystalMine');
+}
+
+function openEarthCrystalMine() {
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Mine - Earth Crystal</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A glowing earth crystal vein.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="mineProgress"></div>
+        <div class="progress-text" id="mineProgressText"></div> </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startMineBtn" class="primary">Start Mining</button>
+      <button id="stopMineBtn" class="primary" style="background:#555; display:none;">Stop Mining</button>
+      <button onclick="openCrystalMineHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startMineBtn').onclick = () => startCrystalMining('Earth');
+  document.getElementById('stopMineBtn').onclick = stopMining;
+  showMainScreen('hubDynamic');
+}
+
+function openAirCrystalMine() {
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Mine - Air Crystal</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A shimmering air crystal vein.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="mineProgress"></div>
+        <div class="progress-text" id="mineProgressText"></div> </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startMineBtn" class="primary">Start Mining</button>
+      <button id="stopMineBtn" class="primary" style="background:#555; display:none;">Stop Mining</button>
+      <button onclick="openCrystalMineHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startMineBtn').onclick = () => startCrystalMining('Air');
+  document.getElementById('stopMineBtn').onclick = stopMining;
+  showMainScreen('hubDynamic');
+}
+
+function openWaterCrystalMine() {
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Mine - Water Crystal</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A deep blue water crystal vein.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="mineProgress"></div>
+        <div class="progress-text" id="mineProgressText"></div> </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startMineBtn" class="primary">Start Mining</button>
+      <button id="stopMineBtn" class="primary" style="background:#555; display:none;">Stop Mining</button>
+      <button onclick="openCrystalMineHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startMineBtn').onclick = () => startCrystalMining('Water');
+  document.getElementById('stopMineBtn').onclick = stopMining;
+  showMainScreen('hubDynamic');
+}
+
+async function startCrystalMining(type) {
+  // Tool Check: Tier 3 (Iron) required
+  const bestPickaxe = getBestTool('pickaxe');
+  if (bestPickaxe < 3) { 
+    await showGameAlert("Tool Required", "You need at least an Iron Pickaxe in your inventory to mine crystal veins.");
+    return;
+  }
+
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+
+  let item, timeMs;
+  if (type === 'Earth') { item = EARTH_CRYSTAL_ITEM; timeMs = EARTH_CRYSTAL_TIME_MS; }
+  else if (type === 'Air') { item = AIR_CRYSTAL_ITEM; timeMs = AIR_CRYSTAL_TIME_MS; }
+  else if (type === 'Water') { item = WATER_CRYSTAL_ITEM; timeMs = WATER_CRYSTAL_TIME_MS; }
+
+  if (!canReceiveItem(item)) {
+    await showGameAlert("Inventory Full", "You have no room to mine this.");
+    return;
+  }
+
+  if (game.miningActive) return; 
+  game.miningActive = true;
+  const startBtn = document.getElementById('startMineBtn');
+  const stopBtn = document.getElementById('stopMineBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  
+  // We pass the Type to the loop
+  game.progressFrame = setTimeout(() => crystalMiningLoop(Date.now(), Date.now(), type), 16);
+}
+
+function crystalMiningLoop(timestamp, startTime, type) {
+  if (!game.miningActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  let item, timeMs, xp;
+  if (type === 'Earth') { item = EARTH_CRYSTAL_ITEM; timeMs = EARTH_CRYSTAL_TIME_MS; xp = EARTH_CRYSTAL_XP; }
+  else if (type === 'Air') { item = AIR_CRYSTAL_ITEM; timeMs = AIR_CRYSTAL_TIME_MS; xp = AIR_CRYSTAL_XP; }
+  else if (type === 'Water') { item = WATER_CRYSTAL_ITEM; timeMs = WATER_CRYSTAL_TIME_MS; xp = WATER_CRYSTAL_XP; }
+
+  if (elapsed >= timeMs) {
+    addItem(item, 1);
+    addXP('mining', xp);
+    showItemPopup(`+${xp} Mining XP`, 'mineProgress', 0);
+    showItemPopup(`+1 ${item}`, 'mineProgress', 450);
+    
+    const bar = document.getElementById('mineProgress');
+    if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - timeMs;
+    const newCooldownStartTime = Date.now() - overdueTime;
+
+    // Re-use existing mining cooldown loop
+    // We need to wrap the next call to pass the 'type' argument
+    return miningCooldownLoop(Date.now(), newCooldownStartTime, 1500, 'mineProgressText', (ts, st) => crystalMiningLoop(ts, st, type));
+    
+  } else {
+    const progress = (elapsed / timeMs) * 100;
+    const bar = document.getElementById('mineProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = setTimeout(() => crystalMiningLoop(Date.now(), startTime, type), 16);
+  }
+}
+
 // --- NEW: Woodcutting Hub UI ---
 function openForestHub() {
   showMainScreen('hubForest');
@@ -9724,6 +9919,12 @@ function renderBankGrid() {
               else if (item.name === 'Unbound Arrow') imgName = 'unboundarrow'; // +++ NEW +++
               else if (item.name === 'Copper Arrow') imgName = 'copperarrow'; // +++ NEW +++
               else if (item.name === 'Silk') imgName = 'silk'; // +++ NEW +++
+
+              // +++ NEW CRYSTAL SHARDS +++
+              else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
+              else if (item.name === 'Air Crystal Shard') imgName = 'aircrystalshard';
+              else if (item.name === 'Water Crystal Shard') imgName = 'watercrystalshard';
+
               // --- THIS IS THE MISSING BLOCK ---
               else if (item.name === 'Bow String') {
                   imgName = 'bowstring';
@@ -10430,7 +10631,7 @@ function closeSettings() {
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubCrafting, hubFishingAreas, hubOcean, hubRiver +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -10487,6 +10688,14 @@ function showMainScreen(screenIdToShow) {
     const miningLvl = game.mining.level;
     document.getElementById('ironVeinBtn').classList.toggle('locked-item', miningLvl < IRON_MINE_LVL);
     document.getElementById('coalVeinBtn').classList.toggle('locked-item', miningLvl < COAL_MINE_LVL);
+  }
+
+  // Special case: if we're showing the crystal mine hub, apply level locks
+  if (screenIdToShow === 'hubCrystalMine') {
+    const miningLvl = game.mining.level;
+    document.getElementById('airCrystalBtn').classList.toggle('locked-item', miningLvl < AIR_CRYSTAL_LVL);
+    document.getElementById('waterCrystalBtn').classList.toggle('locked-item', miningLvl < WATER_CRYSTAL_LVL);
+    // Earth is entry level for this area (Level 20), so no visual lock needed beyond the pickaxe check
   }
   
   // Special case: if we're showing the forest hub, apply level locks
@@ -10658,6 +10867,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   
   // --- Hub Actions (Main Hub) ---
   document.getElementById('minesActionIcon').onclick = openMineHub;
+  document.getElementById('crystalMineActionIcon').onclick = openCrystalMineHub; // +++ NEW +++
   document.getElementById('fishingActionIcon').onclick = openFishingHub; // +++ NEW +++
   document.getElementById('forestActionIcon').onclick = openForestHub;
   document.getElementById('blacksmithActionIcon').onclick = openBlacksmithHub;
@@ -10672,6 +10882,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('hubCrafting_ReturnBtn').onclick = backToActions; // +++ NEW +++
   
   // --- Hub Mine Listeners ---
+
+// --- Hub Crystal Mine Listeners ---
+  document.getElementById('hubCrystalMine_ReturnBtn').onclick = backToActions;
+  
+  document.getElementById('earthCrystalBtn').onclick = openEarthCrystalMine;
+  document.getElementById('airCrystalBtn').onclick = () => {
+    if (game.mining.level >= AIR_CRYSTAL_LVL) openAirCrystalMine();
+  };
+  document.getElementById('waterCrystalBtn').onclick = () => {
+    if (game.mining.level >= WATER_CRYSTAL_LVL) openWaterCrystalMine();
+  };
+
   document.getElementById('copperVeinBtn').onclick = openCopperMine;
   document.getElementById('ironVeinBtn').onclick = () => {
     // We check the level *before* trying to open the screen
@@ -10779,6 +11001,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('minesActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Mine</div>');
   document.getElementById('minesActionIcon').onmouseleave = hideTooltip;
   document.getElementById('forestActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Forest</div>');
+  document.getElementById('crystalMineActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Crystal Mine</div>');
+  document.getElementById('crystalMineActionIcon').onmouseleave = hideTooltip;
   document.getElementById('forestActionIcon').onmouseleave = hideTooltip;
   document.getElementById('blacksmithActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Blacksmith</div>');
   document.getElementById('blacksmithActionIcon').onmouseleave = hideTooltip;
@@ -10797,16 +11021,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('fishingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Fishing Areas</div>'); // +++ NEW +++
   document.getElementById('fishingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
   
+// --- Tooltips for Hub Crystal Mine ---
+  document.getElementById('earthCrystalBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Earth Crystal</div>Requires Mining Lvl: ${EARTH_CRYSTAL_LVL}<br>Tool: Iron Pickaxe`);
+  document.getElementById('earthCrystalBtn').onmouseleave = hideTooltip;
+  
+  document.getElementById('airCrystalBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Air Crystal</div>Requires Mining Lvl: ${AIR_CRYSTAL_LVL}<br>Tool: Iron Pickaxe`);
+  document.getElementById('airCrystalBtn').onmouseleave = hideTooltip;
+  
+  document.getElementById('waterCrystalBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Water Crystal</div>Requires Mining Lvl: ${WATER_CRYSTAL_LVL}<br>Tool: Iron Pickaxe`);
+  document.getElementById('waterCrystalBtn').onmouseleave = hideTooltip;
+
   // --- Tooltips for Hub Mine ---
-  document.getElementById('copperVeinBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div>Requires Mining Lvl: 1');
+  document.getElementById('copperVeinBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div>Requires Mining Lvl: 1<br>Tool: Bronze Pickaxe');
   document.getElementById('copperVeinBtn').onmouseleave = hideTooltip;
   document.getElementById('ironVeinBtn').onmouseenter = (e) => {
-    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Iron Vein</div>Requires Mining Lvl: ${IRON_MINE_LVL}`;
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Iron Vein</div>Requires Mining Lvl: ${IRON_MINE_LVL}<br>Tool: Copper Pickaxe`;
     showTooltip(e, tt);
   };
   document.getElementById('ironVeinBtn').onmouseleave = hideTooltip;
   document.getElementById('coalVeinBtn').onmouseenter = (e) => {
-    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Coal Vein</div>Requires Mining Lvl: ${COAL_MINE_LVL}`;
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Coal Vein</div>Requires Mining Lvl: ${COAL_MINE_LVL}<br>Tool: Copper Pickaxe`;
     showTooltip(e, tt);
   };
   document.getElementById('coalVeinBtn').onmouseleave = hideTooltip;
@@ -13485,6 +13719,13 @@ if (!validSkills.includes(skill)) {
       'images/ironaxe.png',
       'images/ironore.png',
       'images/ironbar.png',
+      'images/earthcrystalshard.png',
+      'images/aircrystalshard.png',
+      'images/watercrystalshard.png',
+      'images/earthcrystalvein.png',
+      'images/aircrystalvein.png',
+      'images/watercrystalvein.png',
+      'images/crystalmine.jpeg',
       'images/ironshortsword.png',
       'images/ironhelmet.png',
       'images/ironchestplate.png',
