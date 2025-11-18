@@ -1208,6 +1208,81 @@ button.primary:hover { background: var(--accent-hover); }
 }
 /* --- END: Loading Bar --- */
 
+/* --- NEW: Lottery System Styles --- */
+.lottery-window {
+  width: 100%;
+  max-width: 400px; /* <--- Reduced width to 400px */
+  height: 100px;
+  background: #2a1a11;
+  border: 4px solid #b5a642; /* Gold border */
+  border-radius: 8px;
+  overflow: hidden; /* Hides the strip */
+  position: relative;
+  margin: 0 auto;
+  box-shadow: inset 0 0 20px #000;
+}
+
+.lottery-pointer {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 100%;
+  background: rgba(255, 215, 0, 0.5); /* Semi-transparent gold line */
+  z-index: 10;
+  border-left: 1px solid #fff;
+  border-right: 1px solid #fff;
+}
+
+.lottery-pointer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 15px solid #fff;
+}
+
+.lottery-reel {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  transform: translateX(0px);
+}
+
+.lottery-slot {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  position: relative;
+  box-sizing: border-box; /* <--- THIS IS THE FIX */
+}
+
+.lottery-slot img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.lottery-slot .qty-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+/* --- END Lottery Styles --- */
+
 
 </style>
 </head>
@@ -1359,6 +1434,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="bankActionIcon" src="images/bankbutton.png" alt="Bank" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="craftingActionIcon" src="images/craftingbenchbutton.png" alt="Crafting" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="elementalForgeActionIcon" src="images/elementalforge.jpeg" alt="Elemental Forge" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="lotteryActionIcon" src="images/lotteryicon.jpeg" alt="Lottery" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain; border: 2px solid var(--gold); border-radius: 8px;">
             </div>
           </div>
 
@@ -1644,6 +1720,30 @@ button.primary:hover { background: var(--accent-hover); }
             <div class="action-buttons" style="margin-top: 14px;">
               <button id="hubRiver_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
+          </div>
+
+          <div id="hubLottery" class="hub-screen">
+            <h2 style="text-align: center; color: var(--gold); text-shadow: 0 0 10px rgba(181, 166, 66, 0.5);">Skillsmith Lottery</h2>
+            <div style="margin-top:8px; color:#efe3cf; text-align: center;">
+                Pay 10,000 Gold for a chance to win the legendary <strong>Gold Crown</strong>!
+                <br><span style="font-size: 12px; color: #aaa;">(Chance: 1 in 2,000)</span>
+                <br><span style="font-size: 11px; color: #888; font-style: italic;">** The Gold Crown is a unique, purely cosmetic item and has the same stats as the iron helmet.</span>
+            </div>
+            
+            <div style="margin-top: 30px; margin-bottom: 30px;">
+                <div class="lottery-window">
+                    <div class="lottery-pointer"></div>
+                    <div id="lotteryReel" class="lottery-reel"></div>
+                </div>
+            </div>
+
+            <div class="action-buttons" style="justify-content: center; gap: 20px;">
+                <button id="buyTicketBtn" class="primary" style="background: var(--gold); color: #000; font-size: 18px; padding: 15px 30px;">
+                    Buy Ticket (10k Gold)
+                </button>
+                <button id="hubLottery_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+            <div id="lotteryResultMsg" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 18px; min-height: 24px;"></div>
           </div>
           
           </div> <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
@@ -2172,7 +2272,8 @@ const VALID_ITEMS = [
   'Burnt Trout',
   'Cooked Salmon',
   'Burnt Salmon',
-  'Magic Staff' // +++ NEW +++
+  'Magic Staff',
+  'Gold Crown'
 ];
 
 const XP_TABLE = [
@@ -2674,9 +2775,14 @@ const ITEM_STATS = {
   },
   // +++ NEW MAGIC STAFF +++
   'Magic Staff': {
-    damage: 1, // Reduced to +1 visible damage
+    damage: 1,
     weaponType: 'magic',
     twoHanded: true 
+  },
+  // +++ NEW GOLD CROWN +++
+  'Gold Crown': {
+    armor: 2, // Same as Iron Helmet
+    armorType: 'fighter'
   }
 };
 const SHOP_INVENTORY = new Array(20).fill(null);
@@ -2782,7 +2888,10 @@ const ITEM_SELL_PRICES = {
   // +++ NEW ELEMENTAL STONE PRICES +++
   'Earthstone': 10,
   'Airstone': 15,
-  'Waterstone': 20
+  'Waterstone': 20,
+  'Gold Crown': 50000,
+  'Gold Bar': 250,   // +++ NEW +++
+  'Diamond': 2500    // +++ NEW +++
 };
 // --- END: Item Sell Prices ---
 
@@ -3046,7 +3155,8 @@ function renderEquipment() {
     'Wizard Robe': 'wizardrobe',
     'Wizard Trousers': 'wizardtrousers',
     'Wizard Boots': 'wizardboots',
-    'Magic Staff': 'magicstaff' // +++ NEW +++
+    'Magic Staff': 'magicstaff',
+    'Gold Crown': 'goldcrown' 
   };
 
 slots.forEach(slotType => {
@@ -3219,6 +3329,9 @@ function renderInventoryGrid(){
               else if (item.name === 'Burnt Trout') imgName = 'burnttrout';
               else if (item.name === 'Cooked Salmon') imgName = 'cookedsalmon';
               else if (item.name === 'Burnt Salmon') imgName = 'burntsalmon';
+              
+              // +++ FIX: Add Gold Crown mapping here +++
+              else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
               // +++ END NEW +++
 
               else if (item.name === 'Coal Ore') imgName = 'coalore';
@@ -3575,7 +3688,8 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Wizard Robe': 'chest',
     'Wizard Trousers': 'legs',
     'Wizard Boots': 'boots',
-    'Magic Staff': 'weapon' // +++ NEW +++
+    'Magic Staff': 'weapon',
+    'Gold Crown': 'helmet' 
   };
   const itemSlotType = equipableItems[itemName];
   // --- END NEW ---
@@ -11176,6 +11290,241 @@ function enemyAttackTurn() {
   }
 }
 
+// =================================================================
+// +++ NEW: LOTTERY SYSTEM LOGIC +++
+// =================================================================
+const LOTTERY_COST = 10000;
+const SLOT_WIDTH = 80; 
+const WINNER_INDEX = 40; 
+const TOTAL_SLOTS = 50; 
+
+// =================================================================
+// +++ NEW: WEIGHTED LOTTERY SYSTEM +++
+// =================================================================
+
+// --- Loot Table with Weights ---
+// weight: 100 = Common, 60 = Uncommon, 30 = Rare, 5 = Legendary
+const LOTTERY_LOOT = [
+    // --- COMMON (Weight: 100) ---
+    { name: 'Coal Ore', qty: 1000, weight: 100 },
+    { name: 'Copper Ore', qty: 1000, weight: 100 },
+    { name: 'Softwood', qty: 1000, weight: 100 },
+    { name: 'Feather', qty: 1000, weight: 100 },
+    { name: 'Raw Chicken', qty: 1000, weight: 100 },
+    
+    // --- UNCOMMON (Weight: 60) ---
+    { name: 'Fishing Bait', qty: 1000, weight: 60 },
+    { name: 'Iron Ore', qty: 1000, weight: 60 },
+    { name: 'Gold', qty: 5000, weight: 40 },
+    
+    // --- RARE (Weight: 30) ---
+    { name: 'Iron Bar', qty: 750, weight: 30 },
+    { name: 'Oak', qty: 1000, weight: 30 },
+    { name: 'Cooked Salmon', qty: 750, weight: 30 },
+    { name: 'Gold', qty: 25000, weight: 10 },
+
+    // --- LEGENDARY (Weight: 5) ---
+    { name: 'Waterstone', qty: 2000, weight: 20 },     
+    { name: 'Airstone', qty: 2000, weight: 20 } 
+  ];
+
+// --- Helper to get a weighted random item ---
+function getRandomLotteryFiller() {
+    // 1. Calculate total weight of all items
+    let totalWeight = 0;
+    for (const item of LOTTERY_LOOT) {
+        // If you forget to add a weight, it defaults to 10
+        totalWeight += (item.weight || 10);
+    }
+
+    // 2. Pick a random number between 0 and Total Weight
+    let random = Math.floor(Math.random() * totalWeight);
+
+    // 3. Find which item corresponds to that random number
+    for (const item of LOTTERY_LOOT) {
+        const weight = item.weight || 10;
+        if (random < weight) {
+            return item;
+        }
+        random -= weight;
+    }
+    
+    // Fallback (should never happen if math is right)
+    return LOTTERY_LOOT[0];
+}
+
+function openLotteryHub() {
+    showMainScreen('hubLottery');
+    const reel = document.getElementById('lotteryReel');
+    const resultMsg = document.getElementById('lotteryResultMsg');
+    const buyBtn = document.getElementById('buyTicketBtn');
+    const returnBtn = document.getElementById('hubLottery_ReturnBtn');
+    
+    reel.style.transition = 'none';
+    reel.style.transform = 'translateX(0px)';
+    reel.innerHTML = '';
+    resultMsg.innerHTML = '';
+    buyBtn.disabled = false;
+    returnBtn.disabled = false;
+
+    for(let i=0; i<10; i++) {
+        let item;
+        
+        // +++ TEASER LOGIC +++
+        if (Math.random() < 0.10) {
+            item = { name: 'Gold Crown', qty: 1 };
+        } else {
+            item = getRandomLotteryFiller();
+        }
+        
+        const slot = document.createElement('div');
+        slot.className = 'lottery-slot';
+        
+        let imgName = item.name.toLowerCase().replace(/\s+/g, '');
+        
+        // FIX: Image Mapping
+        if (item.name === 'Copper Ore') imgName = 'copper_ore';
+        if (item.name === 'Gold') imgName = 'goldpouch'; // <--- Map Gold to the pouch image
+        
+        slot.innerHTML = `<img src="images/${imgName}.png"><span class="qty-badge">${formatAmount(item.qty)}</span>`;
+        
+        if (item.name === "Gold Crown") {
+            slot.style.background = "radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(0,0,0,0) 70%)";
+        }
+
+        reel.appendChild(slot);
+    }
+}
+
+async function buyLotteryTicket() {
+    if (!game.isSessionActive) {
+        await showGameAlert("Session Error", "Session not active.");
+        return;
+    }
+    if (game.gold < LOTTERY_COST) {
+        await showGameAlert("Too Poor", "You need 10,000 Gold to buy a ticket.");
+        return;
+    }
+    
+    // Check inventory space generally.
+    const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
+    if (emptySlotIndex === -1) {
+         await showGameAlert("Inventory Full", "Please make space in your inventory before playing.");
+         return;
+    }
+
+    // 1. Determine Winner (Internal Math Only)
+    let wonItemName = "";
+    let wonItemQty = 1;
+    
+    // --- THE ODDS (1 in 2,000) ---
+    const jackpotRoll = Math.floor(Math.random() * 2000) + 1;
+    
+    if (jackpotRoll === 1) {
+        wonItemName = "Gold Crown";
+        wonItemQty = 1;
+    } else {
+        const item = getRandomLotteryFiller();
+        wonItemName = item.name;
+        wonItemQty = item.qty;
+    }
+
+    // 2. Transaction: Take Ticket Cost IMMEDIATELY
+    addGold(-LOTTERY_COST);
+
+    // 3. SAVE IMMEDIATELY 
+    // The gold is gone. The item has NOT been given yet.
+    // If they refresh now, they lose the gold and get nothing.
+    if (typeof window.savePlayerData === 'function') {
+        window.savePlayerData(); 
+    }
+
+    // 4. Build the Visual Reel
+    const reel = document.getElementById('lotteryReel');
+    reel.innerHTML = '';
+    
+    for(let i=0; i<TOTAL_SLOTS; i++) {
+        let itemDisplay;
+        
+        if (i === WINNER_INDEX) {
+            itemDisplay = { name: wonItemName, qty: wonItemQty };
+        } else {
+            // Filler logic
+            if (Math.random() < 0.05) {
+                itemDisplay = { name: 'Gold Crown', qty: 1 };
+            } else {
+                itemDisplay = getRandomLotteryFiller();
+            }
+        }
+        
+        const slot = document.createElement('div');
+        slot.className = 'lottery-slot';
+        
+        let imgName = itemDisplay.name.toLowerCase().replace(/\s+/g, '');
+
+        // Fix specific image names
+        if (itemDisplay.name === 'Copper Ore') imgName = 'copper_ore';
+        if (itemDisplay.name === 'Gold Crown') imgName = 'goldcrown';
+        if (itemDisplay.name === 'Gold') imgName = 'goldpouch'; 
+        
+        slot.innerHTML = `<img src="images/${imgName}.png"><span class="qty-badge">${formatAmount(itemDisplay.qty)}</span>`;
+        
+        if (itemDisplay.name === "Gold Crown") {
+            slot.style.background = "radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(0,0,0,0) 70%)";
+        }
+        reel.appendChild(slot);
+    }
+
+    // 5. Lock Buttons & Animate
+    const buyBtn = document.getElementById('buyTicketBtn');
+    const returnBtn = document.getElementById('hubLottery_ReturnBtn');
+    buyBtn.disabled = true;
+    returnBtn.disabled = true;
+    document.getElementById('lotteryResultMsg').innerHTML = '';
+
+    const randomOffset = 0; 
+    const containerCenter = document.querySelector('.lottery-window').offsetWidth / 2;
+    const winnerCenter = (WINNER_INDEX * SLOT_WIDTH) + (SLOT_WIDTH / 2);
+    const scrollPos = -(winnerCenter - containerCenter);
+
+    reel.style.transition = 'none';
+    reel.style.transform = 'translateX(0px)';
+    reel.offsetHeight; 
+    reel.style.transition = 'transform 4s cubic-bezier(0.1, 0.1, 0.1, 1)'; 
+    reel.style.transform = `translateX(${scrollPos}px)`;
+
+    // 6. End Event (After Animation Finishes)
+    setTimeout(() => {
+        // --- AWARD PRIZE HERE ---
+        if (wonItemName === 'Gold') {
+            addGold(wonItemQty); 
+        } else {
+            addItem(wonItemName, wonItemQty); 
+        }
+
+        // Show Result
+        const resultMsg = document.getElementById('lotteryResultMsg');
+        if (wonItemName === "Gold Crown") {
+            resultMsg.innerHTML = `<span style="color: #ff4d4d; font-size: 22px;">JACKPOT! YOU WON THE GOLD CROWN!</span>`;
+            playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+        } else {
+            resultMsg.innerHTML = `Won: ${wonItemQty.toLocaleString()} ${wonItemName}`;
+            playGlobalSound('sounds/soundeffects/inventorysound.mp3');
+        }
+        
+        // Unlock buttons
+        buyBtn.disabled = false;
+        returnBtn.disabled = false;
+        
+        // --- SAVE AGAIN ---
+        // Save now to lock in the prize.
+        if (typeof window.savePlayerData === 'function') {
+            window.savePlayerData(); 
+        }
+        
+    }, 4100);
+}
+
 function backToActions(){
   showMainScreen('hubActions');
 }
@@ -11358,6 +11707,9 @@ function renderBankGrid() {
               else if (item.name === 'Burnt Trout') imgName = 'burnttrout';
               else if (item.name === 'Cooked Salmon') imgName = 'cookedsalmon';
               else if (item.name === 'Burnt Salmon') imgName = 'burntsalmon';
+              
+              // +++ FIX: Add Gold Crown mapping here +++
+              else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
               // +++ END NEW +++
 
               else if (item.name === 'Coal Ore') imgName = 'coalore';
@@ -12539,10 +12891,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('fletchingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
   document.getElementById('craftingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Crafting Bench</div>');
   document.getElementById('craftingActionIcon').onmouseleave = hideTooltip;
-  document.getElementById('elementalForgeActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Elemental Forge</div>'); // +++ NEW +++
+  document.getElementById('elementalForgeActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Elemental Forge</div>'); 
   document.getElementById('elementalForgeActionIcon').onmouseleave = hideTooltip;
   document.getElementById('fishingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Fishing Areas</div>');
   document.getElementById('fishingActionIcon').onmouseleave = hideTooltip;
+
+  // --- Hub Lottery Listeners ---
+  document.getElementById('lotteryActionIcon').onclick = openLotteryHub;
+  document.getElementById('buyTicketBtn').onclick = buyLotteryTicket;
+  document.getElementById('hubLottery_ReturnBtn').onclick = backToActions;
+  document.getElementById('lotteryActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Lottery</div>Win Rare Prizes!');
+  document.getElementById('lotteryActionIcon').onmouseleave = hideTooltip;
+  if (!hubScreenIds.includes('hubLottery')) hubScreenIds.push('hubLottery');
   
 // --- Tooltips for Hub Crystal Mine ---
   document.getElementById('earthCrystalBtn').onmouseenter = (e) => {
