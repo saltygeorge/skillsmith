@@ -27,7 +27,8 @@
 #deathOverlay div, 
 .settings-modal, 
 .game-modal, 
-#statsPanel {
+#statsPanel,
+#spellsPanel {   /* <--- ADDED THIS */
   /* 1. Original brown color */
   background-color: var(--panel-bg);
   
@@ -1058,10 +1059,10 @@ button.primary:hover { background: var(--accent-hover); }
 }
 /* --- END NEW --- */
 
-/* --- NEW: Stats Panel --- */
-#statsPanel {
-  visibility: hidden; /* <-- THIS IS THE FIX: Hide but keep space */
-  display: flex;      /* <-- THIS IS THE FIX: Set the display type */
+/* --- NEW: Spells Panel (Mirrors Stats Panel) --- */
+#spellsPanel {
+  display: flex; /* Always flex so layout works inside */
+  visibility: hidden; /* Hidden visually, but keeps the space reserved */
   
   /* This width perfectly matches the .sidebar panel above it */
   width: calc((var(--slot-size) * 4) + (var(--slot-gap) * 3) + 32px + 8px);
@@ -1074,17 +1075,54 @@ button.primary:hover { background: var(--accent-hover); }
   box-sizing: border-box;
   flex-direction: column;
   flex-shrink: 0;
+}
+#spellsPanelHeader {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff; /* <-- CHANGED TO WHITE */
+  margin: -5px -5px 10px -5px;
+  padding: 5px 10px;
+  border-bottom: 2px solid var(--accent);
+}
+#spellsPanelContent {
+  /* We can re-use the .stat-row styles here */
+  padding: 10px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 6px;
+  flex-grow: 1; /* Allow content area to stretch */
+}
+#spellsPanelFooter {
+  display: flex;
+  justify-content: space-between; /* To put the autocast text on the left */
+  align-items: center;
+  margin-top: 15px;
+}
+/* --- END: Spells Panel --- */
+
+/* --- NEW: Stats Panel --- */
+#statsPanel {
+  display: flex; /* Always flex */
+  visibility: hidden; /* Hidden visually, but keeps the space reserved */
   
-  /* We remove all the 'position: fixed' rules */
+  /* This width perfectly matches the .sidebar panel above it */
+  width: calc((var(--slot-size) * 4) + (var(--slot-gap) * 3) + 32px + 8px);
+  
+  /* This height perfectly matches the .chat-panel next to it */
+  min-height: 200px; 
+  
+  /* New layout styles */
+  padding: 16px;
+  box-sizing: border-box;
+  flex-direction: column;
+  flex-shrink: 0;
 }
 #statsPanelHeader {
   font-size: 18px;
   font-weight: bold;
-  color: var(--gold);
+  color: #fff; /* <-- CHANGED TO WHITE */
   margin: -5px -5px 10px -5px;
   padding: 5px 10px;
   border-bottom: 2px solid var(--accent);
-  /* cursor: move;  <-- THIS LINE IS DELETED */
 }
 #statsPanelContent {
   /* We can re-use the .stat-row styles here */
@@ -1276,9 +1314,9 @@ button.primary:hover { background: var(--accent-hover); }
               </div>
             </div>
 
-            <div id="statsButtonContainer" style="display: flex; justify-content: flex-end; margin-top: 20px;">
-                <button class="primary" id="toggleStatsBtn">Stats</button>
-            </div>
+            <div id="statsButtonContainer" style="display: flex; justify-content: space-between; margin-top: 20px;">
+    <button class="primary" id="toggleStatsBtn">Stats</button> <button class="primary" id="toggleSpellsBtn">Spells</button>
+</div>
             </div>
           
           <div id="inventoryTab" style="display:none;">
@@ -1320,6 +1358,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="shopActionIcon" src="images/shopbutton.png" alt="Shop" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="bankActionIcon" src="images/bankbutton.png" alt="Bank" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="craftingActionIcon" src="images/craftingbenchbutton.png" alt="Crafting" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="elementalForgeActionIcon" src="images/elementalforge.jpeg" alt="Elemental Forge" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
             </div>
           </div>
 
@@ -1330,6 +1369,16 @@ button.primary:hover { background: var(--accent-hover); }
               </div>
             <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubCrafting_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubElementalForge" class="hub-screen">
+            <h2>Elemental Forge</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Forge magical stones from crystal shards.</div>
+            <div id="elementalForgeItemsContainer" class="action-buttons" style="margin-top: 14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+              </div>
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+              <button id="hubElementalForge_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
           
@@ -1628,25 +1677,29 @@ button.primary:hover { background: var(--accent-hover); }
     <div id="bottom-row-chat">
 
       <div id="statsPanel">
-  <div id="statsPanelHeader">Player Stats</div>
-  <div id="statsPanelContent">
-    <div class="stat-row">
-      <span class="stat-label">Physical Damage</span>
-      <span class="stat-value" id="stat-phys-dmg-panel">0</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">Armor</span>
-      <span class="stat-value" id="stat-armor-panel">0</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">Speed Bonus</span>
-      <span class="stat-value" id="stat-speed-panel">0</span>
-    </div>
-  </div>
-  <div id="statsPanelFooter">
-    <button id="closeStatsBtn" class="primary" style="background:#666;">Close</button>
-  </div>
-</div>
+        <div id="statsPanelHeader">Player Stats</div>
+        <div id="statsPanelContent">
+          <div class="stat-row">
+            <span class="stat-label">Physical Damage</span>
+            <span class="stat-value" id="stat-phys-dmg-panel">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Magic Damage</span>
+            <span class="stat-value" id="stat-magic-dmg-panel">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Armor</span>
+            <span class="stat-value" id="stat-armor-panel">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Speed Bonus</span>
+            <span class="stat-value" id="stat-speed-panel">0</span>
+          </div>
+        </div>
+        <div id="statsPanelFooter">
+          <button id="closeStatsBtn" class="primary" style="background:#666;">Close</button>
+        </div>
+      </div>
 
       <div class="chat-panel" id="chatPanel">
         <div id="chatMessages">
@@ -1658,7 +1711,17 @@ button.primary:hover { background: var(--accent-hover); }
         </div>
       </div>
 
-      <div class="sidebar-spacer"></div>
+      <div id="spellsPanel"> 
+          <div id="spellsPanelHeader">Magic Spells</div>
+          <div id="spellsPanelContent">
+              <div id="spellsIconsContainer" style="display: flex; gap: 10px; justify-content: center;">
+              </div>
+          </div>
+          <div id="spellsPanelFooter">
+              <div id="autocastText" style="font-size: 14px; font-weight: bold; color: var(--gold);">None</div>
+              <button id="closeSpellsBtn" class="primary" style="background:#666;">Close</button>
+          </div>
+      </div>
 
     </div> 
     
@@ -1840,9 +1903,22 @@ const game = {
   fishing: { level: 1, xp: 0, totalXP: 0 },
   fishingActive: false,
   wasFishingBeforeCombat: false,
+
+  // +++ NEW MAGIC SKILL +++
+  magic: { level: 1, xp: 0, totalXP: 0 },
+  
+  // +++ NEW STONE FORGING SKILL +++
+  stoneforging: { level: 1, xp: 0, totalXP: 0 },
+  stoneforgingActive: false,
+  wasStoneForgingBeforeCombat: false,
   
   lastSmithingTab: 'copper',
   lastCombatAreaHub: 'hubActions', // +++ NEW +++
+  
+  // +++ NEW MAGIC STATE +++
+  autocastSpell: null, 
+  lastAttackTime: 0, // <--- NEW: Tracks the exact time of the last attack
+  // +++ END NEW MAGIC STATE +++
   
   // +++ NEW SESSION LOCK +++
   // This is a unique ID for this specific tab
@@ -2050,10 +2126,22 @@ const VALID_ITEMS = [
   'Iron Platelegs', // +++ NEW +++
   'Silk', // +++ NEW +++
   
+  // +++ NEW CLOTH & WIZARD ITEMS +++
+  'Cloth',
+  'Wizard Hat',
+  'Wizard Robe',
+  'Wizard Trousers',
+  'Wizard Boots',
+  
   // +++ NEW CRYSTAL ITEMS +++
   'Earth Crystal Shard',
   'Air Crystal Shard',
   'Water Crystal Shard',
+  
+  // +++ NEW ELEMENTAL STONES +++
+  'Earthstone',
+  'Airstone',
+  'Waterstone',
 
   // +++ NEW CRAFTING/FLETCHING ITEMS +++
   'Bow String',
@@ -2083,7 +2171,8 @@ const VALID_ITEMS = [
   'Cooked Trout',
   'Burnt Trout',
   'Cooked Salmon',
-  'Burnt Salmon'
+  'Burnt Salmon',
+  'Magic Staff' // +++ NEW +++
 ];
 
 const XP_TABLE = [
@@ -2196,6 +2285,13 @@ const SALMON_FISH_LVL = 10;
 
 // --- NEW: Fishing Action Constants ---
 const FISHING_TIME_MS = 20000; // 20 seconds per fish
+
+// +++ NEW MAGIC SPELL CONSTANTS +++
+const EARTH_BOLT = { name: 'Earth Bolt', level: 1, damage: 2, xp: 5 };
+const AIR_BOLT = { name: 'Air Bolt', level: 10, damage: 3, xp: 10 };
+const WATER_BOLT = { name: 'Water Bolt', level: 15, damage: 4, xp: 15 };
+const SPELL_LIST = [EARTH_BOLT, AIR_BOLT, WATER_BOLT];
+// +++ END NEW MAGIC SPELL CONSTANTS +++
 
 const HERRING_FISH_XP = 10;
 const TROUT_FISH_XP = 20;
@@ -2350,25 +2446,61 @@ const LEATHER_XP = 5;
 const LEATHER_TIME_MS = 1500;
 
 const CRAFTING_LEATHER_HOOD_LVL = 3;
-const LEATHER_HOOD_LEATHER_COST = 2; // Changed from HIDE_COST
+const LEATHER_HOOD_LEATHER_COST = 5; 
 const LEATHER_HOOD_XP = 20;
 const LEATHER_HOOD_TIME_MS = 3000;
 
 const CRAFTING_LEATHER_BODY_LVL = 7;
-const LEATHER_BODY_LEATHER_COST = 5; // Changed from HIDE_COST
+const LEATHER_BODY_LEATHER_COST = 10; 
 const LEATHER_BODY_XP = 50;
 const LEATHER_BODY_TIME_MS = 6000;
 
 const CRAFTING_LEATHER_CHAPS_LVL = 5;
-const LEATHER_CHAPS_LEATHER_COST = 3; // Changed from HIDE_COST
+const LEATHER_CHAPS_LEATHER_COST = 10; 
 const LEATHER_CHAPS_XP = 30;
 const LEATHER_CHAPS_TIME_MS = 4000;
 
 const CRAFTING_LEATHER_BOOTS_LVL = 1;
-const LEATHER_BOOTS_LEATHER_COST = 1; // Changed from HIDE_COST
+const LEATHER_BOOTS_LEATHER_COST = 5; 
 const LEATHER_BOOTS_XP = 10;
 const LEATHER_BOOTS_TIME_MS = 2000;
 
+// +++ NEW: Cloth Crafting Constants +++
+const CRAFTING_CLOTH_LVL = 1;
+const CLOTH_SILK_COST = 5;
+const CLOTH_YIELD = 1;
+const CLOTH_XP = 20;
+const CLOTH_TIME_MS = 2000;
+
+// +++ NEW: Wizard Gear Crafting Constants +++
+const CRAFTING_WIZARD_BOOTS_LVL = 2;
+const WIZARD_BOOTS_CLOTH_COST = 5;
+const WIZARD_BOOTS_XP = 10;
+const WIZARD_BOOTS_TIME_MS = 2000;
+
+const CRAFTING_WIZARD_HAT_LVL = 4;
+const WIZARD_HAT_CLOTH_COST = 5;
+const WIZARD_HAT_XP = 20;
+const WIZARD_HAT_TIME_MS = 3000;
+
+const CRAFTING_WIZARD_TROUSERS_LVL = 6;
+const WIZARD_TROUSERS_CLOTH_COST = 10;
+const WIZARD_TROUSERS_XP = 30;
+const WIZARD_TROUSERS_TIME_MS = 4000;
+
+const CRAFTING_WIZARD_ROBE_LVL = 8;
+const WIZARD_ROBE_CLOTH_COST = 10;
+const WIZARD_ROBE_XP = 50;
+const WIZARD_ROBE_TIME_MS = 6000;
+
+// +++ NEW: Magic Staff Crafting Constants +++
+const CRAFTING_MAGIC_STAFF_LVL = 20;
+const MAGIC_STAFF_OAK_COST = 10;
+const MAGIC_STAFF_EARTH_COST = 10;
+const MAGIC_STAFF_AIR_COST = 10;
+const MAGIC_STAFF_WATER_COST = 10;
+const MAGIC_STAFF_XP = 100;
+const MAGIC_STAFF_TIME_MS = 8000;
 
 // --- NEW: Iron Smithing Constants ---
 const IRON_BAR_ORE_COST = 1; // 1 Iron Ore
@@ -2487,6 +2619,24 @@ const ITEM_STATS = {
     weaponType: 'melee'
   },
   
+  // --- Wizard Gear (Magic) ---
+  'Wizard Hat': {
+    armor: 1,
+    armorType: 'magic'
+  },
+  'Wizard Robe': {
+    armor: 2,
+    armorType: 'magic'
+  },
+  'Wizard Trousers': {
+    armor: 1,
+    armorType: 'magic'
+  },
+  'Wizard Boots': {
+    armor: 0, // Matches leather boots
+    armorType: 'magic'
+  },
+
   // --- Leather (Ranged) ---
   'Leather Hood': {
     armor: 1,
@@ -2513,12 +2663,20 @@ const ITEM_STATS = {
   'Softwood Bow': {
     damage: 2,
     speed: 3,
-    weaponType: 'ranged'
+    weaponType: 'ranged',
+    twoHanded: true // <--- Added
   },
   'Oak Bow': {
     damage: 3,
     speed: 3,
-    weaponType: 'ranged'
+    weaponType: 'ranged',
+    twoHanded: true // <--- Added
+  },
+  // +++ NEW MAGIC STAFF +++
+  'Magic Staff': {
+    damage: 1, // Reduced to +1 visible damage
+    weaponType: 'magic',
+    twoHanded: true 
   }
 };
 const SHOP_INVENTORY = new Array(20).fill(null);
@@ -2532,6 +2690,14 @@ SHOP_INVENTORY[3] = { name: 'Fishing Bait', price: 10 };
 // --- NEW: Item Sell Prices ---
 const ITEM_SELL_PRICES = {
   'Silk': 2, // +++ NEW +++
+  
+  // +++ NEW CLOTH & WIZARD ITEMS +++
+  'Cloth': 12,
+  'Wizard Hat': 30,
+  'Wizard Robe': 70,
+  'Wizard Trousers': 45,
+  'Wizard Boots': 30,
+  
   // Ores & Resources
   'Copper Ore': 1,
   'Coal Ore': 2,
@@ -2610,7 +2776,13 @@ const ITEM_SELL_PRICES = {
   
   // +++ NEW FISHING REQUIREMENTS SELL PRICES +++
   'Fishing Pole': 1000,
-  'Fishing Bait': 4
+  'Fishing Bait': 4,
+  'Magic Staff': 50,
+  
+  // +++ NEW ELEMENTAL STONE PRICES +++
+  'Earthstone': 10,
+  'Airstone': 15,
+  'Waterstone': 20
 };
 // --- END: Item Sell Prices ---
 
@@ -2664,7 +2836,8 @@ function getPlayerCombatStats() {
   
   // 2. Base Stats from *Equipment Only*
   let equipmentStats = {
-    equipmentDamage: 0, 
+    equipmentDamage: 0, // Physical
+    equipmentMagicDamage: 0, // +++ NEW +++
     equipmentArmor: 0, 
     equipmentSpeed: 0,
   };
@@ -2675,8 +2848,13 @@ function getPlayerCombatStats() {
       const itemStats = ITEM_STATS[item.name];
       const itemArmorType = itemStats.armorType; // 'fighter', 'ranged', or undefined
 
-      // --- Add Damage (no penalties) ---
-      equipmentStats.equipmentDamage += itemStats.damage || 0;
+      // --- Add Damage (Split by type) ---
+      if (itemStats.weaponType === 'magic') {
+          // Magic staff damage is now just a token 1 damage which gets added to spell damage
+          equipmentStats.equipmentMagicDamage += itemStats.damage || 0;
+      } else {
+          equipmentStats.equipmentDamage += itemStats.damage || 0;
+      }
 
       // --- Add Armor (no penalty) ---
       let armorBonus = itemStats.armor || 0;
@@ -2730,16 +2908,27 @@ function getPlayerCombatStats() {
     styleAccuracyBonus = -5;
   }
   
-  // --- Physical Damage ---
+  // --- Damage Calculation ---
   let skillMaxHit = 0;
-  if (isRanged) {
+  
+  if (equippedWeaponType === 'magic') {
+    // +++ NEW MAGIC FORMULA +++
+    skillMaxHit = 1 + Math.floor(game.magic.level / 4);
+    offensiveSkillLevel = game.magic.level;
+    finalStats.magicDamage = Math.max(1, skillMaxHit + equipmentStats.equipmentMagicDamage);
+    finalStats.physicalDamage = 0; // No physical damage with magic
+  } else if (isRanged) {
     skillMaxHit = 1 + Math.floor(game.ranged.level / 4);
     offensiveSkillLevel = game.ranged.level;
+    finalStats.physicalDamage = Math.max(1, skillMaxHit + equipmentStats.equipmentDamage + styleDamageBonus);
+    finalStats.magicDamage = 0;
   } else {
+    // Melee
     skillMaxHit = 1 + Math.floor(game.strength.level / 4);
     offensiveSkillLevel = game.attack.level;
+    finalStats.physicalDamage = Math.max(1, skillMaxHit + equipmentStats.equipmentDamage + styleDamageBonus);
+    finalStats.magicDamage = 0;
   }
-  finalStats.physicalDamage = Math.max(1, skillMaxHit + equipmentStats.equipmentDamage + styleDamageBonus);
 
   // --- Armor ---
   const skillArmor = Math.floor(game.defence.level / 5);
@@ -2755,6 +2944,7 @@ function getPlayerCombatStats() {
   
   // Also pass through the equipment-only bonuses for the UI display
   finalStats.equipmentDamage = equipmentStats.equipmentDamage;
+  finalStats.equipmentMagicDamage = equipmentStats.equipmentMagicDamage; // +++ NEW +++
   finalStats.equipmentArmor = equipmentStats.equipmentArmor;
   finalStats.equipmentSpeed = equipmentStats.equipmentSpeed;
   
@@ -2771,6 +2961,7 @@ function renderEquipment() {
   
   // --- 2. Update the Stats Display (in the new panel) ---
   setText('stat-phys-dmg-panel', `+${stats.equipmentDamage}`);
+  setText('stat-magic-dmg-panel', `+${stats.equipmentMagicDamage}`); // +++ NEW +++
   setText('stat-armor-panel', `+${stats.equipmentArmor}`);
   // --- MODIFICATION: Show equipment speed bonus, not final time ---
   const speedBonus = stats.equipmentSpeed;
@@ -2782,6 +2973,7 @@ function renderEquipment() {
   
   // 1. Get the parent row for each stat
   const dmgRow = document.getElementById('stat-phys-dmg-panel')?.closest('.stat-row');
+  const magicDmgRow = document.getElementById('stat-magic-dmg-panel')?.closest('.stat-row'); // +++ NEW +++
   const armorRow = document.getElementById('stat-armor-panel')?.closest('.stat-row');
   const speedRow = document.getElementById('stat-speed-panel')?.closest('.stat-row');
 
@@ -2790,6 +2982,13 @@ function renderEquipment() {
     const dmgValue = stats.equipmentDamage >= 0 ? `+${stats.equipmentDamage}` : stats.equipmentDamage;
     dmgRow.onmouseenter = (evt) => showTooltip(evt, `<div style="color:#aaffaa;">${dmgValue} Physical Damage</div>`);
     dmgRow.onmouseleave = hideTooltip;
+  }
+
+  // +++ NEW MAGIC DAMAGE TOOLTIP +++
+  if (magicDmgRow) {
+    const magicDmgValue = stats.equipmentMagicDamage >= 0 ? `+${stats.equipmentMagicDamage}` : stats.equipmentMagicDamage;
+    magicDmgRow.onmouseenter = (evt) => showTooltip(evt, `<div style="color:#aaffaa;">${magicDmgValue} Magic Damage</div>`);
+    magicDmgRow.onmouseleave = hideTooltip;
   }
 
   // 3. Armor Tooltip
@@ -2840,10 +3039,17 @@ function renderEquipment() {
     'Leather Hood': 'leatherhood',
     'Leather Body': 'leatherarmor',
     'Leather Chaps': 'leatherpants',
-    'Leather Boots': 'leatherboots'
+    'Leather Boots': 'leatherboots',
+    
+    // +++ NEW WIZARD GEAR +++
+    'Wizard Hat': 'wizardhat',
+    'Wizard Robe': 'wizardrobe',
+    'Wizard Trousers': 'wizardtrousers',
+    'Wizard Boots': 'wizardboots',
+    'Magic Staff': 'magicstaff' // +++ NEW +++
   };
 
-  slots.forEach(slotType => {
+slots.forEach(slotType => {
     const item = game.equipment[slotType];
     
     // Get the Main Sidebar Slot
@@ -2858,7 +3064,6 @@ function renderEquipment() {
       else if (slotType === 'chest') imgName = 'chestplate';
       else if (slotType === 'weapon') imgName = 'weapon';
       else if (slotType === 'boots') imgName = 'boots';
-      // <-- NEW: Added placeholders for new slots -->
       else if (slotType === 'necklace') imgName = 'necklace';
       else if (slotType === 'cape') imgName = 'cape';
       else if (slotType === 'shield') imgName = 'shield';
@@ -2868,13 +3073,38 @@ function renderEquipment() {
       else if (slotType === 'arrows') imgName = 'arrows';
     }
     
-    const imgHtml = `<img src="images/${imgName}.png" alt="${slotType}">`;
+    // +++ 2H VISUAL LOGIC (Define the variable here) +++
+    // Check if this is the shield slot and we have a 2H weapon equipped
+    let isTwoHandedBlock = false;
+    if (slotType === 'shield' && !item) {
+        const weapon = game.equipment.weapon;
+        if (weapon && ITEM_STATS[weapon.name] && ITEM_STATS[weapon.name].twoHanded) {
+            isTwoHandedBlock = true;
+            // Use the weapon's image for the shield slot too
+            imgName = itemImageMap[weapon.name]; 
+        }
+    }
+
+    let imgHtml = `<img src="images/${imgName}.png" alt="${slotType}">`;
+    
+    // If it's a 2H block, make the image semi-transparent
+    if (isTwoHandedBlock) {
+        imgHtml = `<img src="images/${imgName}.png" alt="${slotType}" style="opacity: 0.5; filter: grayscale(50%);">`;
+    }
+
     const itemStats = item ? ITEM_STATS[item.name] : null;
 
     // --- Generate Stat Tooltip HTML ---
     let statsHtml = '';
     if (itemStats) {
-      if (itemStats.damage) statsHtml += `<div style="color:#aaffaa;">+${itemStats.damage} Physical Damage</div>`;
+      if (itemStats.damage) {
+        // +++ FIX: Check weapon type to display correct label +++
+        if (itemStats.weaponType === 'magic') {
+           statsHtml += `<div style="color:#aaffaa;">+${itemStats.damage} Magic Damage</div>`;
+        } else {
+           statsHtml += `<div style="color:#aaffaa;">+${itemStats.damage} Physical Damage</div>`;
+        }
+      }
       if (itemStats.styleBonus) statsHtml += `<div style="color:#aaffaa;">+${itemStats.styleBonus} Physical Damage (if accurate)</div>`;
       if (itemStats.armor) statsHtml += `<div style="color:#aaffaa;">+${itemStats.armor} Armor</div>`;
       if (itemStats.speed) statsHtml += `<div style="color:#aaffaa;">+${itemStats.speed} Speed</div>`;
@@ -2885,7 +3115,6 @@ function renderEquipment() {
     if (item && slotType === 'arrows') {
         qtyHtml = `<div style="color:#fff;">Amount: ${item.qty.toLocaleString()}</div>`;
     }
-    // --- END NEW ---
 
     // Update Main Sidebar Slot
     if (mainSlotEl) {
@@ -2898,9 +3127,15 @@ function renderEquipment() {
           amt.innerText = formatAmount(item.qty); 
           mainSlotEl.appendChild(amt);
       }
-      // --- END NEW ---
       
-      mainSlotEl.onclick = () => unequipItem(slotType);
+      // +++ 2H CLICK LOGIC +++
+      // If clicking the shield slot while holding a 2H weapon, unequip the WEAPON
+      if (isTwoHandedBlock) {
+         mainSlotEl.onclick = () => unequipItem('weapon');
+         mainSlotEl.style.cursor = 'pointer';
+      } else {
+         mainSlotEl.onclick = () => unequipItem(slotType);
+      }
       
       if (item) {
         mainSlotEl.onmouseenter = (evt) => {
@@ -2913,7 +3148,22 @@ function renderEquipment() {
           showTooltip(evt, tooltipContent);
         };
         mainSlotEl.onmouseleave = hideTooltip;
-      } else {
+      } 
+      // +++ 2H TOOLTIP LOGIC +++
+      else if (isTwoHandedBlock) {
+         mainSlotEl.onmouseenter = (evt) => {
+            const weapon = game.equipment.weapon;
+            const weaponName = weapon ? weapon.name : 'Weapon';
+             const tooltipContent = `
+            <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${weaponName}</div>
+            <div style="color:#ccc;">(Occupies Both Hands)</div>
+            <div style="color:#ffaaaa; margin-top: 5px;">Click to unequip weapon...</div>
+          `;
+          showTooltip(evt, tooltipContent);
+         };
+         mainSlotEl.onmouseleave = hideTooltip;
+      }
+      else {
         mainSlotEl.onmouseenter = null;
         mainSlotEl.onmouseleave = null;
       }
@@ -2995,6 +3245,14 @@ function renderInventoryGrid(){
               else if (item.name === 'Copper Arrow') imgName = 'copperarrow'; // +++ NEW +++
               else if (item.name === 'Silk') imgName = 'silk'; // +++ NEW +++
               
+              // +++ NEW CLOTH & WIZARD ITEMS +++
+              else if (item.name === 'Cloth') imgName = 'cloth';
+              else if (item.name === 'Wizard Hat') imgName = 'wizardhat';
+              else if (item.name === 'Wizard Robe') imgName = 'wizardrobe';
+              else if (item.name === 'Wizard Trousers') imgName = 'wizardtrousers';
+              else if (item.name === 'Wizard Boots') imgName = 'wizardboots';
+              else if (item.name === 'Magic Staff') imgName = 'magicstaff'; // +++ NEW +++
+              
               // +++ NEW CRYSTAL SHARDS +++
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
               else if (item.name === 'Air Crystal Shard') imgName = 'aircrystalshard';
@@ -3062,7 +3320,14 @@ function renderInventoryGrid(){
 
       if (stats) {
         // This is equipable
-        if (stats.damage) itemStats += `<div style="color:#aaffaa;">+${stats.damage} Physical Damage</div>`;
+        if (stats.damage) {
+            // +++ FIX: Check weapon type to display correct label +++
+            if (stats.weaponType === 'magic') {
+                itemStats += `<div style="color:#aaffaa;">+${stats.damage} Magic Damage</div>`;
+            } else {
+                itemStats += `<div style="color:#aaffaa;">+${stats.damage} Physical Damage</div>`;
+            }
+        }
         if (stats.styleBonus) itemStats += `<div style="color:#aaffaa;">+${stats.styleBonus} Physical Damage (if accurate)</div>`;
         if (stats.armor) itemStats += `<div style="color:#aaffaa;">+${stats.armor} Armor</div>`;
         if (stats.speed) itemStats += `<div style="color:#aaffaa;">+${stats.speed} Speed</div>`;
@@ -3181,6 +3446,10 @@ function removeItem(name, qty = 1) {
     }
     if (amountToRemove === 0) break; // We're done
   }
+  
+  // +++ FIX: Update UI immediately +++
+  renderInventoryGrid();
+  
   return true; // Successfully removed
 }
 
@@ -3299,7 +3568,14 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Leather Hood': 'helmet',
     'Leather Body': 'chest',
     'Leather Chaps': 'legs',
-    'Leather Boots': 'boots'
+    'Leather Boots': 'boots',
+    
+    // +++ NEW WIZARD GEAR +++
+    'Wizard Hat': 'helmet',
+    'Wizard Robe': 'chest',
+    'Wizard Trousers': 'legs',
+    'Wizard Boots': 'boots',
+    'Magic Staff': 'weapon' // +++ NEW +++
   };
   const itemSlotType = equipableItems[itemName];
   // --- END NEW ---
@@ -3458,24 +3734,45 @@ async function equipItem(slotType, fromInvIndex) {
   const itemStack = game.inventory[fromInvIndex];
   if (!itemStack) return; // Item doesn't exist
 
+  const stats = ITEM_STATS[itemStack.name];
+  const isTwoHanded = stats && stats.twoHanded;
+
+  // --- NEW: Magic Staff Logic ---
+  if (slotType === 'weapon' && itemStack.name !== 'Magic Staff') {
+    // If unequipping a Magic Staff (by swapping to a sword/bow), reset style but KEEP autocast
+    if (game.equipment.weapon && game.equipment.weapon.name === 'Magic Staff') {
+      // game.autocastSpell = null; // <-- REMOVED to remember spell
+      setAttackStyle('strength', true); 
+      if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
+    }
+  } else if (slotType === 'weapon' && itemStack.name === 'Magic Staff') {
+    // If equipping the Magic Staff, set style to magic
+    setAttackStyle('magic', true);
+  } else if (slotType !== 'weapon' && game.equipment.weapon && game.equipment.weapon.name === 'Magic Staff') {
+    // If equipping armor while holding a staff, ensure we stay on magic or reset if needed
+    // (For now, we just leave it, but this check prevents accidental resets)
+  }
+  // --- END NEW ---
+
+  // +++ 2H LOGIC: If equipping a 2H weapon, unequip shield first +++
+  if (slotType === 'weapon' && isTwoHanded) {
+    if (game.equipment.shield) {
+      const success = await unequipItem('shield');
+      if (!success) return; // Stop if inventory was full
+    }
+  }
+  
+  // +++ 2H LOGIC: If equipping a shield, check if we hold a 2H weapon +++
+  if (slotType === 'shield') {
+    const currentWeapon = game.equipment.weapon;
+    if (currentWeapon && ITEM_STATS[currentWeapon.name] && ITEM_STATS[currentWeapon.name].twoHanded) {
+       const success = await unequipItem('weapon');
+       if (!success) return; // Stop if inventory was full
+    }
+  }
+
   const itemBeingWorn = game.equipment[slotType]; // This is {name, qty} or null
 
-  // --- Stop combat INTERVALS to prevent errors ---
-  const wasInCombat = game.inCombat;
-  if (wasInCombat) {
-    // --- THIS IS THE FIX ---
-    // We clear intervals, but DON'T call runFromCombat() which resets HP
-    if (game.playerCombatInterval) clearInterval(game.playerCombatInterval);
-    // if (game.enemyCombatInterval) clearInterval(game.enemyCombatInterval); // <-- DO NOT CLEAR ENEMY TIMER
-    game.playerCombatInterval = null;
-    // game.enemyCombatInterval = null; // <-- DO NOT CLEAR ENEMY TIMER
-    
-    // Disable the RUN button briefly to prevent spam
-    const runBtn = document.getElementById('combat-run-btn');
-    if (runBtn) runBtn.disabled = true;
-    // --- END FIX ---
-  }
-  // --- END ---
 
   // --- NEW LOGIC FOR STACKABLE ARROWS ---
   if (slotType === 'arrows') {
@@ -3550,13 +3847,7 @@ async function equipItem(slotType, fromInvIndex) {
     window.savePlayerData();
   }
   
-  // 6. Restart combat if we were in it
-  if (wasInCombat) {
-    // --- THIS IS THE FIX ---
-    // Call the new restart function which does NOT reset enemy HP
-    setTimeout(restartPlayerAttackInterval, 50); 
-    // --- END FIX ---
-  }
+
 }
 
 /**
@@ -3569,16 +3860,14 @@ async function equipItem(slotType, fromInvIndex) {
  */
 async function unequipItem(slotType) {
   const itemToUnequip = game.equipment[slotType];
-  if (!itemToUnequip) return; // Slot is already empty
+  if (!itemToUnequip) return true; // Slot is already empty, consider it a success
 
   // --- NEW: Smart unequip logic ---
   // 1. Try to find an existing stack to add to
   let stacked = false;
   for (const slot of game.inventory) {
     if (slot && slot.name === itemToUnequip.name) {
-      // --- THIS IS THE FIX for stacking arrows ---
-      slot.qty += itemToUnequip.qty; // Add the full stack (works for 1 and for many)
-      // --- END FIX ---
+      slot.qty += itemToUnequip.qty; 
       stacked = true;
       break;
     }
@@ -3590,49 +3879,36 @@ async function unequipItem(slotType) {
     if (emptySlotIndex === -1) {
       // Inventory is full
       await showGameAlert("Inventory Full", "You can't unequip this, your inventory is full.");
-      return;
+      return false; // <--- RETURN FALSE (Failed)
     }
     // Put item in the empty slot
     game.inventory[emptySlotIndex] = itemToUnequip;
   }
-  // --- END: Smart unequip logic ---
 
-
-  // --- Stop combat INTERVALS to prevent errors ---
-  const wasInCombat = game.inCombat;
-  if (wasInCombat) {
-    // --- THIS IS THE FIX ---
-    // We clear intervals, but DON'T call runFromCombat() which resets HP
-    if (game.playerCombatInterval) clearInterval(game.playerCombatInterval);
-    // if (game.enemyCombatInterval) clearInterval(game.enemyCombatInterval); // <-- DO NOT CLEAR ENEMY TIMER
-    game.playerCombatInterval = null;
-    // game.enemyCombatInterval = null; // <-- DO NOT CLEAR ENEMY TIMER
-    
-    // Disable the RUN button briefly to prevent spam
-    const runBtn = document.getElementById('combat-run-btn');
-    if (runBtn) runBtn.disabled = true;
-    // --- END FIX ---
-  }
-  // --- END ---
   
   // 3. Clear the equipment slot (since item is safely in inventory)
+  
+  // +++ NEW: Reset style if Magic Staff is unequipped, but KEEP autocast +++
+  if (slotType === 'weapon' && itemToUnequip.name === 'Magic Staff') {
+    // game.autocastSpell = null; // <-- REMOVED to remember spell
+    // Reset style to a physical default so combat doesn't break
+    setAttackStyle('strength', true);
+    if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
+  }
+  // +++ END NEW +++
+  
   game.equipment[slotType] = null; 
   
   // 4. Re-render everything
-  renderEquipment(); // This will update stats
+  renderEquipment(); 
   renderInventoryGrid();
   hideTooltip();
   if (typeof window.savePlayerData === 'function') {
     window.savePlayerData();
   }
   
-  // 5. Restart combat if we were in it
-  if (wasInCombat) {
-    // --- THIS IS THE FIX ---
-    // Call the new restart function which does NOT reset enemy HP
-    setTimeout(restartPlayerAttackInterval, 50); 
-    // --- END FIX ---
-  }
+  
+  return true; // <--- RETURN TRUE (Success)
 }
 
 const tooltip = document.getElementById('tooltip');
@@ -3686,6 +3962,203 @@ function getTotalXPForLevel(level) {
 
     return XP_TABLE[index] || 0;
 }
+
+// +++ NEW MAGIC SPELL FUNCTIONS +++
+
+/**
+ * Calculates the spell's damage based on player level and equipment.
+ */
+function getSpellStats(spell) {
+    const magicLevel = game.magic.level;
+    
+    // Get actual equipped magic damage (which is now just +1 from the staff)
+    const playerStats = getPlayerCombatStats();
+    const equipmentMagicDamage = playerStats.equipmentMagicDamage || 0;
+
+    // Formula: (Magic Level / 4) + Equipment Bonus (+1) + Spell Bonus (+2/3/4)
+    const baseMaxHit = 1 + Math.floor(magicLevel / 4);
+    const maxHit = baseMaxHit + equipmentMagicDamage + spell.damage;
+    
+    return {
+        maxHit: Math.max(1, maxHit),
+        xp: spell.xp 
+    };
+}
+
+/**
+ * Opens the Spells modal/panel
+ */
+function openSpells() {
+  const panel = document.getElementById('spellsPanel');
+  if (panel) {
+    renderSpellsPanel(); // Render content before showing
+    panel.style.visibility = (panel.style.visibility === 'visible') ? 'hidden' : 'visible';
+  }
+}
+
+/**
+ * Renders the spell icons in the spell panel.
+ */
+function renderSpellsPanel() {
+    const container = document.getElementById('spellsIconsContainer');
+    const autocastTextEl = document.getElementById('autocastText');
+    if (!container || !autocastTextEl) return;
+    
+    container.innerHTML = '';
+    const magicLvl = game.magic.level;
+
+    SPELL_LIST.forEach(spell => {
+        const isLocked = magicLvl < spell.level;
+        const isActive = game.autocastSpell === spell.name;
+        const iconWrapper = document.createElement('button');
+        
+        iconWrapper.id = `spell-btn-${spell.name.replace(/\s+/g, '')}`;
+        iconWrapper.className = `primary ${isLocked ? 'locked-item' : ''}`;
+        iconWrapper.style.cssText = `
+            width: 50px; 
+            height: 50px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 0;
+            border: 2px solid ${isActive ? 'var(--gold)' : 'var(--accent)'}; /* Highlight active spell */
+            box-shadow: ${isActive ? '0 0 10px var(--gold)' : 'none'};
+            transition: all 0.15s ease;
+        `;
+
+        // Tooltip Content
+        const stats = getSpellStats(spell);
+        const tooltipContent = `
+            <div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">${spell.name}</div>
+            ${isLocked ? `<div style="color:#ff8888;">Requires Magic Lvl: ${spell.level}</div>` : `
+                <div style="color:#aaffaa;">${spell.damage} Magic Damage</div>
+                <div style="color:#fff;">Requires Magic Lvl: ${spell.level}</div>
+                <div style="color:#ffaaaa; margin-top: 5px;">Right-click for Autocast...</div>
+            `}
+        `;
+
+        // Image
+        const img = document.createElement('img');
+        const imgName = spell.name.toLowerCase().replace(/\s+/g, '');
+        img.src = `images/${imgName}.jpeg`;
+        img.alt = spell.name;
+        img.style.cssText = 'width: 100%; height: 100%; object-fit: contain; pointer-events: none;';
+        iconWrapper.appendChild(img);
+
+        // Click Handlers
+        if (!isLocked) {
+            // Left-Click: Single cast in combat
+            iconWrapper.onclick = (e) => {
+                // Prevent right-click menu from showing if a spell is cast
+                e.preventDefault(); 
+                handleSpellClick(spell);
+            };
+            // Right-Click: Autocast menu
+            iconWrapper.oncontextmenu = (e) => {
+                e.preventDefault();
+                showAutocastContextMenu(e, spell.name);
+            };
+        }
+        
+        // FIX: Tooltip handlers moved OUTSIDE the isLocked check
+        iconWrapper.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+        iconWrapper.onmouseleave = hideTooltip;
+
+        container.appendChild(iconWrapper);
+    });
+    
+    // Update footer text
+    autocastTextEl.textContent = game.autocastSpell ? `Autocasting: ${game.autocastSpell}` : 'None';
+    autocastTextEl.style.color = game.autocastSpell ? 'var(--gold)' : '#fff';
+}
+
+/**
+ * Shows the right-click menu for autocasting spells.
+ */
+function showAutocastContextMenu(event, spellName) {
+    const menu = document.getElementById('itemContextMenu');
+    let menuContent = '';
+    
+    if (game.autocastSpell === spellName) {
+        menuContent += `<button class="context-menu-btn" onclick="setAutocastSpell(null)">Deactivate Autocast</button>`;
+    } else {
+        menuContent += `<button class="context-menu-btn" onclick="setAutocastSpell('${spellName}')">Autocast</button>`;
+    }
+
+    if (menuContent) {
+        menu.innerHTML = menuContent;
+        menu.style.display = 'block';
+        
+        const rect = document.body.getBoundingClientRect();
+        // FIX: Subtract 145px to show further left of the cursor
+        menu.style.left = (event.clientX - rect.left - 145) + 'px';
+        menu.style.top = (event.clientY - rect.top + 5) + 'px';
+
+        setTimeout(() => {
+            document.addEventListener('click', hideItemContextMenu, { once: true });
+        }, 0);
+    }
+}
+
+/**
+ * Sets the currently active autocast spell.
+ */
+window.setAutocastSpell = function(spellName) {
+    hideItemContextMenu();
+    game.autocastSpell = spellName;
+    renderSpellsPanel(); // Re-render to update border highlight
+    
+    // If setting autocast, and currently in combat, try to restart the attack
+    if (spellName && game.inCombat) {
+        restartPlayerAttackInterval();
+    }
+
+    // --- FIX: Save immediately so it persists on refresh ---
+    if (typeof window.savePlayerData === 'function') {
+        window.savePlayerData();
+    }
+}
+
+/**
+ * Handles a left-click on a spell icon.
+ */
+function handleSpellClick(spell) {
+    if (!game.inCombat || !game.currentEnemy) return;
+
+    // 1. Get current stats to know our attack speed
+    const stats = getPlayerCombatStats();
+    const now = Date.now();
+    // Use the time tracking variable we just added
+    const timeSinceLast = now - (game.lastAttackTime || 0);
+
+    // 2. Check Cooldown based on Time, NOT interval existence
+    if (timeSinceLast < stats.attackSpeed) {
+        // Cooldown active: do nothing, just return silent.
+        return; 
+    }
+    
+    // 3. Execute the one-shot attack with the chosen spell
+    playerAttackTurn(spell);
+
+    // 4. Reset the automatic loop
+    // We clear the pending "idle" check and restart it so you don't double-attack immediately
+    if (game.playerCombatInterval) clearTimeout(game.playerCombatInterval);
+    
+    // Disable Run button briefly (visual cooldown feedback)
+    const runBtn = document.getElementById('combat-run-btn');
+    if (runBtn) runBtn.disabled = true;
+
+    // Schedule the NEXT auto-turn (or idle check)
+    game.playerCombatInterval = setTimeout(() => {
+        // Re-enable run button when cooldown finishes
+        if (runBtn) runBtn.disabled = false; 
+        playerCombatLoop();
+    }, stats.attackSpeed);
+}
+
+// +++ END NEW MAGIC SPELL FUNCTIONS +++
+
 
 function updateSkillUI(){
   const skillsTab = document.getElementById('skillsTab');
@@ -3781,6 +4254,11 @@ function updateSkillUI(){
   
   // +++ NEW FISHING SKILL ICON +++
   createSkillIcon('Fishing', 'fishing', 'fishingskillicon.jpeg');
+  
+  // +++ NEW MAGIC SKILL ICON +++
+  createSkillIcon('Magic', 'magic', 'magicskillicon.jpeg');
+  // +++ NEW STONE FORGING ICON +++
+  createSkillIcon('Stone Forging', 'stoneforging', 'stoneforgingskillicon.jpeg');
 }
 
 function showItemPopup(text, progressElementId, delay = 0) {
@@ -3866,8 +4344,8 @@ function addXP(skill, amount, delay = 0){
   if (skill === 'woodcutting') barId = 'woodcutProgress';
   if (skill === 'crafting') barId = 'craftProgress'; // +++ NEW +++
   
-  // +++ ADDED 'crafting', 'fletching', 'fishing' TO THIS LIST +++
-  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting' && skill !== 'crafting' && skill !== 'fletching' && skill !== 'fishing') { // Don't show popup for skilling actions
+  // +++ ADDED 'crafting', 'fletching', 'fishing', 'stoneforging' TO THIS LIST +++
+  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting' && skill !== 'crafting' && skill !== 'fletching' && skill !== 'fishing' && skill !== 'stoneforging') { // Don't show popup for skilling actions
     if (delay > 0) {
       setTimeout(() => {
         showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
@@ -6473,7 +6951,8 @@ function renderFletchingItems() {
       const nameHtml = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">${itemName}</div>`;
       if (locked) {
         btn.onclick = null;
-        const lockedTT = nameHtml + `Requires Fletching Lvl: ${levelReq}`;
+        // FIX: Added red color to requirement
+        const lockedTT = nameHtml + `<div style="color:#ff8888;">Requires Fletching Lvl: ${levelReq}</div>`;
         btn.onmouseenter = (event) => showTooltip(event, lockedTT);
       } else {
         btn.onclick = onclick;
@@ -6886,7 +7365,8 @@ function renderCraftingItems() {
       const nameHtml = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">${itemName}</div>`;
       if (locked) {
         btn.onclick = null;
-        const lockedTT = nameHtml + `Requires Crafting Lvl: ${levelReq}`;
+        // FIX: Added red color to requirement
+        const lockedTT = nameHtml + `<div style="color:#ff8888;">Requires Crafting Lvl: ${levelReq}</div>`;
         btn.onmouseenter = (event) => showTooltip(event, lockedTT);
       } else {
         btn.onclick = onclick;
@@ -6904,6 +7384,14 @@ function renderCraftingItems() {
   const leatherHoodLocked = craftLvl < CRAFTING_LEATHER_HOOD_LVL;
   const leatherChapsLocked = craftLvl < CRAFTING_LEATHER_CHAPS_LVL;
   const leatherBodyLocked = craftLvl < CRAFTING_LEATHER_BODY_LVL;
+  
+  // +++ NEW WIZARD/CLOTH LOCKS +++
+  const clothLocked = craftLvl < CRAFTING_CLOTH_LVL;
+  const wizardBootsLocked = craftLvl < CRAFTING_WIZARD_BOOTS_LVL;
+  const wizardHatLocked = craftLvl < CRAFTING_WIZARD_HAT_LVL;
+  const wizardTrousersLocked = craftLvl < CRAFTING_WIZARD_TROUSERS_LVL;
+  const wizardRobeLocked = craftLvl < CRAFTING_WIZARD_ROBE_LVL;
+  const magicStaffLocked = craftLvl < CRAFTING_MAGIC_STAFF_LVL; // +++ NEW +++
 
   container.innerHTML = `
     <button id="craftBowStringBtn" class="primary ${bowStringLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
@@ -6924,6 +7412,26 @@ function renderCraftingItems() {
     <button id="craftLeatherBodyBtn" class="primary ${leatherBodyLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
       <img src="images/leatherarmor.png" alt="Leather Body" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
     </button>
+    
+    <!-- NEW CLOTH & WIZARD ITEMS -->
+    <button id="craftClothBtn" class="primary ${clothLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/cloth.png" alt="Cloth" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftWizardBootsBtn" class="primary ${wizardBootsLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/wizardboots.png" alt="Wizard Boots" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftWizardHatBtn" class="primary ${wizardHatLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/wizardhat.png" alt="Wizard Hat" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftWizardTrousersBtn" class="primary ${wizardTrousersLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/wizardtrousers.png" alt="Wizard Trousers" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftWizardRobeBtn" class="primary ${wizardRobeLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/wizardrobe.png" alt="Wizard Robe" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftMagicStaffBtn" class="primary ${magicStaffLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/magicstaff.png" alt="Magic Staff" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
   `;
   
   // --- Re-attach listeners for crafting items ---
@@ -6934,6 +7442,15 @@ function renderCraftingItems() {
   setupCraftButton('craftLeatherHoodBtn', leatherHoodLocked, openCraftLeatherHood, CRAFTING_LEATHER_HOOD_LVL, `Requires: ${LEATHER_HOOD_LEATHER_COST} Leather`, 'Leather Hood');
   setupCraftButton('craftLeatherChapsBtn', leatherChapsLocked, openCraftLeatherChaps, CRAFTING_LEATHER_CHAPS_LVL, `Requires: ${LEATHER_CHAPS_LEATHER_COST} Leather`, 'Leather Chaps');
   setupCraftButton('craftLeatherBodyBtn', leatherBodyLocked, openCraftLeatherBody, CRAFTING_LEATHER_BODY_LVL, `Requires: ${LEATHER_BODY_LEATHER_COST} Leather`, 'Leather Body');
+  
+  // +++ NEW WIZARD/CLOTH LISTENERS +++
+  setupCraftButton('craftClothBtn', clothLocked, openCraftCloth, CRAFTING_CLOTH_LVL, `Requires: ${CLOTH_SILK_COST} Silk`, `Cloth x${CLOTH_YIELD}`);
+  setupCraftButton('craftWizardBootsBtn', wizardBootsLocked, openCraftWizardBoots, CRAFTING_WIZARD_BOOTS_LVL, `Requires: ${WIZARD_BOOTS_CLOTH_COST} Cloth`, 'Wizard Boots');
+  setupCraftButton('craftWizardHatBtn', wizardHatLocked, openCraftWizardHat, CRAFTING_WIZARD_HAT_LVL, `Requires: ${WIZARD_HAT_CLOTH_COST} Cloth`, 'Wizard Hat');
+  setupCraftButton('craftWizardTrousersBtn', wizardTrousersLocked, openCraftWizardTrousers, CRAFTING_WIZARD_TROUSERS_LVL, `Requires: ${WIZARD_TROUSERS_CLOTH_COST} Cloth`, 'Wizard Trousers');
+  setupCraftButton('craftWizardRobeBtn', wizardRobeLocked, openCraftWizardRobe, CRAFTING_WIZARD_ROBE_LVL, `Requires: ${WIZARD_ROBE_CLOTH_COST} Cloth`, 'Wizard Robe');
+  // +++ NEW LISTENER +++
+  setupCraftButton('craftMagicStaffBtn', magicStaffLocked, openCraftMagicStaff, CRAFTING_MAGIC_STAFF_LVL, `Requires: 10 Oak, 10 Earth/Air/Water Crystals`, 'Magic Staff');
 }
 
 // --- Bow String UI & Logic ---
@@ -7558,6 +8075,836 @@ async function craftingLeatherLoop(timestamp, startTime) {
 }
 
 // +++ END: LEATHER CRAFTING FUNCTIONS +++
+
+
+// +++ NEW: CLOTH & WIZARD GEAR CRAFTING FUNCTIONS +++
+
+// --- Craft Cloth (from Silk) UI & Logic ---
+function openCraftCloth(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Cloth</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${CLOTH_SILK_COST} Silk. Yields ${CLOTH_YIELD}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingCloth;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString; // Generic stop
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingCloth() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  if (!canReceiveItem('Cloth')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  
+  if (game.craftingActive) return;
+
+  let totalSilk = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Silk') totalSilk += slot.qty;
+  }
+
+  if (totalSilk < CLOTH_SILK_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${CLOTH_SILK_COST} Silk.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => craftingClothLoop(Date.now(), Date.now()), 16);
+}
+
+async function craftingClothLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= CLOTH_TIME_MS) {
+    let totalSilk = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Silk') totalSilk += slot.qty;
+    }
+    if (totalSilk < CLOTH_SILK_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Silk.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Silk', CLOTH_SILK_COST);
+    addItem('Cloth', CLOTH_YIELD);
+    addXP('crafting', CLOTH_XP);
+    showItemPopup(`+${CLOTH_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+${CLOTH_YIELD} Cloth`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - CLOTH_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
+    let totalSilkAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Silk') totalSilkAfter += slot.qty;
+    }
+    if (totalSilkAfter < CLOTH_SILK_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Silk to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    return craftingClothLoop(Date.now(), newStartTime);
+
+  } else {
+    const progress = (elapsed / CLOTH_TIME_MS) * 100;
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => craftingClothLoop(Date.now(), startTime), 16);
+  }
+}
+
+// --- Wizard Boots UI & Logic ---
+function openCraftWizardBoots(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Wizard Boots</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${WIZARD_BOOTS_CLOTH_COST} Cloth.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingWizardBoots;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString;
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingWizardBoots() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  if (!canReceiveItem('Wizard Boots')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  
+  if (game.craftingActive) return;
+
+  let totalCloth = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Cloth') totalCloth += slot.qty;
+  }
+
+  if (totalCloth < WIZARD_BOOTS_CLOTH_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${WIZARD_BOOTS_CLOTH_COST} Cloth.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => craftingWizardBootsLoop(Date.now(), Date.now()), 16);
+}
+
+async function craftingWizardBootsLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= WIZARD_BOOTS_TIME_MS) {
+    let totalCloth = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Cloth') totalCloth += slot.qty;
+    }
+    if (totalCloth < WIZARD_BOOTS_CLOTH_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Cloth.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Cloth', WIZARD_BOOTS_CLOTH_COST);
+    addItem('Wizard Boots', 1);
+    addXP('crafting', WIZARD_BOOTS_XP);
+    showItemPopup(`+${WIZARD_BOOTS_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Wizard Boots`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - WIZARD_BOOTS_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
+    let totalClothAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Cloth') totalClothAfter += slot.qty;
+    }
+    if (totalClothAfter < WIZARD_BOOTS_CLOTH_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Cloth to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    return craftingWizardBootsLoop(Date.now(), newStartTime);
+
+  } else {
+    const progress = (elapsed / WIZARD_BOOTS_TIME_MS) * 100;
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => craftingWizardBootsLoop(Date.now(), startTime), 16);
+  }
+}
+
+// --- Wizard Hat UI & Logic ---
+function openCraftWizardHat(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Wizard Hat</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${WIZARD_HAT_CLOTH_COST} Cloth.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingWizardHat;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString;
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingWizardHat() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  if (!canReceiveItem('Wizard Hat')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  
+  if (game.craftingActive) return;
+
+  let totalCloth = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Cloth') totalCloth += slot.qty;
+  }
+
+  if (totalCloth < WIZARD_HAT_CLOTH_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${WIZARD_HAT_CLOTH_COST} Cloth.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => craftingWizardHatLoop(Date.now(), Date.now()), 16);
+}
+
+async function craftingWizardHatLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= WIZARD_HAT_TIME_MS) {
+    let totalCloth = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Cloth') totalCloth += slot.qty;
+    }
+    if (totalCloth < WIZARD_HAT_CLOTH_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Cloth.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Cloth', WIZARD_HAT_CLOTH_COST);
+    addItem('Wizard Hat', 1);
+    addXP('crafting', WIZARD_HAT_XP);
+    showItemPopup(`+${WIZARD_HAT_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Wizard Hat`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - WIZARD_HAT_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
+    let totalClothAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Cloth') totalClothAfter += slot.qty;
+    }
+    if (totalClothAfter < WIZARD_HAT_CLOTH_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Cloth to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    return craftingWizardHatLoop(Date.now(), newStartTime);
+
+  } else {
+    const progress = (elapsed / WIZARD_HAT_TIME_MS) * 100;
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => craftingWizardHatLoop(Date.now(), startTime), 16);
+  }
+}
+
+// --- Wizard Trousers UI & Logic ---
+function openCraftWizardTrousers(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Wizard Trousers</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${WIZARD_TROUSERS_CLOTH_COST} Cloth.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingWizardTrousers;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString;
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingWizardTrousers() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  if (!canReceiveItem('Wizard Trousers')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  
+  if (game.craftingActive) return;
+
+  let totalCloth = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Cloth') totalCloth += slot.qty;
+  }
+
+  if (totalCloth < WIZARD_TROUSERS_CLOTH_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${WIZARD_TROUSERS_CLOTH_COST} Cloth.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => craftingWizardTrousersLoop(Date.now(), Date.now()), 16);
+}
+
+async function craftingWizardTrousersLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= WIZARD_TROUSERS_TIME_MS) {
+    let totalCloth = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Cloth') totalCloth += slot.qty;
+    }
+    if (totalCloth < WIZARD_TROUSERS_CLOTH_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Cloth.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Cloth', WIZARD_TROUSERS_CLOTH_COST);
+    addItem('Wizard Trousers', 1);
+    addXP('crafting', WIZARD_TROUSERS_XP);
+    showItemPopup(`+${WIZARD_TROUSERS_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Wizard Trousers`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - WIZARD_TROUSERS_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
+    let totalClothAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Cloth') totalClothAfter += slot.qty;
+    }
+    if (totalClothAfter < WIZARD_TROUSERS_CLOTH_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Cloth to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    return craftingWizardTrousersLoop(Date.now(), newStartTime);
+
+  } else {
+    const progress = (elapsed / WIZARD_TROUSERS_TIME_MS) * 100;
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => craftingWizardTrousersLoop(Date.now(), startTime), 16);
+  }
+}
+
+// --- Wizard Robe UI & Logic ---
+function openCraftWizardRobe(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Wizard Robe</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${WIZARD_ROBE_CLOTH_COST} Cloth.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingWizardRobe;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString;
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingWizardRobe() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  if (!canReceiveItem('Wizard Robe')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  
+  if (game.craftingActive) return;
+
+  let totalCloth = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Cloth') totalCloth += slot.qty;
+  }
+
+  if (totalCloth < WIZARD_ROBE_CLOTH_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${WIZARD_ROBE_CLOTH_COST} Cloth.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => craftingWizardRobeLoop(Date.now(), Date.now()), 16);
+}
+
+async function craftingWizardRobeLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= WIZARD_ROBE_TIME_MS) {
+    let totalCloth = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Cloth') totalCloth += slot.qty;
+    }
+    if (totalCloth < WIZARD_ROBE_CLOTH_COST) {
+        await showGameAlert("Out of Materials", "You've run out of Cloth.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Cloth', WIZARD_ROBE_CLOTH_COST);
+    addItem('Wizard Robe', 1);
+    addXP('crafting', WIZARD_ROBE_XP);
+    showItemPopup(`+${WIZARD_ROBE_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Wizard Robe`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - WIZARD_ROBE_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
+    let totalClothAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Cloth') totalClothAfter += slot.qty;
+    }
+    if (totalClothAfter < WIZARD_ROBE_CLOTH_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough Cloth to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    return craftingWizardRobeLoop(Date.now(), newStartTime);
+
+  } else {
+    const progress = (elapsed / WIZARD_ROBE_TIME_MS) * 100;
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => craftingWizardRobeLoop(Date.now(), startTime), 16);
+  }
+}
+
+// +++ NEW: Magic Staff Crafting Functions +++
+function openCraftMagicStaff(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Magic Staff</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: 10 Oak, 10 Earth Crystal, 10 Air Crystal, 10 Water Crystal.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingMagicStaff;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString;
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingMagicStaff() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  if (!canReceiveItem('Magic Staff')) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  
+  if (game.craftingActive) return;
+
+  let totalOak = 0, totalEarth = 0, totalAir = 0, totalWater = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Oak') totalOak += slot.qty;
+      if (slot && slot.name === 'Earth Crystal Shard') totalEarth += slot.qty;
+      if (slot && slot.name === 'Air Crystal Shard') totalAir += slot.qty;
+      if (slot && slot.name === 'Water Crystal Shard') totalWater += slot.qty;
+  }
+
+  if (totalOak < MAGIC_STAFF_OAK_COST || totalEarth < MAGIC_STAFF_EARTH_COST || totalAir < MAGIC_STAFF_AIR_COST || totalWater < MAGIC_STAFF_WATER_COST) {
+      await showGameAlert("Not Enough Materials", `You need 10 Oak, 10 Earth, 10 Air, and 10 Water Crystals.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => craftingMagicStaffLoop(Date.now(), Date.now()), 16);
+}
+
+async function craftingMagicStaffLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= MAGIC_STAFF_TIME_MS) {
+    let totalOak = 0, totalEarth = 0, totalAir = 0, totalWater = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Oak') totalOak += slot.qty;
+        if (slot && slot.name === 'Earth Crystal Shard') totalEarth += slot.qty;
+        if (slot && slot.name === 'Air Crystal Shard') totalAir += slot.qty;
+        if (slot && slot.name === 'Water Crystal Shard') totalWater += slot.qty;
+    }
+
+    if (totalOak < MAGIC_STAFF_OAK_COST || totalEarth < MAGIC_STAFF_EARTH_COST || totalAir < MAGIC_STAFF_AIR_COST || totalWater < MAGIC_STAFF_WATER_COST) {
+        await showGameAlert("Out of Materials", "You've run out of materials.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Oak', MAGIC_STAFF_OAK_COST);
+    removeItem('Earth Crystal Shard', MAGIC_STAFF_EARTH_COST);
+    removeItem('Air Crystal Shard', MAGIC_STAFF_AIR_COST);
+    removeItem('Water Crystal Shard', MAGIC_STAFF_WATER_COST);
+    
+    addItem('Magic Staff', 1);
+    addXP('crafting', MAGIC_STAFF_XP);
+    showItemPopup(`+${MAGIC_STAFF_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Magic Staff`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - MAGIC_STAFF_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
+    // Check again for next loop
+    let totalOakAfter = 0, totalEarthAfter = 0, totalAirAfter = 0, totalWaterAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Oak') totalOakAfter += slot.qty;
+        if (slot && slot.name === 'Earth Crystal Shard') totalEarthAfter += slot.qty;
+        if (slot && slot.name === 'Air Crystal Shard') totalAirAfter += slot.qty;
+        if (slot && slot.name === 'Water Crystal Shard') totalWaterAfter += slot.qty;
+    }
+
+    if (totalOakAfter < MAGIC_STAFF_OAK_COST || totalEarthAfter < MAGIC_STAFF_EARTH_COST || totalAirAfter < MAGIC_STAFF_AIR_COST || totalWaterAfter < MAGIC_STAFF_WATER_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough materials to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    return craftingMagicStaffLoop(Date.now(), newStartTime);
+
+  } else {
+    const progress = (elapsed / MAGIC_STAFF_TIME_MS) * 100;
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => craftingMagicStaffLoop(Date.now(), startTime), 16);
+  }
+}
+
+// =================================================================
+// +++ NEW: STONE FORGING FUNCTIONS +++
+// =================================================================
+
+const STONE_CRAFT_TIME_MS = 3000;
+const STONE_CRAFT_XP = 40; 
+const STONE_SHARD_COST = 5;
+
+// +++ NEW LEVEL REQUIREMENTS +++
+const STONE_FORGE_EARTH_LVL = 1;
+const STONE_FORGE_AIR_LVL = 20;
+const STONE_FORGE_WATER_LVL = 40;
+
+function openElementalForgeHub() {
+  showMainScreen('hubElementalForge');
+  renderElementalForgeItems();
+}
+
+function renderElementalForgeItems() {
+  const container = document.getElementById('elementalForgeItemsContainer');
+  if (!container) return;
+
+  const sfLvl = game.stoneforging.level;
+
+  // Check locks
+  const earthLocked = sfLvl < STONE_FORGE_EARTH_LVL;
+  const airLocked = sfLvl < STONE_FORGE_AIR_LVL;
+  const waterLocked = sfLvl < STONE_FORGE_WATER_LVL;
+  
+  container.innerHTML = `
+    <button id="forgeEarthstoneBtn" class="primary ${earthLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/earthstone.png" alt="Earthstone" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="forgeAirstoneBtn" class="primary ${airLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/airstone.png" alt="Airstone" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="forgeWaterstoneBtn" class="primary ${waterLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/waterstone.png" alt="Waterstone" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+  `;
+
+  const setupBtn = (id, name, shardsName, func, locked, levelReq) => {
+      const btn = document.getElementById(id);
+      if(btn) {
+        const nameHtml = `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${name}</div>`;
+        
+        // Set color: Red if locked, White if unlocked
+        const reqColor = locked ? '#ff8888' : '#fff';
+        const levelHtml = `<div style="color:${reqColor};">Requires Stone Forging Lvl: ${levelReq}</div>`;
+        
+        if (locked) {
+          btn.onclick = null;
+          // Locked: Show Name + Red Level Requirement
+          btn.onmouseenter = (e) => showTooltip(e, nameHtml + levelHtml);
+        } else {
+          btn.onclick = func;
+          // Unlocked: Show Name + White Level Requirement + Materials
+          const materialHtml = `Requires: 5 ${shardsName}`;
+          btn.onmouseenter = (e) => showTooltip(e, nameHtml + levelHtml + materialHtml);
+        }
+        btn.onmouseleave = hideTooltip;
+      }
+  };
+
+  setupBtn('forgeEarthstoneBtn', 'Earthstone', 'Earth Crystal Shards', () => openForgeStone('Earth'), earthLocked, STONE_FORGE_EARTH_LVL);
+  setupBtn('forgeAirstoneBtn', 'Airstone', 'Air Crystal Shards', () => openForgeStone('Air'), airLocked, STONE_FORGE_AIR_LVL);
+  setupBtn('forgeWaterstoneBtn', 'Waterstone', 'Water Crystal Shards', () => openForgeStone('Water'), waterLocked, STONE_FORGE_WATER_LVL);
+}
+
+function stopStoneForging() {
+  game.stoneforgingActive = false;
+  if(game.progressFrame) clearTimeout(game.progressFrame);
+  
+  const bar = document.getElementById('forgeProgress');
+  if(bar) bar.style.width = '0%';
+  const startBtn = document.getElementById('startForgeBtn');
+  if(startBtn) startBtn.style.display = 'inline-block';
+  const stopBtn = document.getElementById('stopForgeBtn');
+  if(stopBtn) stopBtn.style.display = 'none';
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function openForgeStone(type) {
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  stopCraftingBowString();
+  stopFishing();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  const shardName = `${type} Crystal Shard`;
+  const stoneName = `${type}stone`;
+
+  wrapper.innerHTML = `
+    <h2>Forge - ${stoneName}</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: 5 ${shardName}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="forgeProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startForgeBtn" class="primary">Start Forging</button>
+      <button id="stopForgeBtn" class="primary" style="background:#555; display:none;">Stop Forging</button>
+      <button onclick="openElementalForgeHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startForgeBtn').onclick = () => startForgingStone(type);
+  document.getElementById('stopForgeBtn').onclick = stopStoneForging;
+  showMainScreen('hubDynamic');
+}
+
+async function startForgingStone(type) {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active.");
+    return;
+  }
+  
+  // +++ NEW LEVEL CHECK +++
+  let levelReq = 1;
+  if (type === 'Earth') levelReq = STONE_FORGE_EARTH_LVL;
+  else if (type === 'Air') levelReq = STONE_FORGE_AIR_LVL;
+  else if (type === 'Water') levelReq = STONE_FORGE_WATER_LVL;
+
+  if (game.stoneforging.level < levelReq) {
+      await showGameAlert("Level Required", `You need Stone Forging Level ${levelReq} to craft this.`);
+      return;
+  }
+  // +++ END NEW +++
+  
+  const stoneName = `${type}stone`;
+  const shardName = `${type} Crystal Shard`;
+
+  if (!canReceiveItem(stoneName)) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  
+  if (game.stoneforgingActive) return;
+
+  let totalShards = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === shardName) totalShards += slot.qty;
+  }
+
+  if (totalShards < STONE_SHARD_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${STONE_SHARD_COST} ${shardName}.`);
+      return;
+  }
+  
+  game.stoneforgingActive = true;
+  document.getElementById('startForgeBtn').style.display = 'none';
+  document.getElementById('stopForgeBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => stoneForgingLoop(Date.now(), Date.now(), type), 16);
+}
+
+async function stoneForgingLoop(timestamp, startTime, type) {
+  if (!game.stoneforgingActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  const stoneName = `${type}stone`;
+  const shardName = `${type} Crystal Shard`;
+
+  if (elapsed >= STONE_CRAFT_TIME_MS) {
+    let totalShards = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === shardName) totalShards += slot.qty;
+    }
+    if (totalShards < STONE_SHARD_COST) {
+        await showGameAlert("Out of Materials", `You've run out of ${shardName}.`);
+        stopStoneForging();
+        return;
+    }
+    
+    removeItem(shardName, STONE_SHARD_COST);
+    addItem(stoneName, 1);
+    addXP('stoneforging', STONE_CRAFT_XP);
+    showItemPopup(`+${STONE_CRAFT_XP} Stone Forging XP`, 'forgeProgress', 0);
+    showItemPopup(`+1 ${stoneName}`, 'forgeProgress', 450);
+    
+    document.getElementById('forgeProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - STONE_CRAFT_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
+    let totalShardsAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === shardName) totalShardsAfter += slot.qty;
+    }
+    if (totalShardsAfter < STONE_SHARD_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough shards to make more.");
+        stopStoneForging();
+        return;
+    }
+    
+    return stoneForgingLoop(Date.now(), newStartTime, type);
+
+  } else {
+    const progress = (elapsed / STONE_CRAFT_TIME_MS) * 100;
+    document.getElementById('forgeProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => stoneForgingLoop(Date.now(), startTime, type), 16);
+  }
+}
 
 
 // =================================================================
@@ -8449,7 +9796,8 @@ function renderSmithingItems(metalType) {
       if (locked) {
         btn.onclick = null;
         // Add name to the locked tooltip
-        const lockedTT = nameHtml + `Requires Blacksmith Lvl: ${levelReq}`;
+        // FIX: Added red color to requirement
+        const lockedTT = nameHtml + `<div style="color:#ff8888;">Requires Blacksmith Lvl: ${levelReq}</div>`;
         btn.onmouseenter = (event) => showTooltip(event, lockedTT);
       } else {
         btn.onclick = onclick;
@@ -8850,10 +10198,17 @@ async function startCrystalMining(type) {
     return;
   }
 
-  let item, timeMs;
-  if (type === 'Earth') { item = EARTH_CRYSTAL_ITEM; timeMs = EARTH_CRYSTAL_TIME_MS; }
-  else if (type === 'Air') { item = AIR_CRYSTAL_ITEM; timeMs = AIR_CRYSTAL_TIME_MS; }
-  else if (type === 'Water') { item = WATER_CRYSTAL_ITEM; timeMs = WATER_CRYSTAL_TIME_MS; }
+  let item, timeMs, levelReq;
+  if (type === 'Earth') { item = EARTH_CRYSTAL_ITEM; timeMs = EARTH_CRYSTAL_TIME_MS; levelReq = EARTH_CRYSTAL_LVL; }
+  else if (type === 'Air') { item = AIR_CRYSTAL_ITEM; timeMs = AIR_CRYSTAL_TIME_MS; levelReq = AIR_CRYSTAL_LVL; }
+  else if (type === 'Water') { item = WATER_CRYSTAL_ITEM; timeMs = WATER_CRYSTAL_TIME_MS; levelReq = WATER_CRYSTAL_LVL; }
+
+  // --- FIX: Check Level Requirement ---
+  if (game.mining.level < levelReq) {
+      await showGameAlert("Level Required", `You need Mining Level ${levelReq} to mine ${type} Crystals.`);
+      return;
+  }
+  // --- END FIX ---
 
   if (!canReceiveItem(item)) {
     await showGameAlert("Inventory Full", "You have no room to mine this.");
@@ -9308,7 +10663,7 @@ function beginCombat() {
           return; // Stop the fight from starting
       }
   }
-  // --- END NEW CHECK ---
+
   
   game.inCombat = true;
   document.getElementById('combat-fight-btn').style.display = 'none'; 
@@ -9318,8 +10673,8 @@ function beginCombat() {
   // --- NEW: Calculate stats and set dynamic attack speed ---
   const stats = getPlayerCombatStats();
   
-  // Player attacks at their calculated attack speed
-  game.playerCombatInterval = setInterval(playerAttackTurn, stats.attackSpeed);
+  // Player attacks at their calculated attack speed (Using new Loop)
+  game.playerCombatInterval = setTimeout(playerCombatLoop, stats.attackSpeed);
   
   // Enemy (Chicken) attacks every 3.0 seconds
   game.enemyCombatInterval = setInterval(enemyAttackTurn, 3000);
@@ -9327,16 +10682,16 @@ function beginCombat() {
 
 // NEW: Function to restart ONLY the player's attack interval
 function restartPlayerAttackInterval() {
-  if (!game.inCombat || !game.currentEnemy) return; // Should already be in combat
+  if (!game.inCombat || !game.currentEnemy) return; 
   
-  // 1. Clear ONLY the player's interval
-  if (game.playerCombatInterval) clearInterval(game.playerCombatInterval);
+  // 1. Clear pending timeout
+  if (game.playerCombatInterval) clearTimeout(game.playerCombatInterval);
   
   // 2. Get new stats
   const stats = getPlayerCombatStats();
   
-  // 3. Restart ONLY the player's interval
-  game.playerCombatInterval = setInterval(playerAttackTurn, stats.attackSpeed);
+  // 3. Start the new loop immediately
+  game.playerCombatInterval = setTimeout(playerCombatLoop, stats.attackSpeed);
   
   // 4. Re-enable the run button
   const runBtn = document.getElementById('combat-run-btn');
@@ -9427,15 +10782,18 @@ function returnToCombatArea() { // +++ RENAMED FUNCTION +++
     openFletchingHub(); // Return to Fletching hub
   } else if (game.wasCraftingBeforeCombat) { // +++ NEW +++
     openCraftingHub(); // Return to Crafting hub
-  } else if (game.wasFishingBeforeCombat) { // +++ NEW +++
+  } else if (game.wasFishingBeforeCombat) { 
     openFishingHub(); // Return to Fishing hub
+  } else if (game.wasStoneForgingBeforeCombat) { // +++ NEW +++
+    openElementalForgeHub(); // Return to Elemental Forge
   }
   game.wasMiningBeforeCombat = false;
   game.wasSmithingBeforeCombat = false;
-  game.wasWoodcuttingBeforeCombat = false; // +++ NEW +++
-  game.wasFletchingBeforeCombat = false; // +++ NEW +++
-  game.wasCraftingBeforeCombat = false; // +++ NEW +++
-  game.wasFishingBeforeCombat = false; // +++ NEW +++
+  game.wasWoodcuttingBeforeCombat = false; 
+  game.wasFletchingBeforeCombat = false; 
+  game.wasCraftingBeforeCombat = false; 
+  game.wasFishingBeforeCombat = false; 
+  game.wasStoneForgingBeforeCombat = false; // +++ NEW +++
 }
 
 // NEW: Helper function to update the enemy's HP bar
@@ -9537,119 +10895,223 @@ function showDamageSplat(target, amount, type) {
   setTimeout(() => splat.remove(), 850); // Remove just before animation ends
 }
 
-function playerAttackTurn() {
+/**
+ * NEW: Recursive combat loop.
+ * Allows gear switching without resetting the current cooldown.
+ */
+function playerCombatLoop() {
+  if (!game.inCombat) return;
+  
+  // 1. Execute the attack
+  playerAttackTurn();
+  
+  // 2. If still fighting, schedule the NEXT attack based on CURRENT stats
+  if (game.inCombat) {
+      const stats = getPlayerCombatStats();
+      game.playerCombatInterval = setTimeout(playerCombatLoop, stats.attackSpeed);
+  }
+}
+
+function playerAttackTurn(spellOverride = null) {
   if (!game.inCombat || !game.currentEnemy) return;
 
-  // --- NEW: Check for arrows BEFORE attacking ---
+  // --- Determine Attack Type and Spell ---
   const weapon = game.equipment.weapon;
   const isRanged = (weapon && weapon.name.endsWith('Bow'));
+  const isMagic = (weapon && weapon.name === 'Magic Staff');
   
+  let currentSpell = null;
+  
+  if (spellOverride) {
+      currentSpell = spellOverride; // Manual click overrides autocast
+  } else if (game.autocastSpell && isMagic) { // <--- FIX: Only autocast if holding staff
+      // Find the spell object from the name
+      currentSpell = SPELL_LIST.find(s => s.name === game.autocastSpell);
+      if (!currentSpell) {
+          game.autocastSpell = null; // Autocast spell not found/cleared
+          showWarningPopup("Autocast spell cleared.");
+      }
+  }
+
+  // --- Pre-Attack Checks ---
   if (isRanged) {
       const arrows = game.equipment.arrows;
       if (!arrows || arrows.qty < 1) {
           showWarningPopup("You ran out of arrows!");
-          runFromCombat(false); // Stop the fight
-          return; // Exit the function
+          runFromCombat(false); 
+          return; 
       }
+  } else if (currentSpell && !isMagic) {
+      // Trying to cast a spell but not equipped with a magic staff
+      showWarningPopup("You need a Magic Staff equipped to cast spells!");
+      return;
+  } else if (currentSpell && game.magic.level < currentSpell.level) {
+      // Should be prevented by UI, but check anyway
+      showWarningPopup(`Magic level too low for ${currentSpell.name}!`);
+      return;
   }
-  // --- END NEW CHECK ---
 
-  // --- NEW: Play attack sound ---
-  if (isRanged) {
-    playGlobalSound('sounds/soundeffects/arrowsoundeffect.mp3');
-  } else {
-    playGlobalSound('sounds/soundeffects/swordsoundeffect.mp3');
+  // +++ NEW STONE AMMUNITION CHECK +++
+  if (currentSpell) {
+      let requiredStone = '';
+      if (currentSpell.name === 'Earth Bolt') requiredStone = 'Earthstone';
+      else if (currentSpell.name === 'Air Bolt') requiredStone = 'Airstone';
+      else if (currentSpell.name === 'Water Bolt') requiredStone = 'Waterstone';
+      
+      // Check inventory for 3 stones (sums up all stacks)
+      let stoneCount = 0;
+      for (const slot of game.inventory) {
+          if (slot && slot.name === requiredStone) stoneCount += slot.qty;
+      }
+      
+      if (stoneCount < 3) {
+          showWarningPopup(`Need 3 ${requiredStone} to cast!`);
+          return; // Stop cast (miss turn)
+      }
+      
+      // Remove stones
+      removeItem(requiredStone, 3);
   }
-  // --- END NEW ---
+  // +++ END NEW STONE AMMUNITION CHECK +++
+
+  // If we have a magic staff but no autocast/manual spell, default to doing nothing/waiting.
+  // This is how we allow the player to wait for a manual click when they have no autocast selected.
+  if (isMagic && !currentSpell && !spellOverride) return; 
   
+  // FIX: Removed the check for game.playerCombatInterval. 
+  // Spam is now prevented by the Time Check in handleSpellClick.
 
   // --- 1. Get Player's Current Stats ---
   const playerStats = getPlayerCombatStats();
 
-  // --- 2. Calculate Hit Chance (ALL NEW LOGIC) ---
+  // --- FIX: Record the time of this attack ---
+  game.lastAttackTime = Date.now(); 
+
+  // --- 2. Play Attack Sound ---
+  if (currentSpell) {
+      playGlobalSound('sounds/soundeffects/earthblastsoundeffect.mp3'); // Generic magic sound for now
+  } else if (isRanged) {
+      playGlobalSound('sounds/soundeffects/arrowsoundeffect.mp3');
+  } else {
+      playGlobalSound('sounds/soundeffects/swordsoundeffect.mp3');
+  }
+
+  // --- 3. Calculate Hit Chance (ALL NEW LOGIC) ---
   const baseHitChance = 70;
-  // Get the correct offensive skill (Ranged or Attack) and style bonus
-  const playerAccuracy = playerStats.offensiveSkillLevel + playerStats.accuracyBonus;
+  let playerAccuracy = 0;
+  
+  if (currentSpell) {
+      playerAccuracy = game.magic.level; // Uses Magic Level for accuracy
+  } else {
+      // Uses Ranged or Attack Level
+      playerAccuracy = playerStats.offensiveSkillLevel + playerStats.accuracyBonus;
+  }
+  
   const enemyDefence = game.currentEnemy.defence;
   
   let hitChance = baseHitChance + (playerAccuracy - enemyDefence);
-  hitChance = Math.max(10, Math.min(90, hitChance)); // Clamp between 10% and 90%
+  hitChance = Math.max(10, Math.min(90, hitChance)); 
 
   if (Math.random() * 100 > hitChance) {
-    showDamageSplat('enemy', 0, 'block'); // ENEMY MISS
+    showDamageSplat('enemy', 0, 'block'); 
     return;
   }
   // --- END NEW HIT CHANCE ---
 
-  // --- 3. Calculate Damage (If Hit) ---
-  // Get the final max hit (which already includes style bonuses)
-  let maxHit = playerStats.physicalDamage;
+  // --- 4. Calculate Damage (If Hit) ---
+  let maxHit = 0;
+  let skillXP = 0;
+  let skillName = game.playerAttackStyle; // Default to old melee skill name
+  
+  if (currentSpell) {
+      const spellStats = getSpellStats(currentSpell);
+      maxHit = spellStats.maxHit;
+      skillXP = currentSpell.xp; // XP based on the spell's static XP, not damage
+      skillName = 'magic';
+  } else if (playerStats.magicDamage > 0) {
+      // This path should only be hit if the weapon type is magic and we weren't
+      // able to find a spell. We prevent this from happening earlier.
+      maxHit = playerStats.magicDamage;
+      skillName = 'magic';
+
+  } else {
+    maxHit = playerStats.physicalDamage;
+    skillName = isRanged ? 'ranged' : game.playerAttackStyle;
+  }
   
   // Damage is a random number from 0 to your max hit
   let damage = Math.floor(Math.random() * (maxHit + 1));
-
+  
   // +++ FIX: CAP DAMAGE TO ENEMY'S REMAINING HP +++
   let damageApplied = Math.min(damage, game.currentEnemy.currentHp);
 
   if (damageApplied > 0) {
-    showDamageSplat('enemy', damageApplied, 'damage'); // ENEMY HIT
+    showDamageSplat('enemy', damageApplied, 'damage'); 
   } else {
-    showDamageSplat('enemy', 0, 'block'); // ENEMY HIT A 0
+    showDamageSplat('enemy', 0, 'block');
   }
 
   // Apply damage to enemy
   game.currentEnemy.currentHp -= damageApplied;
   updateEnemyCombatUI();
   
-  // --- NEW: Consume Arrow AFTER shot ---
+  // --- Consume Arrow AFTER shot ---
   if (isRanged) {
       game.equipment.arrows.qty--;
       if (game.equipment.arrows.qty <= 0) {
           game.equipment.arrows = null;
       }
-      renderEquipment(); // Update the UI to show 1 less arrow
+      renderEquipment(); 
   }
-  // --- END NEW ---
-
-  // --- 4. Grant XP (ALL NEW LOGIC) ---
+  
+  // --- 5. Grant XP (MODIFIED) ---
   if (damageApplied > 0) {
+    // Magic now behaves exactly like Melee/Ranged (4 XP per damage point)
     let mainXPGained = damageApplied * 4;
     let vitalityXPGained = Math.ceil(mainXPGained / 2);
-    addXP('vitality', vitalityXPGained, 450); // Always grant Vitality XP
+    
+    // REMOVED: The block that gave fixed XP per cast and reduced damage XP.
 
-    if (isRanged) {
-        // --- RANGED XP ---
+    addXP('vitality', vitalityXPGained, 450);
+    
+    // --- SKILL XP LOGIC ---
+    if (skillName === 'magic') {
         if (game.playerAttackStyle === 'defence') {
-            // Split Ranged / Defence
+            let defenceXp = Math.floor(mainXPGained / 2);
+            let magicXp = Math.ceil(mainXPGained / 2);
+            addXP('defence', defenceXp, 0);
+            addXP('magic', magicXp, 0);
+        } else {
+            addXP('magic', mainXPGained, 0);
+        }
+    } else if (skillName === 'ranged') {
+        if (game.playerAttackStyle === 'defence') {
             let defenceXp = Math.floor(mainXPGained / 2);
             let rangedXp = Math.ceil(mainXPGained / 2);
             addXP('defence', defenceXp, 0);
             addXP('ranged', rangedXp, 0);
         } else {
-            // Ranged on Accurate or Aggressive
             addXP('ranged', mainXPGained, 0);
         }
     } else {
-        // --- MELEE XP ---
-        // This is the simple, original logic for melee styles
-        // 'accurate' trains attack, 'aggressive' trains strength, 'defence' trains defence
+        // Melee (attack, strength, defence)
         addXP(game.playerAttackStyle, mainXPGained, 0);
     }
   }
   // --- END NEW XP LOGIC ---
 
-  // --- 5. Check for Enemy Death ---
+  // --- 6. Check for Enemy Death ---
   if (game.currentEnemy.currentHp <= 0) {
-    // --- NEW: Multi-item loot drop ---
-    if (game.currentEnemy.name === 'Chicken') { // +++ CHECK ENEMY NAME +++
+    // ... existing loot logic ...
+    if (game.currentEnemy.name === 'Chicken') { 
       addItem('Raw Chicken', 1);
-      const featherQty = Math.floor(Math.random() * 5) + 2; // 2 to 6 Feathers
+      const featherQty = Math.floor(Math.random() * 5) + 2; 
       addItem('Feather', featherQty);
       
       showItemPopup('+1 Raw Chicken', null, 900);
-      showItemPopup(`+${featherQty} Feather`, null, 1350); // Show feather popup slightly after
-    } else if (game.currentEnemy.name === 'Spider') { // +++ NEW SPIDER DROP +++
-      const silkQty = Math.floor(Math.random() * 3) + 1; // 1 to 3 Silk
+      showItemPopup(`+${featherQty} Feather`, null, 1350); 
+    } else if (game.currentEnemy.name === 'Spider') { 
+      const silkQty = Math.floor(Math.random() * 3) + 1; 
       addItem('Silk', silkQty);
       
       showItemPopup(`+${silkQty} Silk`, null, 900);
@@ -9657,11 +11119,8 @@ function playerAttackTurn() {
       addItem('Cow Hide', 1);
       showItemPopup(`+1 Cow Hide`, null, 900);
     }
-
-
     
-    // --- END NEW ---
-    
+    // --- FIX: Changed maxHP to maxHp (Case sensitive) ---
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
     updateEnemyCombatUI();
   }
@@ -9722,6 +11181,11 @@ function backToActions(){
 }
 
 function _createModal(title, contentHtml, buttons) {
+  // +++ FIX: Force tooltip to hide immediately when a popup opens +++
+  if (typeof hideTooltip === 'function') {
+    hideTooltip();
+  }
+
   // Return a new promise that we can control
   return new Promise((resolve) => {
     // 1. Create elements
@@ -9920,6 +11384,14 @@ function renderBankGrid() {
               else if (item.name === 'Copper Arrow') imgName = 'copperarrow'; // +++ NEW +++
               else if (item.name === 'Silk') imgName = 'silk'; // +++ NEW +++
 
+              // +++ NEW CLOTH & WIZARD ITEMS +++
+              else if (item.name === 'Cloth') imgName = 'cloth';
+              else if (item.name === 'Wizard Hat') imgName = 'wizardhat';
+              else if (item.name === 'Wizard Robe') imgName = 'wizardrobe';
+              else if (item.name === 'Wizard Trousers') imgName = 'wizardtrousers';
+              else if (item.name === 'Wizard Boots') imgName = 'wizardboots';
+              else if (item.name === 'Magic Staff') imgName = 'magicstaff'; // +++ NEW +++
+              
               // +++ NEW CRYSTAL SHARDS +++
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
               else if (item.name === 'Air Crystal Shard') imgName = 'aircrystalshard';
@@ -10437,9 +11909,10 @@ function openShop() {
 function resetGameState() {
   stopMining(); 
   stopBlacksmithing();
-  stopFletching(); // +++ NEW +++
-  stopCraftingBowString(); // +++ NEW (using a specific stop func name) +++
-  stopFishing(); // +++ NEW +++
+  stopFletching(); 
+  stopCraftingBowString(); 
+  stopFishing(); 
+  stopStoneForging(); // +++ NEW +++
   
   // +++ NEW: Add combat stop +++
   if (game.inCombat) {
@@ -10472,6 +11945,8 @@ function resetGameState() {
   // +++ NEW SKILLS +++
   game.crafting = { level: 1, xp: 0, totalXP: 0 };
   game.ranged = { level: 1, xp: 0, totalXP: 0 };
+  game.magic = { level: 1, xp: 0, totalXP: 0 };
+  game.stoneforging = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
   
   // +++ ADD THESE 4 MISSING LINES +++
   game.attack = { level: 1, xp: 0, totalXP: 0 };
@@ -10484,9 +11959,10 @@ function resetGameState() {
   game.blacksmithingActive = false; // +++ NEW +++
   game.cookingActive = false;
   game.woodcuttingActive = false; // +++ NEW +++
-  game.fletchingActive = false; // +++ NEW +++
-  game.craftingActive = false; // +++ NEW +++
-  game.fishingActive = false; // +++ NEW +++
+  game.fletchingActive = false; 
+  game.craftingActive = false; 
+  game.fishingActive = false; 
+  game.stoneforgingActive = false; // +++ NEW +++
   game.shopOpen = false;
   game.isAdmin = false;
   
@@ -10630,17 +12106,18 @@ function closeSettings() {
  * @param {string} src - The path to the sound file
  */
 // +++ NEW: Hub Screen Toggler Function +++
-// +++ ADDED hubCrafting, hubFishingAreas, hubOcean, hubRiver +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver'];
+// +++ ADDED hubElementalForge +++
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
   stopBlacksmithing();
   stopCookingChicken();
   stopWoodcutting();
-  stopFletching(); // +++ NEW +++
-  stopCraftingBowString(); // +++ NEW +++
-  stopFishing(); // +++ NEW +++
+  stopFletching(); 
+  stopCraftingBowString();
+  stopFishing(); 
+  stopStoneForging(); // +++ NEW +++
   game.shopOpen = false;
   hideTooltip();
 
@@ -10693,9 +12170,10 @@ function showMainScreen(screenIdToShow) {
   // Special case: if we're showing the crystal mine hub, apply level locks
   if (screenIdToShow === 'hubCrystalMine') {
     const miningLvl = game.mining.level;
+    // FIX: Apply visual lock to Earth Crystal too
+    document.getElementById('earthCrystalBtn').classList.toggle('locked-item', miningLvl < EARTH_CRYSTAL_LVL);
     document.getElementById('airCrystalBtn').classList.toggle('locked-item', miningLvl < AIR_CRYSTAL_LVL);
     document.getElementById('waterCrystalBtn').classList.toggle('locked-item', miningLvl < WATER_CRYSTAL_LVL);
-    // Earth is entry level for this area (Level 20), so no visual lock needed beyond the pickaxe check
   }
   
   // Special case: if we're showing the forest hub, apply level locks
@@ -10797,24 +12275,61 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const closeStatsBtn = document.getElementById('closeStatsBtn');
   const statsPanel = document.getElementById('statsPanel');
   const statsPanelHeader = document.getElementById('statsPanelHeader');
+  
+  // --- NEW: Spells Panel Listeners ---
+  const toggleSpellsBtn = document.getElementById('toggleSpellsBtn');
+  const closeSpellsBtn = document.getElementById('closeSpellsBtn');
+  const spellsPanel = document.getElementById('spellsPanel');
+  // --- END NEW ---
 
   if (toggleStatsBtn) {
     toggleStatsBtn.onclick = () => {
       if (statsPanel) {
-        // We also run renderEquipment to make sure stats are up-to-date when opening
         if (typeof renderEquipment === 'function') {
             renderEquipment();
         }
-        // --- THIS IS THE FIX ---
+        // Simply toggle visibility. Do NOT close the Spells panel.
         statsPanel.style.visibility = (statsPanel.style.visibility === 'visible') ? 'hidden' : 'visible';
       }
     };
   }
   if (closeStatsBtn) {
     closeStatsBtn.onclick = () => {
-      if (statsPanel) statsPanel.style.visibility = 'hidden'; // <-- THIS IS THE FIX
+      if (statsPanel) statsPanel.style.visibility = 'hidden'; 
     };
   }
+
+  // --- NEW: Toggle Spells Button Logic ---
+  if (toggleSpellsBtn) {
+    toggleSpellsBtn.onclick = () => {
+       if (spellsPanel) {
+          // Check if currently hidden or visible
+          if (spellsPanel.style.visibility !== 'visible') {
+              // Opening
+              if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
+              spellsPanel.style.visibility = 'visible';
+          } else {
+              // Closing
+              spellsPanel.style.visibility = 'hidden';
+              // FIX: Clear icons immediately to prevent visual lag
+              const container = document.getElementById('spellsIconsContainer');
+              if (container) container.innerHTML = ''; 
+          }
+       }
+    }; 
+  }
+  
+  if (closeSpellsBtn) {
+    closeSpellsBtn.onclick = () => {
+      if (spellsPanel) {
+          spellsPanel.style.visibility = 'hidden'; 
+          // FIX: Clear icons immediately to prevent visual lag
+          const container = document.getElementById('spellsIconsContainer');
+          if (container) container.innerHTML = ''; 
+      }
+    };
+  }
+  // --- END NEW ---
 
   // --- NEW: Draggable Panel Logic ---
   
@@ -10876,17 +12391,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('shopActionIcon').onclick = openShop;
   document.getElementById('bankActionIcon').onclick = openBank;
   document.getElementById('fletchingActionIcon').onclick = openFletchingHub; // +++ NEW +++
-  document.getElementById('craftingActionIcon').onclick = openCraftingHub; // +++ NEW +++
+  document.getElementById('craftingActionIcon').onclick = openCraftingHub; 
+  document.getElementById('elementalForgeActionIcon').onclick = openElementalForgeHub; // +++ NEW +++
   
   // --- Hub Crafting Listeners ---
-  document.getElementById('hubCrafting_ReturnBtn').onclick = backToActions; // +++ NEW +++
+  document.getElementById('hubCrafting_ReturnBtn').onclick = backToActions; 
+  document.getElementById('hubElementalForge_ReturnBtn').onclick = backToActions; // +++ NEW +++
   
   // --- Hub Mine Listeners ---
 
 // --- Hub Crystal Mine Listeners ---
   document.getElementById('hubCrystalMine_ReturnBtn').onclick = backToActions;
   
-  document.getElementById('earthCrystalBtn').onclick = openEarthCrystalMine;
+  // FIX: Add level check for Earth Crystal click
+  document.getElementById('earthCrystalBtn').onclick = () => {
+    if (game.mining.level >= EARTH_CRYSTAL_LVL) openEarthCrystalMine();
+  };
+
   document.getElementById('airCrystalBtn').onclick = () => {
     if (game.mining.level >= AIR_CRYSTAL_LVL) openAirCrystalMine();
   };
@@ -11016,59 +12537,97 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('bankActionIcon').onmouseleave = hideTooltip;
   document.getElementById('fletchingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Fletching Bench</div>'); // +++ NEW +++
   document.getElementById('fletchingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
-  document.getElementById('craftingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Crafting Bench</div>'); // +++ NEW +++
-  document.getElementById('craftingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
-  document.getElementById('fishingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Fishing Areas</div>'); // +++ NEW +++
-  document.getElementById('fishingActionIcon').onmouseleave = hideTooltip; // +++ NEW +++
+  document.getElementById('craftingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Crafting Bench</div>');
+  document.getElementById('craftingActionIcon').onmouseleave = hideTooltip;
+  document.getElementById('elementalForgeActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Elemental Forge</div>'); // +++ NEW +++
+  document.getElementById('elementalForgeActionIcon').onmouseleave = hideTooltip;
+  document.getElementById('fishingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Fishing Areas</div>');
+  document.getElementById('fishingActionIcon').onmouseleave = hideTooltip;
   
 // --- Tooltips for Hub Crystal Mine ---
-  document.getElementById('earthCrystalBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Earth Crystal</div>Requires Mining Lvl: ${EARTH_CRYSTAL_LVL}<br>Tool: Iron Pickaxe`);
+  document.getElementById('earthCrystalBtn').onmouseenter = (e) => {
+      const isLowLvl = game.mining.level < EARTH_CRYSTAL_LVL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Earth Crystal</div><div style="color:${textColor};">Requires Mining Lvl: ${EARTH_CRYSTAL_LVL}</div>Tool: Iron Pickaxe`);
+  };
   document.getElementById('earthCrystalBtn').onmouseleave = hideTooltip;
   
-  document.getElementById('airCrystalBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Air Crystal</div>Requires Mining Lvl: ${AIR_CRYSTAL_LVL}<br>Tool: Iron Pickaxe`);
+  document.getElementById('airCrystalBtn').onmouseenter = (e) => {
+      const isLowLvl = game.mining.level < AIR_CRYSTAL_LVL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Air Crystal</div><div style="color:${textColor};">Requires Mining Lvl: ${AIR_CRYSTAL_LVL}</div>Tool: Iron Pickaxe`);
+  };
   document.getElementById('airCrystalBtn').onmouseleave = hideTooltip;
   
-  document.getElementById('waterCrystalBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Water Crystal</div>Requires Mining Lvl: ${WATER_CRYSTAL_LVL}<br>Tool: Iron Pickaxe`);
+  document.getElementById('waterCrystalBtn').onmouseenter = (e) => {
+      const isLowLvl = game.mining.level < WATER_CRYSTAL_LVL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Water Crystal</div><div style="color:${textColor};">Requires Mining Lvl: ${WATER_CRYSTAL_LVL}</div>Tool: Iron Pickaxe`);
+  };
   document.getElementById('waterCrystalBtn').onmouseleave = hideTooltip;
 
   // --- Tooltips for Hub Mine ---
-  document.getElementById('copperVeinBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div>Requires Mining Lvl: 1<br>Tool: Bronze Pickaxe');
+  document.getElementById('copperVeinBtn').onmouseenter = (e) => {
+      // Level 1 is always unlocked, so always white
+      showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div><div style="color:#fff;">Requires Mining Lvl: 1</div>Tool: Bronze Pickaxe');
+  };
   document.getElementById('copperVeinBtn').onmouseleave = hideTooltip;
+
   document.getElementById('ironVeinBtn').onmouseenter = (e) => {
-    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Iron Vein</div>Requires Mining Lvl: ${IRON_MINE_LVL}<br>Tool: Copper Pickaxe`;
+    const isLowLvl = game.mining.level < IRON_MINE_LVL;
+    const textColor = isLowLvl ? '#ff8888' : '#fff';
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Iron Vein</div><div style="color:${textColor};">Requires Mining Lvl: ${IRON_MINE_LVL}</div>Tool: Copper Pickaxe`;
     showTooltip(e, tt);
   };
   document.getElementById('ironVeinBtn').onmouseleave = hideTooltip;
+  
   document.getElementById('coalVeinBtn').onmouseenter = (e) => {
-    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Coal Vein</div>Requires Mining Lvl: ${COAL_MINE_LVL}<br>Tool: Copper Pickaxe`;
+    const isLowLvl = game.mining.level < COAL_MINE_LVL;
+    const textColor = isLowLvl ? '#ff8888' : '#fff';
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Coal Vein</div><div style="color:${textColor};">Requires Mining Lvl: ${COAL_MINE_LVL}</div>Tool: Copper Pickaxe`;
     showTooltip(e, tt);
   };
   document.getElementById('coalVeinBtn').onmouseleave = hideTooltip;
   
   // --- Tooltips for Hub Forest ---
-  document.getElementById('softwoodTreeBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Softwood Tree</div>Requires Woodcutting Lvl: ${SOFTWOOD_TREE_LVL}`);
+  document.getElementById('softwoodTreeBtn').onmouseenter = (e) => {
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Softwood Tree</div><div style="color:#fff;">Requires Woodcutting Lvl: ${SOFTWOOD_TREE_LVL}</div>`);
+  };
   document.getElementById('softwoodTreeBtn').onmouseleave = hideTooltip;
-  document.getElementById('oakTreeBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Oak Tree</div>Requires Woodcutting Lvl: ${OAK_TREE_LVL}`);
+
+  document.getElementById('oakTreeBtn').onmouseenter = (e) => {
+      const isLowLvl = game.woodcutting.level < OAK_TREE_LVL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Oak Tree</div><div style="color:${textColor};">Requires Woodcutting Lvl: ${OAK_TREE_LVL}</div>`);
+  };
   document.getElementById('oakTreeBtn').onmouseleave = hideTooltip;
 
   // --- Tooltips for Hub Kitchen ---
   document.getElementById('cookChickenBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Chicken</div>Requires: 1 Raw Chicken');
   document.getElementById('cookChickenBtn').onmouseleave = hideTooltip;
   
-  document.getElementById('cookHerringBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Herring</div>Requires: 1 Herring<br>Cooking Lvl: ${COOK_HERRING_LVL}`);
+  document.getElementById('cookHerringBtn').onmouseenter = (e) => {
+      const isLowLvl = game.cooking.level < COOK_HERRING_LVL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Herring</div>Requires: 1 Herring<br><div style="color:${textColor};">Cooking Lvl: ${COOK_HERRING_LVL}</div>`);
+  };
   document.getElementById('cookHerringBtn').onmouseleave = hideTooltip;
   
   document.getElementById('cookTroutBtn').onmouseenter = (e) => {
-    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Trout</div>Requires: 1 Trout<br>Cooking Lvl: ${COOK_TROUT_LVL}`;
+    const isLowLvl = game.cooking.level < COOK_TROUT_LVL;
+    const textColor = isLowLvl ? '#ff8888' : '#fff';
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Trout</div>Requires: 1 Trout<br><div style="color:${textColor};">Cooking Lvl: ${COOK_TROUT_LVL}</div>`;
     showTooltip(e, tt);
-    document.getElementById('cookTroutBtn').classList.toggle('locked-item', game.cooking.level < COOK_TROUT_LVL);
+    document.getElementById('cookTroutBtn').classList.toggle('locked-item', isLowLvl);
   };
   document.getElementById('cookTroutBtn').onmouseleave = hideTooltip;
   
   document.getElementById('cookSalmonBtn').onmouseenter = (e) => {
-    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Salmon</div>Requires: 1 Salmon<br>Cooking Lvl: ${COOK_SALMON_LVL}`;
+    const isLowLvl = game.cooking.level < COOK_SALMON_LVL;
+    const textColor = isLowLvl ? '#ff8888' : '#fff';
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Salmon</div>Requires: 1 Salmon<br><div style="color:${textColor};">Cooking Lvl: ${COOK_SALMON_LVL}</div>`;
     showTooltip(e, tt);
-    document.getElementById('cookSalmonBtn').classList.toggle('locked-item', game.cooking.level < COOK_SALMON_LVL);
+    document.getElementById('cookSalmonBtn').classList.toggle('locked-item', isLowLvl);
   };
   document.getElementById('cookSalmonBtn').onmouseleave = hideTooltip;
 
@@ -11076,8 +12635,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // --- Tooltips for Hub Combat ---
   document.getElementById('farmAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Farm</div>');
   document.getElementById('farmAreaBtn').onmouseleave = hideTooltip;
-  document.getElementById('caveAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Cave</div>'); // +++ MODIFIED +++
-  document.getElementById('caveAreaBtn').onmouseleave = hideTooltip; // +++ NEW +++
+  document.getElementById('caveAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Cave</div>'); 
+  document.getElementById('caveAreaBtn').onmouseleave = hideTooltip; 
   
   // --- Tooltips for Hub Fishing ---
   document.getElementById('oceanAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Ocean</div>');
@@ -11086,11 +12645,25 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('riverAreaBtn').onmouseleave = hideTooltip;
   
   // --- Tooltips for Fishing Spots ---
-  document.getElementById('fishHerringBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Fish Herring</div>Requires Fishing Lvl: ${HERRING_FISH_LVL}`);
+  document.getElementById('fishHerringBtn').onmouseenter = (e) => {
+      const isLowLvl = game.fishing.level < HERRING_FISH_LVL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Fish Herring</div><div style="color:${textColor};">Requires Fishing Lvl: ${HERRING_FISH_LVL}</div>`);
+  };
   document.getElementById('fishHerringBtn').onmouseleave = hideTooltip;
-  document.getElementById('fishTroutBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Fish Trout</div>Requires Fishing Lvl: ${TROUT_FISH_LVL}`);
+
+  document.getElementById('fishTroutBtn').onmouseenter = (e) => {
+      const isLowLvl = game.fishing.level < TROUT_FISH_LVL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Fish Trout</div><div style="color:${textColor};">Requires Fishing Lvl: ${TROUT_FISH_LVL}</div>`);
+  };
   document.getElementById('fishTroutBtn').onmouseleave = hideTooltip;
-  document.getElementById('fishSalmonBtn').onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Fish Salmon</div>Requires Fishing Lvl: ${SALMON_FISH_LVL}`);
+
+  document.getElementById('fishSalmonBtn').onmouseenter = (e) => {
+      const isLowLvl = game.fishing.level < SALMON_FISH_LVL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Fish Salmon</div><div style="color:${textColor};">Requires Fishing Lvl: ${SALMON_FISH_LVL}</div>`);
+  };
   document.getElementById('fishSalmonBtn').onmouseleave = hideTooltip;
 
   // +++ END NEW LISTENER BLOCK +++
@@ -11766,15 +13339,27 @@ window.showSaveIndicator = function() {
           xp: game.ranged.xp,
           totalXP: game.ranged.totalXP
         },
+        // +++ NEW MAGIC SAVE LOGIC +++
+        magic: {
+          level: game.magic.level,
+          xp: game.magic.xp,
+          totalXP: game.magic.totalXP
+        },
         // +++ NEW FISHING SAVE LOGIC +++
         fishing: {
           level: game.fishing.level,
           xp: game.fishing.xp,
           totalXP: game.fishing.totalXP
         },
+        stoneforging: { // +++ NEW +++
+          level: game.stoneforging.level,
+          xp: game.stoneforging.xp,
+          totalXP: game.stoneforging.totalXP
+        },
         // +++ END NEW SAVE LOGIC +++
         
-        playerAttackStyle: game.playerAttackStyle, // <-- ADD THIS
+        playerAttackStyle: game.playerAttackStyle, 
+        autocastSpell: game.autocastSpell || null, // +++ NEW: Save the active spell +++
         updatedAt: new Date().toISOString()
         // We don't save activeSession here, that's handled by the lock functions
       };
@@ -11858,6 +13443,12 @@ window.showSaveIndicator = function() {
         
         // If we are INACTIVE, OR we are ACTIVE and IDLE, sync the data.
         game.playerAttackStyle = data.playerAttackStyle || 'strength';
+        
+        // +++ NEW: Load Autocast Spell +++
+        game.autocastSpell = data.autocastSpell || null;
+        // Update the visual border on the spell icons immediately
+        if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
+        // +++ END NEW +++
         
         // +++ NEW: Load Equipment +++
         game.equipment = data.equipment || { helmet: null, chest: null, weapon: null, boots: null };
@@ -12023,6 +13614,16 @@ window.showSaveIndicator = function() {
         }
         // +++ END NEW RANGED LOADING LOGIC +++
         
+        // +++ NEW MAGIC LOADING LOGIC +++
+        if (data.magic) {
+          game.magic.level = data.magic.level || 1;
+          game.magic.xp = data.magic.xp || 0;
+          game.magic.totalXP = data.magic.totalXP || getTotalXPForLevel(data.magic.level - 1) + data.magic.xp || 0; 
+        } else {
+          game.magic = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        // +++ END NEW MAGIC LOADING LOGIC +++
+        
         // +++ NEW FISHING LOADING LOGIC +++
         if (data.fishing) {
           game.fishing.level = data.fishing.level || 1;
@@ -12031,7 +13632,16 @@ window.showSaveIndicator = function() {
         } else {
           game.fishing = { level: 1, xp: 0, totalXP: 0 }; 
         }
-        // +++ END NEW FISHING LOADING LOGIC +++
+        
+        // +++ NEW STONE FORGING LOADING LOGIC +++
+        if (data.stoneforging) {
+          game.stoneforging.level = data.stoneforging.level || 1;
+          game.stoneforging.xp = data.stoneforging.xp || 0;
+          game.stoneforging.totalXP = data.stoneforging.totalXP || getTotalXPForLevel(data.stoneforging.level - 1) + data.stoneforging.xp || 0; 
+        } else {
+          game.stoneforging = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        // +++ END NEW LOGIC +++
 
         setText('charName', game.name);
         updateHPUI(); // This now calculates maxHP using game.vitality.level
@@ -12113,7 +13723,9 @@ window.showSaveIndicator = function() {
         // +++ NEW SKILLS FOR NEW ACCOUNTS +++
         crafting: { level: 1, xp: 0, totalXP: 0 },
         ranged: { level: 1, xp: 0, totalXP: 0 },
-        fishing: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW FISHING FOR NEW ACCOUNTS +++
+        fishing: { level: 1, xp: 0, totalXP: 0 },
+        stoneforging: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW +++
+        magic: { level: 1, xp: 0, totalXP: 0 }, 
         
         playerAttackStyle: 'strength',
         activeSession: null, // +++ ADD THIS
@@ -12763,10 +14375,10 @@ window.showSaveIndicator = function() {
                 addLocalChatMessage("Usage: /setlevel [playername] [skill] [1-99]", 'error');
                 return true;
             }
-            // +++ NEW: Added 'crafting', 'ranged', 'fishing' to admin command +++
-            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking', 'woodcutting', 'fletching', 'crafting', 'ranged', 'fishing'];
+            // +++ NEW: Added 'crafting', 'ranged', 'fishing', 'magic' to admin command +++
+            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking', 'woodcutting', 'fletching', 'crafting', 'ranged', 'fishing', 'magic'];
 if (!validSkills.includes(skill)) {
-     addLocalChatMessage("Unknown skill. Use: mining, blacksmith, attack, strength, defence, vitality, cooking, woodcutting, fletching, crafting, ranged, or fishing.", 'error');
+     addLocalChatMessage("Unknown skill.", 'error');
      return true;
 }
             const newTotalXP = getTotalXPForLevel(level); 
@@ -13469,10 +15081,12 @@ if (!validSkills.includes(skill)) {
         const woodcuttingXp = data.woodcutting?.totalXP || 0; // +++ NEW +++
         const fletchingXp = data.fletching?.totalXP || 0; // +++ NEW +++
         const craftingXp = data.crafting?.totalXP || 0; // +++ NEW +++
-        const rangedXp = data.ranged?.totalXP || 0; // +++ NEW +++
-        const fishingXp = data.fishing?.totalXP || 0; // +++ NEW +++
+        const rangedXp = data.ranged?.totalXP || 0; 
+        const fishingXp = data.fishing?.totalXP || 0; 
+        const magicXp = data.magic?.totalXP || 0; 
+        const stoneforgingXp = data.stoneforging?.totalXP || 0; // +++ NEW +++
 
-        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp + woodcuttingXp + fletchingXp + craftingXp + rangedXp + fishingXp;
+        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp + woodcuttingXp + fletchingXp + craftingXp + rangedXp + fishingXp + magicXp + stoneforgingXp;
         // --- END OF FIX ---
 
         players.push({
@@ -13635,6 +15249,12 @@ if (!validSkills.includes(skill)) {
     if (game.fishingActive) {
       stopFishing();
     }
+    if (game.stoneforgingActive) { // +++ NEW +++
+      stopStoneForging();
+    }
+    // NEW: Clear autocast on logout
+    game.autocastSpell = null;
+    if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
     // +++ END NEW +++
     
     // 2. +++ NEW CRITICAL FIX +++: Release the session lock explicitly
@@ -13776,7 +15396,23 @@ if (!validSkills.includes(skill)) {
       
       // +++ NEW FISHING REQUIREMENTS +++
       'images/fishingpole.png',
-      'images/fishingbait.png'
+      'images/fishingbait.png',
+      
+      // +++ NEW CLOTH & WIZARD ASSETS +++
+      'images/cloth.png',
+      'images/wizardhat.png',
+      'images/wizardrobe.png',
+      'images/wizardtrousers.png',
+      'images/wizardboots.png',
+      'images/magicstaff.png',
+      'images/magicskillicon.jpeg',
+      
+      // +++ NEW ELEMENTAL FORGE ASSETS +++
+      'images/earthstone.png',
+      'images/airstone.png',
+      'images/waterstone.png',
+      'images/elementalforge.jpeg',
+      'images/stoneforgingskillicon.jpeg'
     ];
 
     /**
