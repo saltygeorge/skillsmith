@@ -13367,6 +13367,8 @@ function resetGameState() {
   game.vitality = { level: 1, xp: 0, totalXP: 0 };
   // +++ END OF FIX +++
 
+  game.questLines = {}; // +++ FIX: RESET QUESTS +++
+
   game.miningActive = false;
   game.blacksmithingActive = false; // +++ NEW +++
   game.cookingActive = false;
