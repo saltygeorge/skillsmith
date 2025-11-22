@@ -1374,6 +1374,114 @@ button.primary:hover { background: var(--accent-hover); }
   background: var(--accent-hover);
 }
 
+/* --- NEW: Level Up Popup Styles --- */
+#levelUpOverlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 6000;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  
+  /* +++ FADE EFFECT SETTINGS +++ */
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+/* Class to toggle visibility */
+#levelUpOverlay.visible {
+  opacity: 1;
+}
+
+.levelup-card {
+  position: relative;
+  background: var(--panel-bg);
+  border: 4px solid var(--gold);
+  border-radius: 12px;
+  padding: 30px 50px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(181, 166, 66, 0.6), inset 0 0 20px rgba(0,0,0,0.5);
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+}
+
+/* Festive Sunburst Background */
+.levelup-rays {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px; height: 400px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 215, 0, 0.1) 0deg 20deg,
+    transparent 20deg 40deg
+  );
+  animation: rotateRays 10s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.levelup-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.levelup-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--gold);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.levelup-icon-frame {
+  width: 80px; height: 80px;
+  background: rgba(0,0,0,0.3);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+  box-shadow: 0 0 15px var(--gold);
+}
+
+.levelup-icon-frame img {
+  width: 64px; height: 64px;
+  object-fit: contain;
+}
+
+.levelup-text {
+  font-size: 20px;
+  color: #fff;
+  text-shadow: 0 1px 2px #000;
+}
+
+.levelup-level {
+  font-size: 48px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 10px var(--gold);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes rotateRays {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
 </style>
 </head>
 <body>
@@ -1529,6 +1637,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="elementalForgeActionIcon" src="images/elementalforge.jpeg" alt="Elemental Forge" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="lotteryActionIcon" src="images/lotteryicon.jpeg" alt="Lottery" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain; border: 2px solid var(--gold); border-radius: 8px;">
               <img id="questsActionIcon" src="images/questbuttonicon.jpg" alt="Quests" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="huntingBoardActionIcon" src="images/huntingboard.jpeg" alt="Hunting Board" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
             </div>
           </div>
 
@@ -1539,6 +1648,18 @@ button.primary:hover { background: var(--accent-hover); }
                 </div>
             <div class="action-buttons" style="margin-top: 20px;">
               <button id="hubQuests_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubHuntingBoard" class="hub-screen">
+            <h2>Hunting Board</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Accept bounties to earn gold and experience.</div>
+            
+            <div id="bountyContent" style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
+                </div>
+
+            <div class="action-buttons" style="margin-top: 20px;">
+              <button id="hubHuntingBoard_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
 
@@ -2053,6 +2174,20 @@ button.primary:hover { background: var(--accent-hover); }
   </div>
 </div>
 
+<div id="levelUpOverlay">
+  <div class="levelup-card">
+    <div class="levelup-rays"></div>
+    <div class="levelup-content">
+      <div class="levelup-title">Level Up!</div>
+      <div class="levelup-icon-frame">
+        <img id="levelUpIcon" src="" alt="Skill Icon">
+      </div>
+      <div class="levelup-text">You reached <span id="levelUpSkillName">Mining</span> Level</div>
+      <div class="levelup-level" id="levelUpValue">10</div>
+    </div>
+  </div>
+</div>
+
 <!-- NEW: Settings Modal -->
 <div id="settingsModalOverlay">
   <div class="settings-modal">
@@ -2163,6 +2298,10 @@ const game = {
   stoneforging: { level: 1, xp: 0, totalXP: 0 },
   stoneforgingActive: false,
   wasStoneForgingBeforeCombat: false,
+
+  // +++ NEW BOUNTY HUNTING SKILL +++
+  bountyhunting: { level: 1, xp: 0, totalXP: 0 },
+  activeBounty: null, // { target: 'Rat', req: 100, kills: 0 }
   
   // Stores progress: { 'tutorial': { completed: ['tut_1'], activeQuestId: 'tut_2', kills: 0 } }
   questLines: {},
@@ -4716,7 +4855,77 @@ function updateSkillUI(){
   createSkillIcon('Magic', 'magic', 'magicskillicon.jpeg');
   // +++ NEW STONE FORGING ICON +++
   createSkillIcon('Stone Forging', 'stoneforging', 'stoneforgingskillicon.jpeg');
+  // +++ NEW BOUNTY HUNTING ICON +++
+  createSkillIcon('Bounty Hunting', 'bountyhunting', 'bountyhunterskillicon.jpeg');
 }
+
+// +++ NEW: Level Up Popup Logic +++
+function showLevelUpPopup(skill, newLevel) {
+  const overlay = document.getElementById('levelUpOverlay');
+  const iconEl = document.getElementById('levelUpIcon');
+  const skillNameEl = document.getElementById('levelUpSkillName');
+  const levelValEl = document.getElementById('levelUpValue');
+  
+  // Map internal skill keys to the specific file names provided in updateSkillUI
+  const skillIcons = {
+    'mining': 'miningskillicon.png',
+    'blacksmith': 'blacksmithskillicon.png',
+    'attack': 'attackskillicon.jpeg',
+    'strength': 'strengthskillicon.png',
+    'defence': 'defenseskillicon.png',
+    'vitality': 'vitalityskillicon.png',
+    'cooking': 'cookingskillicon.png',
+    'woodcutting': 'woodcuttingskillicon.jpeg',
+    'fletching': 'fletchingskillicon.jpeg',
+    'crafting': 'craftingskillicon.png',
+    'ranged': 'rangedskillicon.jpeg',
+    'fishing': 'fishingskillicon.jpeg',
+    'magic': 'magicskillicon.jpeg',
+    'stoneforging': 'stoneforgingskillicon.jpeg',
+    'bountyhunting': 'bountyhunterskillicon.jpeg'
+  };
+
+  // Format Skill Name (capitalize first letter)
+  const formattedName = skill.charAt(0).toUpperCase() + skill.slice(1);
+
+  // Update DOM
+  if(iconEl) iconEl.src = `images/${skillIcons[skill] || 'gearicon.png'}`;
+  if(skillNameEl) skillNameEl.innerText = formattedName;
+  if(levelValEl) levelValEl.innerText = newLevel;
+
+  // Play Sound
+  playGlobalSound('sounds/soundeffects/levelupsoundeffect.mp3');
+
+  // Show Overlay with Fade Logic
+  if(overlay) {
+    // 1. Reset state (in case it was fading out)
+    overlay.style.display = 'flex';
+    
+    // Force a reflow so the browser realizes display is now 'flex' before we change opacity
+    void overlay.offsetWidth; 
+    
+    // 2. Fade In
+    overlay.classList.add('visible');
+    
+    // Clear any existing timeout to prevent early closing
+    if (game.levelUpTimeout) clearTimeout(game.levelUpTimeout);
+    if (game.levelUpFadeTimeout) clearTimeout(game.levelUpFadeTimeout);
+    
+    // 3. Schedule Fade Out (4.5 seconds visible + 0.5s fade = 5s total)
+    game.levelUpTimeout = setTimeout(() => {
+        // Trigger CSS Fade Out
+        overlay.classList.remove('visible');
+        
+        // 4. Remove from display after transition completes (0.5s)
+        game.levelUpFadeTimeout = setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 500); // Match CSS transition time
+        
+    }, 4500);
+  }
+}
+
+
 
 function showItemPopup(text, progressElementId, delay = 0) {
     const main = document.getElementById('mainArea');
@@ -4780,17 +4989,22 @@ function addXP(skill, amount, delay = 0){
   }
   game[skill].totalXP += amount; 
   game[skill].xp += amount;
-  
+
   let leveledUp = false; // --- NEW: Add a flag ---
   while(game[skill].xp >= getNextXP(game[skill].level)){
     game[skill].xp -= getNextXP(game[skill].level);
     game[skill].level++;
     leveledUp = true; // --- NEW: Set the flag ---
   }
-  
+
   // --- NEW: Check if vitality leveled up and update HP ---
   if (leveledUp && skill === 'vitality') {
     updateHPUI();
+  }
+
+  // --- NEW: Trigger Level Up Popup ---
+  if (leveledUp) {
+      showLevelUpPopup(skill, game[skill].level);
   }
   // --- END NEW ---
 
@@ -9412,6 +9626,12 @@ const STONE_FORGE_EARTH_LVL = 1;
 const STONE_FORGE_AIR_LVL = 20;
 const STONE_FORGE_WATER_LVL = 40;
 
+// +++ NEW BOUNTY HUNTING CONSTANTS +++
+const BOUNTY_TIER_1_TARGETS = ['Rat', 'Spider', 'Chicken', 'Cow', 'Centipede'];
+const BOUNTY_KILL_XP = 15; // XP gained per kill on a bounty target
+const BOUNTY_REWARD_GOLD = 500;
+const BOUNTY_REQ_COUNT = 100; // Default kill count
+
 function openElementalForgeHub() {
   showMainScreen('hubElementalForge');
   renderElementalForgeItems();
@@ -9479,6 +9699,114 @@ function stopStoneForging() {
   const stopBtn = document.getElementById('stopForgeBtn');
   if(stopBtn) stopBtn.style.display = 'none';
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+// =================================================================
+// +++ NEW: BOUNTY HUNTING FUNCTIONS +++
+// =================================================================
+
+function openHuntingBoard() {
+  showMainScreen('hubHuntingBoard');
+  renderBountyInterface();
+}
+
+function renderBountyInterface() {
+  const container = document.getElementById('bountyContent');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (game.activeBounty) {
+    // --- ACTIVE MISSION VIEW ---
+    const b = game.activeBounty;
+    const isComplete = b.kills >= b.req;
+    const statusColor = isComplete ? '#44aa44' : '#efe3cf';
+    const statusText = isComplete ? 'MISSION COMPLETE' : 'IN PROGRESS';
+    
+    const bountyHtml = `
+      <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 2px solid ${isComplete ? '#44aa44' : 'var(--accent)'};">
+        <h3 style="color: var(--gold); margin-top: 0;">Current Bounty: Kill ${b.target}s</h3>
+        <div style="color: ${statusColor}; font-weight: bold; margin-bottom: 10px;">${statusText}</div>
+        
+        <div style="margin-bottom: 10px;">
+           Progress: <span style="color: #fff;">${b.kills} / ${b.req}</span>
+        </div>
+        <div style="width: 100%; height: 10px; background: #333; border-radius: 5px; overflow: hidden;">
+           <div style="width: ${Math.min(100, (b.kills / b.req) * 100)}%; height: 100%; background: var(--gold);"></div>
+        </div>
+        <div style="margin-top: 15px; font-size: 14px; color: #ccc;">
+           Reward: ${BOUNTY_REWARD_GOLD} Gold
+        </div>
+        
+        ${isComplete ? 
+          `<button onclick="claimBountyReward()" class="primary" style="margin-top: 15px; background: #44aa44; width: 100%;">Claim Reward</button>` : 
+          `<div style="margin-top: 15px; font-style: italic; color: #888;">Return here when the job is done.</div>`
+        }
+      </div>
+    `;
+    container.innerHTML = bountyHtml;
+
+  } else {
+    // --- SELECT MISSION VIEW ---
+    // Currently only Lvl 1 Category
+    container.innerHTML = `
+      <div onclick="assignBounty(1)" class="quest-line-card" style="text-align: left;">
+        <div style="font-size: 18px; font-weight: bold; color: var(--gold);">Level 1 Bounties</div>
+        <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Simple tasks for beginners. Rats, Spiders, Chickens, etc.</div>
+        <div style="margin-top: 8px; color: #aaffaa;">Click to accept a random mission</div>
+      </div>
+    `;
+  }
+}
+
+async function assignBounty(tier) {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Error", "Session not active.");
+    return;
+  }
+  
+  // Pick random target
+  const targets = BOUNTY_TIER_1_TARGETS;
+  const randomTarget = targets[Math.floor(Math.random() * targets.length)];
+  
+  game.activeBounty = {
+    target: randomTarget,
+    req: BOUNTY_REQ_COUNT,
+    kills: 0,
+    tier: tier
+  };
+  
+  await showGameAlert("Bounty Accepted", `Your mission: Kill ${BOUNTY_REQ_COUNT} ${randomTarget}s.`);
+  
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  renderBountyInterface();
+}
+
+async function claimBountyReward() {
+  if (!game.activeBounty || game.activeBounty.kills < game.activeBounty.req) return;
+  
+  addGold(BOUNTY_REWARD_GOLD);
+  playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+  
+  game.activeBounty = null; // Clear mission
+  
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  
+  renderBountyInterface();
+  await showGameAlert("Bounty Claimed", `You received ${BOUNTY_REWARD_GOLD} Gold.`);
+}
+
+function updateBountyProgress(enemyName, delay = 0) {
+  if (game.activeBounty && game.activeBounty.target === enemyName) {
+    if (game.activeBounty.kills < game.activeBounty.req) {
+      game.activeBounty.kills++;
+      
+      // Award XP per kill with delay
+      // We ensure delay is treated as a number
+      addXP('bountyhunting', BOUNTY_KILL_XP, parseInt(delay));
+      
+      if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    }
+  }
 }
 
 function openForgeStone(type) {
@@ -12214,6 +12542,11 @@ function playerAttackTurn(spellOverride = null) {
     updateQuestKillCount(game.currentEnemy.name);
     // +++ END NEW +++
 
+    // +++ NEW: BOUNTY PROGRESS UPDATE +++
+    // Delay set to 1350ms to appear immediately following the item drop (900ms)
+    updateBountyProgress(game.currentEnemy.name, 1350);
+    // +++ END NEW +++
+
     // ... existing loot logic ...
     if (game.currentEnemy.name === 'Chicken') { 
       addItem('Raw Chicken', 1);
@@ -13367,6 +13700,10 @@ function resetGameState() {
   game.vitality = { level: 1, xp: 0, totalXP: 0 };
   // +++ END OF FIX +++
 
+  // +++ NEW RESET BOUNTY +++
+  game.bountyhunting = { level: 1, xp: 0, totalXP: 0 };
+  game.activeBounty = null;
+
   game.questLines = {}; // +++ FIX: RESET QUESTS +++
 
   game.miningActive = false;
@@ -13520,8 +13857,8 @@ function closeSettings() {
  * @param {string} src - The path to the sound file
  */
 // +++ NEW: Hub Screen Toggler Function +++
-// +++ ADDED hubElementalForge +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine'];
+// +++ ADDED hubHuntingBoard +++
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -13807,6 +14144,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('fletchingActionIcon').onclick = openFletchingHub; // +++ NEW +++
   document.getElementById('craftingActionIcon').onclick = openCraftingHub; 
   document.getElementById('elementalForgeActionIcon').onclick = openElementalForgeHub; // +++ NEW +++
+  document.getElementById('huntingBoardActionIcon').onclick = openHuntingBoard; // +++ NEW +++
+  document.getElementById('hubHuntingBoard_ReturnBtn').onclick = backToActions; // +++ NEW +++
   
   // +++ NEW: Quest Button Listener +++
   const questBtn = document.getElementById('questsActionIcon');
@@ -13968,6 +14307,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('elementalForgeActionIcon').onmouseleave = hideTooltip;
   document.getElementById('fishingActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Fishing Areas</div>');
   document.getElementById('fishingActionIcon').onmouseleave = hideTooltip;
+  // +++ NEW BOUNTY TOOLTIP +++
+  document.getElementById('huntingBoardActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Hunting Board</div>Take on bounties');
+  document.getElementById('huntingBoardActionIcon').onmouseleave = hideTooltip;
 
   // --- Hub Lottery Listeners ---
   document.getElementById('lotteryActionIcon').onclick = openLotteryHub;
@@ -14826,6 +15168,14 @@ window.showSaveIndicator = function() {
           xp: game.stoneforging.xp,
           totalXP: game.stoneforging.totalXP
         },
+        // +++ NEW BOUNTY SAVE +++
+        bountyhunting: {
+          level: game.bountyhunting.level,
+          xp: game.bountyhunting.xp,
+          totalXP: game.bountyhunting.totalXP
+        },
+        activeBounty: game.activeBounty || null,
+        
         questLines: game.questLines, // +++ NEW: Save Quest Line Data +++
         // +++ END NEW SAVE LOGIC +++
         
@@ -15113,6 +15463,16 @@ window.showSaveIndicator = function() {
         } else {
           game.stoneforging = { level: 1, xp: 0, totalXP: 0 }; 
         }
+        
+        // +++ NEW BOUNTY LOADING LOGIC +++
+        if (data.bountyhunting) {
+          game.bountyhunting.level = data.bountyhunting.level || 1;
+          game.bountyhunting.xp = data.bountyhunting.xp || 0;
+          game.bountyhunting.totalXP = data.bountyhunting.totalXP || getTotalXPForLevel(data.bountyhunting.level - 1) + data.bountyhunting.xp || 0; 
+        } else {
+          game.bountyhunting = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        game.activeBounty = data.activeBounty || null;
         // +++ END NEW LOGIC +++
 
         setText('charName', game.name);
@@ -16981,7 +17341,9 @@ if (!validSkills.includes(skill)) {
       'images/stoneforgingskillicon.jpeg',
       'images/questbuttonicon.jpg', // +++ NEW +++
       'images/1tapper.png',         // +++ NEW ADMIN WEAPON +++
-      'images/petspider.png'        // +++ NEW PET IMAGE +++
+      'images/petspider.png',       // +++ NEW PET IMAGE +++
+      'images/bountyhunterskillicon.jpeg', // +++ NEW +++
+      'images/huntingboard.jpeg' // +++ NEW +++
     ];
 
     /**
