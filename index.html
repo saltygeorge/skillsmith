@@ -121,6 +121,14 @@ body {
   justify-content: flex-start;
 }
 
+/* +++ ADD THIS NEW RULE HERE +++ */
+#leaderboardContent {
+  /* This reserves space for 10 rows immediately so the layout doesn't jump */
+  min-height: 280px; 
+  display: flex;
+  flex-direction: column;
+}
+
 .char-header { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
 .char-header h2, .main h2, #leaderboardPanel h2 { 
   margin: 0; 
@@ -261,11 +269,14 @@ body {
 }
 
 #mainContentWrapper {
-  flex-grow: 1;     /* Allows this wrapper to fill the panel's height */
-  overflow-y: auto;   /* ADDS A SCROLLBAR if content is too tall */
-  min-height: 0;      /* A flexbox fix to allow shrinking/scrolling */
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
   
-  /* --- NEW: Add custom scrollbar --- */
+  /* +++ FIX: Add these two lines to enable height:100% on children +++ */
+  display: flex;
+  flex-direction: column; 
+  
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--panel-bg);
 }
@@ -1283,6 +1294,85 @@ button.primary:hover { background: var(--accent-hover); }
 }
 /* --- END Lottery Styles --- */
 
+/* --- Quest Styles --- */
+.quest-line-card {
+  padding: 15px;
+  background: rgba(0,0,0,0.2);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.quest-line-card:hover {
+  background: rgba(0,0,0,0.3);
+  border-color: var(--gold);
+}
+.quest-line-completed {
+  opacity: 0.6;
+  border-color: #44aa44;
+}
+.quest-req-met {
+  color: #aaffaa;
+}
+.quest-req-not-met {
+  color: #ffaaaa;
+}
+
+/* --- Completed Quest History Styles --- */
+.completed-quest-row {
+  padding: 6px 10px;
+  background: rgba(0,0,0,0.2);
+  margin-bottom: 4px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #aaa; /* Dimmed text */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 3px solid #44aa44; /* Green accent */
+}
+.completed-quest-row:last-child {
+  margin-bottom: 0;
+}
+
+/* --- Specific Fix for Quest Line Hub Layout --- */
+#hubQuestLine {
+  /* These rules force the hub to stay inside the main panel without expanding it */
+  flex-grow: 1;
+  height: 0; /* CRITICAL: Forces flex calculation based on space, not content */
+  min-height: 0;
+  overflow: hidden; 
+  display: flex;
+  flex-direction: column;
+}
+
+/* NEW: The container that holds the text and scrolls */
+.quest-scroll-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 10px; /* Prevent text hitting the scrollbar */
+  margin-bottom: 10px;
+  
+  /* Firefox Scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--panel-bg);
+}
+
+/* Custom Scrollbar Styling */
+.quest-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+.quest-scroll-container::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+.quest-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+.quest-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
+}
 
 </style>
 </head>
@@ -1386,6 +1476,9 @@ button.primary:hover { background: var(--accent-hover); }
                 <div class="equipment-slot" id="boots">
                   <img src="images/boots.png" alt="Boots">
                 </div>
+                <div class="equipment-slot" id="pet">
+                  <img src="images/pet.png" alt="Pet">
+                </div>
               </div>
             </div>
 
@@ -1435,6 +1528,38 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="craftingActionIcon" src="images/craftingbenchbutton.png" alt="Crafting" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="elementalForgeActionIcon" src="images/elementalforge.jpeg" alt="Elemental Forge" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="lotteryActionIcon" src="images/lotteryicon.jpeg" alt="Lottery" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain; border: 2px solid var(--gold); border-radius: 8px;">
+              <img id="questsActionIcon" src="images/questbuttonicon.jpg" alt="Quests" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+            </div>
+          </div>
+
+          <div id="hubQuests" class="hub-screen">
+            <h2>Quest Lines</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Select a category to view your current task.</div>
+            <div id="questLinesContainer" style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
+                </div>
+            <div class="action-buttons" style="margin-top: 20px;">
+              <button id="hubQuests_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubQuestLine" class="hub-screen">
+            <h2 id="questLineTitle" style="color: #fff; flex-shrink: 0;">Quest Line Title</h2>
+            
+            <div class="quest-scroll-container">
+                
+                <div id="activeQuestContainer" style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--accent);">
+                </div>
+
+                <div id="completedQuestsSection" style="margin-top: 15px; display:none; background: rgba(0,0,0,0.15); padding: 10px; border-radius: 8px;">
+                    <div style="color: #888; font-size: 12px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase;">History</div>
+                    <div id="completedQuestsList">
+                    </div>
+                </div>
+            
+            </div>
+
+            <div class="action-buttons" style="margin-top: 20px; flex-shrink: 0;">
+              <button id="questLine_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
 
@@ -1462,6 +1587,10 @@ button.primary:hover { background: var(--accent-hover); }
             <h2>Mine</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose a vein to mine.</div>
             <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+              <button id="sandVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/sandvein.jpeg" alt="Sand" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+              </button>
+              
               <button id="copperVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/coppervein.png" alt="Copper Vein" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
@@ -1545,6 +1674,10 @@ button.primary:hover { background: var(--accent-hover); }
                 <img src="images/cookedchicken.png" alt="Cooked Chicken" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
 
+              <button id="cookBeefBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/cookedbeef.png" alt="Cooked Beef" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+              </button>
+
               <button id="cookHerringBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/cookedherring.png" alt="Cooked Herring" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
@@ -1581,9 +1714,26 @@ button.primary:hover { background: var(--accent-hover); }
             <h2>The Cave</h2>
             <div style="margin-top:8px; color:#efe3cf;">A dark, damp cave.</div>
             
-            <div style="margin-top:20px; text-align:center; cursor:pointer;" onclick="openCombatInterface('Spider')">
-              <img src="images/spidermonster.png" alt="Spider" style="height: 100px;">
-              <div style="font-weight:bold;">Spider (Lvl 2)</div>
+            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+              
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Rat')" 
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Rat (Lvl 1)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/ratmonster.jpeg" alt="Rat" style="height: 100px;">
+              </div>
+              
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Spider')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Spider (Lvl 2)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/spidermonster.png" alt="Spider" style="height: 100px;">
+              </div>
+              
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Centipede')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Centipede (Lvl 5)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/centipedemonster.jpeg" alt="Centipede" style="height: 100px;">
+              </div>
+            
             </div>
             
             <div class="action-buttons" style="margin-top: 14px;">
@@ -1642,17 +1792,18 @@ button.primary:hover { background: var(--accent-hover); }
             <h2>The Farm</h2>
             <div style="margin-top:8px; color:#efe3cf;">A peaceful farm, mostly.</div>
             
-            <!-- NEW: Flex container for monsters -->
             <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
               
-              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Chicken')">
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Chicken')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Chicken (Lvl 1)</div>')"
+                   onmouseleave="hideTooltip()">
                 <img src="images/chickenmonster.png" alt="Chicken" style="height: 100px;">
-                <div style="font-weight:bold;">Chicken (Lvl 1)</div>
               </div>
               
-              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Cow')">
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Cow')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Cow (Lvl 2)</div>')"
+                   onmouseleave="hideTooltip()">
                 <img src="images/cowmonster.png" alt="Cow" style="height: 100px;">
-                <div style="font-weight:bold;">Cow (Lvl 2)</div>
               </div>
             
             </div>
@@ -1961,7 +2112,8 @@ const game = {
     legs: null,     // <-- NEW
     ring2: null,    // <-- NEW
     arrows: null,   // <-- NEW
-    boots: null
+    boots: null,
+    pet: null       // <-- NEW PET SLOT
   },
   mining: { level: 1, xp: 0, totalXP: 0 },
   blacksmith: { level: 1, xp: 0, totalXP: 0 },
@@ -2011,6 +2163,9 @@ const game = {
   stoneforging: { level: 1, xp: 0, totalXP: 0 },
   stoneforgingActive: false,
   wasStoneForgingBeforeCombat: false,
+  
+  // Stores progress: { 'tutorial': { completed: ['tut_1'], activeQuestId: 'tut_2', kills: 0 } }
+  questLines: {},
   
   lastSmithingTab: 'copper',
   lastCombatAreaHub: 'hubActions', // +++ NEW +++
@@ -2272,8 +2427,17 @@ const VALID_ITEMS = [
   'Burnt Trout',
   'Cooked Salmon',
   'Burnt Salmon',
+  'Beef',
+  'Cooked Beef',
+  'Burnt Beef',
   'Magic Staff',
-  'Gold Crown'
+  'Gold Crown',
+  '1tapper', // +++ NEW ADMIN ITEM +++
+  'Pet Spider', // +++ NEW PET +++
+  'Rat Tail', // +++ NEW ITEM +++
+  'Sand', // +++ NEW +++
+  'Empty Vial', // +++ NEW +++
+  'Venom' // +++ NEW +++
 ];
 
 const XP_TABLE = [
@@ -2540,6 +2704,18 @@ const BOW_STRING_YIELD = 1;
 const BOW_STRING_XP = 15;
 const BOW_STRING_TIME_MS = 2500;
 
+const CRAFTING_EMPTY_VIAL_LVL = 5;
+const EMPTY_VIAL_SAND_COST = 10;
+const EMPTY_VIAL_COAL_COST = 3;
+const EMPTY_VIAL_XP = 40;
+const EMPTY_VIAL_TIME_MS = 4000;
+
+// +++ NEW: Sand Mining Constants +++
+const SAND_MINE_TIME_MS = 1500; // Fast to mine
+const SAND_MINE_XP = 10;
+const SAND_MINE_ITEM = 'Sand';
+const MINE_COOLDOWN_SAND_MS = 1000;
+
 // +++ NEW: Leather Crafting Constants +++
 const CRAFTING_LEATHER_LVL = 1;
 const LEATHER_HIDE_COST = 1;
@@ -2783,6 +2959,17 @@ const ITEM_STATS = {
   'Gold Crown': {
     armor: 2, // Same as Iron Helmet
     armorType: 'fighter'
+  },
+  // +++ NEW ADMIN WEAPON +++
+  '1tapper': {
+    damage: 10000, // Massive damage to 1-hit everything
+    speed: 25,     // +25 Speed
+    weaponType: 'melee'
+  },
+  // +++ NEW PET SPIDER +++
+  'Pet Spider': {
+    // No stats, cosmetic only
+    type: 'pet'
   }
 };
 const SHOP_INVENTORY = new Array(20).fill(null);
@@ -2819,6 +3006,9 @@ const ITEM_SELL_PRICES = {
   'Raw Chicken': 1,
   'Cooked Chicken': 2,
   'Burnt Chicken': 1,
+  'Beef': 2,
+  'Cooked Beef': 3,
+  'Burnt Beef': 1,
   
   // Bronze Tools (Shop items)
   'Bronze Pickaxe': 4,
@@ -2891,11 +3081,124 @@ const ITEM_SELL_PRICES = {
   'Waterstone': 20,
   'Gold Crown': 50000,
   'Gold Bar': 250,   // +++ NEW +++
-  'Diamond': 2500    // +++ NEW +++
+  'Diamond': 2500,   // +++ NEW +++
+  '1tapper': 0,      // +++ ADMIN ITEM (No Value) +++
+  'Rat Tail': 3,      // +++ NEW ITEM SELL PRICE +++
+  'Sand': 1,
+  'Empty Vial': 5,
+  'Venom': 15
 };
 // --- END: Item Sell Prices ---
 
 // --- END: Item Stat Definitions ---
+
+// --- QUEST LINES DATABASE ---
+const QUEST_LINES = {
+  'tutorial': {
+    name: "The Beginning",
+    desc: "Learn the basics of survival and combat.",
+    quests: [
+      {
+        id: "tut_1",
+        name: "The Foundation",
+        desc: "We need to reinforce the camp. Bring me materials to build better defenses.",
+        type: 'gather',
+        reqItems: [
+          { name: 'Copper Ore', qty: 100 },
+          { name: 'Softwood', qty: 100 }
+        ],
+        rewards: { gold: 500 }
+      },
+      {
+        id: "tut_2",
+        name: "Feathered Fury",
+        desc: "The chickens at the farm are getting aggressive. Thin their numbers.",
+        type: 'kill',
+        targetEnemy: 'Chicken',
+        targetCount: 50,
+        reqSkill: { skill: 'attack', level: 10 },
+        rewards: { gold: 1000 }
+      },
+      
+      // --- River Bounty (Moved Up) ---
+      {
+        id: "tut_2_fishing",
+        name: "River Bounty",
+        desc: "The camp needs food supplies. The river is teeming with Trout.",
+        type: 'gather',
+        reqItems: [
+          { name: 'Trout', qty: 200 }
+        ],
+        reqSkill: { skill: 'fishing', level: 5 },
+        rewards: { gold: 1500 }
+      },
+
+      // --- Beefy Business (Cows) ---
+      {
+        id: "tut_2_cows",
+        name: "Beefy Business",
+        desc: "The cows have gone mad! Put them to rest before they stampede the camp.",
+        type: 'kill',
+        targetEnemy: 'Cow',
+        targetCount: 30,
+        rewards: { gold: 1200 }
+      },
+
+      // --- Suit Up (Leather) ---
+      {
+        id: "tut_2_leather",
+        name: "Suit Up",
+        desc: "We need armor for our scouts to fight off intruders. Bring me a full set of Leather Armor.",
+        type: 'gather',
+        reqSkill: { skill: 'crafting', level: 7 },
+        reqItems: [
+          { name: 'Leather Hood', qty: 1 },
+          { name: 'Leather Body', qty: 1 },
+          { name: 'Leather Chaps', qty: 1 },
+          { name: 'Leather Boots', qty: 1 }
+        ],
+        rewards: { gold: 2500 }
+      },
+
+      {
+        id: "tut_3",
+        name: "Web of Lies",
+        desc: "The cave spiders are spinning webs all over our equipment. Clear them out!",
+        type: 'kill',
+        targetEnemy: 'Spider',
+        targetCount: 100,
+        rewards: { 
+            gold: 1000, 
+            items: [{ name: 'Cooked Herring', qty: 25 }] 
+        }
+      },
+      // +++ NEW QUEST: Vials (Does not consume items) +++
+      {
+        id: "tut_4",
+        name: "Glass Reserves",
+        desc: "We need to ensure we have enough glassware for alchemy. Show me you have a stock of Empty Vials.",
+        type: 'gather',
+        consume: false, // <--- This flag prevents item removal
+        reqItems: [
+          { name: 'Empty Vial', qty: 100 }
+        ],
+        rewards: { gold: 2500 }
+      },
+      // +++ NEW QUEST: Venom (Consumes items) +++
+      {
+        id: "tut_5",
+        name: "Potent Poison",
+        desc: "The Centipedes carry a deadly toxin. Bring me their Venom so we can study it.",
+        type: 'gather',
+        // consume defaults to true
+        reqItems: [
+          { name: 'Venom', qty: 100 }
+        ],
+        rewards: { gold: 2500 }
+      }
+    ]
+  }
+};
 
 function setText(id, text){ const el=document.getElementById(id); if(el) el.innerText=text; }
 
@@ -3122,7 +3425,7 @@ function renderEquipment() {
     'necklace', 'helmet', 'cape', 
     'weapon', 'chest', 'shield', 
     'ring1', 'legs', 'ring2', 
-    'arrows', 'boots'
+    'arrows', 'boots', 'pet' // <-- ADDED PET
   ];
   
   // <-- UPDATED this map with existing item images -->
@@ -3156,7 +3459,9 @@ function renderEquipment() {
     'Wizard Trousers': 'wizardtrousers',
     'Wizard Boots': 'wizardboots',
     'Magic Staff': 'magicstaff',
-    'Gold Crown': 'goldcrown' 
+    'Gold Crown': 'goldcrown',
+    '1tapper': '1tapper', // +++ NEW +++
+    'Pet Spider': 'petspider' // +++ NEW PET IMAGE +++
   };
 
 slots.forEach(slotType => {
@@ -3181,6 +3486,7 @@ slots.forEach(slotType => {
       else if (slotType === 'ring1') imgName = 'ring';
       else if (slotType === 'ring2') imgName = 'ring';
       else if (slotType === 'arrows') imgName = 'arrows';
+      else if (slotType === 'pet') imgName = 'pet'; // <-- NEW PET PLACEHOLDER
     }
     
     // +++ 2H VISUAL LOGIC (Define the variable here) +++
@@ -3330,6 +3636,11 @@ function renderInventoryGrid(){
               else if (item.name === 'Cooked Salmon') imgName = 'cookedsalmon';
               else if (item.name === 'Burnt Salmon') imgName = 'burntsalmon';
               
+              // +++ NEW BEEF IMAGES +++
+              else if (item.name === 'Beef') imgName = 'beef';
+              else if (item.name === 'Cooked Beef') imgName = 'cookedbeef';
+              else if (item.name === 'Burnt Beef') imgName = 'burntbeef';
+
               // +++ FIX: Add Gold Crown mapping here +++
               else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
               // +++ END NEW +++
@@ -3365,6 +3676,11 @@ function renderInventoryGrid(){
               else if (item.name === 'Wizard Trousers') imgName = 'wizardtrousers';
               else if (item.name === 'Wizard Boots') imgName = 'wizardboots';
               else if (item.name === 'Magic Staff') imgName = 'magicstaff'; // +++ NEW +++
+              else if (item.name === 'Pet Spider') imgName = 'petspider'; // +++ NEW PET +++
+              else if (item.name === 'Rat Tail') imgName = 'rattail'; // +++ NEW ITEM +++
+              else if (item.name === 'Sand') imgName = 'sand'; // +++ NEW +++
+              else if (item.name === 'Empty Vial') imgName = 'emptyvial'; // +++ NEW +++
+              else if (item.name === 'Venom') imgName = 'venom'; // +++ NEW +++
               
               // +++ NEW CRYSTAL SHARDS +++
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
@@ -3461,6 +3777,10 @@ function renderInventoryGrid(){
       } else if (itemName === 'Cooked Salmon') {
         // This is consumable
         itemStats = `<div style="color:#aaffaa; margin-top:4px;">+${COOK_SALMON_HEAL} HP</div>`;
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px;">Click to eat...</div>';
+      } else if (itemName === 'Cooked Beef') {
+        // This is consumable
+        itemStats = `<div style="color:#aaffaa; margin-top:4px;">+${COOK_BEEF_HEAL} HP</div>`;
         clickAction = '<div style="color:#aaffaa; margin-top: 5px;">Click to eat...</div>';
       }
       // --- END NEW ---
@@ -3689,7 +4009,9 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Wizard Trousers': 'legs',
     'Wizard Boots': 'boots',
     'Magic Staff': 'weapon',
-    'Gold Crown': 'helmet' 
+    'Gold Crown': 'helmet',
+    '1tapper': 'weapon', // +++ NEW +++
+    'Pet Spider': 'pet' // +++ NEW PET SLOT +++
   };
   const itemSlotType = equipableItems[itemName];
   // --- END NEW ---
@@ -3701,7 +4023,7 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     // --- NEW: This is an equipable item! ---
     // We pass the slot *type* (e.g., 'helmet') and the inventory *index*
     equipItem(itemSlotType, slotIndex);
-  } else if (itemName === 'Cooked Chicken' || itemName === 'Cooked Herring' || itemName === 'Cooked Trout' || itemName === 'Cooked Salmon') {
+  } else if (itemName === 'Cooked Chicken' || itemName === 'Cooked Beef' || itemName === 'Cooked Herring' || itemName === 'Cooked Trout' || itemName === 'Cooked Salmon') {
     // Not in shop, not equipable, and it's food. Show eat menu.
     showItemContextMenu(event, itemName);
   }
@@ -3715,6 +4037,8 @@ function showItemContextMenu(event, itemName) {
 
   if (itemName === 'Cooked Chicken') {
     menuContent += `<button class="context-menu-btn" onclick="eatCookedChicken()">Eat</button>`;
+  } else if (itemName === 'Cooked Beef') {
+    menuContent += `<button class="context-menu-btn" onclick="eatCookedBeef()">Eat</button>`;
   } else if (itemName === 'Cooked Herring') {
     menuContent += `<button class="context-menu-btn" onclick="eatCookedHerring()">Eat</button>`;
   } else if (itemName === 'Cooked Trout') {
@@ -3774,6 +4098,25 @@ async function eatCookedChicken() {
 
   } else {
     console.warn('Tried to eat Cooked Chicken, but removeItem failed.');
+  }
+}
+
+// +++ NEW: Logic for eating Beef +++
+async function eatCookedBeef() {
+  hideItemContextMenu(); 
+  if (game.hp >= game.maxHP) {
+    await showGameAlert("HP Full", "Your HP is already full.");
+    return;
+  }
+  if (removeItem('Cooked Beef', 1)) {
+    game.hp = Math.min(game.maxHP, game.hp + COOK_BEEF_HEAL);
+    updateHPUI();
+    renderInventoryGrid();
+    if (typeof window.savePlayerData === 'function') {
+        window.savePlayerData();
+    }
+  } else {
+    console.warn('Tried to eat Cooked Beef, but removeItem failed.');
   }
 }
 
@@ -5575,6 +5918,15 @@ const COOK_CHICKEN_TIME_MS = 3000;
 const COOK_CHICKEN_XP = 30;
 const COOK_CHICKEN_HEAL = 3; // <-- ADD THIS
 
+// --- NEW: Beef Cooking Constants ---
+const COOK_BEEF_LVL = 1;
+const COOK_BEEF_TIME_MS = 3000;
+const COOK_BEEF_XP = 35;
+const COOK_BEEF_HEAL = 4; // Heals 4 HP
+const COOK_BEEF_ITEM_RAW = 'Beef';
+const COOK_BEEF_ITEM_COOKED = 'Cooked Beef';
+const COOK_BEEF_ITEM_BURNT = 'Burnt Beef';
+
 // --- NEW: Herring Cooking Constants ---
 const COOK_HERRING_LVL = 1;
 const COOK_HERRING_TIME_MS = 3000; // Same as chicken
@@ -5711,6 +6063,125 @@ function stopCookingChicken(){
   if(stopBtn) stopBtn.style.display = 'none';
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
+
+// +++ NEW: BEEF COOKING UI +++
+function openCookBeef(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Cooking - Beef</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: 1 ${COOK_BEEF_ITEM_RAW}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="cookProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCookBtn" class="primary">Start Cooking</button>
+      <button id="stopCookBtn" class="primary" style="background:#555; display:none;">Stop Cooking</button>
+      <button onclick="openKitchenHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCookBtn').onclick = startCookingBeef;
+  document.getElementById('stopCookBtn').onclick = stopCookingChicken; // Re-uses same stop function
+  showMainScreen('hubDynamic');
+}
+
+async function startCookingBeef() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
+    return;
+  }
+  
+  // Check Inventory Space
+  if (!canReceiveItem(COOK_BEEF_ITEM_COOKED) && !canReceiveItem(COOK_BEEF_ITEM_BURNT)) {
+    await showGameAlert("Inventory Full", "You have no room to cook this.");
+    return;
+  }
+  
+  if (game.cookingActive) return;
+
+  // Check for Raw Beef
+  let totalRaw = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === COOK_BEEF_ITEM_RAW) {
+          totalRaw += slot.qty;
+      }
+  }
+  if (totalRaw < 1) {
+      await showGameAlert("Not Enough Materials", `You need at least 1 ${COOK_BEEF_ITEM_RAW} to cook.`);
+      return;
+  }
+  
+  game.cookingActive = true;
+  document.getElementById('startCookBtn').style.display = 'none';
+  document.getElementById('stopCookBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => cookingBeefLoop(Date.now(), Date.now()), 16);
+}
+
+async function cookingBeefLoop(timestamp, startTime) {
+  if (!game.cookingActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= COOK_BEEF_TIME_MS) {
+    let totalRaw = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === COOK_BEEF_ITEM_RAW) {
+            totalRaw += slot.qty;
+        }
+    }
+    if (totalRaw < 1) {
+        await showGameAlert("Out of Materials", `You've run out of ${COOK_BEEF_ITEM_RAW}.`);
+        stopCookingChicken();
+        return;
+    }
+    
+    removeItem(COOK_BEEF_ITEM_RAW, 1);
+    addXP('cooking', COOK_BEEF_XP);
+    
+    // Burning Formula: Starts at 50% success, reaches 100% at Level 10 (same as Chicken roughly)
+    const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (50/9)));
+    
+    if (Math.random() * 100 < successRate) {
+      addItem(COOK_BEEF_ITEM_COOKED, 1);
+      showItemPopup(`+${COOK_BEEF_XP} Cooking XP`, 'cookProgress', 0);
+      showItemPopup(`+1 ${COOK_BEEF_ITEM_COOKED}`, 'cookProgress', 450);
+    } else {
+      addItem(COOK_BEEF_ITEM_BURNT, 1);
+      showItemPopup(`+${COOK_BEEF_XP} Cooking XP`, 'cookProgress', 0);
+      showItemPopup(`+1 ${COOK_BEEF_ITEM_BURNT}`, 'cookProgress', 450);
+    }
+    
+    const bar = document.getElementById('cookProgress');
+    if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - COOK_BEEF_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
+    let totalRawAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === COOK_BEEF_ITEM_RAW) {
+            totalRawAfter += slot.qty;
+        }
+    }
+    if (totalRawAfter < 1) {
+        await showGameAlert("Not Enough Materials", `You don't have any more ${COOK_BEEF_ITEM_RAW} to cook.`);
+        stopCookingChicken();
+        return;
+    }
+    
+    return cookingBeefLoop(Date.now(), newStartTime);
+
+  } else {
+    const progress = (elapsed / COOK_BEEF_TIME_MS) * 100;
+    const bar = document.getElementById('cookProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = setTimeout(() => cookingBeefLoop(Date.now(), startTime), 16);
+  }
+}
+
 
 function openCookChicken(){
   game.shopOpen = false; 
@@ -7493,6 +7964,7 @@ function renderCraftingItems() {
   
   // --- Crafting Level Locks ---
   const bowStringLocked = craftLvl < CRAFTING_BOW_STRING_LVL;
+  const emptyVialLocked = craftLvl < CRAFTING_EMPTY_VIAL_LVL; // +++ NEW +++
   const leatherLocked = craftLvl < CRAFTING_LEATHER_LVL; // +++ NEW +++
   const leatherBootsLocked = craftLvl < CRAFTING_LEATHER_BOOTS_LVL;
   const leatherHoodLocked = craftLvl < CRAFTING_LEATHER_HOOD_LVL;
@@ -7510,6 +7982,9 @@ function renderCraftingItems() {
   container.innerHTML = `
     <button id="craftBowStringBtn" class="primary ${bowStringLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
       <img src="images/bowstring.png" alt="Bow String" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftEmptyVialBtn" class="primary ${emptyVialLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/emptyvial.png" alt="Empty Vial" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
     </button>
     <button id="craftLeatherBtn" class="primary ${leatherLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
       <img src="images/leather.png" alt="Leather" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
@@ -7550,6 +8025,7 @@ function renderCraftingItems() {
   
   // --- Re-attach listeners for crafting items ---
   setupCraftButton('craftBowStringBtn', bowStringLocked, openCraftBowString, CRAFTING_BOW_STRING_LVL, `Requires: ${BOW_STRING_SILK_COST} Silk`, `Bow String x${BOW_STRING_YIELD}`);
+  setupCraftButton('craftEmptyVialBtn', emptyVialLocked, openCraftEmptyVial, CRAFTING_EMPTY_VIAL_LVL, `Requires: ${EMPTY_VIAL_SAND_COST} Sand, ${EMPTY_VIAL_COAL_COST} Coal Ore`, `Empty Vial`);
   // +++ NEW/UPDATED LISTENERS +++
   setupCraftButton('craftLeatherBtn', leatherLocked, openCraftLeather, CRAFTING_LEATHER_LVL, `Requires: ${LEATHER_HIDE_COST} Cow Hide`, 'Leather');
   setupCraftButton('craftLeatherBootsBtn', leatherBootsLocked, openCraftLeatherBoots, CRAFTING_LEATHER_BOOTS_LVL, `Requires: ${LEATHER_BOOTS_LEATHER_COST} Leather`, 'Leather Boots');
@@ -7565,6 +8041,114 @@ function renderCraftingItems() {
   setupCraftButton('craftWizardRobeBtn', wizardRobeLocked, openCraftWizardRobe, CRAFTING_WIZARD_ROBE_LVL, `Requires: ${WIZARD_ROBE_CLOTH_COST} Cloth`, 'Wizard Robe');
   // +++ NEW LISTENER +++
   setupCraftButton('craftMagicStaffBtn', magicStaffLocked, openCraftMagicStaff, CRAFTING_MAGIC_STAFF_LVL, `Requires: 10 Oak, 10 Earth/Air/Water Crystals`, 'Magic Staff');
+}
+
+// --- Empty Vial UI & Logic ---
+function openCraftEmptyVial(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching(); 
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Empty Vial</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${EMPTY_VIAL_SAND_COST} Sand, ${EMPTY_VIAL_COAL_COST} Coal Ore.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingEmptyVial;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString; // Reuse generic stop
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingEmptyVial() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "Session not active.");
+    return;
+  }
+  
+  if (!canReceiveItem('Empty Vial')) {
+    await showGameAlert("Inventory Full", "Inventory full.");
+    return;
+  }
+  
+  if (game.craftingActive) return;
+
+  let totalSand = 0;
+  let totalCoal = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Sand') totalSand += slot.qty;
+      if (slot && slot.name === 'Coal Ore') totalCoal += slot.qty;
+  }
+
+  if (totalSand < EMPTY_VIAL_SAND_COST || totalCoal < EMPTY_VIAL_COAL_COST) {
+      await showGameAlert("Not Enough Materials", `You need ${EMPTY_VIAL_SAND_COST} Sand and ${EMPTY_VIAL_COAL_COST} Coal Ore.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => craftingEmptyVialLoop(Date.now(), Date.now()), 16);
+}
+
+async function craftingEmptyVialLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= EMPTY_VIAL_TIME_MS) {
+    let totalSand = 0;
+    let totalCoal = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Sand') totalSand += slot.qty;
+        if (slot && slot.name === 'Coal Ore') totalCoal += slot.qty;
+    }
+    if (totalSand < EMPTY_VIAL_SAND_COST || totalCoal < EMPTY_VIAL_COAL_COST) {
+        await showGameAlert("Out of Materials", "You've run out of materials.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Sand', EMPTY_VIAL_SAND_COST);
+    removeItem('Coal Ore', EMPTY_VIAL_COAL_COST);
+    addItem('Empty Vial', 1);
+    addXP('crafting', EMPTY_VIAL_XP);
+    showItemPopup(`+${EMPTY_VIAL_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Empty Vial`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - EMPTY_VIAL_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
+    let totalSandAfter = 0;
+    let totalCoalAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Sand') totalSandAfter += slot.qty;
+        if (slot && slot.name === 'Coal Ore') totalCoalAfter += slot.qty;
+    }
+    if (totalSandAfter < EMPTY_VIAL_SAND_COST || totalCoalAfter < EMPTY_VIAL_COAL_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough materials to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    return craftingEmptyVialLoop(Date.now(), newStartTime);
+
+  } else {
+    const progress = (elapsed / EMPTY_VIAL_TIME_MS) * 100;
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => craftingEmptyVialLoop(Date.now(), startTime), 16);
+  }
 }
 
 // --- Bow String UI & Logic ---
@@ -9474,6 +10058,317 @@ async function fishingSalmonLoop(timestamp, startTime) {
 // --- END NEW FISHING FUNCTIONS ---
 // =================================================================
 
+// =================================================================
+// +++ NEW: QUEST SYSTEM FUNCTIONS (ID BASED) +++
+// =================================================================
+
+function openQuestHub() {
+  showMainScreen('hubQuests');
+  renderQuestLinesList();
+}
+
+// Helper: Migrates old "step" data to new "ID" data on the fly
+function getQuestProgress(lineId) {
+    // Initialize if missing
+    if (!game.questLines[lineId]) {
+        game.questLines[lineId] = { completed: [], activeQuestId: null, kills: 0 };
+    }
+
+    const data = game.questLines[lineId];
+    const lineConfig = QUEST_LINES[lineId];
+
+    // --- MIGRATION LOGIC (Step -> IDs) ---
+    // FIX: Only run migration if 'completed' array does NOT exist yet.
+    // This prevents the game from using the old 'step' value to wipe your new progress on reload.
+    if (typeof data.step === 'number' && !data.completed) {
+        data.completed = [];
+        
+        // +++ SPECIFIC PATCH FOR 'TUTORIAL' LINE +++
+        if (lineId === 'tutorial') {
+            if (data.step >= 1) data.completed.push('tut_1'); // Foundation
+            if (data.step >= 2) data.completed.push('tut_2'); // Chickens
+            if (data.step >= 3) data.completed.push('tut_3'); // Spiders
+        } 
+        else {
+            for (let i = 0; i < data.step; i++) {
+                if (lineConfig.quests[i]) {
+                    data.completed.push(lineConfig.quests[i].id);
+                }
+            }
+        }
+        
+        data.activeQuestId = null; 
+    }
+
+    // Always delete the old 'step' from local memory so it doesn't cause issues during this session
+    if (typeof data.step !== 'undefined') {
+        delete data.step;
+    }
+    // --- END MIGRATION ---
+
+    // Ensure completed is an array (if it was somehow missing)
+    if (!data.completed) data.completed = [];
+
+    // Determine the current active quest
+    let firstUnfinished = null;
+    for (const q of lineConfig.quests) {
+        if (!data.completed.includes(q.id)) {
+            firstUnfinished = q;
+            break; // Stop at the first missing quest
+        }
+    }
+
+    // Logic to reset kills if the active quest has changed
+    if (firstUnfinished) {
+        if (data.activeQuestId !== firstUnfinished.id) {
+            data.activeQuestId = firstUnfinished.id;
+            data.kills = 0; 
+        }
+    } else {
+        data.activeQuestId = 'COMPLETED';
+    }
+
+    return { data, activeQuest: firstUnfinished };
+}
+
+function renderQuestLinesList() {
+  const container = document.getElementById('questLinesContainer');
+  container.innerHTML = '';
+
+  for (const [lineId, lineData] of Object.entries(QUEST_LINES)) {
+    const { data, activeQuest } = getQuestProgress(lineId);
+    
+    const isLineComplete = (data.activeQuestId === 'COMPLETED');
+    const totalSteps = lineData.quests.length;
+    const completedCount = data.completed.length;
+
+    const div = document.createElement('div');
+    div.className = `quest-line-card ${isLineComplete ? 'quest-line-completed' : ''}`;
+    
+    let statusText = "";
+    let color = "#efe3cf";
+    
+    if (isLineComplete) {
+        statusText = "All Quests Completed";
+        color = "#44aa44";
+    } else {
+        // Check if current quest is ready
+        if (checkQuestRequirements(lineId)) {
+            statusText = `Active: ${activeQuest.name} <span style="color:#aaffaa; font-weight:bold;">(Ready!)</span>`;
+            div.style.borderColor = "#44aa44"; 
+        } else {
+            statusText = `Active: ${activeQuest.name}`;
+        }
+    }
+
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size: 18px; font-weight: bold; color: var(--gold);">${lineData.name}</div>
+        <div style="font-size: 14px; color: #aaa;">${completedCount} / ${totalSteps}</div>
+      </div>
+      <div style="margin-top: 5px; font-size: 14px; color: ${color};">${statusText}</div>
+      <div style="font-size: 12px; color: #888; margin-top: 4px;">${lineData.desc}</div>
+    `;
+    
+    div.onclick = () => openQuestLine(lineId);
+    container.appendChild(div);
+  }
+}
+
+function openQuestLine(lineId) {
+    showMainScreen('hubQuestLine');
+    const lineData = QUEST_LINES[lineId];
+    const { data, activeQuest } = getQuestProgress(lineId);
+    
+    setText('questLineTitle', lineData.name);
+    
+    // --- 1. RENDER COMPLETED HISTORY ---
+    const historySection = document.getElementById('completedQuestsSection');
+    const historyList = document.getElementById('completedQuestsList');
+    
+    // Find specifically WHICH quests are done from the config list order
+    // This allows inserted quests to show up correctly as "not done" even if later ones are done (rare edge case)
+    // But mostly this list just shows what we have marked as complete.
+    const completedQuestsInOrder = lineData.quests.filter(q => data.completed.includes(q.id));
+
+    if (completedQuestsInOrder.length > 0) {
+        historySection.style.display = 'block';
+        let historyHtml = '';
+        completedQuestsInOrder.forEach(q => {
+            historyHtml += `
+                <div class="completed-quest-row">
+                    <span>${q.name}</span>
+                    <span style="color:#44aa44; font-weight:bold;">✔</span>
+                </div>
+            `;
+        });
+        historyList.innerHTML = historyHtml;
+        historyList.scrollTop = historyList.scrollHeight;
+    } else {
+        historySection.style.display = 'none';
+    }
+
+    const container = document.getElementById('activeQuestContainer');
+
+    // --- 2. CHECK COMPLETION ---
+    if (!activeQuest) {
+        container.innerHTML = `<div style="text-align:center; color:#44aa44; font-weight:bold; font-size:18px; padding: 20px;">This quest line is complete!</div>`;
+        return;
+    }
+
+    // --- 3. RENDER ACTIVE QUEST ---
+    container.innerHTML = `
+        <h3 id="activeQuestName" style="color: var(--gold); margin-top: 0;"></h3>
+        <div id="activeQuestDesc" style="font-style: italic; color: #ccc; margin-bottom: 15px;"></div>
+        <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px;">
+            <div style="font-weight: bold; margin-bottom: 5px;">Requirements:</div>
+            <div id="activeQuestReqs"></div>
+        </div>
+        <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; margin-top: 10px;">
+            <div style="font-weight: bold; margin-bottom: 5px; color: #aaffaa;">Rewards:</div>
+            <div id="activeQuestRewards"></div>
+        </div>
+        <div class="action-buttons" style="margin-top: 20px; justify-content: flex-end;">
+            <button id="questCompleteBtn" class="primary" style="background: #44aa44; display: none;">Complete Quest</button>
+        </div>
+    `;
+
+    const qData = activeQuest;
+    setText('activeQuestName', `Current: ${qData.name}`);
+    setText('activeQuestDesc', qData.desc);
+
+    // --- REQUIREMENTS ---
+    let reqHtml = '';
+    if (qData.reqSkill) {
+        const currentLvl = game[qData.reqSkill.skill].level;
+        const reqLvl = qData.reqSkill.level;
+        const met = currentLvl >= reqLvl;
+        const color = met ? 'quest-req-met' : 'quest-req-not-met';
+        const icon = met ? '✔' : '✖';
+        reqHtml += `<div class="${color}">${icon} Level ${reqLvl} ${qData.reqSkill.skill}</div>`;
+    }
+
+    if (qData.type === 'gather') {
+        qData.reqItems.forEach(req => {
+            let has = 0;
+            for (const slot of game.inventory) if (slot && slot.name === req.name) has += slot.qty;
+            const met = has >= req.qty;
+            const color = met ? 'quest-req-met' : 'quest-req-not-met';
+            const icon = met ? '✔' : '✖';
+            reqHtml += `<div class="${color}">${icon} ${req.qty} ${req.name}</div>`;
+        });
+    } else if (qData.type === 'kill') {
+        const currentKills = data.kills || 0;
+        const target = qData.targetCount;
+        const met = currentKills >= target;
+        const color = met ? 'quest-req-met' : 'quest-req-not-met';
+        const icon = met ? '✔' : '✖';
+        reqHtml += `<div class="${color}">${icon} Kill ${target} ${qData.targetEnemy}s (Progress: ${currentKills}/${target})</div>`;
+    }
+    document.getElementById('activeQuestReqs').innerHTML = reqHtml;
+
+    // --- REWARDS ---
+    let rewHtml = '';
+    if (qData.rewards.gold) rewHtml += `<div style="color:var(--gold);">• ${qData.rewards.gold} Gold</div>`;
+    if (qData.rewards.items) {
+        qData.rewards.items.forEach(r => {
+            rewHtml += `<div style="color:#fff;">• ${r.qty} ${r.name}</div>`;
+        });
+    }
+    document.getElementById('activeQuestRewards').innerHTML = rewHtml;
+
+    // --- BUTTONS ---
+    const completeBtn = document.getElementById('questCompleteBtn');
+    if (checkQuestRequirements(lineId)) {
+        completeBtn.style.display = 'inline-block';
+        completeBtn.onclick = () => completeQuest(lineId);
+    } else {
+        completeBtn.style.display = 'none';
+    }
+}
+
+function checkQuestRequirements(lineId) {
+    const { data, activeQuest } = getQuestProgress(lineId);
+    if (!activeQuest) return false; // Line complete
+    
+    const qData = activeQuest;
+
+    // Check Skill
+    if (qData.reqSkill) {
+        if (game[qData.reqSkill.skill].level < qData.reqSkill.level) return false;
+    }
+
+    if (qData.type === 'gather') {
+        for (const req of qData.reqItems) {
+            let count = 0;
+            for (const slot of game.inventory) {
+                if (slot && slot.name === req.name) count += slot.qty;
+            }
+            if (count < req.qty) return false;
+        }
+        return true;
+    } else if (qData.type === 'kill') {
+        return (data.kills || 0) >= qData.targetCount;
+    }
+    return false;
+}
+
+async function completeQuest(lineId) {
+    if (!checkQuestRequirements(lineId)) return;
+    
+    const { data, activeQuest } = getQuestProgress(lineId);
+    const qData = activeQuest;
+    
+    // 1. Deduct Gather Items
+    if (qData.type === 'gather') {
+        // Only remove items if 'consume' is not explicitly set to false
+        if (qData.consume !== false) {
+            for (const req of qData.reqItems) {
+                removeItem(req.name, req.qty);
+            }
+        }
+    }
+    
+    // 2. Give Rewards
+    if (qData.rewards.gold) addGold(qData.rewards.gold);
+    if (qData.rewards.items) {
+        qData.rewards.items.forEach(r => addItem(r.name, r.qty));
+    }
+    
+    // 3. Mark Complete (Push ID to array)
+    data.completed.push(qData.id);
+    data.kills = 0; // Reset kills for next quest
+    data.activeQuestId = null; // Force recalculation
+    
+    playGlobalSound('sounds/soundeffects/levelupsound.mp3'); 
+    await showGameAlert("Quest Complete!", `You completed: ${qData.name}`);
+    
+    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    
+    // Refresh view
+    openQuestLine(lineId);
+}
+
+function updateQuestKillCount(enemyName) {
+    let updated = false;
+    
+    for (const [lineId, lineData] of Object.entries(QUEST_LINES)) {
+        const { data, activeQuest } = getQuestProgress(lineId);
+        
+        if (!activeQuest) continue;
+        
+        // Is this a kill quest for this enemy?
+        if (activeQuest.type === 'kill' && activeQuest.targetEnemy === enemyName) {
+            if (data.kills < activeQuest.targetCount) {
+                data.kills++;
+                updated = true;
+            }
+        }
+    }
+    
+    if (updated && typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
 
 // --- Unstrung Softwood Bow UI & Logic ---
 function openFletchUnstrungSoftwoodBow(){
@@ -10078,6 +10973,82 @@ function openCoalMine(){
   showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
+// --- NEW: Sand Mine UI ---
+function openSandMine(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Mine - Sand</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A pile of coarse sand.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="mineProgress"></div>
+        <div class="progress-text" id="mineProgressText"></div> </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startMineBtn" class="primary">Start Mining</button>
+      <button id="stopMineBtn" class="primary" style="background:#555; display:none;">Stop Mining</button>
+      <button onclick="openMineHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startMineBtn').onclick = startSandMining;
+  document.getElementById('stopMineBtn').onclick = stopMining;
+  showMainScreen('hubDynamic');
+}
+
+async function startSandMining() {
+  // Tool Check (Any pickaxe)
+  const bestPickaxe = getBestTool('pickaxe');
+  if (bestPickaxe < 1) {
+    await showGameAlert("Tool Required", "You need at least a Bronze Pickaxe.");
+    return;
+  }
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "Session not active.");
+    return;
+  }
+  if (!canReceiveItem(SAND_MINE_ITEM)) {
+    await showGameAlert("Inventory Full", "Inventory full.");
+    return;
+  }
+
+  if (game.miningActive) return; 
+  game.miningActive = true;
+  const startBtn = document.getElementById('startMineBtn');
+  const stopBtn = document.getElementById('stopMineBtn');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => sandMiningLoop(Date.now(), Date.now()), 16);
+}
+
+function sandMiningLoop(timestamp, startTime) {
+  if (!game.miningActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= SAND_MINE_TIME_MS) {
+    addItem(SAND_MINE_ITEM, 1);
+    addXP('mining', SAND_MINE_XP);
+    showItemPopup(`+${SAND_MINE_XP} Mining XP`, 'mineProgress', 0);
+    showItemPopup(`+1 ${SAND_MINE_ITEM}`, 'mineProgress', 450);
+    
+    const bar = document.getElementById('mineProgress');
+    if (bar) bar.style.width = '0%';
+    
+    const overdueTime = elapsed - SAND_MINE_TIME_MS;
+    const newCooldownStartTime = Date.now() - overdueTime;
+    
+    return miningCooldownLoop(Date.now(), newCooldownStartTime, MINE_COOLDOWN_SAND_MS, 'mineProgressText', sandMiningLoop);
+    
+  } else {
+    const progress = (elapsed / SAND_MINE_TIME_MS) * 100;
+    const bar = document.getElementById('mineProgress');
+    if (bar) bar.style.width = progress + '%';
+    game.progressFrame = setTimeout(() => sandMiningLoop(Date.now(), startTime), 16);
+  }
+}
+
 // --- NEW: Coal Mine Logic ---
 async function startCoalMining() {
   // +++ NEW: Tool Check +++
@@ -10654,7 +11625,18 @@ function openCombatInterface(enemyName) {
       defence: 1, // Low defence
       img: 'images/chickenanim.gif'
     };
-  } else if (enemyName === 'Spider') { // +++ THIS IS THE NEW BLOCK +++
+  } else if (enemyName === 'Rat') {
+    game.currentEnemy = {
+      name: 'Rat',
+      level: 1,
+      maxHp: 10,
+      currentHp: 10,
+      attack: 1, 
+      strength: 1, // Max hit is 1
+      defence: 1, 
+      img: 'images/ratanim.webp'
+    };
+  } else if (enemyName === 'Spider') { 
     game.currentEnemy = {
       name: 'Spider',
       level: 2,
@@ -10664,6 +11646,17 @@ function openCombatInterface(enemyName) {
       strength: 2, // Max hit is 2
       defence: 2, 
       img: 'images/spideranim.gif'
+    };
+  } else if (enemyName === 'Centipede') {
+    game.currentEnemy = {
+      name: 'Centipede',
+      level: 5,
+      maxHp: 20,
+      currentHp: 20,
+      attack: 5, 
+      strength: 5, // Max hit is 5
+      defence: 5, 
+      img: 'images/centipedeanim.webp'
     };
 
 } else if (enemyName === 'Cow') {
@@ -11216,9 +12209,52 @@ function playerAttackTurn(spellOverride = null) {
 
   // --- 6. Check for Enemy Death ---
   if (game.currentEnemy.currentHp <= 0) {
+    
+    // +++ NEW: QUEST KILL UPDATE +++
+    updateQuestKillCount(game.currentEnemy.name);
+    // +++ END NEW +++
+
     // ... existing loot logic ...
     if (game.currentEnemy.name === 'Chicken') { 
       addItem('Raw Chicken', 1);
+      const featherQty = Math.floor(Math.random() * 5) + 2; 
+      addItem('Feather', featherQty);
+      
+      showItemPopup('+1 Raw Chicken', null, 900);
+      showItemPopup(`+${featherQty} Feather`, null, 1350); 
+    } else if (game.currentEnemy.name === 'Rat') {
+      addItem('Rat Tail', 1);
+      showItemPopup(`+1 Rat Tail`, null, 900);
+    } else if (game.currentEnemy.name === 'Spider') { 
+      const silkQty = Math.floor(Math.random() * 3) + 1; 
+      addItem('Silk', silkQty);
+      
+      showItemPopup(`+${silkQty} Silk`, null, 900);
+
+      // +++ NEW PET DROP LOGIC (1 in 10,000) +++
+      if (Math.floor(Math.random() * 10000) === 0) {
+          addItem('Pet Spider', 1);
+          // Show a distinct popup and chat message
+          showItemPopup('<span style="color:#ff4d4d; font-size:16px;">PET DROP!</span>', null, 500);
+          if (typeof addLocalChatMessage === 'function') {
+             addLocalChatMessage("You received a rare drop: Pet Spider!", "trade"); 
+          }
+      }
+      // +++ END PET DROP LOGIC +++
+
+    } else if (game.currentEnemy.name === 'Centipede') {
+      // Check if player has an Empty Vial
+      if (removeItem('Empty Vial', 1)) {
+          addItem('Venom', 1);
+          showItemPopup(`+1 Venom`, null, 900);
+          showItemPopup(`<span style="color:#aaa; font-size:12px;">Filled Vial</span>`, null, 1300);
+      } else {
+          showItemPopup(`No drops.`, null, 900);
+      }
+
+    } else if (game.currentEnemy.name === 'Cow') {
+      addItem('Cow Hide', 1);
+      addItem('Beef', 1); // +++ NEW DROP +++
       const featherQty = Math.floor(Math.random() * 5) + 2; 
       addItem('Feather', featherQty);
       
@@ -11229,9 +12265,23 @@ function playerAttackTurn(spellOverride = null) {
       addItem('Silk', silkQty);
       
       showItemPopup(`+${silkQty} Silk`, null, 900);
+
+      // +++ NEW PET DROP LOGIC (1 in 10,000) +++
+      if (Math.floor(Math.random() * 10000) === 0) {
+          addItem('Pet Spider', 1);
+          // Show a distinct popup and chat message
+          showItemPopup('<span style="color:#ff4d4d; font-size:16px;">PET DROP!</span>', null, 500);
+          if (typeof addLocalChatMessage === 'function') {
+             addLocalChatMessage("You received a rare drop: Pet Spider!", "trade"); 
+          }
+      }
+      // +++ END PET DROP LOGIC +++
+
     } else if (game.currentEnemy.name === 'Cow') {
       addItem('Cow Hide', 1);
+      addItem('Beef', 1); // +++ NEW DROP +++
       showItemPopup(`+1 Cow Hide`, null, 900);
+      showItemPopup(`+1 Beef`, null, 1350); // +++ NEW POPUP +++
     }
     
     // --- FIX: Changed maxHP to maxHp (Case sensitive) ---
@@ -11708,6 +12758,11 @@ function renderBankGrid() {
               else if (item.name === 'Cooked Salmon') imgName = 'cookedsalmon';
               else if (item.name === 'Burnt Salmon') imgName = 'burntsalmon';
               
+              // +++ NEW BEEF IMAGES +++
+              else if (item.name === 'Beef') imgName = 'beef';
+              else if (item.name === 'Cooked Beef') imgName = 'cookedbeef';
+              else if (item.name === 'Burnt Beef') imgName = 'burntbeef';
+
               // +++ FIX: Add Gold Crown mapping here +++
               else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
               // +++ END NEW +++
@@ -11743,6 +12798,11 @@ function renderBankGrid() {
               else if (item.name === 'Wizard Trousers') imgName = 'wizardtrousers';
               else if (item.name === 'Wizard Boots') imgName = 'wizardboots';
               else if (item.name === 'Magic Staff') imgName = 'magicstaff'; // +++ NEW +++
+              else if (item.name === 'Pet Spider') imgName = 'petspider'; // +++ NEW PET +++
+              else if (item.name === 'Rat Tail') imgName = 'rattail'; // +++ NEW ITEM +++
+              else if (item.name === 'Sand') imgName = 'sand'; // +++ NEW +++
+              else if (item.name === 'Empty Vial') imgName = 'emptyvial'; // +++ NEW +++
+              else if (item.name === 'Venom') imgName = 'venom'; // +++ NEW +++
               
               // +++ NEW CRYSTAL SHARDS +++
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
@@ -12459,7 +13519,7 @@ function closeSettings() {
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubElementalForge +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -12746,6 +13806,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('craftingActionIcon').onclick = openCraftingHub; 
   document.getElementById('elementalForgeActionIcon').onclick = openElementalForgeHub; // +++ NEW +++
   
+  // +++ NEW: Quest Button Listener +++
+  const questBtn = document.getElementById('questsActionIcon');
+  if (questBtn) {
+      questBtn.onclick = openQuestHub;
+      questBtn.onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Quests</div>Check available jobs');
+      questBtn.onmouseleave = hideTooltip;
+  }
+  document.getElementById('hubQuests_ReturnBtn').onclick = backToActions;
+  document.getElementById('questLine_ReturnBtn').onclick = openQuestHub;
+  
   // --- Hub Crafting Listeners ---
   document.getElementById('hubCrafting_ReturnBtn').onclick = backToActions; 
   document.getElementById('hubElementalForge_ReturnBtn').onclick = backToActions; // +++ NEW +++
@@ -12818,6 +13888,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // --- Hub Kitchen Listeners ---
   document.getElementById('cookChickenBtn').onclick = openCookChicken;
+  document.getElementById('cookBeefBtn').onclick = openCookBeef; // +++ NEW +++
   document.getElementById('cookHerringBtn').onclick = openCookHerring; // +++ NEW +++
   document.getElementById('cookTroutBtn').onclick = () => { // +++ NEW +++
     if (game.cooking.level >= COOK_TROUT_LVL) {
@@ -12927,6 +13998,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('waterCrystalBtn').onmouseleave = hideTooltip;
 
   // --- Tooltips for Hub Mine ---
+  
+  // New Sand Vein Logic
+  document.getElementById('sandVeinBtn').onclick = openSandMine;
+  document.getElementById('sandVeinBtn').onmouseenter = (e) => {
+      showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Sand</div><div style="color:#fff;">Requires Mining Lvl: 1</div>Tool: Bronze Pickaxe');
+  };
+  document.getElementById('sandVeinBtn').onmouseleave = hideTooltip;
+
   document.getElementById('copperVeinBtn').onmouseenter = (e) => {
       // Level 1 is always unlocked, so always white
       showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div><div style="color:#fff;">Requires Mining Lvl: 1</div>Tool: Bronze Pickaxe');
@@ -12963,29 +14042,42 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('oakTreeBtn').onmouseleave = hideTooltip;
 
   // --- Tooltips for Hub Kitchen ---
-  document.getElementById('cookChickenBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Chicken</div>Requires: 1 Raw Chicken');
-  document.getElementById('cookChickenBtn').onmouseleave = hideTooltip;
   
+  // Chicken (Level 1)
+  document.getElementById('cookChickenBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cooked Chicken</div>Requires: 1 Raw Chicken<br><div style="color:#fff;">Requires Cooking Lvl: 1</div>');
+  document.getElementById('cookChickenBtn').onmouseleave = hideTooltip;
+
+  // Beef (Level 1 - Updated to include requirement text)
+  document.getElementById('cookBeefBtn').onmouseenter = (e) => {
+      const isLowLvl = game.cooking.level < COOK_BEEF_LVL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cooked Beef</div>Requires: 1 Beef<br><div style="color:${textColor};">Requires Cooking Lvl: ${COOK_BEEF_LVL}</div>`);
+  };
+  document.getElementById('cookBeefBtn').onmouseleave = hideTooltip;
+  
+  // Herring (Updated text)
   document.getElementById('cookHerringBtn').onmouseenter = (e) => {
       const isLowLvl = game.cooking.level < COOK_HERRING_LVL;
       const textColor = isLowLvl ? '#ff8888' : '#fff';
-      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Herring</div>Requires: 1 Herring<br><div style="color:${textColor};">Cooking Lvl: ${COOK_HERRING_LVL}</div>`);
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cooked Herring</div>Requires: 1 Herring<br><div style="color:${textColor};">Requires Cooking Lvl: ${COOK_HERRING_LVL}</div>`);
   };
   document.getElementById('cookHerringBtn').onmouseleave = hideTooltip;
   
+  // Trout (Updated text)
   document.getElementById('cookTroutBtn').onmouseenter = (e) => {
     const isLowLvl = game.cooking.level < COOK_TROUT_LVL;
     const textColor = isLowLvl ? '#ff8888' : '#fff';
-    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Trout</div>Requires: 1 Trout<br><div style="color:${textColor};">Cooking Lvl: ${COOK_TROUT_LVL}</div>`;
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cooked Trout</div>Requires: 1 Trout<br><div style="color:${textColor};">Requires Cooking Lvl: ${COOK_TROUT_LVL}</div>`;
     showTooltip(e, tt);
     document.getElementById('cookTroutBtn').classList.toggle('locked-item', isLowLvl);
   };
   document.getElementById('cookTroutBtn').onmouseleave = hideTooltip;
   
+  // Salmon (Updated text)
   document.getElementById('cookSalmonBtn').onmouseenter = (e) => {
     const isLowLvl = game.cooking.level < COOK_SALMON_LVL;
     const textColor = isLowLvl ? '#ff8888' : '#fff';
-    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cook Salmon</div>Requires: 1 Salmon<br><div style="color:${textColor};">Cooking Lvl: ${COOK_SALMON_LVL}</div>`;
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cooked Salmon</div>Requires: 1 Salmon<br><div style="color:${textColor};">Requires Cooking Lvl: ${COOK_SALMON_LVL}</div>`;
     showTooltip(e, tt);
     document.getElementById('cookSalmonBtn').classList.toggle('locked-item', isLowLvl);
   };
@@ -13388,7 +14480,23 @@ inventoryGrid.addEventListener('dragend', (e) => {
     };
   }
 
-
+  // --- NEW: Global Button Click Sound ---
+  document.body.addEventListener('click', (e) => {
+    // This selector now captures:
+    // 1. 'button' -> Standard buttons (Fight, Run, Return, etc.)
+    // 2. '[id$="ActionIcon"]' -> Top Menu Icons
+    // 3. '.quest-line-card' -> The Quest rectangles
+    // 4. 'div[id$="Btn"]' -> Fish area buttons (they are divs, not real buttons)
+    // 5. 'div[onclick^="openCombatInterface"]' -> Monster images (Chicken/Cow/Spider)
+    const target = e.target.closest('button, [id$="ActionIcon"], .quest-line-card, div[id$="Btn"], div[onclick^="openCombatInterface"]');
+    
+    if (target) {
+       // If it is a real HTML button, don't play sound if it's disabled
+       if (target.tagName === 'BUTTON' && target.disabled) return;
+       
+       playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');
+    }
+  });
   
 });
 
@@ -13711,11 +14819,12 @@ window.showSaveIndicator = function() {
           xp: game.fishing.xp,
           totalXP: game.fishing.totalXP
         },
-        stoneforging: { // +++ NEW +++
+        stoneforging: {
           level: game.stoneforging.level,
           xp: game.stoneforging.xp,
           totalXP: game.stoneforging.totalXP
         },
+        questLines: game.questLines, // +++ NEW: Save Quest Line Data +++
         // +++ END NEW SAVE LOGIC +++
         
         playerAttackStyle: game.playerAttackStyle, 
@@ -13856,6 +14965,7 @@ window.showSaveIndicator = function() {
         
         // +++ NEW: Load Bank Data +++
         game.bankGold = (typeof data.bankGold === 'number') ? data.bankGold : 0;
+        game.questLines = data.questLines || {}; // +++ NEW: Load Quest Line Data +++
         let loadedBankData = data.bank || [];
         game.bank = new Array(game.bankCapacity).fill(null);
         if (Array.isArray(loadedBankData)) {
@@ -14796,7 +15906,85 @@ if (!validSkills.includes(skill)) {
             }
             return true;
         }
-        
+
+        // +++ NEW: Fix Quest Data Command +++
+        if (command === 'fixquests') {
+            // This manually resets the tutorial line to the correct state
+            // Status: Foundation (Done), Chickens (Done), Fishing (Active)
+            const newLineData = { 
+                completed: ['tut_1', 'tut_2'], 
+                activeQuestId: 'tut_2_fishing', 
+                kills: 0 
+            };
+            
+            // 1. Update Local State
+            game.questLines['tutorial'] = newLineData;
+            
+            // 2. Force Save
+            await window.savePlayerData();
+            
+            // 3. Refresh UI
+            addLocalChatMessage("Quest line fixed: Fishing is active, Spider quest restored as completed.", 'system');
+            return true;
+        }
+
+        // +++ NEW: Forget Quest Command (Smart Name Lookup) +++
+        if (command === 'forget') {
+            // Join args to allow spaces in names (e.g., "River Bounty")
+            const inputName = args.join(' '); 
+            
+            if (!inputName) {
+                addLocalChatMessage("Usage: /forget [Quest Name]", 'error');
+                return true;
+            }
+
+            let targetId = inputName; // Default: assume user typed the ID
+            let foundName = inputName;
+
+            // 1. Try to find the ID by searching Quest Names first
+            for (const lineId in QUEST_LINES) {
+                const line = QUEST_LINES[lineId];
+                // Case-insensitive check against quest names
+                const match = line.quests.find(q => q.name.toLowerCase() === inputName.toLowerCase());
+                if (match) {
+                    targetId = match.id;
+                    foundName = match.name;
+                    break;
+                }
+            }
+
+            let found = false;
+            
+            // 2. Remove from history using the ID we found (or the input)
+            for (const lineId in game.questLines) {
+                const lineData = game.questLines[lineId];
+                
+                if (lineData.completed && Array.isArray(lineData.completed)) {
+                    const index = lineData.completed.indexOf(targetId);
+                    
+                    if (index > -1) {
+                        // Remove from completed list
+                        lineData.completed.splice(index, 1);
+                        
+                        // Reset active/kill state
+                        lineData.activeQuestId = null; 
+                        lineData.kills = 0;
+                        
+                        found = true;
+                        addLocalChatMessage(`Admin: Forgot quest '${foundName}'. Re-open the quest tab to see changes.`, 'system');
+                        break; 
+                    }
+                }
+            }
+            
+            if (found) {
+                await window.savePlayerData();
+            } else {
+                addLocalChatMessage(`Quest '${foundName}' not found in your completed history.`, 'error');
+            }
+            return true;
+        }
+
         // +++ NEW: Admin /messageall command +++
         if (command === 'messageall') {
             const messageText = args.join(' ');
@@ -15683,6 +16871,9 @@ if (!validSkills.includes(skill)) {
       'images/rawchicken.png',
       'images/cookedchicken.png',
       'images/burntchicken.png',
+      'images/beef.png', // +++ NEW +++
+      'images/cookedbeef.png', // +++ NEW +++
+      'images/burntbeef.png', // +++ NEW +++
       'images/chickenmonster.png',
       'images/chickenanim.gif',
       'images/coppervein.png',
@@ -15721,10 +16912,23 @@ if (!validSkills.includes(skill)) {
       'images/ironplatelegs.png', // +++ NEW +++
       
       // +++ NEW CAVE/SPIDER ASSETS +++
+      // +++ NEW CAVE/SPIDER/RAT/CENTIPEDE ASSETS +++
       'images/cave.png',
       'images/spidermonster.png',
       'images/spideranim.gif',
       'images/silk.png',
+      'images/ratmonster.jpeg', 
+      'images/ratanim.webp',
+      'images/rattail.png', // New Item
+      'images/centipedemonster.jpeg',
+      'images/centipedeanim.webp',
+      'images/sand.png', // +++ NEW +++
+      'images/sandvein.jpeg', // +++ NEW +++
+      'images/emptyvial.png', // +++ NEW +++
+      'images/venom.png', // +++ NEW +++
+      
+      // +++ NEW ASSETS FOR CRAFTING/RANGED +++
+      'images/craftingskillicon.png',
       
       // +++ NEW ASSETS FOR CRAFTING/RANGED +++
       'images/craftingskillicon.png',
@@ -15772,7 +16976,10 @@ if (!validSkills.includes(skill)) {
       'images/airstone.png',
       'images/waterstone.png',
       'images/elementalforge.jpeg',
-      'images/stoneforgingskillicon.jpeg'
+      'images/stoneforgingskillicon.jpeg',
+      'images/questbuttonicon.jpg', // +++ NEW +++
+      'images/1tapper.png',         // +++ NEW ADMIN WEAPON +++
+      'images/petspider.png'        // +++ NEW PET IMAGE +++
     ];
 
     /**
