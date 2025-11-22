@@ -123,8 +123,8 @@ body {
 
 /* +++ ADD THIS NEW RULE HERE +++ */
 #leaderboardContent {
-  /* This reserves space for 10 rows immediately so the layout doesn't jump */
-  min-height: 280px; 
+  /* Reduced height to prevent page scrollbar */
+  min-height: 150px; 
   display: flex;
   flex-direction: column;
 }
@@ -2034,7 +2034,7 @@ button.primary:hover { background: var(--accent-hover); }
           <div style="text-align:center; margin-top: 10px; color: #fff; opacity: 0.7;">Loading leaderboard...</div>
         </div>
 
-        <h3 style="margin: 20px 0 8px 0; font-size: 18px; color: #fff; border-top: 2px solid var(--accent); padding-top: 15px;">Latest Updates</h3>
+        <h3 style="margin: 5px 0 5px 0; font-size: 18px; color: #fff; border-top: 2px solid var(--accent); padding-top: 5px;">Latest Updates</h3>
         <div id="updatesContent">
           <div style="text-align:center; margin-top: 10px; color: #fff; opacity: 0.7;">Loading updates...</div>
         </div>
