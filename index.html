@@ -12586,35 +12586,11 @@ function playerAttackTurn(spellOverride = null) {
       }
 
     } else if (game.currentEnemy.name === 'Cow') {
+      // +++ FIXED COW DROPS: Hide and Beef only +++
       addItem('Cow Hide', 1);
-      addItem('Beef', 1); // +++ NEW DROP +++
-      const featherQty = Math.floor(Math.random() * 5) + 2; 
-      addItem('Feather', featherQty);
-      
-      showItemPopup('+1 Raw Chicken', null, 900);
-      showItemPopup(`+${featherQty} Feather`, null, 1350); 
-    } else if (game.currentEnemy.name === 'Spider') { 
-      const silkQty = Math.floor(Math.random() * 3) + 1; 
-      addItem('Silk', silkQty);
-      
-      showItemPopup(`+${silkQty} Silk`, null, 900);
-
-      // +++ NEW PET DROP LOGIC (1 in 10,000) +++
-      if (Math.floor(Math.random() * 10000) === 0) {
-          addItem('Pet Spider', 1);
-          // Show a distinct popup and chat message
-          showItemPopup('<span style="color:#ff4d4d; font-size:16px;">PET DROP!</span>', null, 500);
-          if (typeof addLocalChatMessage === 'function') {
-             addLocalChatMessage("You received a rare drop: Pet Spider!", "trade"); 
-          }
-      }
-      // +++ END PET DROP LOGIC +++
-
-    } else if (game.currentEnemy.name === 'Cow') {
-      addItem('Cow Hide', 1);
-      addItem('Beef', 1); // +++ NEW DROP +++
+      addItem('Beef', 1); 
       showItemPopup(`+1 Cow Hide`, null, 900);
-      showItemPopup(`+1 Beef`, null, 1350); // +++ NEW POPUP +++
+      showItemPopup(`+1 Beef`, null, 1350);
     }
     
     // --- FIX: Changed maxHP to maxHp (Case sensitive) ---
