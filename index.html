@@ -140,15 +140,64 @@ body {
 .hp-text { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: bold; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.7); font-size: 13px; }
 
 .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-.tabs button { flex: 1; padding: 10px; border-radius: 8px; border: 0; background: var(--accent); color: #fff; cursor: pointer; font-weight: 700; }
+.tabs button { 
+  flex: 1; 
+  padding: 8px; /* Adjusted padding to better fit an image */
+  border-radius: 8px; 
+  border: 0; 
+  background: var(--accent); 
+  color: #fff; 
+  cursor: pointer; 
+  font-weight: 700; 
+  
+  /* --- NEW STYLES TO CENTER IMAGE --- */
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+  /* --- END NEW STYLES --- */
+}
+
+/* --- NEW RULE FOR THE IMAGE INSIDE THE BUTTON --- */
+.tabs button img {
+  width: 32px;  /* Set a fixed size for the image icon */
+  height: 32px; 
+  object-fit: contain;
+  display: block;
+}
+/* --- END NEW RULE --- */
+
 .tabs button:hover { background: var(--accent-hover); }
 
-/* --- Equipment / Inventory / Skills --- */
+/* --- Equipment / Inventory / Skills / Quests --- */
 .tab-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+}
+
+/* --- NEW: Sub-tab buttons for Quests/Missions inside the Quest tab --- */
+.sub-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sub-tabs button {
+  flex: 1;
+  padding: 6px; /* Slightly smaller button for sub-tabs */
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.sub-tabs button.active {
+  background: var(--accent-hover);
+  border-color: var(--gold);
 }
 
 #equipmentTab {
@@ -1543,10 +1592,19 @@ button.primary:hover { background: var(--accent-hover); }
           <div class="hp-text" id="hpText">10 / 10 HP</div>
         </div>
         <div class="tabs">
-          <button onclick="showTab('equipment')" id="tabEquipmentBtn">Equipment</button>
-          <button onclick="showTab('inventory')" id="tabInventoryBtn">Inventory</button>
-          <button onclick="showTab('skills')" id="tabSkillsBtn">Skills</button>
-        </div>
+  <button onclick="showTab('equipment')" id="tabEquipmentBtn" onmouseenter="showTooltip(event, 'Equipment')" onmouseleave="hideTooltip()">
+    <img src="images/equipmenticon.png" alt="Equipment">
+  </button>
+  <button onclick="showTab('inventory')" id="tabInventoryBtn" onmouseenter="showTooltip(event, 'Inventory')" onmouseleave="hideTooltip()">
+    <img src="images/backpackicon.png" alt="Inventory">
+  </button>
+  <button onclick="showTab('skills')" id="tabSkillsBtn" onmouseenter="showTooltip(event, 'Skills')" onmouseleave="hideTooltip()">
+    <img src="images/skillicon.png" alt="Skills">
+  </button>
+  <button onclick="showTab('quests')" id="tabQuestsBtn" onmouseenter="showTooltip(event, 'Quests / Missions')" onmouseleave="hideTooltip()">
+    <img src="images/questicon.png" alt="Quests">
+  </button>
+</div>
         <div class="tab-content">
           <div id="equipmentTab">
             <div class="equipment-character">
@@ -1612,6 +1670,23 @@ button.primary:hover { background: var(--accent-hover); }
           </div>
           
           <div id="skillsTab" style="display:none;">
+            </div>
+          
+          <div id="questsTab" style="display:none; flex-direction: column; flex-grow: 1;">
+            <div class="sub-tabs">
+              <button id="showQuestsBtn" class="active" onclick="showQuestSubTab('quests')">Quests</button>
+              <button id="showMissionsBtn" onclick="showQuestSubTab('missions')">Missions</button>
+            </div>
+
+            <div id="questTabContentWrapper" class="quest-scroll-container" style="flex-grow: 1; padding-right: 0;">
+            
+              <div id="questsSubTabContent" style="display: block;">
+                </div>
+
+              <div id="missionsSubTabContent" style="display: none;">
+                </div>
+            </div>
+
             </div>
           
         </div>
@@ -3739,7 +3814,64 @@ function showTab(tab){
   document.getElementById('equipmentTab').style.display = 'none';
   document.getElementById('inventoryTab').style.display = 'none';
   document.getElementById('skillsTab').style.display = 'none';
+  document.getElementById('questsTab').style.display = 'none'; 
+  
+  if (tab === 'quests') {
+      renderQuestTabContent();
+      // Ensure the correct sub-tab is shown on load
+      const isMissionActive = document.getElementById('missionsSubTabContent').style.display === 'block';
+      showQuestSubTab(isMissionActive ? 'missions' : 'quests');
+  }
+  
   document.getElementById(tab + 'Tab').style.display = 'block';
+}
+
+/**
+ * Toggles between the Quests and Missions sub-tabs.
+ * @param {('quests'|'missions')} subTab - The ID prefix of the sub-tab to show.
+ */
+function showQuestSubTab(subTab) {
+  const questsContent = document.getElementById('questsSubTabContent');
+  const missionsContent = document.getElementById('missionsSubTabContent');
+  const questsBtn = document.getElementById('showQuestsBtn');
+  const missionsBtn = document.getElementById('showMissionsBtn');
+
+  if (subTab === 'missions') {
+    questsContent.style.display = 'none';
+    missionsContent.style.display = 'block';
+    questsBtn.classList.remove('active');
+    missionsBtn.classList.add('active');
+    renderBountyDetails(); // <-- NEW: Render bounty when mission tab is opened
+  } else {
+    questsContent.style.display = 'block';
+    missionsContent.style.display = 'none';
+    questsBtn.classList.add('active');
+    missionsBtn.classList.remove('active');
+    renderActiveQuestDetails(); // <-- NEW: Render quest when quest tab is opened
+  }
+}
+
+/**
+ * Toggles between the Quests and Missions sub-tabs.
+ * @param {('quests'|'missions')} subTab - The ID prefix of the sub-tab to show.
+ */
+function showQuestSubTab(subTab) {
+  const questsContent = document.getElementById('questsSubTabContent');
+  const missionsContent = document.getElementById('missionsSubTabContent');
+  const questsBtn = document.getElementById('showQuestsBtn');
+  const missionsBtn = document.getElementById('showMissionsBtn');
+
+  if (subTab === 'missions') {
+    questsContent.style.display = 'none';
+    missionsContent.style.display = 'block';
+    questsBtn.classList.remove('active');
+    missionsBtn.classList.add('active');
+  } else {
+    questsContent.style.display = 'block';
+    missionsContent.style.display = 'none';
+    questsBtn.classList.add('active');
+    missionsBtn.classList.remove('active');
+  }
 }
 
 function renderInventoryGrid(){
@@ -9789,9 +9921,15 @@ async function claimBountyReward() {
   
   game.activeBounty = null; // Clear mission
   
+  // --- NEW: Real-time update for the sidebar tab ---
+  if (typeof window.renderBountyDetails === 'function') {
+      window.renderBountyDetails();
+  }
+  // --- END NEW ---
+  
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
   
-  renderBountyInterface();
+  renderBountyInterface(); // This is the main hub render function
   await showGameAlert("Bounty Claimed", `You received ${BOUNTY_REWARD_GOLD} Gold.`);
 }
 
@@ -9803,6 +9941,12 @@ function updateBountyProgress(enemyName, delay = 0) {
       // Award XP per kill with delay
       // We ensure delay is treated as a number
       addXP('bountyhunting', BOUNTY_KILL_XP, parseInt(delay));
+
+      // --- NEW: Real-time update for the sidebar tab ---
+      if (typeof window.renderBountyDetails === 'function') {
+          window.renderBountyDetails();
+      }
+      // --- END NEW ---
       
       if (typeof window.savePlayerData === 'function') window.savePlayerData();
     }
@@ -10459,6 +10603,121 @@ function getQuestProgress(lineId) {
     return { data, activeQuest: firstUnfinished };
 }
 
+/**
+ * Renders the content for the entire Quests sidebar tab.
+ */
+function renderQuestTabContent() {
+    renderActiveQuestDetails();
+    renderBountyDetails();
+}
+
+/**
+ * Renders the active quest details (only the first in the Tutorial line for now)
+ * into the Quests sidebar tab.
+ */
+function renderActiveQuestDetails() {
+    const container = document.getElementById('questsSubTabContent');
+    if (!container) return;
+
+    // --- We only care about the Tutorial line for the sidebar display ---
+    const lineId = 'tutorial'; 
+    const lineData = QUEST_LINES[lineId];
+    if (!lineData) return;
+
+    const { data, activeQuest } = getQuestProgress(lineId);
+
+    if (!activeQuest) {
+        container.innerHTML = `<div style="text-align:center; color:#44aa44; font-style:italic; padding: 10px;">All quests completed!</div>`;
+        return;
+    }
+    
+    // --- RENDER ACTIVE QUEST DETAILS ---
+    let reqHtml = '';
+    
+    // Check Skill Requirement
+    if (activeQuest.reqSkill) {
+        const currentLvl = game[activeQuest.reqSkill.skill].level;
+        const reqLvl = activeQuest.reqSkill.level;
+        const met = currentLvl >= reqLvl;
+        const color = met ? '#aaffaa' : '#ff8888';
+        reqHtml += `<div style="color:${color}; margin-bottom: 5px;">${met ? '✔' : '✖'} Lvl ${reqLvl} ${activeQuest.reqSkill.skill}</div>`;
+    }
+
+    // Check Task Requirement
+    if (activeQuest.type === 'gather') {
+        activeQuest.reqItems.forEach(req => {
+            let has = 0;
+            for (const slot of game.inventory) if (slot && slot.name === req.name) has += slot.qty;
+            const met = has >= req.qty;
+            const color = met ? '#aaffaa' : '#ff8888';
+            reqHtml += `<div style="color:${color};">${met ? '✔' : '✖'} Gather ${req.qty} ${req.name}</div>`;
+        });
+    } else if (activeQuest.type === 'kill') {
+        const currentKills = data.kills || 0;
+        const target = activeQuest.targetCount;
+        const met = currentKills >= target;
+        const color = met ? '#aaffaa' : '#ff8888';
+        reqHtml += `<div style="color:${color};">${met ? '✔' : '✖'} Kill ${target} ${activeQuest.targetEnemy}s (Progress: ${currentKills}/${target})</div>`;
+    }
+
+    // Final Render
+    container.innerHTML = `
+        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px;">
+            <div style="font-weight: bold; color: var(--gold); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                Current Quest: ${activeQuest.name}
+            </div>
+            <div style="font-style: italic; font-size: 13px; color: #ccc; margin-bottom: 10px;">
+                ${activeQuest.desc}
+            </div>
+            <div style="font-weight: bold; color: #fff; margin-bottom: 5px;">Objectives:</div>
+            ${reqHtml}
+        </div>
+    `;
+}
+
+/**
+ * Renders the active bounty details into the Missions sidebar tab.
+ */
+function renderBountyDetails() {
+    const container = document.getElementById('missionsSubTabContent');
+    if (!container) return;
+
+    const b = game.activeBounty;
+
+    if (!b) {
+        container.innerHTML = `<div style="text-align:center; color:#ccc; font-style:italic; padding: 10px;">No active mission. Visit the Hunting Board to accept a bounty.</div>`;
+        return;
+    }
+
+    const isComplete = b.kills >= b.req;
+    const statusColor = isComplete ? '#44aa44' : 'var(--gold)';
+    const statusText = isComplete ? 'MISSION COMPLETE' : 'IN PROGRESS';
+    
+    // RENDER ACTIVE BOUNTY DETAILS
+    container.innerHTML = `
+        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px;">
+            <div style="font-weight: bold; color: var(--gold); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                Active Bounty: Kill ${b.target}s
+            </div>
+            
+            <div style="font-weight: bold; color: ${statusColor}; margin-bottom: 10px;">
+                Status: ${statusText}
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+               Progress: <span style="color: #fff; font-weight: bold;">${b.kills} / ${b.req}</span>
+            </div>
+            <div style="width: 100%; height: 10px; background: #333; border-radius: 5px; overflow: hidden; margin-bottom: 10px;">
+               <div style="width: ${Math.min(100, (b.kills / b.req) * 100)}%; height: 100%; background: var(--gold);"></div>
+            </div>
+            <div style="font-size: 14px; color: #aaffaa;">
+               Reward: ${BOUNTY_REWARD_GOLD} Gold
+            </div>
+        </div>
+    `;
+}
+
+
 function renderQuestLinesList() {
   const container = document.getElementById('questLinesContainer');
   container.innerHTML = '';
@@ -10671,9 +10930,19 @@ async function completeQuest(lineId) {
     playGlobalSound('sounds/soundeffects/levelupsound.mp3'); 
     await showGameAlert("Quest Complete!", `You completed: ${qData.name}`);
     
+    // --- NEW: Real-time update for the sidebar tab + main hub ---
+    if (typeof window.renderActiveQuestDetails === 'function') {
+        window.renderActiveQuestDetails();
+    }
+    // Also update the main hub list
+    if (typeof window.renderQuestLinesList === 'function') {
+        window.renderQuestLinesList();
+    }
+    // --- END NEW ---
+    
     if (typeof window.savePlayerData === 'function') window.savePlayerData();
     
-    // Refresh view
+    // Refresh the main quest line hub screen (if the player is on it)
     openQuestLine(lineId);
 }
 
@@ -10694,7 +10963,14 @@ function updateQuestKillCount(enemyName) {
         }
     }
     
-    if (updated && typeof window.savePlayerData === 'function') window.savePlayerData();
+    if (updated) {
+        // --- NEW: Real-time update for the sidebar tab ---
+        if (typeof window.renderActiveQuestDetails === 'function') {
+            window.renderActiveQuestDetails();
+        }
+        // --- END NEW ---
+        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    }
 }
 
 
@@ -12580,7 +12856,6 @@ function playerAttackTurn(spellOverride = null) {
       if (removeItem('Empty Vial', 1)) {
           addItem('Venom', 1);
           showItemPopup(`+1 Venom`, null, 900);
-          showItemPopup(`<span style="color:#aaa; font-size:12px;">Filled Vial</span>`, null, 1300);
       } else {
           showItemPopup(`No drops.`, null, 900);
       }
