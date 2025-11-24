@@ -15264,7 +15264,7 @@ function renderInspectEquipment(equipment, frame) {
 
 <div id="itemContextMenu"></div>
 
-<div id="asset-cache" style="position: absolute; left: -9999px; top: -9999px; visibility: hidden; width: 1px; height: 1px; overflow: hidden;"></div>
+<div id="asset-cache" style="position: fixed; bottom: 0; right: 0; width: 1px; height: 1px; opacity: 0.001; pointer-events: none; z-index: -1000; overflow: hidden;"></div>
 
 <script type="module">
   // Firebase imports (CDN modules)
@@ -17730,23 +17730,34 @@ if (!validSkills.includes(skill)) {
 
     // Define all critical images your game needs to start
     const MASTER_ASSET_LIST = [
-      'images/brick_background.png',
+      // --- UI & Backgrounds ---
+      'images/brickbackground.png', // Fixed name to match CSS
+      'images/tittle.jpeg',         // Loading screen background
       'images/gearicon.png',
+      'images/equipmenticon.png',   // Tab Icon
+      'images/backpackicon.png',    // Tab Icon
+      'images/skillicon.png',       // Tab Icon
+      'images/questicon.png',       // Tab Icon
+      'images/questbuttonicon.jpg', // Hub Icon
 
-      // --- ADD THESE 6 LINES FOR YOUR NEW PLACEHOLDERS ---
+      // --- Equipment Placeholders ---
       'images/necklace.png',
       'images/cape.png',
       'images/shield.png',
       'images/legs.png',
       'images/ring.png',
       'images/arrows.png',
-      // --- END OF NEW LINES ---
+      'images/pet.png',             // Empty Pet Slot
 
+      // --- Equipment Items ---
       'images/helmet.png',
       'images/weapon.png',
       'images/chestplate.png',
       'images/boots.png',
-      'images/goldpouch.png',
+      'images/goldcrown.png',       // Rare Item
+      'images/1tapper.png',         // Admin Item
+
+      // --- Hub Icons ---
       'images/mines.png',
       'images/foresticon.png',
       'images/blacksmithicon.png',
@@ -17754,6 +17765,15 @@ if (!validSkills.includes(skill)) {
       'images/combatareas.png',
       'images/shopbutton.png',
       'images/bankbutton.png',
+      'images/fletchingworkbench.png',
+      'images/craftingbenchbutton.png',
+      'images/elementalforge.jpeg',
+      'images/fishingareasbutton.jpeg',
+      'images/huntingboard.jpeg',
+      'images/oceanbutton.png',
+      'images/riverbutton.jpeg',
+
+      // --- Skill Icons ---
       'images/miningskillicon.png',
       'images/blacksmithskillicon.png',
       'images/attackskillicon.jpeg',
@@ -17762,130 +17782,136 @@ if (!validSkills.includes(skill)) {
       'images/vitalityskillicon.png',
       'images/cookingskillicon.png',
       'images/woodcuttingskillicon.jpeg',
+      'images/fletchingskillicon.jpeg',
+      'images/craftingskillicon.png',
+      'images/rangedskillicon.jpeg',
+      'images/fishingskillicon.jpeg',
+      'images/magicskillicon.jpeg',
+      'images/stoneforgingskillicon.jpeg',
+      'images/bountyhunterskillicon.jpeg',
+
+      // --- Items: Ores & Bars ---
       'images/copperore.png',
       'images/copperbar.png',
+      'images/coalore.png',
+      'images/ironore.png',
+      'images/ironbar.png',
+      'images/sand.png',
+      'images/goldpouch.png',
+
+      // --- Items: Copper Gear ---
       'images/coppershortsword.png',
       'images/copperhelmet.png',
       'images/copperchestplate.png',
       'images/copperboots.png',
-      'images/rawchicken.png',
-      'images/cookedchicken.png',
-      'images/burntchicken.png',
-      'images/beef.png', // +++ NEW +++
-      'images/cookedbeef.png', // +++ NEW +++
-      'images/burntbeef.png', // +++ NEW +++
-      'images/chickenmonster.png',
-      'images/chickenanim.gif',
-      'images/coppervein.png',
-      'images/coalvein.png',
-      'images/ironvein.png',
-      'images/farm.png',
-      'images/softwood.png',
-      'images/oak.png',
-      'images/bronzepickaxe.png',
-      'images/bronzeaxe.png',
+      'images/copperplatelegs.png',
       'images/copperpickaxe.png',
       'images/copperaxe.png',
-      'images/ironpickaxe.png',
-      'images/ironaxe.png',
-      'images/ironore.png',
-      'images/ironbar.png',
-      'images/earthcrystalshard.png',
-      'images/aircrystalshard.png',
-      'images/watercrystalshard.png',
-      'images/earthcrystalvein.png',
-      'images/aircrystalvein.png',
-      'images/watercrystalvein.png',
-      'images/crystalmine.jpeg',
+
+      // --- Items: Iron Gear ---
       'images/ironshortsword.png',
       'images/ironhelmet.png',
       'images/ironchestplate.png',
       'images/ironboots.png',
-      'images/fletchingskillicon.jpeg', // +++ CHANGED TO .jpeg +++
-      'images/fletchingworkbench.png',
+      'images/ironplatelegs.png',
+      'images/ironpickaxe.png',
+      'images/ironaxe.png',
+
+      // --- Items: Bronze Tools ---
+      'images/bronzepickaxe.png',
+      'images/bronzeaxe.png',
+
+      // --- Items: Food (Raw/Cooked/Burnt) ---
+      'images/rawchicken.png',
+      'images/cookedchicken.png',
+      'images/burntchicken.png',
+      'images/beef.png',
+      'images/cookedbeef.png',
+      'images/burntbeef.png',
+      'images/herring.png',
+      'images/cookedherring.png', // Missing
+      'images/burntherring.png',  // Missing
+      'images/trout.png',
+      'images/cookedtrout.png',   // Missing
+      'images/burnttrout.png',    // Missing
+      'images/salmon.png',
+      'images/cookedsalmon.png',  // Missing
+      'images/burntsalmon.png',   // Missing
+
+      // --- Items: Magic/Crystals ---
+      'images/earthcrystalshard.png',
+      'images/aircrystalshard.png',
+      'images/watercrystalshard.png',
+      'images/earthstone.png',
+      'images/airstone.png',
+      'images/waterstone.png',
+      'images/magicstaff.png',
+      'images/wizardhat.png',
+      'images/wizardrobe.png',
+      'images/wizardtrousers.png',
+      'images/wizardboots.png',
+      
+      // --- Spell Icons (Were Missing) ---
+      'images/earthbolt.jpeg',
+      'images/airbolt.jpeg',
+      'images/waterbolt.jpeg',
+
+      // --- Items: Crafting/Fletching ---
+      'images/softwood.png',
+      'images/oak.png',
       'images/feather.png',
       'images/arrowshaft.png',
       'images/copperarrowtip.png',
       'images/unboundarrow.png',
       'images/copperarrow.png',
-      'images/copperplatelegs.png', // +++ NEW +++
-      'images/ironplatelegs.png', // +++ NEW +++
-      
-      // +++ NEW CAVE/SPIDER ASSETS +++
-      // +++ NEW CAVE/SPIDER/RAT/CENTIPEDE ASSETS +++
-      'images/cave.png',
-      'images/spidermonster.png',
-      'images/spideranim.gif',
-      'images/silk.png',
-      'images/ratmonster.jpeg', 
-      'images/ratanim.webp',
-      'images/rattail.png', // New Item
-      'images/centipedemonster.jpeg',
-      'images/centipedeanim.webp',
-      'images/sand.png', // +++ NEW +++
-      'images/sandvein.jpeg', // +++ NEW +++
-      'images/emptyvial.png', // +++ NEW +++
-      'images/venom.png', // +++ NEW +++
-      
-      // +++ NEW ASSETS FOR CRAFTING/RANGED +++
-      'images/craftingskillicon.png',
-      
-      // +++ NEW ASSETS FOR CRAFTING/RANGED +++
-      'images/craftingskillicon.png',
-      'images/rangedskillicon.jpeg',
-      'images/craftingbenchbutton.png',
       'images/bowstring.png',
       'images/unstrungsoftwoodbow.png',
       'images/unstrungoakbow.png',
       'images/softwoodbow.png',
       'images/oakbow.png',
-      // +++ NEW LEATHER ASSETS +++
       'images/cowhide.png',
-      'images/leatherhood.png',
       'images/leather.png',
+      'images/leatherhood.png',
       'images/leatherarmor.png',
       'images/leatherpants.png',
       'images/leatherboots.png',
-      'images/cowmonster.png',
-      'images/cowanim.webp',
+      'images/silk.png',
+      'images/cloth.png',
+      'images/emptyvial.png',
+      'images/venom.png',
       
-      // +++ NEW FISHING ASSETS +++
-      'images/fishingskillicon.jpeg',
-      'images/fishingareasbutton.jpeg',
-      'images/oceanbutton.png',
-      'images/riverbutton.jpeg',
-      'images/herring.png',
-      'images/trout.png',
-      'images/salmon.png',
-      
-      // +++ NEW FISHING REQUIREMENTS +++
+      // --- Items: Fishing ---
       'images/fishingpole.png',
       'images/fishingbait.png',
-      
-      // +++ NEW CLOTH & WIZARD ASSETS +++
-      'images/cloth.png',
-      'images/wizardhat.png',
-      'images/wizardrobe.png',
-      'images/wizardtrousers.png',
-      'images/wizardboots.png',
-      'images/magicstaff.png',
-      'images/magicskillicon.jpeg',
-      
-      // +++ NEW ELEMENTAL FORGE ASSETS +++
-      'images/earthstone.png',
-      'images/airstone.png',
-      'images/waterstone.png',
-      'images/elementalforge.jpeg',
-      'images/stoneforgingskillicon.jpeg',
-      'images/questbuttonicon.jpg', // +++ NEW +++
-      'images/1tapper.png',         // +++ NEW ADMIN WEAPON +++
-      'images/petspider.png',       // +++ NEW PET IMAGE +++
-      'images/bountyhunterskillicon.jpeg', // +++ NEW +++
-      'images/huntingboard.jpeg' // +++ NEW +++
+
+      // --- Monsters & Animals ---
+      'images/chickenmonster.png',
+      'images/chickenanim.gif',
+      'images/cowmonster.png',
+      'images/cowanim.webp',
+      'images/cowanim.gif',
+      'images/ratmonster.jpeg', 
+      'images/ratanim.webp',
+      'images/rattail.png',
+      'images/spidermonster.png',
+      'images/spideranim.gif',
+      'images/petspider.png',
+      'images/centipedemonster.jpeg',
+      'images/centipedeanim.webp',
+
+      // --- Veins ---
+      'images/coppervein.png',
+      'images/coalvein.png',
+      'images/ironvein.png',
+      'images/sandvein.jpeg',
+      'images/crystalmine.jpeg',
+      'images/earthcrystalvein.png',
+      'images/aircrystalvein.png',
+      'images/watercrystalvein.png'
     ];
 
    /**
-     * Preloads all assets, forces decoding, and caches them in the DOM
+     * Preloads assets and keeps them alive using a DOM Cache and Heartbeat
      * @param {string[]} assetList - Array of image paths
      * @returns {Promise}
      */
@@ -17899,8 +17925,19 @@ if (!validSkills.includes(skill)) {
       const progressBarFill = document.getElementById('loading-bar-fill');
       const progressPercentText = document.getElementById('loading-progress-percent');
       
-      // Get the cache container we added in Step 1
+      // 1. Get the cache container
       const cacheContainer = document.getElementById('asset-cache');
+
+      // --- NEW: The "Heartbeat" to prevent browser sleeping ---
+      // This slightly changes the style every 10 seconds.
+      // It tricks the browser into keeping the textures in GPU memory.
+      if (cacheContainer) {
+          setInterval(() => {
+              // Toggle opacity minutely. The user won't see it, but the GPU has to render it.
+              cacheContainer.style.opacity = (cacheContainer.style.opacity === '0.001') ? '0.002' : '0.001';
+          }, 10000); // Run every 10 seconds
+      }
+      // -------------------------------------------------------
 
       let loadedCount = 0;
       const totalAssets = assetList.length;
@@ -17909,13 +17946,12 @@ if (!validSkills.includes(skill)) {
         return new Promise((resolve, reject) => {
           const img = new Image();
           
-          // 1. Set the source
           img.src = src;
           
-          // 2. Force the browser to decode the image data NOW
+          // Force decoding
           img.decode()
             .then(() => {
-              // 3. Append to the hidden div so it stays in RAM
+              // 2. Append to the hidden div so it stays in RAM
               if (cacheContainer) {
                   cacheContainer.appendChild(img);
               }
@@ -17931,8 +17967,7 @@ if (!validSkills.includes(skill)) {
             })
             .catch((err) => {
               console.warn(`[Preloader] Failed to decode: ${src}`, err);
-              // Resolve anyway so the game loads even if one image fails
-              resolve();
+              resolve(); // Resolve anyway to keep game loading
             });
         });
       });
