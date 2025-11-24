@@ -272,7 +272,7 @@ body {
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 13px;
-  z-index: 3501; /* <-- THIS IS THE FIX */
+  z-index: 4500; /* *** FIXED: Higher than the Inspect Modal (4000) *** */
   border: 1px solid rgba(255,255,255,0.06);
   box-shadow: 0 6px 18px rgba(0,0,0,0.45);
   max-width: 240px;
@@ -1592,16 +1592,16 @@ button.primary:hover { background: var(--accent-hover); }
           <div class="hp-text" id="hpText">10 / 10 HP</div>
         </div>
         <div class="tabs">
-  <button onclick="showTab('equipment')" id="tabEquipmentBtn" onmouseenter="showTooltip(event, 'Equipment')" onmouseleave="hideTooltip()">
+  <button onclick="showTab('equipment')" id="tabEquipmentBtn" onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Equipment</div>')" onmouseleave="hideTooltip()">
     <img src="images/equipmenticon.png" alt="Equipment">
   </button>
-  <button onclick="showTab('inventory')" id="tabInventoryBtn" onmouseenter="showTooltip(event, 'Inventory')" onmouseleave="hideTooltip()">
+  <button onclick="showTab('inventory')" id="tabInventoryBtn" onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Inventory</div>')" onmouseleave="hideTooltip()">
     <img src="images/backpackicon.png" alt="Inventory">
   </button>
-  <button onclick="showTab('skills')" id="tabSkillsBtn" onmouseenter="showTooltip(event, 'Skills')" onmouseleave="hideTooltip()">
+  <button onclick="showTab('skills')" id="tabSkillsBtn" onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Skills</div>')" onmouseleave="hideTooltip()">
     <img src="images/skillicon.png" alt="Skills">
   </button>
-  <button onclick="showTab('quests')" id="tabQuestsBtn" onmouseenter="showTooltip(event, 'Quests / Missions')" onmouseleave="hideTooltip()">
+  <button onclick="showTab('quests')" id="tabQuestsBtn" onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Quests / Missions</div>')" onmouseleave="hideTooltip()">
     <img src="images/questicon.png" alt="Quests">
   </button>
 </div>
@@ -2289,6 +2289,27 @@ button.primary:hover { background: var(--accent-hover); }
     <p id="broadcastMessage" style="font-size: 16px; line-height: 1.5;">
       A new game update is live! Please refresh your browser to continue.
     </p>
+    </div>
+</div>
+
+<div id="playerInspectOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 4000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+    <div class="game-modal" style="max-width: 450px;">
+        <div class="game-modal-title">Inspecting <span id="inspectPlayerName">Player</span></div>
+        <div id="inspectEquipmentPanel" class="game-modal-content">
+            <div class="equipment-character" style="border-bottom: 2px solid var(--accent); padding-bottom: 15px;">
+                <div class="character-frame" id="inspectEquipmentFrame">
+                    </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <div id="inspectStatsPanel" style="padding: 10px; background: rgba(0,0,0,0.15); border-radius: 6px;">
+                    </div>
+            </div>
+            
+        </div>
+        <div class="game-modal-buttons">
+            <button id="closeInspectBtn" class="primary" style="background:#666;">Close</button>
+        </div>
     </div>
 </div>
 <script>
@@ -3186,6 +3207,10 @@ const ITEM_STATS = {
     type: 'pet'
   }
 };
+
+// *** FIX: Expose stats globally so the Inspect tool can read them ***
+window.ITEM_STATS = ITEM_STATS;
+
 const SHOP_INVENTORY = new Array(20).fill(null);
 SHOP_INVENTORY[0] = { name: 'Bronze Pickaxe', price: 10 };
 SHOP_INVENTORY[1] = { name: 'Bronze Axe', price: 10 };
@@ -15075,7 +15100,7 @@ inventoryGrid.addEventListener('dragend', (e) => {
     };
   }
 
-  // --- NEW: Global Button Click Sound ---
+ // --- NEW: Global Button Click Sound ---
   document.body.addEventListener('click', (e) => {
     // This selector now captures:
     // 1. 'button' -> Standard buttons (Fight, Run, Return, etc.)
@@ -15105,6 +15130,135 @@ window.showSaveIndicator = function() {
         }, 2000);
     }
 }
+
+// =================================================================
+// --- NEW: PLAYER INSPECT FUNCTIONS (Accessible globally) ---
+// =================================================================
+
+/**
+ * Helper to render the *inspected* player's equipment using dummy slots.
+ * @param {object} equipment - The equipment object from the inspected player's save data.
+ * @param {HTMLElement} frame - The DOM element to render into.
+ */
+function renderInspectEquipment(equipment, frame) {
+    frame.innerHTML = '';
+    const slots = [
+        'necklace', 'helmet', 'cape', 
+        'weapon', 'chest', 'shield', 
+        'ring1', 'legs', 'ring2', 
+        'arrows', 'boots', 'pet'
+    ];
+
+    // Helper to safely access global stats
+    const getStats = (name) => (window.ITEM_STATS && window.ITEM_STATS[name]) ? window.ITEM_STATS[name] : null;
+
+    // Image mapping for all items
+    const itemImageMap = {
+        'Copper Helmet': 'copperhelmet', 'Copper Chestplate': 'copperchestplate', 'Copper Shortsword': 'coppershortsword', 'Copper Boots': 'copperboots', 
+        'Iron Helmet': 'ironhelmet', 'Iron Chestplate': 'ironchestplate', 'Iron Shortsword': 'ironshortsword', 'Iron Boots': 'ironboots', 
+        'Copper Platelegs': 'copperplatelegs', 'Iron Platelegs': 'ironplatelegs', 'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 
+        'Copper Arrow': 'copperarrow', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 
+        'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
+        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', '1tapper': '1tapper', 'Pet Spider': 'petspider'
+    };
+
+    slots.forEach(slotType => {
+        const item = equipment[slotType];
+        const slotEl = document.createElement('div');
+        slotEl.className = 'equipment-slot';
+        
+        let imgName = '';
+        let isTwoHandedBlock = false;
+        
+        // 1. Determine Image
+        if (item) {
+            imgName = itemImageMap[item.name] || item.name.toLowerCase().replace(/\s+/g,'_');
+        } else {
+            // Placeholder Logic
+            if (slotType === 'helmet') imgName = 'helmet'; else if (slotType === 'chest') imgName = 'chestplate';
+            else if (slotType === 'weapon') imgName = 'weapon'; else if (slotType === 'boots') imgName = 'boots';
+            else if (slotType === 'necklace') imgName = 'necklace'; else if (slotType === 'cape') imgName = 'cape';
+            else if (slotType === 'shield') imgName = 'shield'; else if (slotType === 'legs') imgName = 'legs';
+            else if (slotType === 'ring1' || slotType === 'ring2') imgName = 'ring'; else if (slotType === 'arrows') imgName = 'arrows';
+            else if (slotType === 'pet') imgName = 'pet';
+        }
+
+        // 2. Handle 2H Weapon for Shield Slot
+        if (slotType === 'shield' && !item) {
+            const weapon = equipment.weapon;
+            const weaponStats = weapon ? getStats(weapon.name) : null;
+            if (weapon && weaponStats && weaponStats.twoHanded) {
+                isTwoHandedBlock = true;
+                imgName = itemImageMap[weapon.name] || 'weapon';
+            }
+        }
+        
+        let imgHtml = `<img src="images/${imgName}.png" alt="${slotType}" style="${isTwoHandedBlock ? 'opacity: 0.5; filter: grayscale(50%);' : ''}">`;
+        slotEl.innerHTML = imgHtml;
+        
+        // 3. Add Quantity for Arrows
+        if (item && slotType === 'arrows' && item.qty > 0) {
+            const amt = document.createElement('div');
+            amt.className = 'inv-amount';
+            amt.innerText = formatAmount(item.qty); 
+            slotEl.appendChild(amt);
+        }
+
+        // 4. Add Tooltip with Stats
+        if (item) {
+            const itemStats = getStats(item.name);
+            let statsHtml = '';
+            
+            // Show quantity for arrows
+            let qtyHtml = (slotType === 'arrows') ? `<div style="color:#fff;">Amount: ${item.qty.toLocaleString()}</div>` : '';
+            
+            if (itemStats) {
+                if (itemStats.damage) {
+                    const dmgType = itemStats.weaponType === 'magic' ? 'Magic' : 'Physical';
+                    statsHtml += `<div style="color:#aaffaa;">+${itemStats.damage} ${dmgType} Damage</div>`;
+                }
+                if (itemStats.styleBonus) {
+                     statsHtml += `<div style="color:#aaffaa;">+${itemStats.styleBonus} Physical Damage (if accurate)</div>`;
+                }
+                if (itemStats.armor) {
+                    statsHtml += `<div style="color:#aaffaa;">+${itemStats.armor} Armor</div>`;
+                }
+                if (itemStats.speed) {
+                    statsHtml += `<div style="color:#aaffaa;">+${itemStats.speed} Speed</div>`;
+                }
+            }
+
+            const tooltipContent = `
+                <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
+                ${qtyHtml} 
+                ${statsHtml}
+            `;
+            
+            // Attach events - *** FIXED: Removed 'window.' prefix ***
+            slotEl.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+            slotEl.onmouseleave = hideTooltip;
+            
+        } else if (isTwoHandedBlock) {
+             const weapon = equipment.weapon;
+             const weaponName = weapon ? weapon.name : 'Weapon';
+             const tooltipContent = `
+                <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${weaponName}</div>
+                <div style="color:#ccc;">(Occupies Both Hands)</div>
+             `;
+             // *** FIXED: Removed 'window.' prefix ***
+             slotEl.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+             slotEl.onmouseleave = hideTooltip;
+        } else {
+            // Empty Slot Tooltip - *** FIXED: Removed 'window.' prefix ***
+            slotEl.onmouseenter = (evt) => showTooltip(evt, `Empty ${slotType.charAt(0).toUpperCase() + slotType.slice(1)} Slot`);
+            slotEl.onmouseleave = hideTooltip;
+        }
+
+        frame.appendChild(slotEl);
+    });
+}
+// This function needs to be defined in the module script to access Firebase, 
+// but exposed to the window object so the HTML onclick can trigger it.
 
 </script>
 
@@ -15447,6 +15601,132 @@ window.showSaveIndicator = function() {
     }
   }
 
+  // =================================================================
+  // --- NEW: PLAYER INSPECT LOGIC (Module Script) ---
+  // =================================================================
+  
+  /**
+   * Fetches player data and opens the inspect modal.
+   * NOTE: This function must be exposed to the window object to be called from the leaderboard HTML.
+   * @param {string} playerName - The name of the player to inspect.
+   */
+window.inspectPlayer = async function(playerName) {
+    if (!auth.currentUser) return;
+
+    // --- PLAY SOUND EFFECT ---
+    if (typeof window.playGlobalSound === 'function') {
+        window.playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');
+    }
+    
+    // 1. Fetch data for the player
+    try {
+      const nameLower = playerName.toLowerCase();
+      const q = query(collection(db, "players"), where("name_lowercase", "==", nameLower), limit(1));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        await window.showGameAlert("Player Not Found", "Could not find player data for " + playerName);
+        return;
+      }
+
+      const playerData = querySnapshot.docs[0].data();
+      const playerEquipment = playerData.equipment || {};
+
+      // 2. Render the Modal Content
+      const modalName = document.getElementById('inspectPlayerName');
+      const frame = document.getElementById('inspectEquipmentFrame');
+      const statsPanel = document.getElementById('inspectStatsPanel');
+      const inspectOverlay = document.getElementById('playerInspectOverlay');
+
+      if (!frame || !inspectOverlay) return;
+
+      // Update Name
+      modalName.textContent = playerData.name || 'Player';
+      
+      // Render Equipment
+      if (typeof window.renderInspectEquipment === 'function') {
+        window.renderInspectEquipment(playerEquipment, frame);
+      }
+
+      // --- CALCULATE EQUIPMENT STATS ONLY ---
+      
+      // Initialize Totals
+      let eqDamage = 0; 
+      let eqArmor = 0;
+      let eqSpeed = 0;
+      
+      // We also detect magic usage just to change the label
+      let isMagicWeapon = false;
+
+      // Loop through equipment to sum stats (Using window.ITEM_STATS)
+      if (window.ITEM_STATS) {
+        Object.values(playerEquipment).forEach(item => {
+            if (item && item.name) {
+                const stats = window.ITEM_STATS[item.name];
+                if (stats) {
+                    // Sum raw potential
+                    eqDamage += stats.damage || 0;
+                    eqArmor += stats.armor || 0;
+                    
+                    // For speed, we just sum the raw speed values (e.g., +1, +2, -3)
+                    let itemSpeed = stats.speed || 0;
+                    
+                    // Apply the specific armor penalty logic
+                    const weaponType = playerEquipment.weapon ? (window.ITEM_STATS[playerEquipment.weapon.name]?.weaponType || 'melee') : 'melee';
+                    const armorType = stats.armorType;
+
+                    if (weaponType === 'melee' && armorType === 'ranged') itemSpeed = -3;
+                    else if (weaponType === 'ranged' && armorType === 'fighter') itemSpeed = -7.5;
+                    
+                    eqSpeed += itemSpeed;
+
+                    // Check label type
+                    if (stats.weaponType === 'magic') isMagicWeapon = true;
+                }
+            }
+        });
+      }
+
+      // Determine Labels and Colors
+      const damageLabel = isMagicWeapon ? "Magic Damage" : "Physical Damage";
+      const damageSign = eqDamage >= 0 ? "+" : "";
+      const speedSign = eqSpeed >= 0 ? "+" : "";
+
+      // Render Stats Panel (Raw Bonuses)
+      statsPanel.innerHTML = `
+          <div class="stat-row">
+            <span class="stat-label">${damageLabel}</span>
+            <span class="stat-value" style="color:#ff4d4d;">${damageSign}${eqDamage}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Armor</span>
+            <span class="stat-value" style="color:#aaffaa;">+${eqArmor}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Speed Bonus</span>
+            <span class="stat-value" style="color:var(--gold);">${speedSign}${eqSpeed}</span>
+          </div>
+      `;
+
+      // 3. Show Modal
+      inspectOverlay.style.display = 'flex';
+      
+      // Set the close button handler
+      document.getElementById('closeInspectBtn').onclick = () => {
+          inspectOverlay.style.display = 'none';
+          window.hideTooltip(); // Ensure tooltip is hidden on close
+      };
+
+    } catch (e) {
+      console.error("INSPECTION FAILED. Specific Error:", e);
+      if (e.message && e.message.includes("Player doc not found")) {
+        // Already handled above
+      } else {
+        await window.showGameAlert("Error", "Failed to load player data. Check console for details.");
+      }
+    }
+  };
+  
   // --- HEAVILY MODIFIED: loadPlayerDataAndStart (now handles session lock) ---
   async function loadPlayerDataAndStart(user) {
     try {
@@ -17261,13 +17541,19 @@ if (!validSkills.includes(skill)) {
         const rank = index + 1;
         const xpFormatted = player.totalXp.toLocaleString();
         const isCurrentPlayer = (auth.currentUser && game.name === player.name); 
+        // --- MODIFIED DIV: ADD CLICK HANDLER & CURSOR ---
         leaderboardHtml += `
-          <div style="display: flex; justify-content: space-between; padding: 2px 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); background: ${isCurrentPlayer ? 'rgba(181, 166, 66, 0.1)' : 'transparent'};">
+          <div 
+            class="leaderboard-entry" 
+            style="display: flex; justify-content: space-between; padding: 2px 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); background: ${isCurrentPlayer ? 'rgba(181, 166, 66, 0.1)' : 'transparent'}; cursor: pointer;"
+            data-name="${player.name}"
+            onclick="window.inspectPlayer('${player.name}')"
+          >
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="width: 20px; text-align: right; font-weight: bold; color: ${rank <= 3 ? 'var(--gold)' : '#fff'};">${rank}.</span>
               <span>${xpFormatted}</span>
             </div>
-            <span>${player.name}</span>
+            <span style="font-weight: bold;">${player.name}</span>
           </div>
         `;
       });
