@@ -769,6 +769,17 @@ button.primary:hover { background: var(--accent-hover); }
   text-shadow: 0 1px 2px rgba(0,0,0,0.7); /* Simpler shadow */
 }
 
+/* --- NEW: Special Attack Splat --- */
+.splat-special {
+  color: #b300ff; /* Bright Purple */
+  font-size: 1.6rem; /* Larger text */
+  font-weight: 900;
+  border: 2px solid #fff; /* White border */
+  background: rgba(50, 0, 50, 0.9);
+  box-shadow: 0 0 10px #b300ff;
+  z-index: 1650;
+}
+
 /* --- NEW: Item Context Menu --- */
 #itemContextMenu {
   display: none;
@@ -1895,14 +1906,23 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubCombat" class="hub-screen">
             <h2>Combat Areas</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose an area to start fighting.</div>
-            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
+            
+            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
               <button id="farmAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;">
-  <img src="images/farm.png" alt="Farm Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
-</button>
-              <button id="caveAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; margin-top: 10px;">
-  <img src="images/cave.png" alt="Cave Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
-</button>
-              <button id="hubCombat_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
+                <img src="images/farm.png" alt="Farm Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
+              </button>
+              
+              <button id="caveAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/cave.png" alt="Cave Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
+              </button>
+              
+              <button id="madmaxCastleBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; border: 2px solid #900;">
+                <img src="images/madmaxcastle.jpeg" alt="Madmax Castle" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
+              </button>
+            </div>
+
+            <div class="action-buttons" style="margin-top: 30px;">
+              <button id="hubCombat_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
           
@@ -1934,6 +1954,25 @@ button.primary:hover { background: var(--accent-hover); }
             
             <div class="action-buttons" style="margin-top: 14px;">
               <button id="hubCave_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubMadmaxCastle" class="hub-screen">
+            <h2 style="color:#ff4d4d;">Madmax Castle</h2>
+            <div style="margin-top:8px; color:#efe3cf;">The lair of the beast. Tread carefully.</div>
+            
+            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+              
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Madmax')" 
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:red;\'>Madmax (Lvl 69)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/madmaxmonster.jpeg" alt="Madmax" style="height: 120px; border: 2px solid red; border-radius: 8px;">
+              </div>
+            
+            </div>
+            
+            <div class="action-buttons" style="margin-top: 14px;">
+              <button id="hubMadmaxCastle_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
           <div id="hubShop" class="hub-screen">
@@ -2091,6 +2130,37 @@ button.primary:hover { background: var(--accent-hover); }
                 <button id="hubLottery_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
             <div id="lotteryResultMsg" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 18px; min-height: 24px;"></div>
+          </div>
+
+          <div id="hubActiveCombat" class="hub-screen">
+            <div id="combat-main-container">
+              
+              <div id="combat-enemy-area">
+                <img id="combat-enemy-img" src="" alt="Enemy">
+                <div id="combat-enemy-hp-bar">
+                  <div id="combat-enemy-hp-fill" style="width:100%"></div>
+                  <div id="combat-enemy-hp-text">10 / 10 HP</div>
+                </div>
+              </div>
+              
+              <div id="combat-player-area">
+                <div id="combat-action-panel">
+                  <p style="margin: 0 0 10px 0; font-weight: bold;">Combat Style:</p>
+                  <div id="combat-styles">
+                    <button id="style-attack" class="primary" onclick="setAttackStyle('attack')">Accurate</button>
+                    <button id="style-strength" class="primary" onclick="setAttackStyle('strength')">Aggressive</button>
+                    <button id="style-defence" class="primary" onclick="setAttackStyle('defence')">Defensive</button>
+                  </div>
+                  
+                  <div id="combat-main-actions">
+                    <button id="combat-fight-btn" class="primary" style="background:#900;" onclick="beginCombat()">Fight</button>
+                    <button id="combat-run-btn" class="primary" style="background:#080; display:none;" onclick="runFromCombat()">Run</button>
+                    <button id="combat-return-btn" class="primary" style="background:#555;" onclick="returnToCombatArea()">Return</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
           
           </div> <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
@@ -2672,7 +2742,8 @@ const VALID_ITEMS = [
   'Rat Tail', // +++ NEW ITEM +++
   'Sand', // +++ NEW +++
   'Empty Vial', // +++ NEW +++
-  'Venom' // +++ NEW +++
+  'Venom', // +++ NEW +++
+  'Lottery Ticket' // +++ NEW +++
 ];
 
 const XP_TABLE = [
@@ -3325,7 +3396,8 @@ const ITEM_SELL_PRICES = {
   'Rat Tail': 3,      // +++ NEW ITEM SELL PRICE +++
   'Sand': 1,
   'Empty Vial': 5,
-  'Venom': 15
+  'Venom': 15,
+  'Lottery Ticket': 100
 };
 // --- END: Item Sell Prices ---
 
@@ -3977,6 +4049,7 @@ function renderInventoryGrid(){
               else if (item.name === 'Sand') imgName = 'sand'; // +++ NEW +++
               else if (item.name === 'Empty Vial') imgName = 'emptyvial'; // +++ NEW +++
               else if (item.name === 'Venom') imgName = 'venom'; // +++ NEW +++
+              else if (item.name === 'Lottery Ticket') imgName = 'lotteryticket'; // +++ NEW +++
               
               // +++ NEW CRYSTAL SHARDS +++
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
@@ -12212,143 +12285,70 @@ function openCaveCombatArea() {
   showMainScreen('hubCave');
 }
 
-// NEW: Function to build and open the main combat UI
+function openMadmaxCastle() {
+  game.lastCombatAreaHub = 'hubMadmaxCastle'; 
+  showMainScreen('hubMadmaxCastle');
+}
+
 function openCombatInterface(enemyName) {
   // Stop any skilling
-  if (game.miningActive) {
-    stopMining();
-    game.wasMiningBeforeCombat = true;
-  }
-  if (game.blacksmithingActive) {
-    stopBlacksmithing();
-    game.wasSmithingBeforeCombat = true;
-  }
-  if (game.woodcuttingActive) { // +++ NEW +++
-    stopWoodcutting();
-    game.wasWoodcuttingBeforeCombat = true;
-  }
-  if (game.fletchingActive) { // +++ NEW +++
-    stopFletching();
-    game.wasFletchingBeforeCombat = true;
-  }
-  if (game.craftingActive) { // +++ NEW +++
-    stopCraftingBowString();
-    game.wasCraftingBeforeCombat = true;
-  }
-  
-  // +++ NEW FISHING CHECK +++
-  if (game.fishingActive) {
-    stopFishing();
-    game.wasFishingBeforeCombat = true;
-  }
-  
+  if (game.miningActive) { stopMining(); game.wasMiningBeforeCombat = true; }
+  if (game.blacksmithingActive) { stopBlacksmithing(); game.wasSmithingBeforeCombat = true; }
+  if (game.woodcuttingActive) { stopWoodcutting(); game.wasWoodcuttingBeforeCombat = true; }
+  if (game.fletchingActive) { stopFletching(); game.wasFletchingBeforeCombat = true; }
+  if (game.craftingActive) { stopCraftingBowString(); game.wasCraftingBeforeCombat = true; }
+  if (game.fishingActive) { stopFishing(); game.wasFishingBeforeCombat = true; }
+  if (game.stoneforgingActive) { stopStoneForging(); game.wasStoneForgingBeforeCombat = true; }
+
   // Define our enemy
   if (enemyName === 'Chicken') {
-    game.currentEnemy = {
-      name: 'Chicken',
-      level: 1,
-      maxHp: 10,
-      currentHp: 10,
-      attack: 1, // Low attack level
-      strength: 1, // Max hit is 1
-      defence: 1, // Low defence
-      img: 'images/chickenanim.gif'
-    };
+    game.currentEnemy = { name: 'Chicken', level: 1, maxHp: 10, currentHp: 10, attack: 1, strength: 1, defence: 1, img: 'images/chickenanim.gif' };
   } else if (enemyName === 'Rat') {
-    game.currentEnemy = {
-      name: 'Rat',
-      level: 1,
-      maxHp: 10,
-      currentHp: 10,
-      attack: 1, 
-      strength: 1, // Max hit is 1
-      defence: 1, 
-      img: 'images/ratanim.webp'
-    };
+    game.currentEnemy = { name: 'Rat', level: 1, maxHp: 10, currentHp: 10, attack: 1, strength: 1, defence: 1, img: 'images/ratanim.webp' };
   } else if (enemyName === 'Spider') { 
-    game.currentEnemy = {
-      name: 'Spider',
-      level: 2,
-      maxHp: 12,
-      currentHp: 12,
-      attack: 2, 
-      strength: 2, // Max hit is 2
-      defence: 2, 
-      img: 'images/spideranim.gif'
-    };
+    game.currentEnemy = { name: 'Spider', level: 2, maxHp: 12, currentHp: 12, attack: 2, strength: 2, defence: 2, img: 'images/spideranim.gif' };
   } else if (enemyName === 'Centipede') {
-    game.currentEnemy = {
-      name: 'Centipede',
-      level: 5,
-      maxHp: 20,
-      currentHp: 20,
-      attack: 5, 
-      strength: 5, // Max hit is 5
-      defence: 5, 
-      img: 'images/centipedeanim.webp'
+    game.currentEnemy = { name: 'Centipede', level: 5, maxHp: 20, currentHp: 20, attack: 5, strength: 5, defence: 5, img: 'images/centipedeanim.webp' };
+  } else if (enemyName === 'Cow') {
+    game.currentEnemy = { name: 'Cow', level: 2, maxHp: 12, currentHp: 12, attack: 2, strength: 2, defence: 2, img: 'images/cowanim.webp' };
+  } else if (enemyName === 'Madmax') {
+    game.currentEnemy = { 
+        name: 'Madmax', 
+        level: 69, 
+        maxHp: 500, 
+        currentHp: 500, 
+        attack: 75, // Increased for accuracy
+        strength: 55, // Increased for damage scaling
+        defence: 25, 
+        img: 'images/madmaxanim.webp',
+        lastSpecialTime: Date.now() 
     };
-
-} else if (enemyName === 'Cow') {
-    game.currentEnemy = {
-      name: 'Cow',
-      level: 2,
-      maxHp: 12,
-      currentHp: 12,
-      attack: 2, 
-      strength: 2, // Max hit is 2
-      defence: 2, 
-      img: 'images/cowanim.webp'
-    };
-
   } else {
     console.error('Unknown enemy:', enemyName);
     return;
   }
   
-  const wrapper = document.getElementById('hubDynamic'); // <-- 1. CHANGED
+  // --- STATIC DOM UPDATE (No innerHTML) ---
+  const imgEl = document.getElementById('combat-enemy-img');
   
-  // --- This is the new UI layout you described ---
-  wrapper.innerHTML = `
-    <div id="combat-main-container">
-    
-      <div id="combat-enemy-area">
-        <img id="combat-enemy-img" src="${game.currentEnemy.img}" alt="${game.currentEnemy.name}">
-        <div id="combat-enemy-hp-bar">
-          <div id="combat-enemy-hp-fill" style="width:100%"></div>
-          <div id="combat-enemy-hp-text">10 / 10 HP</div>
-        </div>
-      </div>
-      
-      <div id="combat-player-area">
-        
-        <div id="combat-action-panel">
-          <p style="margin: 0 0 10px 0; font-weight: bold;">Combat Style:</p>
-          <div id="combat-styles">
-            <button id="style-attack" class="primary" onclick="setAttackStyle('attack')">Accurate</button>
-            <button id="style-strength" class="primary" onclick="setAttackStyle('strength')">Aggressive</button>
-            <button id="style-defence" class="primary" onclick="setAttackStyle('defence')">Defensive</button>
-          </div>
-          
-          
-          <div id="combat-main-actions">
-            <button id="combat-fight-btn" class="primary" style="background:#900;" onclick="beginCombat()">Fight</button>
-            <button id="combat-run-btn" class="primary" style="background:#080; display:none;" onclick="runFromCombat()">Run</button>
-            <button id="combat-return-btn" class="primary" style="background:#555;" onclick="returnToCombatArea()">Return</button>
-          </div>
-          
-        </div>
-      </div>
-    </div>
-  `;
+  // Only update the source if it has changed. This prevents the browser from reloading/flickering the GIF if you click the same monster.
+  if (imgEl && imgEl.getAttribute('src') !== game.currentEnemy.img) {
+      imgEl.src = game.currentEnemy.img;
+  }
   
-  // --- THIS IS THE FIX ---
-  updateEnemyCombatUI(); // <-- THIS IS THE NEW LINE
-  renderEquipment();
-  // --- END FIX ---
+  // Reset Buttons
+  document.getElementById('combat-fight-btn').style.display = 'block';
+  document.getElementById('combat-fight-btn').disabled = false;
+  document.getElementById('combat-run-btn').style.display = 'none';
+  document.getElementById('combat-return-btn').style.display = 'block';
 
-  // Set the default active style button
+  // Update UI Stats
+  updateEnemyCombatUI(); 
+  renderEquipment();
   setAttackStyle(game.playerAttackStyle, true); 
-  showMainScreen('hubDynamic'); // <-- 2. ADDED
+  
+  // Show the new static screen
+  showMainScreen('hubActiveCombat'); 
 }
 function setAttackStyle(style, isInitialization = false) {
   game.playerAttackStyle = style;
@@ -12400,8 +12400,15 @@ function beginCombat() {
       }
   }
 
-  
   game.inCombat = true;
+
+  // +++ FIX: Reset Madmax's timer when the fight ACTUALLY starts +++
+  // This prevents the timer from counting down while you are sitting in the menu.
+  if (game.currentEnemy && game.currentEnemy.name === 'Madmax') {
+      game.currentEnemy.lastSpecialTime = Date.now();
+  }
+  // +++ END FIX +++
+
   document.getElementById('combat-fight-btn').style.display = 'none'; 
   document.getElementById('combat-run-btn').style.display = 'block'; 
   document.getElementById('combat-run-btn').disabled = false;
@@ -12619,6 +12626,9 @@ function showDamageSplat(target, amount, type) {
   if (type === 'damage') {
     splat.classList.add('splat-damage');
     splat.textContent = amount;
+  } else if (type === 'special') {
+    splat.classList.add('splat-special');
+    splat.innerHTML = `💥 ${amount}!`; 
   } else { // 'block'
     splat.classList.add('splat-block');
     splat.textContent = '0';
@@ -12844,8 +12854,9 @@ function playerAttackTurn(spellOverride = null) {
     // +++ END NEW +++
 
     // +++ NEW: BOUNTY PROGRESS UPDATE +++
-    // Delay set to 1350ms to appear immediately following the item drop (900ms)
-    updateBountyProgress(game.currentEnemy.name, 1350);
+    // CHANGED: Fixed rate of 900ms.
+    // 0ms (Main XP) -> 450ms (Vitality) -> 900ms (Bounty) -> 1350ms (Loot)
+    updateBountyProgress(game.currentEnemy.name, 900);
     // +++ END NEW +++
 
     // ... existing loot logic ...
@@ -12854,16 +12865,19 @@ function playerAttackTurn(spellOverride = null) {
       const featherQty = Math.floor(Math.random() * 5) + 2; 
       addItem('Feather', featherQty);
       
-      showItemPopup('+1 Raw Chicken', null, 900);
-      showItemPopup(`+${featherQty} Feather`, null, 1350); 
+      // CHANGED: Shifted drops to 1350ms and 1800ms
+      showItemPopup('+1 Raw Chicken', null, 1350);
+      showItemPopup(`+${featherQty} Feather`, null, 1800); 
     } else if (game.currentEnemy.name === 'Rat') {
       addItem('Rat Tail', 1);
-      showItemPopup(`+1 Rat Tail`, null, 900);
+      // CHANGED: Shifted to 1350ms
+      showItemPopup(`+1 Rat Tail`, null, 1350);
     } else if (game.currentEnemy.name === 'Spider') { 
       const silkQty = Math.floor(Math.random() * 3) + 1; 
       addItem('Silk', silkQty);
       
-      showItemPopup(`+${silkQty} Silk`, null, 900);
+      // CHANGED: Shifted to 1350ms
+      showItemPopup(`+${silkQty} Silk`, null, 1350);
 
       // +++ NEW PET DROP LOGIC (1 in 10,000) +++
       if (Math.floor(Math.random() * 10000) === 0) {
@@ -12880,17 +12894,21 @@ function playerAttackTurn(spellOverride = null) {
       // Check if player has an Empty Vial
       if (removeItem('Empty Vial', 1)) {
           addItem('Venom', 1);
-          showItemPopup(`+1 Venom`, null, 900);
-      } else {
-          showItemPopup(`No drops.`, null, 900);
-      }
+          // CHANGED: Shifted to 1350ms
+          showItemPopup(`+1 Venom`, null, 1350);
+      } 
 
     } else if (game.currentEnemy.name === 'Cow') {
       // +++ FIXED COW DROPS: Hide and Beef only +++
       addItem('Cow Hide', 1);
       addItem('Beef', 1); 
-      showItemPopup(`+1 Cow Hide`, null, 900);
-      showItemPopup(`+1 Beef`, null, 1350);
+      // CHANGED: Shifted drops to 1350ms and 1800ms
+      showItemPopup(`+1 Cow Hide`, null, 1350);
+      showItemPopup(`+1 Beef`, null, 1800);
+    } else if (game.currentEnemy.name === 'Madmax') {
+      // +++ NEW MADMAX DROP +++
+      addItem('Lottery Ticket', 3);
+      showItemPopup('+3 Lottery Ticket', null, 1350);
     }
     
     // --- FIX: Changed maxHP to maxHp (Case sensitive) ---
@@ -12903,44 +12921,72 @@ function playerAttackTurn(spellOverride = null) {
 function enemyAttackTurn() {
   if (!game.inCombat || !game.currentEnemy) return;
 
-  // --- 1. Get Player's Current Stats ---
   const playerStats = getPlayerCombatStats();
 
-  // --- 2. Calculate Hit Chance ---
-  let hitChance = 25 + (game.currentEnemy.attack - game.defence.level);
-  hitChance = Math.max(5, Math.min(50, hitChance)); 
+  // --- 0. Check for Boss Special Attack (Madmax) ---
+  if (game.currentEnemy.name === 'Madmax') {
+      const now = Date.now();
+      if (now - game.currentEnemy.lastSpecialTime >= 20000) {
+          
+          // Special Attack Logic:
+          // Base 38 + Random(0-20) -> Raw Range 38-58.
+          // Minus Player Armor (9 for Full Iron) -> Min Hit 29 (Request was ~28).
+          // High Armor reduces this damage.
+          let rawSpecial = 38 + Math.floor(Math.random() * 21);
+          let specialDmg = Math.max(5, rawSpecial - playerStats.armor); // Always does at least 5
+
+          game.hp -= specialDmg;
+          updateHPUI();
+          
+          showDamageSplat('player', specialDmg, 'special');
+          playGlobalSound('sounds/soundeffects/swordsoundeffect.mp3'); 
+          
+          game.currentEnemy.lastSpecialTime = now;
+          
+          if (game.hp <= 0) {
+            game.hp = 0; 
+            updateHPUI();
+            runFromCombat(true); 
+            handlePlayerDeath();
+          }
+          return; 
+      }
+  }
+
+  // --- 1. Calculate Hit Chance (Improved Accuracy) ---
+  // Base 40 + (EnemyAtk - PlayerDef). 
+  // Madmax (75) vs Lvl 1 Def (1) = 114% chance (Clamped to 95%).
+  let hitChance = 40 + (game.currentEnemy.attack - game.defence.level);
+  hitChance = Math.max(10, Math.min(95, hitChance)); 
   
   if (Math.random() * 100 > hitChance) {
-    showDamageSplat('player', 0, 'block'); // PLAYER MISS
+    showDamageSplat('player', 0, 'block'); // PLAYER DODGED
     return;
   }
 
-  // --- 3. Calculate Damage (If Hit) ---
-  let maxHit = game.currentEnemy.strength; // Chicken max hit is 1
-  let damage = Math.floor(Math.random() * (maxHit + 1)); // Will be 0 or 1
-
-  // --- 4. Apply Damage Reduction ---
-  // 'playerStats.armor' is the total armor from skills + equipment
-  // The chicken's max hit is 1. We'll make it simple:
-  // If player's armor > 0, they have a chance to block.
-  // (Armor * 10%) chance to block the hit entirely.
-  let armorChance = Math.min(80, playerStats.armor * 10); // Max 80% block chance
+  // --- 2. Calculate Damage (Damage Reduction Logic) ---
+  // Logic: Raw Damage - Armor = Final Damage.
+  // Madmax Strength 55.
+  // Min Raw = 50% of Str (27). Max Raw = 100% of Str (55).
+  // Vs Full Iron (9 Armor): 27 - 9 = 18 Min Hit (Request was 17).
   
-  if (damage > 0 && (Math.random() * 100 < armorChance)) {
-    damage = 0; // Blocked!
-  }
+  let minRaw = Math.floor(game.currentEnemy.strength * 0.5); 
+  let bonusRaw = Math.floor(Math.random() * (game.currentEnemy.strength * 0.5 + 1));
+  let rawDamage = minRaw + bonusRaw;
+  
+  let damage = Math.max(0, rawDamage - playerStats.armor);
   
   if (damage > 0) {
     showDamageSplat('player', damage, 'damage'); // PLAYER HIT
   } else {
-    showDamageSplat('player', 0, 'block'); // PLAYER HIT A 0 (or was blocked)
+    showDamageSplat('player', 0, 'block'); // BLOCKED BY ARMOR
   }
   
   // Apply damage to player
   game.hp -= damage;
   updateHPUI(); 
 
-  // --- 5. Check for Player Death ---
+  // --- 3. Check for Player Death ---
   if (game.hp <= 0) {
     game.hp = 0; 
     updateHPUI();
@@ -13019,6 +13065,23 @@ function openLotteryHub() {
     const buyBtn = document.getElementById('buyTicketBtn');
     const returnBtn = document.getElementById('hubLottery_ReturnBtn');
     
+    // +++ CHECK FOR TICKETS +++
+    let ticketCount = 0;
+    for(const slot of game.inventory) {
+        if(slot && slot.name === 'Lottery Ticket') ticketCount += slot.qty;
+    }
+    
+    if (ticketCount > 0) {
+        buyBtn.textContent = `Use Ticket (${ticketCount})`;
+        buyBtn.style.background = '#b300ff'; // Purple for ticket usage
+        buyBtn.style.color = '#fff';
+    } else {
+        buyBtn.textContent = "Buy Ticket (10k Gold)";
+        buyBtn.style.background = 'var(--gold)';
+        buyBtn.style.color = '#000';
+    }
+    // +++ END CHECK +++
+
     reel.style.transition = 'none';
     reel.style.transform = 'translateX(0px)';
     reel.innerHTML = '';
@@ -13060,10 +13123,25 @@ async function buyLotteryTicket() {
         await showGameAlert("Session Error", "Session not active.");
         return;
     }
-    if (game.gold < LOTTERY_COST) {
-        await showGameAlert("Too Poor", "You need 10,000 Gold to buy a ticket.");
-        return;
+
+    // +++ TICKET LOGIC +++
+    let ticketCount = 0;
+    for(const slot of game.inventory) {
+        if(slot && slot.name === 'Lottery Ticket') ticketCount += slot.qty;
     }
+
+    let usingTicket = false;
+
+    if (ticketCount > 0) {
+        usingTicket = true;
+    } else {
+        // No tickets, check gold
+        if (game.gold < LOTTERY_COST) {
+            await showGameAlert("Too Poor", "You need 10,000 Gold to buy a ticket.");
+            return;
+        }
+    }
+    // +++ END TICKET LOGIC +++
     
     // Check inventory space generally.
     const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
@@ -13076,7 +13154,6 @@ async function buyLotteryTicket() {
     let wonItemName = "";
     let wonItemQty = 1;
     
-    // --- THE ODDS (1 in 2,000) ---
     const jackpotRoll = Math.floor(Math.random() * 2000) + 1;
     
     if (jackpotRoll === 1) {
@@ -13088,12 +13165,14 @@ async function buyLotteryTicket() {
         wonItemQty = item.qty;
     }
 
-    // 2. Transaction: Take Ticket Cost IMMEDIATELY
-    addGold(-LOTTERY_COST);
+    // 2. Transaction: Consume Cost
+    if (usingTicket) {
+        removeItem('Lottery Ticket', 1);
+    } else {
+        addGold(-LOTTERY_COST);
+    }
 
     // 3. SAVE IMMEDIATELY 
-    // The gold is gone. The item has NOT been given yet.
-    // If they refresh now, they lose the gold and get nothing.
     if (typeof window.savePlayerData === 'function') {
         window.savePlayerData(); 
     }
@@ -13175,8 +13254,25 @@ async function buyLotteryTicket() {
         buyBtn.disabled = false;
         returnBtn.disabled = false;
         
+        // +++ UPDATE BUTTON TEXT +++
+        // Re-scan inventory to see if we have more tickets
+        let remainingTickets = 0;
+        for(const slot of game.inventory) {
+            if(slot && slot.name === 'Lottery Ticket') remainingTickets += slot.qty;
+        }
+        
+        if (remainingTickets > 0) {
+            buyBtn.textContent = `Use Ticket (${remainingTickets})`;
+            buyBtn.style.background = '#b300ff';
+            buyBtn.style.color = '#fff';
+        } else {
+            buyBtn.textContent = "Buy Ticket (10k Gold)";
+            buyBtn.style.background = 'var(--gold)';
+            buyBtn.style.color = '#000';
+        }
+        // +++ END UPDATE +++
+        
         // --- SAVE AGAIN ---
-        // Save now to lock in the prize.
         if (typeof window.savePlayerData === 'function') {
             window.savePlayerData(); 
         }
@@ -13412,6 +13508,7 @@ function renderBankGrid() {
               else if (item.name === 'Sand') imgName = 'sand'; // +++ NEW +++
               else if (item.name === 'Empty Vial') imgName = 'emptyvial'; // +++ NEW +++
               else if (item.name === 'Venom') imgName = 'venom'; // +++ NEW +++
+              else if (item.name === 'Lottery Ticket') imgName = 'lotteryticket'; // +++ NEW +++
               
               // +++ NEW CRYSTAL SHARDS +++
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
@@ -14134,7 +14231,7 @@ function closeSettings() {
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubHuntingBoard +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubActiveCombat'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -14540,6 +14637,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // --- Hub Farm/Cave Return Listeners ---
   document.getElementById('hubFarm_ReturnBtn').onclick = openCombatHub; // +++ NEW +++
   document.getElementById('hubCave_ReturnBtn').onclick = openCombatHub; // +++ NEW +++
+  
+  // --- Hub Madmax Listeners ---
+  document.getElementById('madmaxCastleBtn').onclick = openMadmaxCastle;
+  document.getElementById('hubMadmaxCastle_ReturnBtn').onclick = openCombatHub;
 
   // --- Hub Fishing Level Locks (in Listeners) ---
   document.getElementById('fishTroutBtn').onclick = () => {
@@ -14709,6 +14810,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('farmAreaBtn').onmouseleave = hideTooltip;
   document.getElementById('caveAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Cave</div>'); 
   document.getElementById('caveAreaBtn').onmouseleave = hideTooltip; 
+
+  document.getElementById('madmaxCastleBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:red; margin-bottom: 4px;">Madmax Castle</div>'); 
+  document.getElementById('madmaxCastleBtn').onmouseleave = hideTooltip; 
   
   // --- Tooltips for Hub Fishing ---
   document.getElementById('oceanAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Ocean</div>');
@@ -15140,6 +15244,11 @@ window.showSaveIndicator = function() {
  * @param {object} equipment - The equipment object from the inspected player's save data.
  * @param {HTMLElement} frame - The DOM element to render into.
  */
+/**
+ * Helper to render the *inspected* player's equipment using dummy slots.
+ * @param {object} equipment - The equipment object from the inspected player's save data.
+ * @param {HTMLElement} frame - The DOM element to render into.
+ */
 function renderInspectEquipment(equipment, frame) {
     frame.innerHTML = '';
     const slots = [
@@ -15193,7 +15302,8 @@ function renderInspectEquipment(equipment, frame) {
             }
         }
         
-        let imgHtml = `<img src="images/${imgName}.png" alt="${slotType}" style="${isTwoHandedBlock ? 'opacity: 0.5; filter: grayscale(50%);' : ''}">`;
+        // --- FIX: Added loading="eager" and onerror to prevent broken icons and force update ---
+        let imgHtml = `<img src="images/${imgName}.png" alt="${slotType}" loading="eager" onerror="this.style.display='none'" style="${isTwoHandedBlock ? 'opacity: 0.5; filter: grayscale(50%);' : ''}">`;
         slotEl.innerHTML = imgHtml;
         
         // 3. Add Quantity for Arrows
@@ -15234,7 +15344,6 @@ function renderInspectEquipment(equipment, frame) {
                 ${statsHtml}
             `;
             
-            // Attach events - *** FIXED: Removed 'window.' prefix ***
             slotEl.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
             slotEl.onmouseleave = hideTooltip;
             
@@ -15245,11 +15354,9 @@ function renderInspectEquipment(equipment, frame) {
                 <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${weaponName}</div>
                 <div style="color:#ccc;">(Occupies Both Hands)</div>
              `;
-             // *** FIXED: Removed 'window.' prefix ***
              slotEl.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
              slotEl.onmouseleave = hideTooltip;
         } else {
-            // Empty Slot Tooltip - *** FIXED: Removed 'window.' prefix ***
             slotEl.onmouseenter = (evt) => showTooltip(evt, `Empty ${slotType.charAt(0).toUpperCase() + slotType.slice(1)} Slot`);
             slotEl.onmouseleave = hideTooltip;
         }
@@ -15614,11 +15721,25 @@ function renderInspectEquipment(equipment, frame) {
 window.inspectPlayer = async function(playerName) {
     if (!auth.currentUser) return;
 
-    // --- PLAY SOUND EFFECT ---
     if (typeof window.playGlobalSound === 'function') {
         window.playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');
     }
     
+    // +++ FIX: CLEAR PREVIOUS DATA IMMEDIATELY +++
+    // This prevents seeing the previous player's items while the new ones load
+    const frame = document.getElementById('inspectEquipmentFrame');
+    const statsPanel = document.getElementById('inspectStatsPanel');
+    const modalName = document.getElementById('inspectPlayerName');
+    const inspectOverlay = document.getElementById('playerInspectOverlay'); // Get this early to show spinner
+    
+    if (frame) frame.innerHTML = ''; // Wipe old items
+    if (statsPanel) statsPanel.innerHTML = '<div style="color:#ccc; text-align:center; padding:20px;">Loading Stats...</div>'; 
+    if (modalName) modalName.textContent = 'Loading...';
+    
+    // Show the modal immediately in a "Loading" state
+    if (inspectOverlay) inspectOverlay.style.display = 'flex';
+    // +++ END FIX +++
+
     // 1. Fetch data for the player
     try {
       const nameLower = playerName.toLowerCase();
@@ -15627,17 +15748,12 @@ window.inspectPlayer = async function(playerName) {
 
       if (querySnapshot.empty) {
         await window.showGameAlert("Player Not Found", "Could not find player data for " + playerName);
+        if (inspectOverlay) inspectOverlay.style.display = 'none'; // Hide if failed
         return;
       }
 
       const playerData = querySnapshot.docs[0].data();
       const playerEquipment = playerData.equipment || {};
-
-      // 2. Render the Modal Content
-      const modalName = document.getElementById('inspectPlayerName');
-      const frame = document.getElementById('inspectEquipmentFrame');
-      const statsPanel = document.getElementById('inspectStatsPanel');
-      const inspectOverlay = document.getElementById('playerInspectOverlay');
 
       if (!frame || !inspectOverlay) return;
 
@@ -15650,29 +15766,19 @@ window.inspectPlayer = async function(playerName) {
       }
 
       // --- CALCULATE EQUIPMENT STATS ONLY ---
-      
-      // Initialize Totals
       let eqDamage = 0; 
       let eqArmor = 0;
       let eqSpeed = 0;
-      
-      // We also detect magic usage just to change the label
       let isMagicWeapon = false;
 
-      // Loop through equipment to sum stats (Using window.ITEM_STATS)
       if (window.ITEM_STATS) {
         Object.values(playerEquipment).forEach(item => {
             if (item && item.name) {
                 const stats = window.ITEM_STATS[item.name];
                 if (stats) {
-                    // Sum raw potential
                     eqDamage += stats.damage || 0;
                     eqArmor += stats.armor || 0;
-                    
-                    // For speed, we just sum the raw speed values (e.g., +1, +2, -3)
                     let itemSpeed = stats.speed || 0;
-                    
-                    // Apply the specific armor penalty logic
                     const weaponType = playerEquipment.weapon ? (window.ITEM_STATS[playerEquipment.weapon.name]?.weaponType || 'melee') : 'melee';
                     const armorType = stats.armorType;
 
@@ -15680,20 +15786,16 @@ window.inspectPlayer = async function(playerName) {
                     else if (weaponType === 'ranged' && armorType === 'fighter') itemSpeed = -7.5;
                     
                     eqSpeed += itemSpeed;
-
-                    // Check label type
                     if (stats.weaponType === 'magic') isMagicWeapon = true;
                 }
             }
         });
       }
 
-      // Determine Labels and Colors
       const damageLabel = isMagicWeapon ? "Magic Damage" : "Physical Damage";
       const damageSign = eqDamage >= 0 ? "+" : "";
       const speedSign = eqSpeed >= 0 ? "+" : "";
 
-      // Render Stats Panel (Raw Bonuses)
       statsPanel.innerHTML = `
           <div class="stat-row">
             <span class="stat-label">${damageLabel}</span>
@@ -15709,13 +15811,13 @@ window.inspectPlayer = async function(playerName) {
           </div>
       `;
 
-      // 3. Show Modal
-      inspectOverlay.style.display = 'flex';
+      // Modal is already shown, no need to set display:flex again
       
       // Set the close button handler
       document.getElementById('closeInspectBtn').onclick = () => {
           inspectOverlay.style.display = 'none';
-          window.hideTooltip(); // Ensure tooltip is hidden on close
+          if (frame) frame.innerHTML = ''; // Clear on close too
+          window.hideTooltip(); 
       };
 
     } catch (e) {
@@ -15725,6 +15827,9 @@ window.inspectPlayer = async function(playerName) {
       } else {
         await window.showGameAlert("Error", "Failed to load player data. Check console for details.");
       }
+      // Ensure modal closes if error
+      const inspectOverlay = document.getElementById('playerInspectOverlay');
+      if(inspectOverlay) inspectOverlay.style.display = 'none';
     }
   };
   
@@ -17772,6 +17877,7 @@ if (!validSkills.includes(skill)) {
       'images/huntingboard.jpeg',
       'images/oceanbutton.png',
       'images/riverbutton.jpeg',
+      'images/madmaxcastle.jpeg',
 
       // --- Skill Icons ---
       'images/miningskillicon.png',
@@ -17879,6 +17985,7 @@ if (!validSkills.includes(skill)) {
       'images/cloth.png',
       'images/emptyvial.png',
       'images/venom.png',
+      'images/lotteryticket.png', // +++ NEW +++
       
       // --- Items: Fishing ---
       'images/fishingpole.png',
@@ -17898,6 +18005,8 @@ if (!validSkills.includes(skill)) {
       'images/petspider.png',
       'images/centipedemonster.jpeg',
       'images/centipedeanim.webp',
+      'images/madmaxmonster.jpeg',
+      'images/madmaxanim.webp',
 
       // --- Veins ---
       'images/coppervein.png',
@@ -17979,21 +18088,43 @@ if (!validSkills.includes(skill)) {
     preloadAllAssets(MASTER_ASSET_LIST).then(() => {
       console.log('[Preloader] All assets loaded.');
 
-      // +++ NEW: Force-decode combat GIFs +++
-      // This invisibly adds the GIFs to the page, forcing the browser
-      // to decode them before they are needed.
-      const primeImg = document.createElement('img');
-      primeImg.src = 'images/chickenanim.gif';
-      primeImg.style.cssText = 'position:absolute; left:-9999px; top:-9999px; width:1px; height:1px;';
-      document.body.appendChild(primeImg);
+      // +++ FIX: FORCE-DECODE ALL MONSTER ANIMATIONS +++
+      // We define the list of animations explicitly here to ensure they are cached.
+      // These filenames match exactly what is used in openCombatInterface.
+      const monsterAnims = [
+        'images/chickenanim.gif',
+        'images/ratanim.webp',
+        'images/spideranim.gif',
+        'images/centipedeanim.webp',
+        'images/cowanim.webp',
+        'images/madmaxanim.webp'
+      ];
 
-      // +++ ADD THIS BLOCK FOR THE SPIDER +++
-      // +++ ADD THIS BLOCK FOR THE COW +++
-      const primeImg3 = document.createElement('img');
-      primeImg3.src = 'images/cowanim.gif';
-      primeImg3.style.cssText = 'position:absolute; left:-9999px; top:-9999px; width:1px; height:1px;';
-      document.body.appendChild(primeImg3);
-      // +++ END NEW +++
+      const cacheContainer = document.getElementById('asset-cache');
+      
+      monsterAnims.forEach(src => {
+          // Create a new image element for the cache
+          const img = new Image();
+          img.src = src;
+          
+          // Apply styles to keep it hidden but active in the DOM
+          img.style.position = 'absolute';
+          img.style.top = '-9999px';
+          img.style.left = '-9999px';
+          img.style.width = '1px'; 
+          img.style.height = '1px';
+          
+          // 'eager' tells the browser to load this immediately, even if off-screen
+          img.setAttribute('loading', 'eager'); 
+          
+          // Append to the hidden cache container (or body if container is missing)
+          if (cacheContainer) {
+              cacheContainer.appendChild(img);
+          } else {
+              document.body.appendChild(img);
+          }
+      });
+      // +++ END FIX +++
       
       const loadingScreen = document.getElementById('loadingScreen');
       
