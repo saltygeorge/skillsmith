@@ -139,10 +139,16 @@ body {
 .hp-fill { height: 100%; background: #d22; width: 100%; transition: width 0.25s; }
 .hp-text { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: bold; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.7); font-size: 13px; }
 
-.tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.tabs { 
+  display: flex; 
+  gap: 5px; 
+  margin-bottom: 12px; 
+  justify-content: center; /* Center the buttons */
+}
 .tabs button { 
-  flex: 1; 
-  padding: 8px; /* Adjusted padding to better fit an image */
+  width: var(--slot-size);  /* Fixed width (60px) */
+  /* Height removed to let padding define it */
+  padding: 4px;             /* Reduced padding to lower height */
   border-radius: 8px; 
   border: 0; 
   background: var(--accent); 
@@ -150,17 +156,15 @@ body {
   cursor: pointer; 
   font-weight: 700; 
   
-  /* --- NEW STYLES TO CENTER IMAGE --- */
   display: flex; 
   justify-content: center;
   align-items: center;
-  /* --- END NEW STYLES --- */
 }
 
 /* --- NEW RULE FOR THE IMAGE INSIDE THE BUTTON --- */
 .tabs button img {
-  width: 32px;  /* Set a fixed size for the image icon */
-  height: 32px; 
+  width: 40px;  /* Slightly larger to fill the new slot size */
+  height: 40px; 
   object-fit: contain;
   display: block;
 }
@@ -174,6 +178,8 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  /* +++ FIX: Enforce height to match the tall Inventory tab +++ */
+  min-height: 380px; 
 }
 
 /* --- NEW: Sub-tab buttons for Quests/Missions inside the Quest tab --- */
@@ -228,22 +234,26 @@ body {
 /* --- Inventory --- */
 .inventory-grid-wrap {
   width: 100%;
-  height: calc((var(--slot-size) + var(--slot-gap)) * 4);
+  height: 320px; /* <--- Increased height to prevent cutting off the bottom row */
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 0;
+  margin-left: 5px; /* <--- Increased to 6px */
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--panel-bg);
 }
 .inventory-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--slot-size), 1fr));
-  gap: var(--slot-gap);
+  /* Fixed column width (60px) to match buttons exactly, centered */
+  grid-template-columns: repeat(4, var(--slot-size)); 
+  gap: 5px; 
   padding: 0; 
   align-content: start;
+  justify-content: center; /* <--- Aligns grid with the centered tabs */
 }
 .inv-slot {
   width: var(--slot-size); height: var(--slot-size);
+  box-sizing: border-box; /* Keeps size exactly 60px including border */
   background: #c8b89a33;
   border-radius: 8px;
   border: 2px solid rgba(120,90,50,0.25);
@@ -810,8 +820,8 @@ button.primary:hover { background: var(--accent-hover); }
 /* --- END: Item Context Menu --- */
 
 #bankGrid, #shopGrid {
-  /* Set the number of columns */
-  grid-template-columns: repeat(5, var(--slot-size)); 
+  /* Set the number of columns - Increased to 6 to fill side space */
+  grid-template-columns: repeat(6, var(--slot-size)); 
   
   /* --- CRITICAL FIX: Re-add centering and set min-width on its WRAPPER --- */
   /* This ensures the grid is centered again */
@@ -828,15 +838,16 @@ button.primary:hover { background: var(--accent-hover); }
 }
 #bankGoldPanel {
   background: rgba(0,0,0,0.15);
-  padding: 15px;
-  border-radius: 8px;
+  padding: 10px 15px; 
+  border-radius: 0; 
   display: flex;
   /* This will put the input/button group on one side and "Banked Gold" on the other */
   justify-content: space-between; 
   align-items: center;
   flex-wrap: wrap;
-  gap: 20px; /* Increased gap a bit for balance */
-  margin-top: -10px;
+  gap: 10px; 
+  margin-top: -4px;
+  margin-bottom: 0; /* <--- Removed gap so panels touch */
 }
 #bankGoldPanel > div {
   text-align: center;
@@ -861,15 +872,15 @@ button.primary:hover { background: var(--accent-hover); }
 #bankPanel, #bankInventoryPanel {
   flex: 1;
   background: rgba(0,0,0,0.15);
-  padding: 15px;
-  border-radius: 8px;
+  padding: 10px 15px; /* Reduced padding to save height */
+  border-radius: 0; 
   display: flex;
   flex-direction: column;
   /* --- CRITICAL FIX: Add min-width to prevent panel from shrinking --- */
   min-width: 400px; 
 }
 #bankPanel h3, #bankInventoryPanel h3 {
-  margin: 0 0 10px 0;
+  margin: 0 0 5px 0; /* Reduced margin */
   text-align: center;
 }
 #bankGridWrap {
@@ -882,6 +893,50 @@ button.primary:hover { background: var(--accent-hover); }
   scrollbar-color: var(--accent) var(--panel-bg);
   /* 4-row height */
   height: calc((var(--slot-size) + var(--slot-gap)) * 4 + var(--slot-gap));
+}
+
+/* --- NEW: Bank Tabs --- */
+.bank-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 5px; /* Reduced margin */
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 5px;
+}
+.bank-tab-btn {
+  background: #5a3e2b;
+  border: 1px solid var(--accent);
+  color: #aaa;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 4px 4px 0 0;
+}
+.bank-tab-btn.active {
+  background: var(--accent);
+  color: var(--gold);
+  border-bottom-color: var(--accent); /* Merge with border */
+}
+/* +++ NEW: Style for bank tab images +++ */
+.bank-tab-btn img {
+  width: 32px; /* Increased size to fill space better */
+  height: 32px; 
+  object-fit: contain;
+  pointer-events: none;
+  display: block;
+}
+.add-tab-btn {
+  background: #44aa44;
+  color: #fff;
+  font-weight: bold;
+  border: 1px solid #2a662a;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 5px;
+}
+.add-tab-btn:hover {
+  background: #55cc55;
 }
 
 #shopGridWrap {
@@ -1721,7 +1776,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="bankActionIcon" src="images/bankbutton.png" alt="Bank" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="craftingActionIcon" src="images/craftingbenchbutton.png" alt="Crafting" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="elementalForgeActionIcon" src="images/elementalforge.jpeg" alt="Elemental Forge" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-              <img id="lotteryActionIcon" src="images/lotteryicon.jpeg" alt="Lottery" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain; border: 2px solid var(--gold); border-radius: 8px;">
+              <img id="lotteryActionIcon" src="images/lotteryicon.jpeg" alt="Lottery" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="questsActionIcon" src="images/questbuttonicon.jpg" alt="Quests" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="huntingBoardActionIcon" src="images/huntingboard.jpeg" alt="Hunting Board" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
             </div>
@@ -2012,6 +2067,8 @@ button.primary:hover { background: var(--accent-hover); }
                 </div>
                 <div id="bankPanel">
                   <h3>Bank Storage</h3>
+                  <div class="bank-tabs" id="bankTabsContainer">
+                      </div>
                   <div class="inventory-grid-wrap" id="bankGridWrap">
                     <div class="inventory-grid" id="bankGrid"></div>
                   </div>
@@ -2163,7 +2220,7 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
           </div>
           
-          </div> <button onclick="firebaseLogout()" class="primary" style="position: absolute; bottom: 18px; right: 18px; background: #900;">Log Out</button>
+          </div> 
       </div>
 
       <div class="sidebar" id="leaderboardPanel">
@@ -2183,10 +2240,19 @@ button.primary:hover { background: var(--accent-hover); }
         <div id="updatesContent">
           <div style="text-align:center; margin-top: 10px; color: #fff; opacity: 0.7;">Loading updates...</div>
         </div>
-        <div style="height: 24px;"> <div id="saveTimerText" style="visibility: hidden; margin-top: 10px; text-align: right; font-size: 11px; color: #aaffaa; font-weight: bold;">
+        
+        <div style="height: 24px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+          
+          <a href="https://discord.gg/ER6GK5kj" target="_blank" style="display: flex; align-items: center; height: 100%;">
+            <img src="images/discordbutton.png" alt="Join Discord" style="height: 24px; width: auto; border-radius: 4px; cursor: pointer;">
+          </a>
+
+          <div id="saveTimerText" style="visibility: hidden; font-size: 11px; color: #aaffaa; font-weight: bold;">
               Progress Saved!
           </div>
+
         </div>
+        
         </div>
 
     </div> 
@@ -2246,62 +2312,6 @@ button.primary:hover { background: var(--accent-hover); }
 </div>
 <div id="tooltip" class="tooltip" style="display:none;"></div>
 
-<div id="tradeModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center;">
-  
-  <div class="trade-content">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 10px;">
-      <h2 style="margin: 0;">Trade with <span id="tradePartnerName">Player</span></h2>
-      <button id="tradeCancelBtn" class="primary" style="background:#900;">Cancel</button>
-    </div>
-
-    <div class="trade-main-area">
-
-      <div class="trade-panel">
-        <h3>Your Inventory</h3>
-        <div class="trade-gold-display">
-          My Gold: 
-          <img src="images/goldpouch.png" alt="Gold">
-          <span id="tradeMyGold">0</span>
-        </div>
-        <div class="inventory-grid-wrap" id="tradeInventoryGridWrap">
-          <div class="inventory-grid" id="tradeInventoryGrid">
-            </div>
-        </div>
-      </div>
-
-      <div class="trade-panel" style="flex-grow: 1.5;">
-        <div class="trade-offer-layout">
-
-          <div class="trade-offer-box">
-            <h4>Your Offer</h4>
-            <div class="inventory-grid" id="tradeMyOfferGrid" data-grid-type="my-offer">
-              </div>
-            <div class="trade-gold-input">
-              <label for="tradeMyGoldOffer">Gold:</label>
-              <input type="number" id="tradeMyGoldOffer" min="0" value="0">
-            </div>
-            <button id="tradeAcceptBtn" class="primary">Accept</button>
-            <div id="myTradeStatus" class="trade-status-indicator">Not Accepted</div>
-          </div>
-
-          <div class="trade-offer-box">
-            <h4>Their Offer</h4>
-            <div class="inventory-grid" id="tradeTheirOfferGrid">
-              </div>
-            <div class="trade-gold-input">
-              <span>Gold:</span>
-              <span id="tradeTheirGoldOffer">0</span>
-            </div>
-            <div id="theirTradeStatus" class="trade-status-indicator">Not Accepted</div>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
 
 <div id="sessionLockOverlay" style="display: none;">
   <div>
@@ -2350,7 +2360,8 @@ button.primary:hover { background: var(--accent-hover); }
       <button id="musicMuteBtn" class="primary setting-mute-btn">Mute</button>
     </div>
 
-    <div class="action-buttons" style="margin-top: 10px; justify-content: flex-end;">
+    <div class="action-buttons" style="margin-top: 10px; justify-content: flex-end; gap: 10px;">
+      <button onclick="firebaseLogout()" class="primary" style="background: #900; margin-right: auto;">Log Out</button>
       <button id="closeSettingsBtn" class="primary" style="background:#666;">Close</button>
     </div>
   </div>
@@ -2395,11 +2406,13 @@ const game = {
     isMusicMuted: false 
   },
   inventory: [], 
-  inventoryCapacity: 39,
+  inventoryCapacity: 40, // <--- Changed 39 to 40
   gold: 0,
   // --- NEW BANK PROPERTIES ---
-  bank: [],
-  bankCapacity: 60, // Example: 80 slots
+  bank: [], // Kept for backward compatibility during migration
+  bankTabs: [], // Array of Arrays (The actual storage now)
+  activeBankTabIndex: 0, // Which tab is open?
+  bankCapacity: 60, // Slots per tab
   bankGold: 0,
   // --- END NEW ---
   equipment: {
@@ -2498,12 +2511,6 @@ lockHeartbeat: null,    // This will hold the setInterval ID for the heartbeat
 isSessionActive: false, // Is this tab the "master" tab?
 isDragging: false,      // Are we currently dragging an item?
 
-inTrade: false,
-activeTradeSessionId: null,
-activeTradeListener: null, 
-myTradeRole: null, 
-myTradeOffer: { offerItems: {}, offerGold: 0, accepted: false },
-theirTradeOffer: { offerItems: {}, offerGold: 0, accepted: false }
 };
 // +++ END MODIFICATION +++
 
@@ -3282,7 +3289,7 @@ const ITEM_STATS = {
 // *** FIX: Expose stats globally so the Inspect tool can read them ***
 window.ITEM_STATS = ITEM_STATS;
 
-const SHOP_INVENTORY = new Array(20).fill(null);
+const SHOP_INVENTORY = new Array(24).fill(null); // <--- Increased from 20 to 24 to fit 6 columns
 SHOP_INVENTORY[0] = { name: 'Bronze Pickaxe', price: 10 };
 SHOP_INVENTORY[1] = { name: 'Bronze Axe', price: 10 };
 SHOP_INVENTORY[2] = { name: 'Fishing Pole', price: 2500 };
@@ -4333,10 +4340,7 @@ async function handleSellItemClick(itemName, currentQty) {
         addGold(totalGold);
         hideTooltip(); 
         renderInventoryGrid();
-        if (game.inTrade) {
-          renderTradeInventory();
-        }
-        await showGameAlert("Sale Complete", `You sold ${qtyToSell} ${itemName} for ${totalGold} Gold.`); // Replaced alert
+        await showGameAlert("Sale Complete", `You sold ${qtyToSell} ${itemName} for ${totalGold} Gold.`);
     } else {
         await showGameAlert("Error", "Something went wrong, the sale did not complete."); // Replaced alert
     }
@@ -4738,27 +4742,39 @@ async function unequipItem(slotType) {
 }
 
 const tooltip = document.getElementById('tooltip');
+
 function showTooltip(evt, content) {
-  if (!tooltip) return;
+  // +++ FIX: Strictly prevent tooltip if dragging +++
+  if (!tooltip || game.isDragging) return; 
+  
   tooltip.innerHTML = content;
   tooltip.style.display = 'block';
   moveTooltip(evt);
 }
+
 function hideTooltip() {
   if (!tooltip) return;
   tooltip.style.display = 'none';
 }
+
 function moveTooltip(evt) {
-  if (!tooltip || tooltip.style.display === 'none') return;
+  // +++ FIX: Ensure it stays hidden if dragging +++
+  if (!tooltip || tooltip.style.display === 'none' || game.isDragging) {
+      if (tooltip && game.isDragging) tooltip.style.display = 'none';
+      return;
+  }
+
   const tooltipRect = tooltip.getBoundingClientRect();
   let x = evt.clientX + 10;
   let y = evt.clientY + 10;
+  
   if (x + tooltipRect.width > window.innerWidth) {
     x = evt.clientX - tooltipRect.width - 10;
   }
   if (y + tooltipRect.height > window.innerHeight) {
     y = evt.clientY - tooltipRect.height - 10;
   }
+  
   tooltip.style.left = x + 'px';
   tooltip.style.top = y + 'px';
 }
@@ -12853,36 +12869,42 @@ function playerAttackTurn(spellOverride = null) {
     updateQuestKillCount(game.currentEnemy.name);
     // +++ END NEW +++
 
-    // +++ NEW: BOUNTY PROGRESS UPDATE +++
-    // CHANGED: Fixed rate of 900ms.
-    // 0ms (Main XP) -> 450ms (Vitality) -> 900ms (Bounty) -> 1350ms (Loot)
-    updateBountyProgress(game.currentEnemy.name, 900);
-    // +++ END NEW +++
+    // --- DYNAMIC DELAY CALCULATION ---
+    let dropDelay = 900; // Default: Drops start here if no bounty (replacing the gap)
 
-    // ... existing loot logic ...
+    // Check if this is a valid active bounty target
+    const isBountyTarget = game.activeBounty && 
+                           game.activeBounty.target === game.currentEnemy.name && 
+                           game.activeBounty.kills < game.activeBounty.req;
+
+    if (isBountyTarget) {
+        // Yes Bounty: Show XP at 900ms, push drops to 1350ms
+        updateBountyProgress(game.currentEnemy.name, 900);
+        dropDelay = 1350;
+    }
+    // If No Bounty: dropDelay remains 900ms
+
+    // ... existing loot logic with dynamic delay ...
     if (game.currentEnemy.name === 'Chicken') { 
       addItem('Raw Chicken', 1);
       const featherQty = Math.floor(Math.random() * 5) + 2; 
       addItem('Feather', featherQty);
       
-      // CHANGED: Shifted drops to 1350ms and 1800ms
-      showItemPopup('+1 Raw Chicken', null, 1350);
-      showItemPopup(`+${featherQty} Feather`, null, 1800); 
+      showItemPopup('+1 Raw Chicken', null, dropDelay);
+      showItemPopup(`+${featherQty} Feather`, null, dropDelay + 450); 
     } else if (game.currentEnemy.name === 'Rat') {
       addItem('Rat Tail', 1);
-      // CHANGED: Shifted to 1350ms
-      showItemPopup(`+1 Rat Tail`, null, 1350);
+      showItemPopup(`+1 Rat Tail`, null, dropDelay);
     } else if (game.currentEnemy.name === 'Spider') { 
       const silkQty = Math.floor(Math.random() * 3) + 1; 
       addItem('Silk', silkQty);
       
-      // CHANGED: Shifted to 1350ms
-      showItemPopup(`+${silkQty} Silk`, null, 1350);
+      showItemPopup(`+${silkQty} Silk`, null, dropDelay);
 
       // +++ NEW PET DROP LOGIC (1 in 10,000) +++
+      // Pet drop is special/rare, we keep it at 500ms regardless of delay
       if (Math.floor(Math.random() * 10000) === 0) {
           addItem('Pet Spider', 1);
-          // Show a distinct popup and chat message
           showItemPopup('<span style="color:#ff4d4d; font-size:16px;">PET DROP!</span>', null, 500);
           if (typeof addLocalChatMessage === 'function') {
              addLocalChatMessage("You received a rare drop: Pet Spider!", "trade"); 
@@ -12894,21 +12916,19 @@ function playerAttackTurn(spellOverride = null) {
       // Check if player has an Empty Vial
       if (removeItem('Empty Vial', 1)) {
           addItem('Venom', 1);
-          // CHANGED: Shifted to 1350ms
-          showItemPopup(`+1 Venom`, null, 1350);
+          showItemPopup(`+1 Venom`, null, dropDelay);
       } 
 
     } else if (game.currentEnemy.name === 'Cow') {
       // +++ FIXED COW DROPS: Hide and Beef only +++
       addItem('Cow Hide', 1);
       addItem('Beef', 1); 
-      // CHANGED: Shifted drops to 1350ms and 1800ms
-      showItemPopup(`+1 Cow Hide`, null, 1350);
-      showItemPopup(`+1 Beef`, null, 1800);
+      showItemPopup(`+1 Cow Hide`, null, dropDelay);
+      showItemPopup(`+1 Beef`, null, dropDelay + 450);
     } else if (game.currentEnemy.name === 'Madmax') {
       // +++ NEW MADMAX DROP +++
       addItem('Lottery Ticket', 3);
-      showItemPopup('+3 Lottery Ticket', null, 1350);
+      showItemPopup('+3 Lottery Ticket', null, dropDelay);
     }
     
     // --- FIX: Changed maxHP to maxHp (Case sensitive) ---
@@ -13412,6 +13432,155 @@ async function showGameConfirm(title, message) {
 
 let draggedBankItem = null; // Stores data for bank drag-and-drop
 
+// +++ FIX: Define scroll intervals globally so handleBankDrop can see them +++
+let inventoryScrollInterval = null;
+let bankScrollInterval = null;
+
+/**
+ * Renders the bank tabs UI (Main, 2, 3... +)
+ */
+function renderBankTabs() {
+  const container = document.getElementById('bankTabsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  game.bankTabs.forEach((tab, index) => {
+    const btn = document.createElement('button');
+    btn.className = 'bank-tab-btn';
+    
+    if (index === 0) {
+        // +++ MAIN TAB (Static Chest Image) +++
+        btn.innerHTML = '<img src="images/chest.png" alt="Main">';
+        btn.style.padding = "0 6px";
+        btn.style.display = "flex";
+        btn.style.alignItems = "center";
+        btn.style.justifyContent = "center";
+    } else {
+        // +++ EXTRA TABS (Dynamic Item Preview) +++
+        const firstItem = tab && tab[0];
+        let imgName = 'chest'; // Default icon if empty
+
+        if (firstItem) {
+            imgName = firstItem.name.toLowerCase().replace(/\s+/g,'_');
+            
+            const overrides = {
+                'copper_bar': 'copperbar', 'copper_chestplate': 'copperchestplate', 'copper_shortsword': 'coppershortsword',
+                'copper_helmet': 'copperhelmet', 'copper_boots': 'copperboots', 'raw_chicken': 'rawchicken',
+                'cooked_chicken': 'cookedchicken', 'burnt_chicken': 'burntchicken', 'cooked_herring': 'cookedherring',
+                'burnt_herring': 'burntherring', 'cooked_trout': 'cookedtrout', 'burnt_trout': 'burnttrout',
+                'cooked_salmon': 'cookedsalmon', 'burnt_salmon': 'burntsalmon', 'beef': 'beef',
+                'cooked_beef': 'cookedbeef', 'burnt_beef': 'burntbeef', 'gold_crown': 'goldcrown',
+                'coal_ore': 'coalore', 'iron_ore': 'ironore', 'iron_bar': 'ironbar',
+                'iron_helmet': 'ironhelmet', 'iron_chestplate': 'ironchestplate', 'iron_boots': 'ironboots',
+                'iron_shortsword': 'ironshortsword', 'copper_platelegs': 'copperplatelegs', 'iron_platelegs': 'ironplatelegs',
+                'softwood': 'softwood', 'oak': 'oak', 'bronze_pickaxe': 'bronzepickaxe', 'bronze_axe': 'bronzeaxe',
+                'copper_pickaxe': 'copperpickaxe', 'copper_axe': 'copperaxe', 'iron_pickaxe': 'ironpickaxe',
+                'iron_axe': 'ironaxe', 'feather': 'feather', 'arrow_shaft': 'arrowshaft',
+                'copper_arrow_tip': 'copperarrowtip', 'unbound_arrow': 'unboundarrow', 'copper_arrow': 'copperarrow',
+                'silk': 'silk', 'cloth': 'cloth', 'wizard_hat': 'wizardhat', 'wizard_robe': 'wizardrobe',
+                'wizard_trousers': 'wizardtrousers', 'wizard_boots': 'wizardboots', 'magic_staff': 'magicstaff',
+                'pet_spider': 'petspider', 'rat_tail': 'rattail', 'sand': 'sand', 'empty_vial': 'emptyvial',
+                'venom': 'venom', 'lottery_ticket': 'lotteryticket', 'earth_crystal_shard': 'earthcrystalshard',
+                'air_crystal_shard': 'aircrystalshard', 'water_crystal_shard': 'watercrystalshard', 'bow_string': 'bowstring',
+                'unstrung_softwood_bow': 'unstrungsoftwoodbow', 'unstrung_oak_bow': 'unstrungoakbow', 'softwood_bow': 'softwoodbow',
+                'oak_bow': 'oakbow', 'cow_hide': 'cowhide', 'leather': 'leather', 'leather_hood': 'leatherhood',
+                'leather_body': 'leatherarmor', 'leather_chaps': 'leatherpants', 'leather_boots': 'leatherboots',
+                'herring': 'herring', 'trout': 'trout', 'salmon': 'salmon', 'fishing_pole': 'fishingpole',
+                'fishing_bait': 'fishingbait'
+            };
+            
+            if (overrides[imgName]) {
+                imgName = overrides[imgName];
+            }
+        }
+
+        // Render the image (Item or Chest)
+        btn.innerHTML = `<img src="images/${imgName}.png" alt="Tab">`;
+        
+        // Styles
+        btn.style.padding = "0 6px"; 
+        btn.style.display = "flex";
+        btn.style.alignItems = "center";
+        btn.style.justifyContent = "center";
+    }
+    
+    if (index === game.activeBankTabIndex) {
+      btn.classList.add('active');
+    }
+    
+    btn.onclick = () => switchBankTab(index);
+    container.appendChild(btn);
+  });
+
+  // +++ Limit Check (Main + 4 Extras = 5 Total) +++
+  if (game.bankTabs.length < 5) {
+      const currentCount = game.bankTabs.length;
+      let cost = 0;
+      if (currentCount === 1) cost = 100000;
+      else if (currentCount === 2) cost = 1000000;
+      else if (currentCount === 3) cost = 10000000;
+      else if (currentCount === 4) cost = 100000000;
+
+      const addBtn = document.createElement('button');
+      addBtn.className = 'add-tab-btn';
+      addBtn.textContent = '+';
+      addBtn.onclick = buyBankTab;
+      addBtn.onmouseenter = (e) => showTooltip(e, `<div style="color:var(--gold);">Buy Bank Tab</div>Cost: ${formatAmount(cost)} Gold`);
+      addBtn.onmouseleave = hideTooltip;
+      container.appendChild(addBtn);
+  }
+}
+
+function switchBankTab(index) {
+  game.activeBankTabIndex = index;
+  renderBankTabs();
+  renderBankGrid();
+}
+
+async function buyBankTab() {
+  if (!game.isSessionActive) {
+      await showGameAlert("Session Not Active", "Session not active.");
+      return;
+  }
+  
+  const currentCount = game.bankTabs.length;
+
+  // +++ NEW: Limit Check +++
+  if (currentCount >= 5) {
+      await showGameAlert("Max Reached", "You have reached the maximum number of bank tabs.");
+      return;
+  }
+
+  // +++ NEW: Scaling Costs +++
+  let cost = 0;
+  if (currentCount === 1) cost = 100000;        // 1st Extra
+  else if (currentCount === 2) cost = 1000000;   // 2nd Extra
+  else if (currentCount === 3) cost = 10000000;  // 3rd Extra
+  else if (currentCount === 4) cost = 100000000; // 4th Extra
+  
+  if (game.gold < cost) {
+      await showGameAlert("Not Enough Gold", `You need ${formatAmount(cost)} Gold to buy the next bank tab.`);
+      return;
+  }
+
+  const confirmed = await showGameConfirm("Buy Bank Tab", `Purchase a new bank tab for ${formatAmount(cost)} Gold?`);
+  if (confirmed) {
+      if (game.gold >= cost) {
+          addGold(-cost);
+          // Add new empty tab
+          game.bankTabs.push(new Array(game.bankCapacity).fill(null));
+          // Switch to it
+          game.activeBankTabIndex = game.bankTabs.length - 1;
+          
+          renderBankTabs();
+          renderBankGrid();
+          if (typeof window.savePlayerData === 'function') window.savePlayerData();
+      }
+  }
+}
+
+
+
 /**
  * Renders the Bank grid UI
  */
@@ -13419,9 +13588,17 @@ function renderBankGrid() {
   const grid = document.getElementById('bankGrid');
   if (!grid) return;
   
+  // +++ NEW: Render Tabs first +++
+  renderBankTabs(); 
+  
   grid.innerHTML = '';
+  
+  // +++ USE ACTIVE TAB +++
+  const currentTab = game.bankTabs[game.activeBankTabIndex];
+  if (!currentTab) return;
+
   for(let i = 0; i < game.bankCapacity; i++) {
-    const slotData = game.bank[i];
+    const slotData = currentTab[i]; // <-- Use currentTab
     const slot = document.createElement('div');
     slot.className = 'inv-slot';
     slot.dataset.slotIndex = i;
@@ -13610,6 +13787,7 @@ function openBank() {
 // --- Bank Drag-and-Drop Handlers ---
 
 function handleBankDragStart(e, item, fromIndex) {
+  hideTooltip(); // <--- ADDED THIS LINE
   // Store item data for the drop
   draggedBankItem = { item, fromIndex };
   e.dataTransfer.effectAllowed = 'move';
@@ -13620,6 +13798,9 @@ function handleBankDragStart(e, item, fromIndex) {
 
 function handleBankDragOver(e) {
   e.preventDefault();
+  // +++ FIX: Force cursor explicitly for bank slots +++
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+  
   const targetSlot = e.target.closest('.inv-slot');
   if (targetSlot) {
     targetSlot.classList.add('drag-over');
@@ -13628,6 +13809,18 @@ function handleBankDragOver(e) {
 
 async function handleBankDrop(e) {
   e.preventDefault();
+
+  // +++ FIX: Stop auto-scrolling immediately when item is dropped in bank +++
+  if (inventoryScrollInterval) {
+      clearInterval(inventoryScrollInterval);
+      inventoryScrollInterval = null;
+  }
+  if (bankScrollInterval) {
+      clearInterval(bankScrollInterval);
+      bankScrollInterval = null;
+  }
+  // +++ END FIX +++
+
   const targetSlot = e.target.closest('.inv-slot');
   
   if (targetSlot) {
@@ -13653,9 +13846,11 @@ async function handleBankDrop(e) {
     // === BANK -> BANK internal move ===
     
     if (fromIndex !== toIndex) {
+      // +++ USE ACTIVE TAB +++
+      const currentTab = game.bankTabs[game.activeBankTabIndex];
       // --- Get the item data *before* the prompt ---
-      const dragItemBeforePrompt = game.bank[fromIndex];
-      const dropItem = game.bank[toIndex];
+      const dragItemBeforePrompt = currentTab[fromIndex];
+      const dropItem = currentTab[toIndex];
 
       // --- MODIFIED: Handle Shift-Click to move specific amount ---
       if (e.shiftKey && dragItemBeforePrompt) { 
@@ -13680,7 +13875,7 @@ async function handleBankDrop(e) {
             }
           } else {
             // --- EXPLOIT FIX: Re-validate the item *after* the prompt ---
-            const itemAfterPrompt = game.bank[fromIndex]; // Check game.bank
+            const itemAfterPrompt = currentTab[fromIndex]; // <-- Use currentTab
             
             // Check if the item was consumed or changed
             if (!itemAfterPrompt || itemAfterPrompt.name !== dragItemBeforePrompt.name) {
@@ -13704,10 +13899,10 @@ async function handleBankDrop(e) {
               // Full stack move
               if (itemAfterPrompt && dropItem && itemAfterPrompt.name === dropItem.name) {
                 dropItem.qty += itemAfterPrompt.qty;
-                game.bank[fromIndex] = null;
+                currentTab[fromIndex] = null; // <-- Use currentTab
               } else {
-                game.bank[fromIndex] = dropItem;
-                game.bank[toIndex] = itemAfterPrompt;
+                currentTab[fromIndex] = dropItem; // <-- Use currentTab
+                currentTab[toIndex] = itemAfterPrompt; // <-- Use currentTab
               }
               renderBankGrid();
               if (typeof window.savePlayerData === 'function') savePlayerData();
@@ -13718,9 +13913,9 @@ async function handleBankDrop(e) {
               if (dropItem) { 
                 dropItem.qty += splitAmount;
               } else { 
-                game.bank[toIndex] = { name: itemAfterPrompt.name, qty: splitAmount };
+                currentTab[toIndex] = { name: itemAfterPrompt.name, qty: splitAmount }; // <-- Use currentTab
               }
-              itemAfterPrompt.qty -= splitAmount; // Use the validated item
+              itemAfterPrompt.qty -= splitAmount; 
 
               renderBankGrid();
               if (typeof window.savePlayerData === 'function') savePlayerData();
@@ -13730,13 +13925,13 @@ async function handleBankDrop(e) {
       } else {
         // --- BANK SWAP/STACK (No Shift) ---
         // We must re-get the dragItem in case it was consumed
-        const dragItem = game.bank[fromIndex]; 
+        const dragItem = currentTab[fromIndex]; // <-- Use currentTab
         if (dragItem && dropItem && dragItem.name === dropItem.name) {
           dropItem.qty += dragItem.qty;
-          game.bank[fromIndex] = null;
+          currentTab[fromIndex] = null; // <-- Use currentTab
         } else {
-          game.bank[fromIndex] = dropItem;
-          game.bank[toIndex] = dragItem;
+          currentTab[fromIndex] = dropItem; // <-- Use currentTab
+          currentTab[toIndex] = dragItem; // <-- Use currentTab
         }
         renderBankGrid();
         if (typeof window.savePlayerData === 'function') savePlayerData();
@@ -13762,6 +13957,7 @@ async function handleBankDrop(e) {
 // --- Bank Core Logic ---
 
 function handleBankWithdrawDragStart(e, item, fromBankIndex) {
+  hideTooltip(); // <--- ADDED THIS LINE
   // Store item data and the *source* as 'bank'
   draggedBankItem = { item, fromIndex: fromBankIndex, source: 'bank' };
   e.dataTransfer.effectAllowed = 'move';
@@ -13775,17 +13971,32 @@ function handleBankWithdrawDragStart(e, item, fromBankIndex) {
 async function depositItem(item, fromInventoryIndex, toBankIndex) {
   if (!item) return;
 
-  const bankSlot = game.bank[toBankIndex];
+  // +++ USE ACTIVE TAB +++
+  const currentTab = game.bankTabs[game.activeBankTabIndex];
+  const bankSlot = currentTab[toBankIndex];
   
+  // --- NEW: SWAP LOGIC (Inventory -> Bank) ---
+  // If target slot has a DIFFERENT item, swap them immediately (skip prompt)
   if (bankSlot && bankSlot.name !== item.name) {
-    await showGameAlert("Invalid Slot", "You can't stack different items. Drop on an empty slot or a stack of the same item."); // Replaced alert
-    return;
+      // Verify source item still exists
+      if (game.inventory[fromInventoryIndex].name !== item.name) return;
+
+      // Perform Swap
+      const temp = bankSlot;
+      currentTab[toBankIndex] = game.inventory[fromInventoryIndex];
+      game.inventory[fromInventoryIndex] = temp;
+
+      renderBankGrid();
+      renderInventoryGrid();
+      hideTooltip();
+      if (typeof window.savePlayerData === 'function') window.savePlayerData();
+      return true;
   }
+  // --- END SWAP LOGIC ---
 
   let qtyToDeposit = item.qty;
 
   if (item.qty > 1) {
-    // --- MODIFICATION HERE ---
     const input = await showGamePrompt(
       `Deposit ${item.name}`,
       `How many ${item.name} do you want to deposit? (You have: ${item.qty})`,
@@ -13793,12 +14004,11 @@ async function depositItem(item, fromInventoryIndex, toBankIndex) {
     );
     if (input === null) return false;
     qtyToDeposit = parseInt(input);
-    // --- END MODIFICATION ---
   }
 
   if (isNaN(qtyToDeposit) || qtyToDeposit <= 0) return;
   if (qtyToDeposit > item.qty) {
-    await showGameAlert("Invalid Amount", "You don't have that many to deposit."); // Replaced alert
+    await showGameAlert("Invalid Amount", "You don't have that many to deposit."); 
     return;
   }
 
@@ -13810,7 +14020,7 @@ async function depositItem(item, fromInventoryIndex, toBankIndex) {
   if (bankSlot) {
     bankSlot.qty += qtyToDeposit;
   } else {
-    game.bank[toBankIndex] = { name: item.name, qty: qtyToDeposit };
+    currentTab[toBankIndex] = { name: item.name, qty: qtyToDeposit }; // <-- Use currentTab
   }
 
   renderBankGrid();
@@ -13821,13 +14031,15 @@ async function depositItem(item, fromInventoryIndex, toBankIndex) {
 }
 
 async function withdrawItem(fromBankIndex) {
-  const item = game.bank[fromBankIndex];
+  // +++ USE ACTIVE TAB +++
+  const currentTab = game.bankTabs[game.activeBankTabIndex];
+  const item = currentTab[fromBankIndex]; // <-- Use currentTab
+  
   if (!item) return;
 
   let qtyToWithdraw = item.qty;
 
   if (item.qty > 1) {
-    // --- MODIFICATION HERE ---
     const input = await showGamePrompt(
       `Withdraw ${item.name}`,
       `How many ${item.name} do you want to withdraw? (Bank has: ${item.qty})`,
@@ -13835,21 +14047,20 @@ async function withdrawItem(fromBankIndex) {
     );
     if (input === null) return;
     qtyToWithdraw = parseInt(input);
-    // --- END MODIFICATION ---
   }
   
   if (isNaN(qtyToWithdraw) || qtyToWithdraw <= 0) return;
   if (qtyToWithdraw > item.qty) {
-    await showGameAlert("Invalid Amount", "You don't have that many to withdraw."); // Replaced alert
+    await showGameAlert("Invalid Amount", "You don't have that many to withdraw.");
     return;
   }
   
   const itemToAdd = { name: item.name, qty: qtyToWithdraw };
   addItem(itemToAdd.name, itemToAdd.qty); 
   
-  game.bank[fromBankIndex].qty -= qtyToWithdraw;
-  if (game.bank[fromBankIndex].qty <= 0) {
-    game.bank[fromBankIndex] = null;
+  currentTab[fromBankIndex].qty -= qtyToWithdraw; // <-- Use currentTab
+  if (currentTab[fromBankIndex].qty <= 0) {
+    currentTab[fromBankIndex] = null; // <-- Use currentTab
   }
   
   renderBankGrid();
@@ -13905,15 +14116,30 @@ async function withdrawGold() { // <-- ADD 'async'
 }
 
 async function dragWithdrawItem(fromBankIndex, toInventoryIndex) {
-  const bankItem = game.bank[fromBankIndex];
+  // +++ USE ACTIVE TAB +++
+  const currentTab = game.bankTabs[game.activeBankTabIndex];
+  const bankItem = currentTab[fromBankIndex];
   const inventorySlotItem = game.inventory[toInventoryIndex];
 
   if (!bankItem) return;
 
+  // --- NEW: SWAP LOGIC (Bank -> Inventory) ---
+  // If target occupied by DIFFERENT item, swap immediately (skip prompt)
+  if (inventorySlotItem && inventorySlotItem.name !== bankItem.name) {
+      currentTab[fromBankIndex] = inventorySlotItem;
+      game.inventory[toInventoryIndex] = bankItem;
+      
+      renderBankGrid();
+      renderInventoryGrid();
+      hideTooltip();
+      if (typeof window.savePlayerData === 'function') window.savePlayerData();
+      return;
+  }
+  // --- END SWAP LOGIC ---
+
   let qtyToWithdraw = bankItem.qty;
 
   if (bankItem.qty > 1) {
-    // --- MODIFICATION HERE ---
     const input = await showGamePrompt(
       `Withdraw ${bankItem.name}`,
       `How many ${bankItem.name} do you want to withdraw? (Bank has: ${bankItem.qty})`,
@@ -13921,34 +14147,26 @@ async function dragWithdrawItem(fromBankIndex, toInventoryIndex) {
     );
     if (input === null) return; 
     qtyToWithdraw = parseInt(input);
-    // --- END MODIFICATION ---
   }
   
   if (isNaN(qtyToWithdraw) || qtyToWithdraw <= 0 || qtyToWithdraw > bankItem.qty) {
-    await showGameAlert("Invalid Amount", "Invalid or excessive amount entered."); // Replaced alert
+    await showGameAlert("Invalid Amount", "Invalid or excessive amount entered.");
     return;
   }
 
   if (inventorySlotItem && inventorySlotItem.name === bankItem.name) {
+    // Stack onto existing item
     inventorySlotItem.qty += qtyToWithdraw;
     bankItem.qty -= qtyToWithdraw;
     if (bankItem.qty <= 0) {
-      game.bank[fromBankIndex] = null; 
+      currentTab[fromBankIndex] = null;
     }
-
-  } else if (inventorySlotItem) {
-    if (qtyToWithdraw < bankItem.qty) {
-      await showGameAlert("Invalid Action", "You must withdraw the full stack to swap items, or drop onto an empty inventory slot."); // Replaced alert
-      return;
-    }
-    
-    game.bank[fromBankIndex] = inventorySlotItem;
-    game.inventory[toInventoryIndex] = bankItem;
 
   } else {
+    // Move to empty slot (Swap handled above, so this must be empty)
     if (qtyToWithdraw === bankItem.qty) {
         game.inventory[toInventoryIndex] = bankItem;
-        game.bank[fromBankIndex] = null; 
+        currentTab[fromBankIndex] = null;
     } else {
         game.inventory[toInventoryIndex] = { name: bankItem.name, qty: qtyToWithdraw };
         bankItem.qty -= qtyToWithdraw;
@@ -14045,6 +14263,13 @@ function resetGameState() {
   game.gold = 100; 
   // +++ NEW +++
   game.bank = new Array(game.bankCapacity).fill(null);
+
+  // +++ FIX: WIPE BANK TABS ON LOGOUT +++
+  // This ensures the next player starts with exactly 1 empty tab
+  game.bankTabs = [new Array(game.bankCapacity).fill(null)];
+  game.activeBankTabIndex = 0;
+  // +++ END FIX +++
+
   game.bankGold = 0;
   game.equipment = { 
     necklace: null, helmet: null, cape: null, 
@@ -14456,7 +14681,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // --- END NEW ---
 
   // --- NEW: Draggable Panel Logic ---
-  
+  let isDraggingPanel = false; // <--- Defined variable
+  let panelOffsetX = 0;        // <--- Defined variable
+  let panelOffsetY = 0;        // <--- Defined variable
 
   if (statsPanelHeader) {
     statsPanelHeader.addEventListener('mousedown', (e) => {
@@ -14867,63 +15094,96 @@ document.addEventListener('DOMContentLoaded', ()=>{
   let currentDragOverSlot = null;
   let draggedShopItem = null; // <-- ADD THIS
   
+// --- NEW SMOOTH SCROLL LOGIC (INVENTORY) ---
+// inventoryScrollInterval is now global
+const SCROLL_SPEED_INV = 5; // Pixels per 16ms (Constant speed)
+const SCROLL_ZONE_INV = 50; // 50px from top/bottom
+
 if (inventoryGridWrap) {
   inventoryGridWrap.addEventListener('dragover', (e) => {
-    // Only scroll if we are actively dragging an item
     if (!game.isDragging) return;
-
-    // We must prevent default for dragover to work
     e.preventDefault(); 
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
 
     const rect = inventoryGridWrap.getBoundingClientRect();
     const clientY = e.clientY;
 
-    const scrollSpeed = 10; // Pixels to scroll per frame
-    const threshold = 50;   // 50px trigger zone from the edge
+    const inTopZone = clientY < rect.top + SCROLL_ZONE_INV;
+    const inBottomZone = clientY > rect.bottom - SCROLL_ZONE_INV;
 
-    const topThreshold = rect.top + threshold;
-    const bottomThreshold = rect.bottom - threshold;
+    if (inTopZone || inBottomZone) {
+      // Start the timer if not already running
+      if (!inventoryScrollInterval) {
+        inventoryScrollInterval = setInterval(() => {
+          if (inTopZone) {
+            inventoryGridWrap.scrollTop -= SCROLL_SPEED_INV;
+          } else {
+            inventoryGridWrap.scrollTop += SCROLL_SPEED_INV;
+          }
+        }, 16); // Runs ~60 times a second
+      }
+    } else {
+      // Mouse is in the middle (safe zone), stop scrolling
+      clearInterval(inventoryScrollInterval);
+      inventoryScrollInterval = null;
+    }
+  });
 
-    // --- This is the inventory scroll logic ---
-    if (clientY < topThreshold) {
-      // Mouse is near the top, scroll up
-      inventoryGridWrap.scrollTop -= scrollSpeed;
-    } else if (clientY > bottomThreshold) {
-      // Mouse is near the bottom, scroll down
-      inventoryGridWrap.scrollTop += scrollSpeed;
+  // Stop scrolling if mouse leaves the scroll container completely
+  inventoryGridWrap.addEventListener('dragleave', (e) => {
+    const rect = inventoryGridWrap.getBoundingClientRect();
+    // Only clear if we actually left the bounds, not just entered a child slot
+    if (e.clientY < rect.top || e.clientY > rect.bottom || e.clientX < rect.left || e.clientX > rect.right) {
+        clearInterval(inventoryScrollInterval);
+        inventoryScrollInterval = null;
     }
   });
 }
 
-// --- This is the new bank scroll logic (placed *after*) ---
+// --- NEW SMOOTH SCROLL LOGIC (BANK) ---
+// bankScrollInterval is now global
+const SCROLL_SPEED_BANK = 5; 
+const SCROLL_ZONE_BANK = 50;
+
 if (bankGridWrap) {
   bankGridWrap.addEventListener('dragover', (e) => {
-    // Only scroll if we are actively dragging an item
     if (!game.isDragging) return;
-
-    // We must prevent default for dragover to work
     e.preventDefault(); 
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
 
     const rect = bankGridWrap.getBoundingClientRect();
     const clientY = e.clientY;
 
-    const scrollSpeed = 10; // Pixels to scroll per frame
-    const threshold = 50;   // 50px trigger zone from the edge
+    const inTopZone = clientY < rect.top + SCROLL_ZONE_BANK;
+    const inBottomZone = clientY > rect.bottom - SCROLL_ZONE_BANK;
 
-    const topThreshold = rect.top + threshold;
-    const bottomThreshold = rect.bottom - threshold;
+    if (inTopZone || inBottomZone) {
+      if (!bankScrollInterval) {
+        bankScrollInterval = setInterval(() => {
+          if (inTopZone) {
+            bankGridWrap.scrollTop -= SCROLL_SPEED_BANK;
+          } else {
+            bankGridWrap.scrollTop += SCROLL_SPEED_BANK;
+          }
+        }, 16);
+      }
+    } else {
+      clearInterval(bankScrollInterval);
+      bankScrollInterval = null;
+    }
+  });
 
-    if (clientY < topThreshold) {
-      // Mouse is near the top, scroll up
-      bankGridWrap.scrollTop -= scrollSpeed;
-    } else if (clientY > bottomThreshold) {
-      // Mouse is near the bottom, scroll down
-      bankGridWrap.scrollTop += scrollSpeed;
+  bankGridWrap.addEventListener('dragleave', (e) => {
+    const rect = bankGridWrap.getBoundingClientRect();
+    if (e.clientY < rect.top || e.clientY > rect.bottom || e.clientX < rect.left || e.clientX > rect.right) {
+        clearInterval(bankScrollInterval);
+        bankScrollInterval = null;
     }
   });
 }
 
   inventoryGrid.addEventListener('dragstart', (e) => {
+    hideTooltip(); // <--- ADDED THIS LINE
     if (e.target && e.target.classList.contains('inv-slot') && e.target.draggable) {
       draggedItemIndex = parseInt(e.target.dataset.slotIndex);
       e.dataTransfer.effectAllowed = 'move';
@@ -14946,8 +15206,23 @@ if (bankGridWrap) {
   });
 
 
+  // +++ FIX: AGGRESSIVE Global listeners to prevent forbidden cursor +++
+  // We use capture: true to intercept the event immediately.
+  // We handle dragenter AND dragover to stop flickering at boundaries.
+  const forceAllowDrag = (e) => {
+    e.preventDefault(); // Mandatory to allow dropping
+    if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'move'; // Force visual cursor
+    }
+  };
+
+  document.addEventListener('dragover', forceAllowDrag, true);
+  document.addEventListener('dragenter', forceAllowDrag, true);
+
   inventoryGrid.addEventListener('dragover', (e) => {
     e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; // Force it specifically here too
+    
     const targetSlot = e.target.closest('.inv-slot');
     if (targetSlot) {
       if (currentDragOverSlot && currentDragOverSlot !== targetSlot) {
@@ -14969,9 +15244,6 @@ if (bankGridWrap) {
   });
 
 inventoryGrid.addEventListener('dragend', (e) => {
-    // This event fires when the drag operation finishes, 
-    // even if it's cancelled or dropped outside a valid target.
-    
     // 1. Clean up the '.dragging' class
     const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
     if (draggingEl) {
@@ -14987,12 +15259,34 @@ inventoryGrid.addEventListener('dragend', (e) => {
     // 3. Reset all global drag state variables
     draggedItemIndex = null;
     draggedBankItem = null;
-    draggedShopItem = null; // <-- ADD THIS
+    draggedShopItem = null;
     game.isDragging = false;
+
+    // 4. --- NEW: Stop any active scrolling ---
+    if (inventoryScrollInterval) {
+        clearInterval(inventoryScrollInterval);
+        inventoryScrollInterval = null;
+    }
+    if (bankScrollInterval) {
+        clearInterval(bankScrollInterval);
+        bankScrollInterval = null;
+    }
   });
 
   inventoryGrid.addEventListener('drop', async (e) => {
     e.preventDefault();
+
+    // +++ FIX: Stop auto-scrolling immediately when item is dropped +++
+    if (inventoryScrollInterval) {
+        clearInterval(inventoryScrollInterval);
+        inventoryScrollInterval = null;
+    }
+    if (bankScrollInterval) {
+        clearInterval(bankScrollInterval);
+        bankScrollInterval = null;
+    }
+    // +++ END FIX +++
+
     const dropSlot = e.target.closest('.inv-slot');
     
     // Cleanup first
@@ -15574,16 +15868,22 @@ function renderInspectEquipment(equipment, frame) {
           }
       });
       
-      // +++ NEW: Convert bank to save format +++
-      const bankToSave = [];
-      game.bank.forEach((item, index) => {
-          if (item) {
-              bankToSave.push({
-                  slot: index,
-                  name: item.name,
-                  qty: item.qty
-              });
-          }
+      // +++ NEW: Convert bank TABS to save format (OBJECT MAP) +++
+      // Firestore does not support nested arrays, so we use an object map: { "0": [], "1": [] }
+      const bankTabsToSave = {}; 
+      
+      game.bankTabs.forEach((tabArray, i) => {
+          const tabData = [];
+          tabArray.forEach((item, index) => {
+              if (item) {
+                  tabData.push({
+                      slot: index,
+                      name: item.name,
+                      qty: item.qty
+                  });
+              }
+          });
+          bankTabsToSave[i.toString()] = tabData; // Use index string as key
       });
       
       const payload = {
@@ -15594,7 +15894,7 @@ function renderInspectEquipment(equipment, frame) {
         inventory: inventoryToSave, 
         gold: game.gold,
         // +++ NEW +++
-        bank: bankToSave,
+        bankTabs: bankTabsToSave, // Saving tabs now
         bankGold: game.bankGold,
         // +++ END NEW +++
         equipment: game.equipment, // <-- ADD THIS
@@ -15879,7 +16179,7 @@ window.inspectPlayer = async function(playerName) {
           // Stop any local actions immediately
           stopMining();
           stopBlacksmithing();
-          if (game.inTrade) closeTradeWindow();
+          // Trade close logic removed
         } else {
           // We have the lock. We are ACTIVE.
           game.isSessionActive = true;
@@ -15954,17 +16254,49 @@ window.inspectPlayer = async function(playerName) {
         
         // +++ NEW: Load Bank Data +++
         game.bankGold = (typeof data.bankGold === 'number') ? data.bankGold : 0;
-        game.questLines = data.questLines || {}; // +++ NEW: Load Quest Line Data +++
-        let loadedBankData = data.bank || [];
-        game.bank = new Array(game.bankCapacity).fill(null);
-        if (Array.isArray(loadedBankData)) {
-            loadedBankData.forEach(item => {
-                if (item && typeof item.slot === 'number' && item.slot < game.bankCapacity) {
-                    game.bank[item.slot] = { name: item.name, qty: item.qty };
+        game.questLines = data.questLines || {}; 
+        
+        // --- NEW: Bank Tabs Loading & Migration ---
+        game.activeBankTabIndex = 0;
+        game.bankTabs = [];
+
+        // 1. Check for new Object Map format (The correct way for Firestore)
+        if (data.bankTabs && typeof data.bankTabs === 'object' && !Array.isArray(data.bankTabs)) {
+            // Sort keys to ensure tabs load in order (0, 1, 2...)
+            const sortedKeys = Object.keys(data.bankTabs).sort((a, b) => parseInt(a) - parseInt(b));
+            
+            sortedKeys.forEach(key => {
+                const tabData = data.bankTabs[key]; // This is the array of items
+                const newTab = new Array(game.bankCapacity).fill(null);
+                if (Array.isArray(tabData)) {
+                    tabData.forEach(item => {
+                        if (item && typeof item.slot === 'number' && item.slot < game.bankCapacity) {
+                            newTab[item.slot] = { name: item.name, qty: item.qty };
+                        }
+                    });
                 }
+                game.bankTabs.push(newTab);
             });
+        } 
+        // 2. Fallback: Migration from old flat 'bank' array
+        else {
+            const firstTab = new Array(game.bankCapacity).fill(null);
+            let loadedBankData = data.bank || [];
+            if (Array.isArray(loadedBankData)) {
+                loadedBankData.forEach(item => {
+                    if (item && typeof item.slot === 'number' && item.slot < game.bankCapacity) {
+                        firstTab[item.slot] = { name: item.name, qty: item.qty };
+                    }
+                });
+            }
+            game.bankTabs.push(firstTab);
         }
-        // +++ END NEW +++
+        
+        // Ensure at least one tab exists
+        if (game.bankTabs.length === 0) {
+            game.bankTabs.push(new Array(game.bankCapacity).fill(null));
+        }
+        // --- END NEW ---
         
         if (data.mining) {
           game.mining.level = data.mining.level || 1;
@@ -16222,9 +16554,7 @@ window.inspectPlayer = async function(playerName) {
   // --- MODIFIED: Handles session cleanup ---
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
-      tradeSessionUnsubscribes.forEach(unsub => unsub()); 
-      tradeSessionUnsubscribes = []; 
+      // Trade cleanup removed
       if (playerDocListener) playerDocListener();
 
       const started = await loadPlayerDataAndStart(user);
@@ -16239,7 +16569,6 @@ window.inspectPlayer = async function(playerName) {
       
       if (started) {
         initChatListener();
-        initTradeListeners();
         initUpdatesListener();
         initBroadcastListener(); // +++ ADD THIS LINE +++
         // The loadPlayerDataAndStart listener will automatically handle
@@ -16256,9 +16585,7 @@ window.inspectPlayer = async function(playerName) {
       gameScreen.style.display = 'none';
       
       // Stop listeners and release lock
-      if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
-      tradeSessionUnsubscribes.forEach(unsub => unsub()); 
-      tradeSessionUnsubscribes = []; 
+      // Trade cleanup removed
       if (playerDocListener) playerDocListener();
       if (updatesListenerUnsubscribe) updatesListenerUnsubscribe();
       if (broadcastListenerUnsubscribe) broadcastListenerUnsubscribe(); // +++ ADD THIS LINE +++
@@ -16309,7 +16636,7 @@ window.inspectPlayer = async function(playerName) {
           await window.savePlayerData(); // This will now succeed
           window.renderLeaderboards();
           initChatListener(); 
-          initTradeListeners(); 
+          // Trade listeners removed
           initUpdatesListener(); 
           // The onSnapshot listener will fire and update the UI
         }
@@ -16328,6 +16655,291 @@ window.inspectPlayer = async function(playerName) {
 // +++ NEW BROADCAST LISTENER +++
   let broadcastListenerUnsubscribe = null;
   let lastBroadcastTimestamp = null;
+
+// =================================================================
+  // --- RESTORED HELPER FUNCTIONS (Required for Admin /giveitem to others) ---
+  // =================================================================
+  function convertSavedInvToLocal(savedInvData) {
+      const localInv = new Array(game.inventoryCapacity || 40).fill(null);
+      if (!Array.isArray(savedInvData)) {
+          const entries = Object.entries(savedInvData);
+          for (let i = 0; i < entries.length && i < localInv.length; i++) {
+              localInv[i] = { name: entries[i][0], qty: entries[i][1] };
+          }
+      } else {
+          savedInvData.forEach(item => {
+              if (item && typeof item.slot === 'number' && item.slot < localInv.length) {
+                  localInv[item.slot] = { name: item.name, qty: item.qty };
+              }
+          });
+      }
+      return localInv;
+  }
+
+  function convertLocalInvToSaved(localInv) {
+      const inventoryToSave = [];
+      localInv.forEach((item, index) => {
+          if (item) {
+              inventoryToSave.push({ slot: index, name: item.name, qty: item.qty });
+          }
+      });
+      return inventoryToSave;
+  }
+
+  function modifyInventory(localInvArray, itemName, qtyChange) {
+      const newInv = JSON.parse(JSON.stringify(localInvArray)); 
+      if (qtyChange > 0) { // Adding
+          let amountToAdd = qtyChange;
+          for (const slot of newInv) {
+              if (slot && slot.name === itemName) {
+                  slot.qty += amountToAdd;
+                  amountToAdd = 0;
+                  break; 
+              }
+          }
+          if (amountToAdd > 0) {
+              let emptySlotIndex = newInv.findIndex(slot => slot === null);
+              if (emptySlotIndex > -1) newInv[emptySlotIndex] = { name: itemName, qty: amountToAdd };
+          }
+      } else if (qtyChange < 0) { // Removing
+          let amountToRemove = Math.abs(qtyChange);
+          for (let i = newInv.length - 1; i >= 0; i--) {
+              const slot = newInv[i];
+              if (slot && slot.name === itemName) {
+                  if (slot.qty > amountToRemove) {
+                      slot.qty -= amountToRemove;
+                      amountToRemove = 0;
+                  } else {
+                      amountToRemove -= slot.qty;
+                      newInv[i] = null;
+                  }
+              }
+              if (amountToRemove === 0) break;
+          }
+      }
+      return newInv;
+  }
+
+ // =================================================================
+  // --- RESTORED ADMIN COMMANDS (With Case Correction) ---
+  // =================================================================
+  async function handleChatCommand(messageText) {
+    const user = auth.currentUser;
+    if (!user) return false;
+
+    // 1. Check if Admin
+    if (game.isAdmin && messageText.startsWith('/')) {
+        const parts = messageText.substring(1).split(' ');
+        const command = parts[0].toLowerCase();
+        const args = parts.slice(1);
+
+        // --- COMMAND: /givegold player amount ---
+        if (command === 'givegold') {
+            const targetName = args[0] ? args[0].toLowerCase() : '';
+            const amount = parseInt(args[1]);
+            if (!targetName || isNaN(amount) || amount <= 0) {
+                addLocalChatMessage("Usage: /givegold [playername] [amount]", 'error');
+                return true;
+            }
+
+            // Case A: Give to Self
+            if (targetName === game.name.toLowerCase()) {
+                if (typeof window.addGold === 'function') {
+                    window.addGold(amount);
+                    await window.savePlayerData();
+                    addLocalChatMessage(`Admin: Spawning ${amount} Gold`, 'system');
+                }
+                return true;
+            }
+
+            // Case B: Give to Others
+            try {
+                const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
+                    return true;
+                }
+                const playerDoc = querySnapshot.docs[0];
+                await updateDoc(doc(db, "players", playerDoc.id), {
+                    gold: increment(amount)
+                });
+                addLocalChatMessage(`Admin: Gave ${amount} Gold to ${playerDoc.data().name}.`, 'system');
+            } catch (e) {
+                addLocalChatMessage(`Error giving gold: ${e.message}`, 'error');
+            }
+            return true;
+        }
+
+        // --- COMMAND: /giveitem player item amount ---
+        if (command === 'giveitem') {
+            const targetName = args[0] ? args[0].toLowerCase() : '';
+            const qty = parseInt(args[args.length - 1]);
+            
+            // Extract the raw name parts
+            const rawNameParts = args.slice(1, -1);
+            
+            if (!targetName || rawNameParts.length === 0 || isNaN(qty) || qty <= 0) {
+                addLocalChatMessage("Usage: /giveitem [playername] [Item Name] [amount]", 'error');
+                return true;
+            }
+
+            // +++ FIX: FORCE TITLE CASE (e.g. "empty vial" -> "Empty Vial") +++
+            const itemName = rawNameParts.map(word => {
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            }).join(' ');
+            // +++ END FIX +++
+            
+            // Case A: Give to Self
+            if (targetName === game.name.toLowerCase()) {
+                if (typeof window.addItem === 'function') {
+                    window.addItem(itemName, qty); 
+                    await window.savePlayerData();
+                    addLocalChatMessage(`Admin: Spawning ${qty} x ${itemName}`, 'system');
+                }
+                return true;
+            }
+
+            // Case B: Give to Others
+            try {
+                const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
+                    return true;
+                }
+                const playerDoc = querySnapshot.docs[0];
+                const playerData = playerDoc.data();
+                
+                let currentLocalInv = convertSavedInvToLocal(playerData.inventory || []);
+                const newLocalInv = modifyInventory(currentLocalInv, itemName, qty);
+                const newSavedInv = convertLocalInvToSaved(newLocalInv);
+                
+                await updateDoc(doc(db, "players", playerDoc.id), { inventory: newSavedInv });
+                addLocalChatMessage(`Admin: Gave ${qty}x ${itemName} to ${playerData.name}.`, 'system');
+            } catch (e) {
+                console.error(e);
+                addLocalChatMessage(`Error giving item: ${e.message}`, 'error');
+            }
+            return true;
+        }
+
+        // --- COMMAND: /update message ---
+        if (command === 'update') {
+            const messageText = args.join(' ');
+            if (messageText.length === 0) return true;
+            try {
+              await addDoc(collection(db, "updates"), {
+                text: messageText,
+                timestamp: serverTimestamp()
+              });
+              addLocalChatMessage("Update posted.", 'system');
+            } catch (e) {
+              console.error("Error posting update: ", e);
+            }
+            return true;
+        }
+
+        // --- COMMAND: /messageall message ---
+        if (command === 'messageall') {
+            const messageText = args.join(' ');
+            if (messageText.length === 0) return true;
+            try {
+              await setDoc(doc(db, "system", "broadcast"), {
+                message: messageText,
+                timestamp: serverTimestamp()
+              });
+              addLocalChatMessage("Broadcast message sent.", 'system');
+            } catch (e) {
+              console.error("Error sending broadcast: ", e);
+            }
+            return true;
+        }
+
+        // --- COMMAND: /forget questname ---
+        if (command === 'forget') {
+            const inputName = args.join(' ');
+            if (!inputName) return true;
+            
+            let targetId = inputName;
+            let foundName = inputName;
+            if (window.QUEST_LINES) {
+                for (const lineId in window.QUEST_LINES) {
+                    const line = window.QUEST_LINES[lineId];
+                    const match = line.quests.find(q => q.name.toLowerCase() === inputName.toLowerCase());
+                    if (match) {
+                        targetId = match.id;
+                        foundName = match.name;
+                        break;
+                    }
+                }
+            }
+
+            let found = false;
+            for (const lineId in game.questLines) {
+                const lineData = game.questLines[lineId];
+                if (lineData.completed) {
+                    const index = lineData.completed.indexOf(targetId);
+                    if (index > -1) {
+                        lineData.completed.splice(index, 1);
+                        lineData.activeQuestId = null; 
+                        lineData.kills = 0;
+                        found = true;
+                        addLocalChatMessage(`Admin: Forgot '${foundName}'. Re-open quest tab.`, 'system');
+                        break; 
+                    }
+                }
+            }
+            if (found) await window.savePlayerData();
+            else addLocalChatMessage(`Quest '${foundName}' not found in history.`, 'error');
+            return true;
+        }
+        
+        // --- COMMAND: /setlevel player skill level ---
+        if (command === 'setlevel') {
+            const targetName = args[0] ? args[0].toLowerCase() : '';
+            const skill = args[1] ? args[1].toLowerCase() : '';
+            const level = parseInt(args[2]);
+            if (!targetName || !skill || isNaN(level)) return true;
+
+            const newTotalXP = (window.getTotalXPForLevel) ? window.getTotalXPForLevel(level) : 0; 
+            const newSkillData = { level: level, xp: 0, totalXP: newTotalXP };
+
+            // Self
+            if (targetName === game.name.toLowerCase()) {
+                game[skill] = newSkillData; 
+                if(window.updateSkillUI) window.updateSkillUI();
+                if(window.updateHPUI) window.updateHPUI();
+                await window.savePlayerData(); 
+                addLocalChatMessage(`Admin: Set own ${skill} to ${level}.`, 'system');
+                return true;
+            }
+            // Others
+             try {
+                const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    await updateDoc(doc(db, "players", snap.docs[0].id), { [skill]: newSkillData });
+                    addLocalChatMessage(`Admin: Set ${snap.docs[0].data().name}'s ${skill} to ${level}.`, 'system');
+                }
+            } catch (e) { console.error(e); }
+            return true;
+        }
+        
+        // --- COMMAND: /godmode ---
+        if (command === 'godmode') {
+           game.hp = 9999;
+           game.maxHP = 9999;
+           if(window.updateHPUI) window.updateHPUI();
+           addLocalChatMessage("Godmode Enabled.", 'system');
+           return true;
+        }
+    }
+    // Not an admin command or not admin
+    return false; 
+  }
+
+
 
 
   async function sendChatMessage() {
@@ -16623,981 +17235,6 @@ window.inspectPlayer = async function(playerName) {
     });
   }
   
-  // --- TRADE FUNCTIONS (Mostly Unchanged) ---
-  let tradeRequestUnsubscribe = null;
-  let tradeSessionUnsubscribes = []; 
-  function addLocalChatMessage(text, type = 'system') {
-    const chatMessagesContainer = document.getElementById('chatMessages');
-    if (!chatMessagesContainer) return;
-    if (!isChatHistoryLoaded) {
-      localMessageQueue.push({ text, type });
-    } else {
-      _addLocalMessageToDOM(text, type);
-      while (chatMessagesContainer.childElementCount > 30) {
-        chatMessagesContainer.lastChild.remove();
-      }
-      chatMessagesContainer.scrollTop = 0;
-    }
-  }
-  function convertSavedInvToLocal(savedInvData) {
-      const localInv = new Array(game.inventoryCapacity).fill(null);
-      if (!Array.isArray(savedInvData)) {
-          const entries = Object.entries(savedInvData);
-          for (let i = 0; i < entries.length && i < game.inventoryCapacity; i++) {
-              localInv[i] = { name: entries[i][0], qty: entries[i][1] };
-          }
-      } else {
-          if (savedInvData.length > 0 && typeof savedInvData[0].slot === 'number') {
-              savedInvData.forEach(item => {
-                  if (item && item.slot < game.inventoryCapacity) {
-                      localInv[item.slot] = { name: item.name, qty: item.qty };
-                  }
-              });
-          } else if (savedInvData.length > 0) {
-              for (let i = 0; i < savedInvData.length && i < game.inventoryCapacity; i++) {
-                  if (savedInvData[i]) {
-                      localInv[i] = { name: savedInvData[i].name, qty: savedInvData[i].qty };
-                  }
-              }
-          }
-      }
-      return localInv;
-  }
-  function convertLocalInvToSaved(localInv) {
-      const inventoryToSave = [];
-      localInv.forEach((item, index) => {
-          if (item) {
-              inventoryToSave.push({
-                  slot: index,
-                  name: item.name,
-                  qty: item.qty
-              });
-          }
-      });
-      return inventoryToSave;
-  }
-
-  // =================================================================
-  // --- 3. REPLACED 'checkItem' FUNCTION (module script) ---
-  // This function now correctly SUMS all stacks.
-  // =================================================================
-  function checkItem(localInvArray, itemName, qty) {
-      let totalQty = 0;
-      for (const slot of localInvArray) {
-          if (slot && slot.name === itemName) {
-              totalQty += slot.qty;
-          }
-      }
-      return totalQty >= qty;
-  }
-
-  // =================================================================
-  // --- 4. REPLACED 'modifyInventory' FUNCTION (module script) ---
-  // This function now correctly adds/removes from multiple stacks.
-  // =================================================================
-  function modifyInventory(localInvArray, itemName, qtyChange) {
-      // Deep copy the array to avoid modifying the original
-      const newInv = JSON.parse(JSON.stringify(localInvArray)); 
-      
-      if (qtyChange > 0) { // Adding items
-          let amountToAdd = qtyChange;
-          
-          // 1. Try to stack first
-          for (const slot of newInv) {
-              if (slot && slot.name === itemName) {
-                  slot.qty += amountToAdd;
-                  amountToAdd = 0;
-                  break; 
-              }
-          }
-          
-          // 2. If still items left, find an empty slot
-          if (amountToAdd > 0) {
-              let emptySlotIndex = newInv.findIndex(slot => slot === null);
-              if (emptySlotIndex > -1) {
-                  newInv[emptySlotIndex] = { name: itemName, qty: amountToAdd };
-              } else {
-                  // This should be caught by the transaction, but good to have
-                  throw new Error(`Inventory full, cannot add ${itemName}.`);
-              }
-          }
-      } else if (qtyChange < 0) { // Removing items
-          let amountToRemove = Math.abs(qtyChange);
-          
-          // 1. Iterate backwards to empty smaller/later stacks first
-          for (let i = newInv.length - 1; i >= 0; i--) {
-              const slot = newInv[i];
-              if (slot && slot.name === itemName) {
-                  if (slot.qty > amountToRemove) {
-                      // This stack has more than we need
-                      slot.qty -= amountToRemove;
-                      amountToRemove = 0;
-                  } else {
-                      // This stack will be emptied
-                      amountToRemove -= slot.qty;
-                      newInv[i] = null; // Empty the slot
-                  }
-              }
-              if (amountToRemove === 0) break; // We're done
-          }
-          if (amountToRemove > 0) {
-              // This should be impossible if checkItem was called first
-              throw new Error(`Tried to remove more ${itemName} than available.`);
-          }
-      }
-      return newInv;
-  }
-  // =================================================================
-  // --- END OF REPLACEMENTS IN THIS SCRIPT BLOCK ---
-  // =================================================================
-
-  async function handleChatCommand(messageText) {
-    const user = auth.currentUser;
-    if (!user) return false;
-    if (game.isAdmin && messageText.startsWith('/')) {
-        const parts = messageText.substring(1).split(' ');
-        const command = parts[0].toLowerCase();
-        const args = parts.slice(1);
-        if (command === 'givegold') {
-            const targetName = args[0] ? args[0].toLowerCase() : '';
-            const amount = parseInt(args[1]);
-            if (!targetName || isNaN(amount) || amount <= 0) {
-                addLocalChatMessage("Usage: /givegold [playername] [amount]", 'error');
-                return true;
-            }
-            if (targetName === game.name.toLowerCase()) {
-                try {
-                    addGold(amount); 
-                    await window.savePlayerData(); 
-                    addLocalChatMessage(`Admin: Gave self ${amount} Gold.`, 'system');
-                } catch (e) {
-                    addLocalChatMessage(`Error giving self gold: ${e.message}`, 'error');
-                }
-                return true;
-            }
-            try {
-                const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
-                const querySnapshot = await getDocs(q);
-                if (querySnapshot.empty) {
-                    addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
-                    return true;
-                }
-                const playerDoc = querySnapshot.docs[0];
-                const playerData = playerDoc.data(); // We still need this for the name
-                await updateDoc(doc(db, "players", playerDoc.id), {
-                    gold: increment(amount) // Use the atomic increment operation
-                });
-                addLocalChatMessage(`Admin: Gave ${amount} Gold to ${playerData.name}.`, 'system');
-            } catch (e) {
-                addLocalChatMessage(`Error giving gold: ${e.message}`, 'error');
-            }
-            return true;
-        }
-        if (command === 'giveitem') {
-            const targetName = args[0] ? args[0].toLowerCase() : '';
-            const qty = parseInt(args[args.length - 1]);
-            const itemName = args.slice(1, -1).join(' '); 
-            if (!targetName || itemName.length === 0 || isNaN(qty) || qty <= 0) {
-                addLocalChatMessage("Usage: /giveitem [playername] [Item Name] [amount]", 'error');
-                return true;
-            }
-            const formattedName = itemName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-            if (!VALID_ITEMS.includes(formattedName)) {
-                addLocalChatMessage(`Admin Error: "${formattedName}" is not a valid item.`, 'error');
-                return true; 
-            }
-            if (targetName === game.name.toLowerCase()) {
-                try {
-                    addItem(formattedName, qty); // Uses new addItem
-                    await window.savePlayerData(); 
-                    addLocalChatMessage(`Admin: Gave self ${qty}x ${formattedName}.`, 'system');
-                } catch (e) {
-                    addLocalChatMessage(`Error giving self item: ${e.message}`, 'error');
-                }
-                return true;
-            }
-            // This command now uses the NEW modifyInventory, so it will work
-            try {
-                const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
-                const querySnapshot = await getDocs(q);
-                if (querySnapshot.empty) {
-                    addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
-                    return true;
-                }
-                const playerDoc = querySnapshot.docs[0];
-                const playerData = playerDoc.data();
-                let currentLocalInv = convertSavedInvToLocal(playerData.inventory || []);
-                const newLocalInv = modifyInventory(currentLocalInv, formattedName, qty); // Uses new modifyInventory
-                const newSavedInv = convertLocalInvToSaved(newLocalInv);
-                await updateDoc(doc(db, "players", playerDoc.id), { inventory: newSavedInv });
-                addLocalChatMessage(`Admin: Gave ${qty}x ${formattedName} to ${playerData.name}.`, 'system');
-            } catch (e) {
-                addLocalChatMessage(`Error giving item: ${e.message}`, 'error');
-            }
-            return true;
-        }
-        if (command === 'setlevel') {
-            const targetName = args[0] ? args[0].toLowerCase() : '';
-            const skill = args[1] ? args[1].toLowerCase() : '';
-            const level = parseInt(args[2]);
-            if (!targetName || !skill || isNaN(level) || level < 1 || level > 99) {
-                addLocalChatMessage("Usage: /setlevel [playername] [skill] [1-99]", 'error');
-                return true;
-            }
-            // +++ NEW: Added 'crafting', 'ranged', 'fishing', 'magic' to admin command +++
-            const validSkills = ['mining', 'blacksmith', 'attack', 'strength', 'defence', 'vitality', 'cooking', 'woodcutting', 'fletching', 'crafting', 'ranged', 'fishing', 'magic'];
-if (!validSkills.includes(skill)) {
-     addLocalChatMessage("Unknown skill.", 'error');
-     return true;
-}
-            const newTotalXP = getTotalXPForLevel(level); 
-            const newSkillData = { level: level, xp: 0, totalXP: newTotalXP };
-            if (targetName === game.name.toLowerCase()) {
-                try {
-                    game[skill] = newSkillData; 
-                    updateSkillUI();
-                    await window.savePlayerData(); 
-                    addLocalChatMessage(`Admin: Set own ${skill} level to ${level}.`, 'system');
-                } catch (e) {
-                    addLocalChatMessage(`Error setting self level: ${e.message}`, 'error');
-                }
-                return true;
-            }
-             try {
-                const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
-                const querySnapshot = await getDocs(q);
-                if (querySnapshot.empty) {
-                    addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
-                    return true;
-                }
-                const playerDoc = querySnapshot.docs[0];
-                await updateDoc(doc(db, "players", playerDoc.id), { [skill]: newSkillData });
-                addLocalChatMessage(`Admin: Set ${playerDoc.data().name}'s ${skill} level to ${level}.`, 'system');
-            } catch (e) {
-                addLocalChatMessage(`Error setting level: ${e.message}`, 'error');
-            }
-            return true;
-        }
-        
-        // +++ NEW: Admin /update command +++
-        if (command === 'update') {
-            const messageText = args.join(' ');
-            if (messageText.length === 0) {
-                addLocalChatMessage("Usage: /update [message]", 'error');
-                return true;
-            }
-            if (messageText.length > 512) {
-              addLocalChatMessage("Error: Update message is too long (max 512 chars).", 'error');
-              return true;
-            }
-
-            try {
-              // Add to the new 'updates' collection
-              await addDoc(collection(db, "updates"), {
-                text: messageText,
-                timestamp: serverTimestamp()
-              });
-              addLocalChatMessage("Update posted.", 'system');
-            } catch (e) {
-              console.error("Error posting update: ", e);
-              addLocalChatMessage("Error posting update.", 'error');
-            
-            }
-            return true;
-        }
-
-        // +++ NEW: Fix Quest Data Command +++
-        if (command === 'fixquests') {
-            // This manually resets the tutorial line to the correct state
-            // Status: Foundation (Done), Chickens (Done), Fishing (Active)
-            const newLineData = { 
-                completed: ['tut_1', 'tut_2'], 
-                activeQuestId: 'tut_2_fishing', 
-                kills: 0 
-            };
-            
-            // 1. Update Local State
-            game.questLines['tutorial'] = newLineData;
-            
-            // 2. Force Save
-            await window.savePlayerData();
-            
-            // 3. Refresh UI
-            addLocalChatMessage("Quest line fixed: Fishing is active, Spider quest restored as completed.", 'system');
-            return true;
-        }
-
-        // +++ NEW: Forget Quest Command (Smart Name Lookup) +++
-        if (command === 'forget') {
-            // Join args to allow spaces in names (e.g., "River Bounty")
-            const inputName = args.join(' '); 
-            
-            if (!inputName) {
-                addLocalChatMessage("Usage: /forget [Quest Name]", 'error');
-                return true;
-            }
-
-            let targetId = inputName; // Default: assume user typed the ID
-            let foundName = inputName;
-
-            // 1. Try to find the ID by searching Quest Names first
-            for (const lineId in QUEST_LINES) {
-                const line = QUEST_LINES[lineId];
-                // Case-insensitive check against quest names
-                const match = line.quests.find(q => q.name.toLowerCase() === inputName.toLowerCase());
-                if (match) {
-                    targetId = match.id;
-                    foundName = match.name;
-                    break;
-                }
-            }
-
-            let found = false;
-            
-            // 2. Remove from history using the ID we found (or the input)
-            for (const lineId in game.questLines) {
-                const lineData = game.questLines[lineId];
-                
-                if (lineData.completed && Array.isArray(lineData.completed)) {
-                    const index = lineData.completed.indexOf(targetId);
-                    
-                    if (index > -1) {
-                        // Remove from completed list
-                        lineData.completed.splice(index, 1);
-                        
-                        // Reset active/kill state
-                        lineData.activeQuestId = null; 
-                        lineData.kills = 0;
-                        
-                        found = true;
-                        addLocalChatMessage(`Admin: Forgot quest '${foundName}'. Re-open the quest tab to see changes.`, 'system');
-                        break; 
-                    }
-                }
-            }
-            
-            if (found) {
-                await window.savePlayerData();
-            } else {
-                addLocalChatMessage(`Quest '${foundName}' not found in your completed history.`, 'error');
-            }
-            return true;
-        }
-
-        // +++ NEW: Admin /messageall command +++
-        if (command === 'messageall') {
-            const messageText = args.join(' ');
-            if (messageText.length === 0) {
-                addLocalChatMessage("Usage: /messageall [message]", 'error');
-                return true;
-            }
-            if (messageText.length > 512) {
-              addLocalChatMessage("Error: Message is too long (max 512 chars).", 'error');
-              return true;
-            }
-
-            try {
-              // Set the broadcast message
-              await setDoc(doc(db, "system", "broadcast"), {
-                message: messageText,
-                timestamp: serverTimestamp()
-              });
-              addLocalChatMessage("Broadcast message sent.", 'system');
-            } catch (e) {
-              console.error("Error sending broadcast: ", e);
-              addLocalChatMessage("Error sending broadcast.", 'error');
-            }
-            return true;
-        }
-        // +++ END NEW +++
-    }
-    
-    // +++ NEW: Check for active session before allowing trade +++
-    
-    if (!game.isSessionActive) {
-      addLocalChatMessage("This tab is not active. Take control to trade.", 'error');
-      return true; // It's a command, but it's blocked.
-    }
-
-    if (messageText.startsWith('/trade ')) {
-      addLocalChatMessage("The trade system is temporarily disabled for maintenance.", 'error');
-      return true;
-    }
-    if (messageText.startsWith('/accepttrade ')) {
-      addLocalChatMessage("The trade system is temporarily disabled for maintenance.", 'error');
-      return true;
-    }
-    return false;
-  }
-  async function initiateTradeRequest(targetName) {
-    try {
-      const targetNameLower = targetName.toLowerCase();
-      const q = query(collection(db, "players"), where("name_lowercase", "==", targetNameLower));
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) {
-        addLocalChatMessage(`Player not found: ${targetName}`, 'error');
-        return;
-      }
-      const targetDoc = querySnapshot.docs[0];
-      const targetUid = targetDoc.id;
-      const targetData = targetDoc.data();
-      await addDoc(collection(db, "tradeRequests"), {
-        fromUid: auth.currentUser.uid,
-        fromName: game.name,
-        toUid: targetUid,
-        toName: targetData.name,
-        status: 'pending',
-        createdAt: serverTimestamp()
-      });
-      addLocalChatMessage(`Trade request sent to ${targetData.name}. It will expire in 60 seconds.`, 'trade');
-    } catch (e) {
-      console.error("Error sending trade request:", e);
-      addLocalChatMessage("Error sending trade request.", 'error');
-    }
-  }
-  async function acceptTradeRequest(requesterName) {
-    try {
-      const myUid = auth.currentUser.uid;
-      const requesterNameLower = requesterName.toLowerCase();
-      const playerQuery = query(collection(db, "players"), where("name_lowercase", "==", requesterNameLower));
-      const playerSnapshot = await getDocs(playerQuery);
-      if (playerSnapshot.empty) {
-        addLocalChatMessage(`Player not found: ${requesterName}`, 'error');
-        return;
-      }
-      const requesterUid = playerSnapshot.docs[0].id;
-      const requesterData = playerSnapshot.docs[0].data();
-      const requestQuery = query(
-        collection(db, "tradeRequests"),
-        where("toUid", "==", myUid),
-        where("status", "==", "pending")
-      );
-      const requestSnapshot = await getDocs(requestQuery);
-      const validRequests = requestSnapshot.docs.filter(doc => {
-          const data = doc.data();
-          return data.fromUid === requesterUid; 
-      });
-      if (validRequests.length === 0) {
-        addLocalChatMessage(`No pending trade request found from ${requesterData.name}. It may have expired.`, 'error');
-        return;
-      }
-      const requestDoc = validRequests[0]; 
-      const tradeSessionRef = doc(collection(db, "tradeSessions"));
-      const tradeSessionData = {
-        status: 'active',
-        createdAt: serverTimestamp(),
-        player1: {
-          uid: requesterUid,
-          name: requesterData.name,
-          offerItems: {},
-          offerGold: 0,
-          accepted: false
-        },
-        player2: {
-          uid: myUid,
-          name: game.name,
-          offerItems: {},
-          offerGold: 0,
-          accepted: false
-        }
-      };
-      const batch = writeBatch(db);
-      batch.set(tradeSessionRef, tradeSessionData);
-      batch.update(requestDoc.ref, { status: 'accepted', sessionId: tradeSessionRef.id });
-      await batch.commit();
-    } catch (e) {
-      console.error("Error accepting trade:", e);
-      addLocalChatMessage("Error accepting trade. Are they busy?", 'error');
-    }
-  }
-  function initTradeListeners() {
-    const myUid = auth.currentUser.uid;
-    if (!myUid) return;
-    if (tradeRequestUnsubscribe) tradeRequestUnsubscribe();
-    tradeSessionUnsubscribes.forEach(unsub => unsub()); 
-    tradeSessionUnsubscribes = []; 
-    isTradeRequestsLoaded = false; 
-    const requestQuery = query(
-      collection(db, "tradeRequests"),
-      where("toUid", "==", myUid),
-      where("status", "==", "pending")
-    );
-    // Trade requests are disabled due to maintenance.
-    tradeRequestUnsubscribe = onSnapshot(requestQuery, () => {
-      isTradeRequestsLoaded = true;
-    }, (error) => console.error("Trade request listener error:", error));
-    const sessionQuery1 = query(
-      collection(db, "tradeSessions"),
-      where("player1.uid", "==", myUid),
-      where("status", "in", ["active", "cancelled"]) 
-    );
-    const sessionQuery2 = query(
-      collection(db, "tradeSessions"),
-      where("player2.uid", "==", myUid),
-      where("status", "in", ["active", "cancelled"]) 
-    );
-    const handleSessionStart = (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        const sessionData = change.doc.data();
-        const sessionId = change.doc.id;
-        if (change.type === "added" && sessionData.status === "active" && !game.inTrade) {
-          openTradeWindow(sessionId, sessionData);
-        } 
-        else if (change.type === "modified" && sessionData.status === "cancelled" && game.inTrade) {
-          if (sessionId === game.activeTradeSessionId) {
-            addLocalChatMessage(`Trade was cancelled.`, 'trade');
-            closeTradeWindow();
-          }
-        }
-      });
-    };
-    tradeSessionUnsubscribes.push( 
-      onSnapshot(sessionQuery1, handleSessionStart, (e) => console.error("Session listener 1:", e))
-    );
-    tradeSessionUnsubscribes.push( 
-      onSnapshot(sessionQuery2, handleSessionStart, (e) => console.error("Session listener 2:", e))
-    );
-  }
-  function openTradeWindow(sessionId, sessionData) {
-    if (game.inTrade) return; 
-    if (game.miningActive) {
-      stopMining();
-      game.wasMiningBeforeTrade = true;
-    }
-    if (game.blacksmithingActive) {
-        stopBlacksmithing();
-        game.wasMiningBeforeTrade = true; 
-    }
-    
-    game.inTrade = true;
-    game.activeTradeSessionId = sessionId;
-    
-    const myUid = auth.currentUser.uid;
-    const myRole = (sessionData.player1.uid === myUid) ? 'player1' : 'player2';
-    const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
-    
-    // --- THIS IS THE FIX ---
-    // Use the session data to initialize the trade state
-    game.myTradeOffer = sessionData[myRole];
-    game.theirTradeOffer = sessionData[theirRole];
-    // --- END FIX ---
-    
-    game.myTradeRole = myRole; 
-
-    const modal = document.getElementById('tradeModal');
-    setText('tradePartnerName', sessionData[theirRole].name);
-    setText('tradeMyGold', formatAmount(game.gold));
-    
-    // Set the gold input to the *correct* initial value
-    document.getElementById('tradeMyGoldOffer').value = game.myTradeOffer.offerGold;
-    document.getElementById('tradeMyGoldOffer').max = game.gold;
-    
-    renderTradeInventory(); 
-    // Render the grids with the data we just loaded
-    renderOfferGrid('tradeMyOfferGrid', game.myTradeOffer.offerItems); 
-    renderOfferGrid('tradeTheirOfferGrid', game.theirTradeOffer.offerItems); 
-    modal.style.display = 'flex'; 
-    if (game.activeTradeListener) game.activeTradeListener(); 
-    game.activeTradeListener = onSnapshot(doc(db, "tradeSessions", sessionId), (doc) => {
-      if (!doc.exists()) {
-        closeTradeWindow();
-        addLocalChatMessage("Trade session was deleted.", 'error');
-        return;
-      }
-      const data = doc.data();
-      if (data.status === 'cancelled') {
-        const errorMsg = data.errorMessage ? `: ${data.errorMessage}` : '.';
-        addLocalChatMessage(`Trade was cancelled${errorMsg}`, 'trade');
-        closeTradeWindow();
-        return;
-      }
-      if (data.status === 'completed') {
-        addLocalChatMessage("Trade complete!", 'trade');
-        closeTradeWindow();
-        return;
-      }
-      // --- THIS IS THE FIX ---
-      // ONLY update THEIR offer from the snapshot
-      game.theirTradeOffer = data[theirRole];
-      
-      // Manually sync our own "accepted" status
-      // This is the ONLY part of our offer we want from the server
-      game.myTradeOffer.accepted = data[myRole].accepted;
-
-      // Render THEIR grid (our grid is updated locally)
-      // We also update our inventory to show correct available amounts
-      renderOfferGrid('tradeTheirOfferGrid', game.theirTradeOffer.offerItems);
-      renderTradeInventory();
-      
-      // We no longer need to check if we're typing, because we are
-      // no longer syncing our own gold value from the server.
-      
-      // ONLY set THEIR gold display
-      setText('tradeTheirGoldOffer', formatAmount(game.theirTradeOffer.offerGold));
-      
-      // Update statuses for both
-      updateTradeAcceptStatus('myTradeStatus', game.myTradeOffer.accepted);
-      updateTradeAcceptStatus('theirTradeStatus', game.theirTradeOffer.accepted);
-      // --- END FIX ---
-      if (game.myTradeOffer.accepted && game.theirTradeOffer.accepted) {
-        document.getElementById('tradeAcceptBtn').disabled = true;
-        document.getElementById('tradeCancelBtn').disabled = true;
-        if (myRole === 'player1') {
-          executeTrade(sessionId, data);
-        }
-      } else {
-         document.getElementById('tradeAcceptBtn').disabled = false;
-         document.getElementById('tradeCancelBtn').disabled = false;
-      }
-    });
-    document.getElementById('tradeCancelBtn').onclick = cancelTrade;
-    document.getElementById('tradeAcceptBtn').onclick = setTradeAccepted;
-    document.getElementById('tradeMyGoldOffer').onchange = updateMyGoldOffer;
-  }
-  function renderTradeInventory() {
-    const grid = document.getElementById('tradeInventoryGrid');
-    grid.innerHTML = '';
-
-    // --- Create a map of available items from all stacks ---
-    const availableItems = new Map();
-    for (const slot of game.inventory) {
-        if (slot) {
-            const currentQty = availableItems.get(slot.name) || 0;
-            availableItems.set(slot.name, currentQty + slot.qty);
-        }
-    }
-    
-    // --- Subtract offered items ---
-    for (const [name, qty] of Object.entries(game.myTradeOffer.offerItems)) {
-        if (availableItems.has(name)) {
-            availableItems.set(name, availableItems.get(name) - qty);
-        }
-    }
-
-    // --- Render the grid based on the calculated map ---
-    availableItems.forEach((qtyAvailable, name) => {
-      if (qtyAvailable <= 0) return; 
-
-      const slotEl = document.createElement('div');
-      slotEl.className = 'inv-slot';
-      slotEl.onclick = () => addItemToOffer(name, qtyAvailable); 
-      let imgName = name.toLowerCase().replace(/\s+/g,'_');
-      if (name === 'Copper Bar') {
-          imgName = 'copperbar';
-      }
-      const img = document.createElement('img');
-      img.src = `images/${imgName}.png`;
-      img.alt = name;
-      slotEl.appendChild(img);
-      const amt = document.createElement('div');
-      amt.className = 'inv-amount';
-      amt.innerText = formatAmount(qtyAvailable);
-      slotEl.appendChild(amt);
-      const tooltipContent = `
-        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${name}</div>
-        <div>Amount: ${qtyAvailable.toLocaleString()}</div>
-        <div style="color:#aaffaa; margin-top: 5px;">Click to offer...</div>
-      `;
-      slotEl.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
-      slotEl.onmouseleave = hideTooltip;
-      grid.appendChild(slotEl);
-    });
-  }
-  function renderOfferGrid(gridId, items) {
-    const grid = document.getElementById(gridId);
-    const isMyOffer = (gridId === 'tradeMyOfferGrid');
-    grid.innerHTML = '';
-    const itemEntries = Object.entries(items);
-    for (let i = 0; i < 16; i++) {
-      const slot = document.createElement('div');
-      if (itemEntries[i]) {
-        const [name, qty] = itemEntries[i];
-        slot.className = 'inv-slot';
-        if (isMyOffer) {
-          slot.onclick = () => removeItemFromOffer(name);
-        }
-        const img = document.createElement('img');
-        let imgName = name.toLowerCase().replace(/\s+/g,'_');
-        if (name === 'Copper Bar') {
-            imgName = 'copperbar';
-        }
-        img.src = `images/${imgName}.png`;
-        img.alt = name;
-        slot.appendChild(img);
-        const amt = document.createElement('div');
-        amt.className = 'inv-amount';
-        amt.innerText = formatAmount(qty);
-        slot.appendChild(amt);
-        const tooltipContent = `
-          <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${name}</div>
-          <div>Amount: ${qty.toLocaleString()}</div>
-          ${isMyOffer ? '<div style="color:#ffaaaa; margin-top: 5px;">Click to remove...</div>' : ''}
-        `;
-        slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
-        slot.onmouseleave = hideTooltip;
-      } else {
-        slot.className = 'inv-slot offer-slot-placeholder';
-      }
-      grid.appendChild(slot);
-    }
-  }
-  function updateTradeAcceptStatus(elementId, isAccepted) {
-    const el = document.getElementById(elementId);
-    if (isAccepted) {
-      el.textContent = 'Accepted';
-      el.classList.add('accepted');
-    } else {
-      el.textContent = 'Not Accepted';
-      el.classList.remove('accepted');
-    }
-  }
-  async function addItemToOffer(itemName, maxQty) {
-    const currentOfferQty = game.myTradeOffer.offerItems[itemName] || 0;
-    let qtyToOffer = 0;
-    if (maxQty === 1) {
-      qtyToOffer = 1;
-    } else {
-      // --- MODIFICATION HERE ---
-      const input = await window.showGamePrompt( // Use window.showGamePrompt
-        `Offer ${itemName}`,
-        `How many ${itemName} do you want to offer? (Max: ${maxQty})`, 
-        maxQty
-      );
-      if (input === null) return; 
-      qtyToOffer = parseInt(input);
-      // --- END MODIFICATION ---
-    }
-    if (isNaN(qtyToOffer) || qtyToOffer <= 0) return;
-    if (qtyToOffer > maxQty) {
-      await window.showGameAlert("Invalid Amount", `You can only offer up to ${maxQty} of this item.`); // Use window.showGameAlert
-      qtyToOffer = maxQty;
-    }
-    const offerItemCount = Object.keys(game.myTradeOffer.offerItems).length;
-    if (!game.myTradeOffer.offerItems[itemName] && offerItemCount >= 16) {
-      await window.showGameAlert("Trade Full", "Your trade offer grid is full (16 unique items)."); // Use window.showGameAlert
-      return;
-    }
-    const newOfferItems = { ...game.myTradeOffer.offerItems };
-    newOfferItems[itemName] = (newOfferItems[itemName] || 0) + qtyToOffer;
-    const myRole = game.myTradeRole;
-    if (!myRole) return; 
-    const newOfferObject = {
-        ...game.myTradeOffer,
-        offerItems: newOfferItems,
-        accepted: false
-    };
-    const updatePayload = {};
-    updatePayload[myRole] = newOfferObject; 
-    const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
-    updatePayload[`${theirRole}.accepted`] = false;
-    
-    game.myTradeOffer = newOfferObject;
-    
-    renderOfferGrid('tradeMyOfferGrid', game.myTradeOffer.offerItems);
-    renderTradeInventory(); 
-
-    try {
-      await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
-    } catch (e) {
-      console.error("Error updating offer:", e);
-      addLocalChatMessage("Error updating offer.", 'error');
-    }
-  }
-  async function removeItemFromOffer(itemName) {
-    const newOfferItems = { ...game.myTradeOffer.offerItems }; 
-    delete newOfferItems[itemName]; 
-    const myRole = game.myTradeRole;
-    if (!myRole) return; 
-    const newOfferObject = {
-        ...game.myTradeOffer,
-        offerItems: newOfferItems,
-        accepted: false
-    };
-    const updatePayload = {};
-    updatePayload[myRole] = newOfferObject; 
-    const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
-    updatePayload[`${theirRole}.accepted`] = false;
-    // --- THIS IS THE FIX ---
-    // 1. Update local state IMMEDIATELY
-    game.myTradeOffer = newOfferObject;
-    
-    // 2. Update local UI IMMEDIATELY
-    renderOfferGrid('tradeMyOfferGrid', game.myTradeOffer.offerItems);
-    renderTradeInventory(); 
-    // --- END FIX ---
-
-    try {
-      // 3. Send the update to the server
-      await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
-    } catch (e) {
-      console.error("Error updating offer:", e);
-    }
-  }
-  async function updateMyGoldOffer(event) {
-    let gold = parseInt(event.target.value);
-    if (isNaN(gold) || gold < 0) gold = 0;
-    if (gold > game.gold) {
-      gold = game.gold;
-      event.target.value = gold;
-    }
-    const myRole = game.myTradeRole;
-    if (!myRole) return; 
-    const newOfferObject = {
-        ...game.myTradeOffer,
-        offerGold: gold,
-        accepted: false
-    };
-    const updatePayload = {};
-    updatePayload[myRole] = newOfferObject; 
-    const theirRole = (myRole === 'player1') ? 'player2' : 'player1';
-    updatePayload[`${theirRole}.accepted`] = false;
-    // --- THIS IS THE FIX ---
-    // 1. Update local state IMMEDIATELY
-    game.myTradeOffer = newOfferObject;
-    // --- END FIX ---
-
-    try {
-      // 2. Send the update to the server
-      await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
-    } catch (e) {
-      console.error("Error updating gold offer:", e);
-    }
-  }
-  async function setTradeAccepted() {
-    document.getElementById('tradeAcceptBtn').disabled = true; 
-    const myRole = game.myTradeRole;
-    if (!myRole) return; 
-    const newOfferObject = {
-        ...game.myTradeOffer,
-        accepted: true 
-    };
-    const updatePayload = {};
-    updatePayload[myRole] = newOfferObject; 
-    try {
-      await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), updatePayload);
-    } catch (e) {
-      console.error("Error accepting trade:", e);
-      document.getElementById('tradeAcceptBtn').disabled = false;
-    }
-  }
-  async function cancelTrade() {
-    document.getElementById('tradeCancelBtn').disabled = true;
-    document.getElementById('tradeAcceptBtn').disabled = true;
-    const sessionId = game.activeTradeSessionId;
-    closeTradeWindow(); 
-    if (sessionId) {
-      try {
-        await updateDoc(doc(db, "tradeSessions", sessionId), {
-          status: 'cancelled'
-        });
-      } catch (e) {
-        console.error("Error updating cancelled trade:", e);
-      }
-    }
-  }
-  function closeTradeWindow() {
-    if (!game.inTrade) return; 
-    if (game.activeTradeListener) {
-      game.activeTradeListener(); 
-      game.activeTradeListener = null;
-    }
-    game.inTrade = false;
-    game.activeTradeSessionId = null;
-    game.myTradeRole = null; 
-    game.myTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
-    game.theirTradeOffer = { offerItems: {}, offerGold: 0, accepted: false };
-    document.getElementById('tradeModal').style.display = 'none';
-    hideTooltip();
-    renderInventoryGrid();
-    updateGoldUI();
-    if (game.wasMiningBeforeTrade) {
-      game.wasMiningBeforeTrade = false;
-      const startBtn = document.getElementById('startMineBtn');
-      const startSmithBtn = document.getElementById('startSmithBtn');
-      if (startBtn) {
-        startMining();
-      } else if (startSmithBtn) { 
-        startBlacksmithing();
-      }
-    }
-  }
-  async function executeTrade(sessionId, sessionData) {
-    try {
-      await runTransaction(db, async (transaction) => {
-        const sessionRef = doc(db, "tradeSessions", sessionId);
-        const player1Ref = doc(db, "players", sessionData.player1.uid);
-        const player2Ref = doc(db, "players", sessionData.player2.uid);
-        const [sessionSnap, p1Snap, p2Snap] = await Promise.all([
-          transaction.get(sessionRef),
-          transaction.get(player1Ref),
-          transaction.get(player2Ref)
-        ]);
-        if (!sessionSnap.exists() || !p1Snap.exists() || !p2Snap.exists()) {
-          throw new Error("A player or session does not exist.");
-        }
-        const trade = sessionSnap.data();
-        const p1Data = p1Snap.data();
-        const p2Data = p2Snap.data();
-        if (trade.status !== 'active') {
-          throw new Error("Trade is no longer active.");
-        }
-        if (!trade.player1.accepted || !trade.player2.accepted) {
-          throw new Error("Both players have not accepted.");
-        }
-        const p1Offer = trade.player1;
-        const p2Offer = trade.player2;
-        const p1LocalInv = convertSavedInvToLocal(p1Data.inventory || []);
-        const p2LocalInv = convertSavedInvToLocal(p2Data.inventory || []);
-        if (p1Data.gold < p1Offer.offerGold) throw new Error(`${p1Data.name} does not have enough gold.`);
-        if (p2Data.gold < p2Offer.offerGold) throw new Error(`${p2Data.name} does not have enough gold.`);
-        
-        // --- This loop now uses the NEW 'checkItem' ---
-        for (const [item, qty] of Object.entries(p1Offer.offerItems)) {
-          if (!checkItem(p1LocalInv, item, qty)) {
-            throw new Error(`${p1Data.name} does not have ${qty} ${item}.`);
-          }
-        }
-        // --- This loop now uses the NEW 'checkItem' ---
-        for (const [item, qty] of Object.entries(p2Offer.offerItems)) {
-          if (!checkItem(p2LocalInv, item, qty)) {
-            throw new Error(`${p2Data.name} does not have ${qty} ${item}.`);
-          }
-        }
-
-        let newP1LocalInv = [...p1LocalInv];
-        let newP2LocalInv = [...p2LocalInv];
-
-        // --- These loops now use the NEW 'modifyInventory' ---
-        for (const [item, qty] of Object.entries(p1Offer.offerItems)) {
-            newP1LocalInv = modifyInventory(newP1LocalInv, item, -qty);
-            newP2LocalInv = modifyInventory(newP2LocalInv, item, +qty);
-        }
-        for (const [item, qty] of Object.entries(p2Offer.offerItems)) {
-            newP2LocalInv = modifyInventory(newP2LocalInv, item, -qty);
-            newP1LocalInv = modifyInventory(newP1LocalInv, item, +qty);
-        }
-        // --- End of new function usage ---
-
-        const newP1SavedInv = convertLocalInvToSaved(newP1LocalInv);
-        const newP2SavedInv = convertLocalInvToSaved(newP2LocalInv);
-        transaction.update(sessionRef, { status: 'completed' });
-        transaction.update(player1Ref, {
-            gold: p1Data.gold - p1Offer.offerGold + p2Offer.offerGold,
-            inventory: newP1SavedInv
-        });
-        transaction.update(player2Ref, {
-            gold: p2Data.gold - p2Offer.offerGold + p1Offer.offerGold,
-            inventory: newP2SavedInv
-        });
-      });
-    } catch (e) {
-      console.error("TRADE FAILED:", e);
-      await updateDoc(doc(db, "tradeSessions", sessionId), { 
-        status: 'cancelled',
-        errorMessage: e.message
-      });
-    }
-  }
 
   // --- LEADERBOARD FUNCTION (Unchanged) ---
   window.renderLeaderboards = async function() {
@@ -17722,8 +17359,8 @@ if (!validSkills.includes(skill)) {
   setInterval(async () => {
     const user = auth.currentUser;
 
-    // Check if user is logged in, is the active session, not in trade, AND THE TAB IS VISIBLE.
-    if (user && game.isSessionActive && !game.inTrade && !document.hidden) {
+    // Check if user is logged in, is the active session, AND THE TAB IS VISIBLE.
+    if (user && game.isSessionActive && !document.hidden) {
         
       // 1. Refresh Lock Heartbeat (WRITE)
       // This update maintains the lock and prevents other tabs from stealing control.
@@ -17755,7 +17392,7 @@ if (!validSkills.includes(skill)) {
       
       // Try one last save
       const user = auth.currentUser;
-      if (user && game.isSessionActive && !game.inTrade) {
+      if (user && game.isSessionActive) {
         window.savePlayerData();
       }
     } catch (err) { /* ignore */ }
@@ -17764,18 +17401,6 @@ if (!validSkills.includes(skill)) {
   // --- MODIFIED: Releases session lock on logout ---
   window.firebaseLogout = async function() {
   try {
-    // 1. If in trade, cancel it first (Existing logic)
-    if (game.inTrade && game.activeTradeSessionId) {
-      try {
-        await updateDoc(doc(db, "tradeSessions", game.activeTradeSessionId), {
-          status: 'cancelled'
-        });
-      } catch (e) {
-        console.warn("Could not cancel active trade on logout:", e);
-      }
-      closeTradeWindow();
-    }
-
     // +++ NEW: STOP ALL ACTIONS +++
     // This is the fix. Stop all intervals and set active flags to false.
     if (game.inCombat) {
@@ -17821,6 +17446,12 @@ if (!validSkills.includes(skill)) {
     
     // 3. Save, then sign out
     await window.savePlayerData();
+    
+    // +++ FIX: Close Settings Modal immediately +++
+    const settingsModal = document.getElementById('settingsModalOverlay');
+    if (settingsModal) settingsModal.style.display = 'none';
+    // +++ END FIX +++
+
     await signOut(auth);
     
     await showGameAlert("Logged Out", "You have been successfully logged out.");
@@ -17897,7 +17528,7 @@ if (!validSkills.includes(skill)) {
       'images/bountyhunterskillicon.jpeg',
 
       // --- Items: Ores & Bars ---
-      'images/copperore.png',
+      'images/copper_ore.png',
       'images/copperbar.png',
       'images/coalore.png',
       'images/ironore.png',
@@ -17996,7 +17627,7 @@ if (!validSkills.includes(skill)) {
       'images/chickenanim.gif',
       'images/cowmonster.png',
       'images/cowanim.webp',
-      'images/cowanim.gif',
+      'images/cowanim.webp',
       'images/ratmonster.jpeg', 
       'images/ratanim.webp',
       'images/rattail.png',
@@ -18020,7 +17651,7 @@ if (!validSkills.includes(skill)) {
     ];
 
    /**
-     * Preloads assets and keeps them alive using a DOM Cache and Heartbeat
+     * Preloads assets using standard onload (Robust & Error-Free)
      * @param {string[]} assetList - Array of image paths
      * @returns {Promise}
      */
@@ -18034,52 +17665,49 @@ if (!validSkills.includes(skill)) {
       const progressBarFill = document.getElementById('loading-bar-fill');
       const progressPercentText = document.getElementById('loading-progress-percent');
       
-      // 1. Get the cache container
       const cacheContainer = document.getElementById('asset-cache');
 
-      // --- NEW: The "Heartbeat" to prevent browser sleeping ---
-      // This slightly changes the style every 10 seconds.
-      // It tricks the browser into keeping the textures in GPU memory.
       if (cacheContainer) {
           setInterval(() => {
-              // Toggle opacity minutely. The user won't see it, but the GPU has to render it.
               cacheContainer.style.opacity = (cacheContainer.style.opacity === '0.001') ? '0.002' : '0.001';
-          }, 10000); // Run every 10 seconds
+          }, 10000); 
       }
-      // -------------------------------------------------------
 
       let loadedCount = 0;
       const totalAssets = assetList.length;
 
       const promises = assetList.map(src => {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           const img = new Image();
           
-          img.src = src;
-          
-          // Force decoding
-          img.decode()
-            .then(() => {
-              // 2. Append to the hidden div so it stays in RAM
+          // +++ CHANGED: Use .onload instead of .decode() +++
+          // This is the standard way to load images. It is much less strict
+          // and will accept your files exactly as they are.
+          img.onload = () => {
               if (cacheContainer) {
                   cacheContainer.appendChild(img);
               }
-              
-              loadedCount++;
-              
-              // Update Progress Bar
-              const percent = Math.round((loadedCount / totalAssets) * 100);
-              if (progressBarFill) progressBarFill.style.width = percent + '%';
-              if (progressPercentText) progressPercentText.innerText = percent + '%';
-              
+              updateProgress();
               resolve();
-            })
-            .catch((err) => {
-              console.warn(`[Preloader] Failed to decode: ${src}`, err);
-              resolve(); // Resolve anyway to keep game loading
-            });
+          };
+
+          img.onerror = () => {
+              // If a file is truly missing, we log a simple warning but keep loading
+              console.warn(`[Preloader] Could not load: ${src}`);
+              updateProgress();
+              resolve();
+          };
+
+          img.src = src;
         });
       });
+
+      function updateProgress() {
+          loadedCount++;
+          const percent = Math.round((loadedCount / totalAssets) * 100);
+          if (progressBarFill) progressBarFill.style.width = percent + '%';
+          if (progressPercentText) progressPercentText.innerText = percent + '%';
+      }
 
       return Promise.all(promises);
     }
