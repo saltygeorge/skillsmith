@@ -435,6 +435,7 @@ button.primary:hover { background: var(--accent-hover); }
   transform-origin: center;
   animation: rise 900ms ease-out forwards;
   box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+  white-space: nowrap; /* <--- Forces text to stay on one line */
 }
 @keyframes rise {
   0% { transform: translateY(0); opacity: 1; }
@@ -1597,6 +1598,194 @@ button.primary:hover { background: var(--accent-hover); }
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
+/* --- Farm Interactive Overlay Styles --- */
+.interactive-container {
+  position: relative;
+  width: 100%;
+  max-width: 420px; /* Matches your image size constraint */
+  margin: 0 auto;   /* Centers the container */
+}
+
+.interactive-bg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  border: 2px solid var(--accent);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.interactive-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+
+/* The interactive shapes */
+.farm-zone {
+  fill: rgba(255, 255, 255, 0.0); /* Invisible by default */
+  stroke: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hover effect: Uses the gradient defined in HTML */
+.farm-zone:hover {
+  fill: url(#goldHoverGradient); 
+  stroke: none;     /* <--- Removed the outline */
+  stroke-width: 0;  /* <--- Set width to 0 */
+  filter: drop-shadow(0 0 8px var(--gold)); 
+}
+
+/* --- Garden SVG Styles --- */
+.garden-zone {
+  fill: transparent;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.garden-zone:hover {
+  fill: rgba(255, 215, 0, 0.3); /* Gold highlight */
+  stroke: var(--gold);
+  stroke-width: 2;
+}
+
+/* --- NEW: Wet Soil Styles (Overrides Gold) --- */
+.garden-zone.watered-soil {
+  fill: rgba(80, 50, 20, 0.4); /* Brown tint for wet dirt */
+  stroke: #8B4513; /* SaddleBrown border */
+  stroke-width: 2;
+}
+
+.garden-zone.watered-soil:hover {
+  fill: rgba(100, 60, 30, 0.6); /* Darker brown on hover */
+  stroke: #A0522D; /* Sienna border on hover */
+}
+
+.crop-svg-img {
+  pointer-events: none; /* Click passes through to the polygon */
+  filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+}
+
+.planting-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-bottom: 1px solid #444;
+  cursor: pointer;
+  background: var(--panel-bg);
+  color: #fff;
+}
+.planting-menu-item:hover {
+  background: var(--accent);
+}
+.planting-menu-item img {
+  width: 32px;
+  height: 32px;
+}
+
+/* --- Garden SVG Styles --- */
+.garden-zone {
+  fill: transparent;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.garden-zone:hover {
+  fill: rgba(255, 215, 0, 0.3); /* Gold highlight */
+  stroke: var(--gold);
+  stroke-width: 2;
+}
+
+.crop-svg-img {
+  pointer-events: none; /* Click passes through to the polygon */
+  filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+}
+
+/* --- Farm Slot Styles --- */
+.coop-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px; 
+  justify-content: center;
+  width: 100%;
+  /* NEW: Restrict width to force 3 items per row (3 items x ~100px + gaps = ~320px) */
+  max-width: 330px; 
+  margin: 20px auto 0 auto; /* Centers the container block itself */
+}
+
+.chicken-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90px; /* Reduced width from 120px */
+  background: rgba(0,0,0,0.2);
+  padding: 5px; /* Reduced padding */
+  border-radius: 8px;
+  border: 1px solid #553322;
+  position: relative;
+}
+
+.chicken-img-active {
+  width: 70px; /* Reduced size from 100px */
+  height: 70px;
+  object-fit: contain;
+  cursor: help;
+}
+
+.chicken-img-locked {
+  width: 70px; /* Reduced size from 100px */
+  height: 70px;
+  object-fit: contain;
+  filter: brightness(0.2) grayscale(100%); /* Darken effect */
+  opacity: 0.7;
+}
+
+.feed-btn {
+  margin-top: 5px;
+  padding: 4px 8px;
+  font-size: 12px;
+  width: 100%;
+}
+
+/* --- Cow Slot Styles --- */
+.cow-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90px; 
+  background: rgba(0,0,0,0.2);
+  padding: 5px; 
+  border-radius: 8px;
+  border: 1px solid #553322;
+  position: relative;
+}
+
+.cow-img-active {
+  width: 70px; 
+  height: 70px;
+  object-fit: contain;
+  cursor: help;
+}
+
+.cow-img-locked {
+  width: 70px; 
+  height: 70px;
+  object-fit: contain;
+  filter: brightness(0.2) grayscale(100%); 
+  opacity: 0.7;
+}
+
+
+
 </style>
 </head>
 <body>
@@ -1779,6 +1968,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="lotteryActionIcon" src="images/lotteryicon.jpeg" alt="Lottery" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="questsActionIcon" src="images/questbuttonicon.jpg" alt="Quests" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="huntingBoardActionIcon" src="images/huntingboard.jpeg" alt="Hunting Board" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="personalFarmActionIcon" src="images/farmicon.jpeg" alt="My Farm" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
             </div>
           </div>
 
@@ -1801,6 +1991,324 @@ button.primary:hover { background: var(--accent-hover); }
 
             <div class="action-buttons" style="margin-top: 20px;">
               <button id="hubHuntingBoard_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubPersonalFarm" class="hub-screen">
+            <h2>My Farm</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Manage your crops and livestock.</div>
+            
+            <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
+                
+                <div class="interactive-container">
+                    <img src="images/personalfarm.jpeg" alt="Personal Farm" class="interactive-bg">
+                    
+                    <svg class="interactive-overlay" viewBox="0 0 488 300" preserveAspectRatio="none">
+                        
+                        <defs>
+                          <radialGradient id="goldHoverGradient" cx="50%" cy="50%" r="70%" fx="50%" fy="50%">
+                            <stop offset="0%" style="stop-color:rgb(255, 215, 0); stop-opacity:0" />
+                            <stop offset="100%" style="stop-color:rgb(255, 215, 0); stop-opacity:0.5" />
+                          </radialGradient>
+                        </defs>
+
+                        <polygon class="farm-zone" 
+                                 points="155,192 306,192 306,273 155,273" 
+                                 onclick="handleBarnClick(); playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');" 
+                                 onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>The Barn</div>Manage Cows'); playGlobalSound('sounds/soundeffects/cowbuttonsoundeffect.mp3');" 
+                                 onmouseleave="hideTooltip()">
+                        </polygon>
+
+                        <polygon class="farm-zone" 
+                                 points="18,218 105,190 105,273 18,273" 
+                                 onclick="handleChickenCoopClick(); playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');" 
+                                 onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Chicken Coop</div>Manage Chickens'); playGlobalSound('sounds/soundeffects/chickenbuttonsoundeffect.mp3');" 
+                                 onmouseleave="hideTooltip()">
+                        </polygon>
+
+                        <polygon class="farm-zone" 
+                                 points="352,208 395,208 395,248 352,248" 
+                                 onclick="handleWindmillClick()" 
+                                 onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Windmill</div>Process Flour')" 
+                                 onmouseleave="hideTooltip()">
+                        </polygon>
+
+                        <polygon class="farm-zone" 
+                                 points="408,210 467,210 467,270 408,270" 
+                                 onclick="handleWellClick(); playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');" 
+                                 onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>The Well</div>Fresh Water'); playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');" 
+                                 onmouseleave="hideTooltip()">
+                        </polygon>
+
+                    </svg>
+                </div>
+
+                <div style="width: 100%; max-width: 420px; display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <button id="goToGardenBtn" class="primary" style="padding: 8px 16px; font-size: 18px;" onmouseenter="showTooltip(event, 'Go to Garden')" onmouseleave="hideTooltip()">
+                        &#10140; </button>
+                </div>
+
+            </div>
+
+            <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
+              <button id="hubPersonalFarm_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubGarden" class="hub-screen">
+            <h2>The Garden</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Grow your own crops. 1 min per stage.</div>
+            
+            <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
+                
+                <div class="interactive-container" style="height: 320px;">
+                    <img src="images/cropfield.jpeg" alt="The Garden" class="interactive-bg" style="width: 100%; height: 100%; object-fit: cover; object-position: top;">
+                    
+                    <svg class="interactive-overlay" viewBox="0 0 600 400" preserveAspectRatio="none">
+                        
+                        <polygon id="garden-poly-0" 
+                                 points="113,192 199,192 191,225 98,225" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 0)"></polygon>
+                        
+                        <image id="garden-img-0" 
+                               href="" 
+                               x="101" y="152" width="100" height="100" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>
+
+                               <polygon id="garden-poly-1" 
+                                 points="212,192 296,192 296,225 205,225" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 1)"></polygon>
+                        
+                        <image id="garden-img-1" 
+                               href="" 
+                               x="204" y="152" width="100" height="100" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>
+
+                               <polygon id="garden-poly-2" 
+                                 points="309,192 394,192 402,225 309,225" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 2)"></polygon>
+                        
+                        <image id="garden-img-2" 
+                               href="" 
+                               x="305" y="152" width="100" height="100" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>
+
+                               <polygon id="garden-poly-3" 
+                                 points="406,192 492,192 507,225 415,225" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 3)"></polygon>
+                        
+                        <image id="garden-img-3" 
+                               href="" 
+                               x="407" y="152" width="100" height="100" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>
+
+                        <polygon id="garden-poly-4" 
+                                 points="92,236 189,236 181,273 73,273" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 4)"></polygon>
+                        
+                        <image id="garden-img-4" 
+                               href="" 
+                               x="85" y="198" width="100" height="100" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>
+
+                        <polygon id="garden-poly-5" 
+                                 points="203,236 296,236 296,272 194,272" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 5)"></polygon>
+                        
+                        <image id="garden-img-5" 
+                               href="" 
+                               x="200" y="198" width="100" height="100" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>       
+                        
+                        <polygon id="garden-poly-6" 
+                                 points="308,236 405,236 414,272 308,272" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 6)"></polygon>
+                        
+                        <image id="garden-img-6" 
+                               href="" 
+                               x="309" y="198" width="100" height="100" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>       
+                         
+                        <polygon id="garden-poly-7" 
+                                 points="418,236 514,236 530,272 429,272" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 7)"></polygon>
+                        
+                        <image id="garden-img-7" 
+                               href="" 
+                               x="423" y="198" width="100" height="100" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>   
+                               
+                        <polygon id="garden-poly-8" 
+                                 points="68,282 178,282 167,327 46,327" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 8)"></polygon>
+                        
+                        <image id="garden-img-8" 
+                               href="" 
+                               x="62" y="241" width="110" height="110" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>    
+                               
+                        <polygon id="garden-poly-9" 
+                                 points="189,282 298,282 298,327 179,327" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 9)"></polygon>
+                        
+                        <image id="garden-img-9" 
+                               href="" 
+                               x="189" y="241" width="110" height="110" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>   
+                               
+                        <polygon id="garden-poly-10" 
+                                 points="308,282 418,282 429,327 308,327" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 10)"></polygon>
+                        
+                        <image id="garden-img-10" 
+                               href="" 
+                               x="310" y="241" width="110" height="110" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>     
+                               
+                        <polygon id="garden-poly-11" 
+                                 points="430,282 538,282 558,327 440,327" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 11)"></polygon>
+                        
+                        <image id="garden-img-11" 
+                               href="" 
+                               x="435" y="241" width="110" height="110" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>       
+
+                        <polygon id="garden-poly-12" 
+                                 points="39,336 162,336 144,400 6,400" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 12)"></polygon>
+                        
+                        <image id="garden-img-12" 
+                               href="" 
+                               x="25" y="300" width="130" height="130" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>    
+                               
+                        <polygon id="garden-poly-13" 
+                                 points="175,336 298,336 298,400 161,400" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 13)"></polygon>
+                        
+                        <image id="garden-img-13" 
+                               href="" 
+                               x="173" y="300" width="130" height="130" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>     
+                               
+                        <polygon id="garden-poly-14" 
+                                 points="308,336 430,336 446,400 308,400" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 14)"></polygon>
+                        
+                        <image id="garden-img-14" 
+                               href="" 
+                               x="310" y="300" width="130" height="130" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>    
+                               
+                        <polygon id="garden-poly-15" 
+                                 points="444,336 566,336 601,400 461,400" 
+                                 class="garden-zone"
+                                 onclick="handleGardenSlotClick(event, 15)"></polygon>
+                        
+                        <image id="garden-img-15" 
+                               href="" 
+                               x="454" y="300" width="130" height="130" 
+                               class="crop-svg-img" 
+                               style="display:none;"></image>       
+
+                    </svg>
+                </div>
+
+                <div style="width: 100%; max-width: 420px; display: flex; justify-content: flex-start; margin-top: 10px;">
+                    <button id="backToFarmFromGardenBtn" class="primary" style="padding: 8px 16px; font-size: 18px;" onmouseenter="showTooltip(event, 'Back to Farm')" onmouseleave="hideTooltip()">
+                        &#10140; 
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
+              <button id="hubGarden_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubWell" class="hub-screen">
+            <h2>The Well</h2>
+            <div style="margin-top:8px; color:#efe3cf;">The water is cool and crystal clear.</div>
+            <div class="action-buttons" style="margin-top: 20px;">
+              <button id="hubWell_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubBarn" class="hub-screen">
+            <h2>The Barn</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Manage your cattle. Requires <b>Empty Bucket</b> to gather milk.</div>
+            
+            <div style="margin-top: 20px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; width: 90%; max-width: 400px; display: flex; align-items: center; justify-content: space-between; margin-left: auto; margin-right: auto;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img src="images/bucketofmilk.png" style="width: 32px; height: 32px; margin-top: 4px;">
+                    <span id="milkReadyDisplay" style="font-size: 16px; font-weight: bold; color: var(--gold);">0 Ready</span>
+                </div>
+                <button id="collectMilkBtn" class="primary" onclick="collectMilk()">Milk All</button>
+            </div>
+
+            <div id="barnSlotsContainer" class="coop-container" style="margin-top: 20px;">
+                </div>
+
+            <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
+              <button id="hubBarn_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubChickenCoop" class="hub-screen">
+            <h2>Chicken Coop</h2>
+            <div style="margin-top: 20px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; width: 90%; max-width: 400px; display: flex; align-items: center; justify-content: space-between; margin-left: auto; margin-right: auto;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img src="images/egg.png" style="width: 38px; height: 32px; margin-top: 4px;">
+                    <span id="eggCountDisplay" style="font-size: 18px; font-weight: bold; color: var(--gold);">0</span>
+                </div>
+                <button id="collectEggsBtn" class="primary" onclick="collectEggs()">Collect All</button>
+            </div>
+
+            <div id="coopSlotsContainer" class="coop-container" style="margin-top: 20px;">
+                </div>
+
+            <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
+              <button id="hubChickenCoop_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubWindmill" class="hub-screen">
+            <h2>The Windmill</h2>
+            <div style="margin-top:8px; color:#efe3cf;">The massive blades spin slowly in the breeze.</div>
+            <div class="action-buttons" style="margin-top: 20px;">
+              <button id="hubWindmill_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
 
@@ -2066,7 +2574,7 @@ button.primary:hover { background: var(--accent-hover); }
                   </div>
                 </div>
                 <div id="bankPanel">
-                  <h3>Bank Storage</h3>
+                  <h3></h3>
                   <div class="bank-tabs" id="bankTabsContainer">
                       </div>
                   <div class="inventory-grid-wrap" id="bankGridWrap">
@@ -2478,15 +2986,27 @@ const game = {
   stoneforgingActive: false,
   wasStoneForgingBeforeCombat: false,
 
+  gatheringWaterActive: false, // +++ NEW WELL STATE +++
+
   // +++ NEW BOUNTY HUNTING SKILL +++
   bountyhunting: { level: 1, xp: 0, totalXP: 0 },
-  activeBounty: null, // { target: 'Rat', req: 100, kills: 0 }
+  activeBounty: null, 
+
+  // +++ NEW FARMING SKILL +++
+  farming: { level: 1, xp: 0, totalXP: 0 },
   
   // Stores progress: { 'tutorial': { completed: ['tut_1'], activeQuestId: 'tut_2', kills: 0 } }
   questLines: {},
   
   lastSmithingTab: 'copper',
   lastCombatAreaHub: 'hubActions', // +++ NEW +++
+
+  // +++ NEW FARM STATE +++
+  farm: {
+    chickens: [], 
+    cows: [],
+    garden: new Array(16).fill(null) // 16 Crop Tiles
+  },
   
   // +++ NEW MAGIC STATE +++
   autocastSpell: null, 
@@ -2750,7 +3270,12 @@ const VALID_ITEMS = [
   'Sand', // +++ NEW +++
   'Empty Vial', // +++ NEW +++
   'Venom', // +++ NEW +++
-  'Lottery Ticket' // +++ NEW +++
+  'Lottery Ticket', // +++ NEW +++
+  'Empty Bucket', // +++ NEW +++
+  'Bucket of Milk', // +++ NEW +++
+  'Bucket of Water', // +++ NEW +++
+  'Grass Seed',      // +++ NEW +++
+  'Grass'            // +++ NEW +++
 ];
 
 const XP_TABLE = [
@@ -3289,79 +3814,60 @@ const ITEM_STATS = {
 // *** FIX: Expose stats globally so the Inspect tool can read them ***
 window.ITEM_STATS = ITEM_STATS;
 
-const SHOP_INVENTORY = new Array(24).fill(null); // <--- Increased from 20 to 24 to fit 6 columns
+const SHOP_INVENTORY = new Array(24).fill(null);
 SHOP_INVENTORY[0] = { name: 'Bronze Pickaxe', price: 10 };
 SHOP_INVENTORY[1] = { name: 'Bronze Axe', price: 10 };
 SHOP_INVENTORY[2] = { name: 'Fishing Pole', price: 2500 };
 SHOP_INVENTORY[3] = { name: 'Fishing Bait', price: 10 };
-// You can add more items here like:
-// SHOP_INVENTORY[4] = { name: 'Some Item', price: 50 };
+SHOP_INVENTORY[4] = { name: 'Empty Bucket', price: 50 };
+SHOP_INVENTORY[5] = { name: 'Grass Seed', price: 15 }; // Added
+SHOP_INVENTORY[6] = { name: 'Corn Seed', price: 30 };  // Added
 
 // --- NEW: Item Sell Prices ---
 const ITEM_SELL_PRICES = {
-  'Silk': 2, // +++ NEW +++
-  
-  // +++ NEW CLOTH & WIZARD ITEMS +++
+  'Silk': 2,
   'Cloth': 12,
   'Wizard Hat': 30,
   'Wizard Robe': 70,
   'Wizard Trousers': 45,
   'Wizard Boots': 30,
-  
-  // Ores & Resources
   'Copper Ore': 1,
   'Coal Ore': 2,
   'Iron Ore': 4,
   'Softwood': 1,
   'Oak': 3,
-  
-  // Bars
   'Copper Bar': 3,
   'Iron Bar': 10,
-  
-  // Food
   'Raw Chicken': 1,
   'Cooked Chicken': 2,
   'Burnt Chicken': 1,
   'Beef': 2,
   'Cooked Beef': 3,
   'Burnt Beef': 1,
-  
-  // Bronze Tools (Shop items)
   'Bronze Pickaxe': 4,
   'Bronze Axe': 4,
-  
-  // Copper Items
   'Copper Pickaxe': 15,
   'Copper Axe': 15,
   'Copper Helmet': 20,
   'Copper Chestplate': 40,
-  'Copper Platelegs': 25, // +++ NEW +++
+  'Copper Platelegs': 25,
   'Copper Boots': 15,
   'Copper Shortsword': 20,
-  
-  // Iron Items
   'Iron Pickaxe': 50,
   'Iron Axe': 50,
   'Iron Helmet': 60,
   'Iron Chestplate': 120,
-  'Iron Platelegs': 75, // +++ NEW +++
+  'Iron Platelegs': 75,
   'Iron Boots': 55,
   'Iron Shortsword': 65,
-
-  // Fletching Items
   'Feather': 1,
   'Arrow Shaft': 1,
   'Copper Arrow Tip': 2,
   'Unbound Arrow': 3,
   'Copper Arrow': 5,
-
-  // +++ NEW CRYSTAL PRICES +++
   'Earth Crystal Shard': 5,
   'Air Crystal Shard': 8,
   'Water Crystal Shard': 12,
-  
-  // +++ NEW CRAFTING/FLETCHING ITEM SELL PRICES +++
   'Bow String': 3,
   'Unstrung Softwood Bow': 5,
   'Unstrung Oak Bow': 10,
@@ -3373,42 +3879,87 @@ const ITEM_SELL_PRICES = {
   'Leather Body': 25,
   'Leather Chaps': 15,
   'Leather Boots': 8,
-  
-  // +++ NEW FISHING PRICES +++
   'Herring': 2,
   'Trout': 4,
   'Salmon': 8,
-  
-  // +++ NEW COOKED FISH PRICES +++
   'Cooked Herring': 3,
   'Burnt Herring': 1,
   'Cooked Trout': 6,
   'Burnt Trout': 2,
   'Cooked Salmon': 10,
   'Burnt Salmon': 4,
-  
-  // +++ NEW FISHING REQUIREMENTS SELL PRICES +++
   'Fishing Pole': 1000,
   'Fishing Bait': 4,
   'Magic Staff': 50,
-  
-  // +++ NEW ELEMENTAL STONE PRICES +++
   'Earthstone': 10,
   'Airstone': 15,
   'Waterstone': 20,
   'Gold Crown': 50000,
-  'Gold Bar': 250,   // +++ NEW +++
-  'Diamond': 2500,   // +++ NEW +++
-  '1tapper': 0,      // +++ ADMIN ITEM (No Value) +++
-  'Rat Tail': 3,      // +++ NEW ITEM SELL PRICE +++
+  'Gold Bar': 250,
+  'Diamond': 2500,
+  '1tapper': 0,
+  'Rat Tail': 3,
   'Sand': 1,
   'Empty Vial': 5,
   'Venom': 15,
-  'Lottery Ticket': 100
+  'Lottery Ticket': 100,
+  'Empty Bucket': 2,
+  'Bucket of Milk': 15,
+  'Bucket of Water': 5,
+  'Grass Seed': 2,
+  'Grass': 5,
+  'Corn Seed': 5,
+  'Corn': 12 
 };
-// --- END: Item Sell Prices ---
 
-// --- END: Item Stat Definitions ---
+const WELL_GATHER_TIME_MS = 2000;
+
+// +++ NEW: Farming Constants ---
+// 5 Hours, 10 Hours, 12 Hours (in milliseconds)
+const FARM_STAGE_2_TIME = 18000000; // 5 Hours (Visual update)
+const FARM_STAGE_3_TIME = 36000000; // 10 Hours (Visual update)
+const FARM_HARVEST_TIME = 43200000; // 12 Hours (Ready)
+
+const GRASS_SEEDS_REQ = 5;
+
+// +++ FARMING XP CONSTANTS +++
+const HARVEST_GRASS_XP = 15;
+const HARVEST_CORN_XP = 35;
+const COLLECT_MILK_XP = 50; // Per bucket
+const COLLECT_EGG_XP = 25;  // Per egg
+const MAX_EGG_COLLECT_LIMIT = 30; // Cap for "Collect All"
+const GRASS_HARVEST_YIELD_MIN = 3;
+const GRASS_HARVEST_YIELD_MAX = 6;
+
+const CORN_SEEDS_REQ = 3;
+const CORN_HARVEST_YIELD_MIN = 3;
+const CORN_HARVEST_YIELD_MAX = 5;
+
+const CROPS = {
+  'Grass': {
+    seedName: 'Grass Seed',
+    productName: 'Grass',
+    levelReq: 20, // <--- UPDATED to Level 20
+    stages: 3,
+    images: ['grassfirststage.png', 'grasssecondstage.png', 'grassthirdstage.png'],
+    seedImage: 'grassseed.png'
+  },
+  'Corn': {
+    seedName: 'Corn Seed',
+    productName: 'Corn',
+    levelReq: 1, 
+    stages: 3,
+    images: ['cornfirststage.png', 'cornsecondstage.png', 'cornthirdstage.png'],
+    seedImage: 'cornseed.png',
+    // +++ NEW: Manual adjustments for stage positions [Stage 1, Stage 2, Stage 3] +++
+    // Change y: -10 to move UP, y: 10 to move DOWN. x: -10 LEFT, x: 10 RIGHT.
+    stageOffsets: [
+        { x: 0, y: 0 },   // Stage 1: No change (Perfect)
+        { x: 0, y: -10 }, // Stage 2: Moves UP 10px (Adjust this number)
+        { x: 0, y: -10 }  // Stage 3: Moves UP 20px (Adjust this number)
+    ]
+  }
+};
 
 // --- QUEST LINES DATABASE ---
 const QUEST_LINES = {
@@ -4103,6 +4654,24 @@ function renderInventoryGrid(){
               } else if (item.name === 'Fishing Bait') {
                   imgName = 'fishingbait';
               }
+              // +++ NEW BUCKETS +++
+              else if (item.name === 'Empty Bucket' || imgName === 'empty_bucket') {
+                  imgName = 'emptybucket';
+              } else if (item.name === 'Bucket of Milk' || imgName === 'bucket_of_milk') {
+                  imgName = 'bucketofmilk';
+              } else if (item.name === 'Bucket of Water' || imgName === 'bucket_of_water') {
+                  imgName = 'bucketofwater';
+              }
+              // +++ NEW FARM ITEMS +++
+              else if (item.name === 'Grass Seed') {
+                  imgName = 'grassseed';
+              } else if (item.name === 'Grass') {
+                  imgName = 'grass';
+              } else if (item.name === 'Corn Seed') {
+                  imgName = 'cornseed';
+              } else if (item.name === 'Corn') {
+                  imgName = 'corn';
+              }
 
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
@@ -4752,7 +5321,14 @@ function showTooltip(evt, content) {
   moveTooltip(evt);
 }
 
+let tooltipInterval = null; // Global variable for tooltip timer
+
 function hideTooltip() {
+  // Stop any active tooltip updates
+  if (tooltipInterval) {
+    clearInterval(tooltipInterval);
+    tooltipInterval = null;
+  }
   if (!tooltip) return;
   tooltip.style.display = 'none';
 }
@@ -5103,6 +5679,9 @@ function updateSkillUI(){
   createSkillIcon('Stone Forging', 'stoneforging', 'stoneforgingskillicon.jpeg');
   // +++ NEW BOUNTY HUNTING ICON +++
   createSkillIcon('Bounty Hunting', 'bountyhunting', 'bountyhunterskillicon.jpeg');
+  
+  // +++ NEW FARMING ICON +++
+  createSkillIcon('Farming', 'farming', 'farmingskillicon.jpeg');
 }
 
 // +++ NEW: Level Up Popup Logic +++
@@ -5128,7 +5707,8 @@ function showLevelUpPopup(skill, newLevel) {
     'fishing': 'fishingskillicon.jpeg',
     'magic': 'magicskillicon.jpeg',
     'stoneforging': 'stoneforgingskillicon.jpeg',
-    'bountyhunting': 'bountyhunterskillicon.jpeg'
+    'bountyhunting': 'bountyhunterskillicon.jpeg',
+    'farming': 'farmingskillicon.jpeg' // +++ NEW +++
   };
 
   // Format Skill Name (capitalize first letter)
@@ -5236,11 +5816,11 @@ function addXP(skill, amount, delay = 0){
   game[skill].totalXP += amount; 
   game[skill].xp += amount;
 
-  let leveledUp = false; // --- NEW: Add a flag ---
+  let leveledUp = false; 
   while(game[skill].xp >= getNextXP(game[skill].level)){
     game[skill].xp -= getNextXP(game[skill].level);
     game[skill].level++;
-    leveledUp = true; // --- NEW: Set the flag ---
+    leveledUp = true; 
   }
 
   // --- NEW: Check if vitality leveled up and update HP ---
@@ -5252,17 +5832,16 @@ function addXP(skill, amount, delay = 0){
   if (leveledUp) {
       showLevelUpPopup(skill, game[skill].level);
   }
-  // --- END NEW ---
 
   updateSkillUI();
   let barId = '';
   if (skill === 'mining') barId = 'mineProgress';
   if (skill === 'blacksmith') barId = 'smithProgress';
   if (skill === 'woodcutting') barId = 'woodcutProgress';
-  if (skill === 'crafting') barId = 'craftProgress'; // +++ NEW +++
+  if (skill === 'crafting') barId = 'craftProgress'; 
   
-  // +++ ADDED 'crafting', 'fletching', 'fishing', 'stoneforging' TO THIS LIST +++
-  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting' && skill !== 'crafting' && skill !== 'fletching' && skill !== 'fishing' && skill !== 'stoneforging') { // Don't show popup for skilling actions
+  // +++ FIX: Added 'farming' to this exclusion list +++
+  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting' && skill !== 'crafting' && skill !== 'fletching' && skill !== 'fishing' && skill !== 'stoneforging' && skill !== 'farming') { 
     if (delay > 0) {
       setTimeout(() => {
         showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
@@ -5271,8 +5850,7 @@ function addXP(skill, amount, delay = 0){
       showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
     }
  }
-
- }
+}
 
 const MINE_TIME_MS = 1500;
 const MINE_XP = 15;
@@ -9872,6 +10450,27 @@ const STONE_FORGE_EARTH_LVL = 1;
 const STONE_FORGE_AIR_LVL = 20;
 const STONE_FORGE_WATER_LVL = 40;
 
+const CHICKEN_COST = 500;
+const CHICKEN_MAX_HP = 10;
+const CHICKEN_HP_DECAY_MS = 43200000; // 12 Hours (43,200,000 ms)
+const CHICKEN_EGG_TIMER_MS = 43200000; // 12 Hours (43,200,000 ms)
+const CHICKEN_SICK_THRESHOLD = 5;
+const MAX_CHICKENS = 5; 
+
+// +++ NEW COW CONSTANTS +++
+const COW_COST = 1500;
+const COW_MAX_HP = 15; // Cows are tougher
+const COW_HP_DECAY_MS = 43200000; // 12 Hours
+const COW_MILK_TIMER_MS = 43200000; // 12 Hours
+const COW_SICK_THRESHOLD = 5;
+const MAX_COWS = 5;
+
+// +++ NEW: FARM BUILDING COSTS +++
+const COOP_COST = 75000;
+const BARN_COST = 150000;
+const WELL_COST = 30000;
+const GARDEN_COST = 75000; // +++ NEW +++
+
 // +++ NEW BOUNTY HUNTING CONSTANTS +++
 const BOUNTY_TIER_1_TARGETS = ['Rat', 'Spider', 'Chicken', 'Cow', 'Centipede'];
 const BOUNTY_KILL_XP = 8; // XP gained per kill on a bounty target (Reduced from 15)
@@ -9950,6 +10549,1144 @@ function stopStoneForging() {
 // =================================================================
 // +++ NEW: BOUNTY HUNTING FUNCTIONS +++
 // =================================================================
+
+// +++ NEW: PERSONAL FARM FUNCTION +++
+function openPersonalFarmHub() {
+  showMainScreen('hubPersonalFarm');
+}
+
+// +++ NEW: FARM INTERACTION FUNCTIONS +++
+
+async function handleChickenCoopClick() {
+   // Initialize if missing (backward compatibility)
+   if (!game.farm.buildings) game.farm.buildings = { coop: false, barn: false, well: false };
+
+   if (!game.farm.buildings.coop) {
+       const confirmed = await showGameConfirm("Buy Chicken Coop", `Purchase the Chicken Coop for ${formatAmount(COOP_COST)} Gold?`);
+       if (confirmed) {
+           if (game.gold >= COOP_COST) {
+               addGold(-COOP_COST);
+               game.farm.buildings.coop = true;
+               if (typeof window.savePlayerData === 'function') window.savePlayerData();
+               await showGameAlert("Success", "You purchased the Chicken Coop!");
+               
+               // Open after purchase
+               showMainScreen('hubChickenCoop');
+               updateCoopUI(); 
+           } else {
+               await showGameAlert("Not Enough Gold", `You need ${formatAmount(COOP_COST)} Gold.`);
+           }
+       }
+       return;
+   }
+
+   showMainScreen('hubChickenCoop');
+   updateCoopUI(); 
+}
+
+// --- CHICKEN COOP LOGIC ---
+
+function buyChicken() {
+    // Ensure array exists
+    if (!game.farm.chickens) game.farm.chickens = [];
+
+    if (game.farm.chickens.length >= MAX_CHICKENS) {
+        showGameAlert("Coop Full", "You cannot have more than 5 chickens.");
+        return;
+    }
+    if (game.gold < CHICKEN_COST) {
+        showGameAlert("Not Enough Gold", `You need ${CHICKEN_COST} Gold.`);
+        return;
+    }
+    
+    addGold(-CHICKEN_COST);
+    
+    // Add new chicken object to array
+    game.farm.chickens.push({
+        id: Date.now() + Math.random(), // Unique ID
+        hp: 10,
+        lastCalcTime: Date.now(),
+        eggTimer: 0,
+        hpDecayAcc: 0,
+        storedEggs: 0
+    });
+    
+    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    updateCoopUI();
+}
+
+function feedChicken(index) {
+    if (!game.farm.chickens || !game.farm.chickens[index]) return;
+    
+    const c = game.farm.chickens[index];
+    
+    if (c.hp >= CHICKEN_MAX_HP) {
+        showGameAlert("Full Health", "This chicken is already healthy.");
+        return;
+    }
+
+    // Remove 3 Corn
+    if (removeItem('Corn', 3)) {
+        c.hp = Math.min(CHICKEN_MAX_HP, c.hp + 1); // Heal 1 HP
+        
+        // Visual feedback
+        playGlobalSound('sounds/soundeffects/inventorysound.mp3'); // Using generic eat sound
+        updateCoopUI();
+        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    } else {
+        showGameAlert("No Food", "You need 3 Corn to feed the chicken.");
+    }
+}
+
+function collectEggs() {
+    if (!game.farm.chickens) return;
+
+    let eggsToCollect = 0;
+    let remainingCap = MAX_EGG_COLLECT_LIMIT; // 30
+
+    // 1. Calculate how many we can take (max 30) and update chickens
+    game.farm.chickens.forEach(c => {
+        if (remainingCap > 0) {
+            const available = Math.floor(c.storedEggs);
+            const take = Math.min(available, remainingCap);
+            
+            if (take > 0) {
+                c.storedEggs -= take; // Remove taken eggs
+                remainingCap -= take;
+                eggsToCollect += take;
+            }
+        }
+    });
+    
+    if (eggsToCollect <= 0) return;
+    
+    // 2. Check inventory space
+    // Note: This simple check assumes 1 slot is enough. 
+    // If you collect 30 and stack limit is lower, standard addItem handles the overflow logic.
+    if (!canReceiveItem('Egg')) { 
+        showGameAlert("Inventory Full", "Make space to collect eggs.");
+        // In a real scenario, we might revert the eggs to chickens here, 
+        // but for simplicity, we assume visual feedback is enough.
+        return;
+    }
+    
+    // 3. Process Rewards
+    addItem('Egg', eggsToCollect);
+    
+    // Award Farming XP
+    const xpGained = eggsToCollect * COLLECT_EGG_XP;
+    addXP('farming', xpGained);
+    showItemPopup(`+${xpGained} Farming XP`, 'collectEggsBtn', 0);
+    showItemPopup(`+${eggsToCollect} Eggs`, 'collectEggsBtn', 450);
+    
+    if (eggsToCollect === MAX_EGG_COLLECT_LIMIT) {
+        showWarningPopup("Egg Basket Full (Max 30)");
+    }
+    
+    playGlobalSound('sounds/soundeffects/inventorysound.mp3');
+    updateCoopUI();
+    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function updateCoopUI() {
+    const container = document.getElementById('coopSlotsContainer');
+    if (!container) return;
+    
+    // Ensure array exists
+    if (!game.farm.chickens) game.farm.chickens = [];
+
+    container.innerHTML = '';
+
+    // 1. Render Active Chickens
+    game.farm.chickens.forEach((c, index) => {
+        // Calculate visuals
+        const hpPercent = (c.hp / CHICKEN_MAX_HP) * 100;
+        const hpColor = c.hp < 5 ? "#d22" : "#44aa44";
+        
+        const div = document.createElement('div');
+        div.className = 'chicken-slot';
+        div.innerHTML = `
+            <div style="background: #333; width: 80px; height: 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid #000;">
+                <div style="width: ${hpPercent}%; height: 100%; background: ${hpColor}; border-radius: 4px;"></div>
+            </div>
+            
+            <img src="images/personalchicken.png" class="chicken-img-active"
+                 onmouseenter="showChickenTooltip(event, ${index})" 
+                 onmouseleave="hideTooltip()">
+            
+            <button class="primary feed-btn" onclick="feedChicken(${index})" 
+                    onmouseenter="showTooltip(event, 'Feed 3 Corn')" onmouseleave="hideTooltip()">
+                Feed
+            </button>
+        `;
+        container.appendChild(div);
+    });
+
+    // 2. Render "Buy New" Slot (If under limit)
+    if (game.farm.chickens.length < MAX_CHICKENS) {
+        const div = document.createElement('div');
+        div.className = 'chicken-slot';
+        div.style.borderColor = "#444"; // Dimmer border to indicate inactive
+        
+        div.innerHTML = `
+            <div style="height: 8px; margin-bottom: 5px;"></div> <img src="images/personalchicken.png" class="chicken-img-locked">
+            <button class="primary feed-btn" style="background:var(--gold); color:black; font-weight:bold;" onclick="buyChicken()">
+                Buy (${CHICKEN_COST}g)
+            </button>
+        `;
+        container.appendChild(div);
+    }
+
+    // 3. Update Global Egg Counter
+    let globalEggs = 0;
+    game.farm.chickens.forEach(c => {
+        globalEggs += Math.floor(c.storedEggs);
+    });
+    
+    const eggDisplay = document.getElementById('eggCountDisplay');
+    const colBtn = document.getElementById('collectEggsBtn');
+    if (eggDisplay) eggDisplay.innerText = globalEggs;
+    if (colBtn) colBtn.disabled = (globalEggs < 1);
+}
+
+// --- COW BARN LOGIC ---
+
+async function handleBarnClick() {
+   // Initialize if missing
+   if (!game.farm.buildings) game.farm.buildings = { coop: false, barn: false, well: false };
+
+   if (!game.farm.buildings.barn) {
+       const confirmed = await showGameConfirm("Buy The Barn", `Purchase the Barn for ${formatAmount(BARN_COST)} Gold?`);
+       if (confirmed) {
+           if (game.gold >= BARN_COST) {
+               addGold(-BARN_COST);
+               game.farm.buildings.barn = true;
+               if (typeof window.savePlayerData === 'function') window.savePlayerData();
+               await showGameAlert("Success", "You purchased the Barn!");
+               
+               // Open after purchase
+               showMainScreen('hubBarn');
+               updateBarnUI();
+           } else {
+               await showGameAlert("Not Enough Gold", `You need ${formatAmount(BARN_COST)} Gold.`);
+           }
+       }
+       return;
+   }
+
+   showMainScreen('hubBarn');
+   updateBarnUI();
+}
+
+function buyCow() {
+    // Ensure array exists
+    if (!game.farm.cows) game.farm.cows = [];
+
+    if (game.farm.cows.length >= MAX_COWS) {
+        showGameAlert("Barn Full", "You cannot have more than 5 cows.");
+        return;
+    }
+    if (game.gold < COW_COST) {
+        showGameAlert("Not Enough Gold", `You need ${COW_COST} Gold.`);
+        return;
+    }
+    
+    addGold(-COW_COST);
+    
+    game.farm.cows.push({
+        id: Date.now() + Math.random(),
+        hp: 15,
+        lastCalcTime: Date.now(),
+        milkTimer: 0,
+        hpDecayAcc: 0,
+        hasMilk: false // Cows don't stack milk, they just "have it" or not
+    });
+    
+    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    updateBarnUI();
+}
+
+function feedCow(index) {
+    if (!game.farm.cows || !game.farm.cows[index]) return;
+    
+    const c = game.farm.cows[index];
+    
+    if (c.hp >= COW_MAX_HP) {
+        showGameAlert("Full Health", "This cow is already healthy.");
+        return;
+    }
+
+    // Remove 10 Grass
+    if (removeItem('Grass', 10)) {
+        c.hp = Math.min(COW_MAX_HP, c.hp + 2); // Heals 2 HP because it's bigger
+        playGlobalSound('sounds/soundeffects/inventorysound.mp3');
+        updateBarnUI();
+        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    } else {
+        showGameAlert("No Food", "You need 10 Grass to feed the cow.");
+    }
+}
+
+function collectMilk() {
+    if (!game.farm.cows) return;
+
+    // 1. Count cows that have milk ready
+    let milkReadyCount = 0;
+    game.farm.cows.forEach(c => {
+        if (c.hasMilk) milkReadyCount++;
+    });
+
+    if (milkReadyCount <= 0) {
+        showGameAlert("No Milk", "None of your cows are ready to be milked yet.");
+        return;
+    }
+
+    // 2. Check for Empty Buckets
+    let emptyBuckets = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Empty Bucket') emptyBuckets += slot.qty;
+    }
+
+    if (emptyBuckets < 1) {
+        showGameAlert("No Buckets", "You need an Empty Bucket to gather milk.");
+        return;
+    }
+
+    // 3. Calculate how many we can gather (limited by available milk OR available buckets)
+    const amountToGather = Math.min(milkReadyCount, emptyBuckets);
+
+    // 4. Process logic
+    if (removeItem('Empty Bucket', amountToGather)) {
+        addItem('Bucket of Milk', amountToGather);
+        
+        // Award Farming XP
+        const xpGained = amountToGather * COLLECT_MILK_XP;
+        addXP('farming', xpGained);
+        showItemPopup(`+${xpGained} Farming XP`, 'collectMilkBtn', 0);
+        showItemPopup(`+${amountToGather} Milk`, 'collectMilkBtn', 450);
+
+        // Reset the specific cows that were milked
+        let gatheredCount = 0;
+        for (let c of game.farm.cows) {
+            if (c.hasMilk && gatheredCount < amountToGather) {
+                c.hasMilk = false;
+                c.milkTimer = 0; // Reset timer
+                gatheredCount++;
+            }
+        }
+
+        playGlobalSound('sounds/soundeffects/inventorysound.mp3');
+        updateBarnUI();
+        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        
+        if (amountToGather < milkReadyCount) {
+             showGameAlert("Partial Collection", `You collected ${amountToGather} milk, but ran out of buckets for the rest.`);
+        }
+    }
+}
+
+function updateBarnUI() {
+    const container = document.getElementById('barnSlotsContainer');
+    if (!container) return;
+    
+    if (!game.farm.cows) game.farm.cows = [];
+
+    container.innerHTML = '';
+
+    // 1. Render Cows
+    game.farm.cows.forEach((c, index) => {
+        const hpPercent = (c.hp / COW_MAX_HP) * 100;
+        const hpColor = c.hp < 5 ? "#d22" : "#44aa44";
+        
+        // Milk Status Visual
+        let statusIndicator = "";
+        if (c.hasMilk) {
+            // Changed top from 5px to 25px to sit below the HP bar
+            statusIndicator = `<div style="position:absolute; top:25px; right:5px; background:#fff; border-radius:50%; width:12px; height:12px; border:2px solid var(--gold); box-shadow:0 0 5px var(--gold);"></div>`;
+        }
+
+        const div = document.createElement('div');
+        div.className = 'cow-slot';
+        div.innerHTML = `
+            ${statusIndicator}
+            <div style="background: #333; width: 80px; height: 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid #000;">
+                <div style="width: ${hpPercent}%; height: 100%; background: ${hpColor}; border-radius: 4px;"></div>
+            </div>
+            
+            <img src="images/personalcow.png" class="cow-img-active"
+                 onmouseenter="showCowTooltip(event, ${index})" 
+                 onmouseleave="hideTooltip()">
+            
+            <button class="primary feed-btn" onclick="feedCow(${index})" 
+                    onmouseenter="showTooltip(event, 'Feed 10 Grass')" onmouseleave="hideTooltip()">
+                Feed
+            </button>
+        `;
+        container.appendChild(div);
+    });
+
+    // 2. Render "Buy New" Slot
+    if (game.farm.cows.length < MAX_COWS) {
+        const div = document.createElement('div');
+        div.className = 'cow-slot';
+        div.style.borderColor = "#444";
+        div.innerHTML = `
+            <div style="height: 8px; margin-bottom: 5px;"></div>
+            <img src="images/personalcow.png" class="cow-img-locked">
+            <button class="primary feed-btn" style="background:var(--gold); color:black; font-weight:bold;" onclick="buyCow()">
+                Buy (${COW_COST}g)
+            </button>
+        `;
+        container.appendChild(div);
+    }
+
+    // 3. Update Global Milk Counter
+    let milkReady = 0;
+    game.farm.cows.forEach(c => { if(c.hasMilk) milkReady++; });
+    
+    const milkDisplay = document.getElementById('milkReadyDisplay');
+    const colBtn = document.getElementById('collectMilkBtn');
+    if (milkDisplay) milkDisplay.innerText = `${milkReady} Ready`;
+    if (colBtn) colBtn.disabled = (milkReady < 1);
+}
+
+// =================================================================
+// +++ NEW: GARDEN SYSTEM LOGIC (SVG VERSION) +++
+// =================================================================
+
+function renderGarden() {
+  if (!game.farm.garden) game.farm.garden = new Array(16).fill(null);
+
+  game.farm.garden.forEach((slotData, index) => {
+    const poly = document.getElementById(`garden-poly-${index}`);
+    const imgEl = document.getElementById(`garden-img-${index}`);
+
+    if (!poly) return; 
+
+    poly.onmouseleave = hideTooltip;
+
+    // +++ Wet Soil Visual +++
+    if (slotData && slotData.watered) {
+        poly.classList.add('watered-soil');
+    } else {
+        poly.classList.remove('watered-soil');
+    }
+
+    if (slotData) {
+      const cropDef = CROPS[slotData.crop];
+      
+      if (!slotData.watered) {
+         if (imgEl) imgEl.style.display = 'none';
+         poly.onmouseenter = (e) => showTooltip(e, `<div style="color:#ffaaaa;">Needs Water!</div>Click to water`);
+      } else {
+        // +++ NEW TIMING VISUALS +++
+        const elapsed = Date.now() - slotData.waterTime;
+        let stageIndex = 0;
+        
+        // Determine Image Stage (0 = Start, 1 = 5hrs, 2 = 10hrs)
+        if (elapsed >= FARM_STAGE_3_TIME) stageIndex = 2;
+        else if (elapsed >= FARM_STAGE_2_TIME) stageIndex = 1;
+        
+        // Safety check if arrays are smaller
+        stageIndex = Math.min(stageIndex, cropDef.stages - 1);
+        
+        const imgName = cropDef.images[stageIndex];
+
+        if (imgEl) {
+          // Dynamic Positioning
+          if (!imgEl.hasAttribute('data-base-y')) {
+              imgEl.setAttribute('data-base-x', imgEl.getAttribute('x'));
+              imgEl.setAttribute('data-base-y', imgEl.getAttribute('y'));
+          }
+
+          let osX = 0;
+          let osY = 0;
+          if (cropDef.stageOffsets && cropDef.stageOffsets[stageIndex]) {
+              osX = cropDef.stageOffsets[stageIndex].x;
+              osY = cropDef.stageOffsets[stageIndex].y;
+          }
+
+          const baseX = parseFloat(imgEl.getAttribute('data-base-x'));
+          const baseY = parseFloat(imgEl.getAttribute('data-base-y'));
+          imgEl.setAttribute('x', baseX + osX);
+          imgEl.setAttribute('y', baseY + osY);
+
+          imgEl.style.display = 'block';
+          imgEl.setAttribute('href', `images/${imgName}`); 
+          
+          // +++ HARVEST GLOW AT 12 HOURS +++
+          if (elapsed >= FARM_HARVEST_TIME) {
+             imgEl.style.filter = "drop-shadow(0 0 3px #44aa44)"; // Green glow
+             imgEl.style.opacity = "1";
+          } else {
+             imgEl.style.filter = "none";
+             imgEl.style.opacity = "1";
+          }
+        }
+        
+        poly.onmouseenter = (e) => showCropTooltip(e, index);
+      }
+
+    } else {
+      if (imgEl) imgEl.style.display = 'none';
+      poly.onmouseenter = (e) => showTooltip(e, "Empty Plot<br><span style='color:#aaffaa'>Click to plant</span>");
+    }
+  });
+}
+
+function handleGardenSlotClick(e, index) {
+  hideItemContextMenu();
+  const slotData = game.farm.garden[index];
+
+  if (!slotData) {
+    showPlantingMenu(e, index);
+  } else if (!slotData.watered) {
+    waterCrop(e, index);
+  } else {
+    // +++ NEW: Check 12 Hours using new constant +++
+    const elapsed = Date.now() - slotData.waterTime;
+
+    if (elapsed >= FARM_HARVEST_TIME) { 
+      harvestCrop(index);
+    }
+  }
+}
+
+function showPlantingMenu(event, index) {
+  const menu = document.getElementById('itemContextMenu');
+  let menuContent = `<div style="padding:5px 8px; font-weight:bold; color:var(--gold); border-bottom:1px solid #555;">Select Seed</div>`;
+  let hasOptions = false;
+
+  const options = [
+      { name: 'Grass', seed: 'Grass Seed', cost: GRASS_SEEDS_REQ, img: 'grassseed.png' },
+      { name: 'Corn', seed: 'Corn Seed', cost: CORN_SEEDS_REQ, img: 'cornseed.png' }
+  ];
+
+  // +++ NEW: Sort options by Level Requirement (Lowest first) +++
+  options.sort((a, b) => {
+      const levelA = CROPS[a.name] ? CROPS[a.name].levelReq : 1;
+      const levelB = CROPS[b.name] ? CROPS[b.name].levelReq : 1;
+      return levelA - levelB;
+  });
+
+  options.forEach(opt => {
+      let seedCount = 0;
+      for(const slot of game.inventory) {
+        if(slot && slot.name === opt.seed) seedCount += slot.qty;
+      }
+
+      if (seedCount >= opt.cost) {
+         hasOptions = true;
+         
+         // +++ Level Requirement Logic +++
+         const reqLevel = CROPS[opt.name] ? CROPS[opt.name].levelReq : 1;
+         const playerLevel = game.farming.level;
+         const isLocked = playerLevel < reqLevel;
+         const reqColor = isLocked ? '#ff8888' : '#fff'; // Red if locked, White if valid
+         
+         // Disable click if locked
+         const clickAction = isLocked ? '' : `onclick="plantSeed(${index}, '${opt.name}', '${opt.seed}', ${opt.cost})"`;
+         const styleAttr = isLocked ? 'cursor:not-allowed; opacity:0.6;' : '';
+
+         menuContent += `
+           <div class="planting-menu-item" ${clickAction} style="${styleAttr}">
+              <img src="images/${opt.img}">
+              <div>
+                <div>${opt.name}</div>
+                <div style="font-size:11px; color:#aaa;">Cost: ${opt.cost} Seeds</div>
+                <div style="font-size:11px; color:${reqColor};">(Requires Farming Lvl:${reqLevel})</div>
+              </div>
+           </div>
+         `;
+      }
+  });
+
+  if (!hasOptions) {
+    menuContent += `<div style="padding:10px; font-style:italic; color:#999; font-size:12px;">No available seeds.</div>`;
+  }
+
+  menu.innerHTML = menuContent;
+  menu.style.display = 'block';
+  
+  const rect = document.body.getBoundingClientRect();
+  menu.style.left = (event.clientX - rect.left + 5) + 'px';
+  menu.style.top = (event.clientY - rect.top + 5) + 'px';
+
+  setTimeout(() => {
+    document.addEventListener('click', hideItemContextMenu, { once: true });
+  }, 0);
+}
+
+function plantSeed(index, cropName, seedItemName, cost) {
+  if (!removeItem(seedItemName, cost)) {
+    showGameAlert("Error", "Not enough seeds.");
+    return;
+  }
+
+  game.farm.garden[index] = {
+    crop: cropName,
+    stage: 0,
+    watered: false,
+    plantTime: Date.now(),
+    waterTime: 0
+  };
+
+  playGlobalSound('sounds/soundeffects/inventorysound.mp3');
+  renderGarden();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function waterCrop(e, index) {
+  const slotData = game.farm.garden[index];
+  if (!slotData || slotData.watered) return;
+
+  if (!removeItem('Bucket of Water', 1)) {
+    showGameAlert("Water Required", "You need a Bucket of Water.");
+    return;
+  }
+  addItem('Empty Bucket', 1);
+
+  slotData.watered = true;
+  slotData.waterTime = Date.now(); 
+
+  playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');
+  renderGarden();
+  
+  // +++ NEW: Instantly switch tooltip to the timer +++
+  showCropTooltip(e, index);
+
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function harvestCrop(index) {
+  const slotData = game.farm.garden[index];
+  if (!slotData) return;
+
+  const cropDef = CROPS[slotData.crop];
+  
+  // +++ NEW: Check 12 Hour Requirement +++
+  const elapsed = Date.now() - slotData.waterTime;
+  if (elapsed < FARM_HARVEST_TIME) return;
+
+  if (!canReceiveItem(cropDef.productName)) {
+    showGameAlert("Inventory Full", "Clear space to harvest.");
+    return;
+  }
+
+  let min = 1, max = 1;
+  if (slotData.crop === 'Grass') {
+      min = GRASS_HARVEST_YIELD_MIN;
+      max = GRASS_HARVEST_YIELD_MAX;
+  } else if (slotData.crop === 'Corn') {
+      min = CORN_HARVEST_YIELD_MIN;
+      max = CORN_HARVEST_YIELD_MAX;
+  }
+
+  const yieldAmount = Math.floor(Math.random() * (max - min + 1)) + min;
+  addItem(cropDef.productName, yieldAmount);
+  
+  // Award Farming XP
+  let xp = 0;
+  if (slotData.crop === 'Grass') xp = HARVEST_GRASS_XP;
+  else if (slotData.crop === 'Corn') xp = HARVEST_CORN_XP;
+  
+  addXP('farming', xp);
+  
+  showItemPopup(`+${xp} Farming XP`, null, 0);
+  showItemPopup(`+${yieldAmount} ${cropDef.productName}`, null, 450);
+
+  game.farm.garden[index] = null;
+
+  playGlobalSound('sounds/soundeffects/inventorysound.mp3');
+  renderGarden();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function processGardenGrowth(now) {
+  if (!game.farm.garden) return;
+  
+  const isGardenOpen = document.getElementById('hubGarden').classList.contains('active');
+  let needsUpdate = false;
+
+  game.farm.garden.forEach(slot => {
+    if (slot && slot.watered) {
+      const elapsed = now - slot.waterTime;
+      let calculatedStage = 0;
+      
+      // Map time to integer stage for save data consistency
+      if (elapsed >= FARM_STAGE_3_TIME) calculatedStage = 2;
+      else if (elapsed >= FARM_STAGE_2_TIME) calculatedStage = 1;
+      else calculatedStage = 0;
+
+      if (calculatedStage > slot.stage) {
+          slot.stage = calculatedStage;
+          needsUpdate = true;
+      }
+    }
+  });
+
+  if (isGardenOpen) {
+    renderGarden();
+  }
+}
+
+function showCowTooltip(e, index) {
+    // 1. Define Content Generator
+    const getTooltipContent = () => {
+        const c = (game.farm.cows && game.farm.cows[index]) ? game.farm.cows[index] : null;
+        if (!c) return null;
+
+        const timeSinceLastTick = Date.now() - (c.lastCalcTime || Date.now());
+
+        const formatTimer = (ms) => {
+            if (ms < 0) ms = 0;
+            const totalSec = Math.ceil(ms / 1000);
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            return `${h}h ${m < 10 ? '0'+m : m}m ${s < 10 ? '0'+s : s}s`;
+        };
+
+        const currentHpAcc = (c.hpDecayAcc || 0) + timeSinceLastTick;
+        const hpDecayRem = COW_HP_DECAY_MS - currentHpAcc;
+        const nextHunger = formatTimer(hpDecayRem);
+
+        let nextMilk = '';
+        if (c.hasMilk) {
+            nextMilk = "<span style='color:#fff; font-weight:bold;'>Ready to Milk!</span>";
+        } else if (c.hp < COW_SICK_THRESHOLD) {
+            nextMilk = "<span style='color:#ff4d4d;'>Sick (Paused)</span>";
+        } else {
+            const currentMilkAcc = (c.milkTimer || 0) + timeSinceLastTick;
+            const milkRem = COW_MILK_TIMER_MS - currentMilkAcc;
+            nextMilk = formatTimer(milkRem);
+        }
+
+        return `
+            <div style="font-weight:bold; color:var(--gold); margin-bottom:5px; border-bottom:1px solid #555; padding-bottom:3px;">Cow #${index + 1}</div>
+            <div style="font-size:12px; color:#ccc; margin-bottom:5px;">HP: ${c.hp} / ${COW_MAX_HP}</div>
+            <div style="display:flex; justify-content:space-between; gap:15px;">
+                <span>Next Hunger:</span> <span style="color:#fff;">${nextHunger}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:15px;">
+                <span>Next Milk:</span> <span style="color:#aaffaa;">${nextMilk}</span>
+            </div>
+        `;
+    };
+
+    // 2. Initial Show
+    const initialContent = getTooltipContent();
+    if (initialContent) showTooltip(e, initialContent);
+
+    // 3. Loop
+    if (tooltipInterval) clearInterval(tooltipInterval);
+    tooltipInterval = setInterval(() => {
+        const newContent = getTooltipContent();
+        const tooltipEl = document.getElementById('tooltip');
+        if (newContent && tooltipEl && tooltipEl.style.display !== 'none') {
+            tooltipEl.innerHTML = newContent;
+        } else {
+            hideTooltip();
+        }
+    }, 100);
+}
+
+// +++ NEW: Real-Time Crop Tooltip +++
+function showCropTooltip(e, index) {
+    const getTooltipContent = () => {
+        const slot = (game.farm.garden && game.farm.garden[index]) ? game.farm.garden[index] : null;
+        if (!slot || !slot.watered) return null;
+
+        const cropDef = CROPS[slot.crop];
+        const elapsed = Date.now() - slot.waterTime;
+        
+        let remaining = 0;
+        let statusText = "";
+        let timerColor = "#fff";
+
+        if (elapsed >= FARM_HARVEST_TIME) {
+            statusText = `<span style="color:#aaffaa; font-weight:bold;">Ready to Harvest!</span>`;
+            timerColor = "#aaffaa";
+            remaining = 0;
+        } else if (elapsed >= FARM_STAGE_3_TIME) {
+            // Between 10 and 12 hours
+            statusText = `<span style="color:#ccc;">Ripening... (Stage 3/3)</span>`;
+            remaining = FARM_HARVEST_TIME - elapsed;
+        } else if (elapsed >= FARM_STAGE_2_TIME) {
+            // Between 5 and 10 hours
+            statusText = `<span style="color:#ccc;">Growing... (Stage 2/3)</span>`;
+            remaining = FARM_STAGE_3_TIME - elapsed;
+        } else {
+            // Less than 5 hours
+            statusText = `<span style="color:#ccc;">Sprouting... (Stage 1/3)</span>`;
+            remaining = FARM_STAGE_2_TIME - elapsed;
+        }
+
+        const formatTimer = (ms) => {
+            if (ms < 0) ms = 0;
+            const totalSec = Math.ceil(ms / 1000);
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            return `${h}h ${m}m ${s}s`;
+        };
+
+        return `
+            <div style="font-weight:bold; color:var(--gold); margin-bottom:5px; border-bottom:1px solid #555; padding-bottom:3px;">${slot.crop}</div>
+            <div style="margin-bottom:5px;">${statusText}</div>
+            <div style="display:flex; justify-content:space-between; gap:15px; font-size:12px;">
+                <span>Next Stage:</span> <span style="color:${timerColor}; font-family:monospace; font-size:14px;">${remaining <= 0 ? 'Ready' : formatTimer(remaining)}</span>
+            </div>
+        `;
+    };
+
+    // Initial Show
+    const initialContent = getTooltipContent();
+    if (initialContent) showTooltip(e, initialContent);
+
+    // Loop
+    if (tooltipInterval) clearInterval(tooltipInterval);
+    tooltipInterval = setInterval(() => {
+        const newContent = getTooltipContent();
+        const tooltipEl = document.getElementById('tooltip');
+        if (newContent && tooltipEl && tooltipEl.style.display !== 'none') {
+            tooltipEl.innerHTML = newContent;
+        } else {
+            hideTooltip();
+        }
+    }, 1000); // Update once a second since times are long
+}
+
+// +++ NEW: Chicken Tooltip Logic (Multi-Chicken) +++
+function showChickenTooltip(e, index) {
+    // 1. Define the function that generates the HTML content
+    const getTooltipContent = () => {
+        // Check if chicken exists at index
+        const c = (game.farm.chickens && game.farm.chickens[index]) ? game.farm.chickens[index] : null;
+        if (!c) return null;
+
+        const timeSinceLastTick = Date.now() - (c.lastCalcTime || Date.now());
+
+        // Updated to show Hours : Minutes : Seconds
+        const formatTimer = (ms) => {
+            if (ms < 0) ms = 0;
+            const totalSec = Math.ceil(ms / 1000);
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            // Format: 1h 05m 09s
+            return `${h}h ${m < 10 ? '0'+m : m}m ${s < 10 ? '0'+s : s}s`;
+        };
+
+        const currentHpAcc = (c.hpDecayAcc || 0) + timeSinceLastTick;
+        const hpDecayRem = CHICKEN_HP_DECAY_MS - currentHpAcc;
+        const nextHunger = formatTimer(hpDecayRem);
+
+        let nextEgg = '';
+        if (c.hp < CHICKEN_SICK_THRESHOLD) {
+            nextEgg = "<span style='color:#ff4d4d;'>Sick (Paused)</span>";
+        } else {
+            const currentEggAcc = (c.eggTimer || 0) + timeSinceLastTick;
+            const eggRem = CHICKEN_EGG_TIMER_MS - currentEggAcc;
+            nextEgg = formatTimer(eggRem);
+        }
+
+        return `
+            <div style="font-weight:bold; color:var(--gold); margin-bottom:5px; border-bottom:1px solid #555; padding-bottom:3px;">Chicken #${index + 1}</div>
+            <div style="font-size:12px; color:#ccc; margin-bottom:5px;">HP: ${c.hp} / ${CHICKEN_MAX_HP}</div>
+            <div style="display:flex; justify-content:space-between; gap:15px;">
+                <span>Next Hunger:</span> <span style="color:#fff;">${nextHunger}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:15px;">
+                <span>Next Egg:</span> <span style="color:#aaffaa;">${nextEgg}</span>
+            </div>
+        `;
+    };
+
+    // 2. Initial Show
+    const initialContent = getTooltipContent();
+    if (initialContent) showTooltip(e, initialContent);
+
+    // 3. Clear & Start Interval
+    if (tooltipInterval) clearInterval(tooltipInterval);
+
+    tooltipInterval = setInterval(() => {
+        const newContent = getTooltipContent();
+        const tooltipEl = document.getElementById('tooltip');
+        
+        if (newContent && tooltipEl && tooltipEl.style.display !== 'none') {
+            tooltipEl.innerHTML = newContent;
+        } else {
+            hideTooltip();
+        }
+    }, 100);
+}
+
+// --- FARM LOOP (Runs every 1s via master loop) ---
+function processFarmLogic() {
+    const now = Date.now();
+    
+    // 1. Process Chickens
+    if (game.farm.chickens && game.farm.chickens.length > 0) {
+        let needsUpdate = false;
+        for (let i = game.farm.chickens.length - 1; i >= 0; i--) {
+            const c = game.farm.chickens[i];
+            const elapsed = now - (c.lastCalcTime || now);
+            if (elapsed < 1000) continue;
+
+            c.lastCalcTime = now;
+            if (!c.hpDecayAcc) c.hpDecayAcc = 0;
+            c.hpDecayAcc += elapsed;
+
+            if (c.hpDecayAcc >= CHICKEN_HP_DECAY_MS) {
+                c.hp -= 1;
+                c.hpDecayAcc -= CHICKEN_HP_DECAY_MS;
+                needsUpdate = true;
+                if (c.hp <= 0) {
+                    game.farm.chickens.splice(i, 1);
+                    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+                    showGameAlert("Chicken Died", "One of your chickens starved to death.");
+                    continue; 
+                }
+            }
+            if (c.hp >= CHICKEN_SICK_THRESHOLD) {
+                if (!c.eggTimer) c.eggTimer = 0;
+                c.eggTimer += elapsed;
+                if (c.eggTimer >= CHICKEN_EGG_TIMER_MS) {
+                    c.storedEggs += 1;
+                    c.eggTimer -= CHICKEN_EGG_TIMER_MS;
+                    needsUpdate = true;
+                }
+            }
+        }
+        if (needsUpdate) updateCoopUI();
+    }
+
+    // 2. Process Cows
+    if (game.farm.cows && game.farm.cows.length > 0) {
+        let cowUpdate = false;
+        for (let i = game.farm.cows.length - 1; i >= 0; i--) {
+            const c = game.farm.cows[i];
+            const elapsed = now - (c.lastCalcTime || now);
+            if (elapsed < 1000) continue;
+
+            c.lastCalcTime = now;
+            if (!c.hpDecayAcc) c.hpDecayAcc = 0;
+            c.hpDecayAcc += elapsed;
+
+            if (c.hpDecayAcc >= COW_HP_DECAY_MS) {
+                c.hp -= 1;
+                c.hpDecayAcc -= COW_HP_DECAY_MS;
+                cowUpdate = true;
+                if (c.hp <= 0) {
+                    game.farm.cows.splice(i, 1);
+                    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+                    showGameAlert("Cow Died", "One of your cows starved to death.");
+                    continue; 
+                }
+            }
+            if (c.hp >= COW_SICK_THRESHOLD && !c.hasMilk) {
+                if (!c.milkTimer) c.milkTimer = 0;
+                c.milkTimer += elapsed;
+                if (c.milkTimer >= COW_MILK_TIMER_MS) {
+                    c.hasMilk = true;
+                    c.milkTimer = 0;
+                    cowUpdate = true;
+                }
+            }
+        }
+        if (cowUpdate) updateBarnUI();
+    }
+
+    // 3. Process Garden
+    processGardenGrowth(now);
+}
+
+function handleWindmillClick() {
+   showMainScreen('hubWindmill');
+}
+
+async function handleWellClick() {
+   // Initialize if missing
+   if (!game.farm.buildings) game.farm.buildings = { coop: false, barn: false, well: false };
+
+   if (!game.farm.buildings.well) {
+       const confirmed = await showGameConfirm("Buy The Well", `Restore the Well for ${formatAmount(WELL_COST)} Gold?`);
+       if (confirmed) {
+           if (game.gold >= WELL_COST) {
+               addGold(-WELL_COST);
+               game.farm.buildings.well = true;
+               if (typeof window.savePlayerData === 'function') window.savePlayerData();
+               await showGameAlert("Success", "You restored the Well!");
+               
+               // Open after purchase
+               openWellHub();
+           } else {
+               await showGameAlert("Not Enough Gold", `You need ${formatAmount(WELL_COST)} Gold.`);
+           }
+       }
+       return;
+   }
+
+   openWellHub();
+}
+
+// +++ NEW: GARDEN PURCHASE LOGIC +++
+async function handleGardenClick() {
+   // Initialize if missing
+   if (!game.farm.buildings) game.farm.buildings = { coop: false, barn: false, well: false, garden: false };
+
+   if (!game.farm.buildings.garden) {
+       const confirmed = await showGameConfirm("Buy The Garden", `Clear the land for a Garden for ${formatAmount(GARDEN_COST)} Gold?`);
+       if (confirmed) {
+           if (game.gold >= GARDEN_COST) {
+               addGold(-GARDEN_COST);
+               game.farm.buildings.garden = true;
+               if (typeof window.savePlayerData === 'function') window.savePlayerData();
+               await showGameAlert("Success", "You purchased the Garden!");
+               
+               // Open after purchase
+               showMainScreen('hubGarden');
+           } else {
+               await showGameAlert("Not Enough Gold", `You need ${formatAmount(GARDEN_COST)} Gold.`);
+           }
+       }
+       return;
+   }
+
+   showMainScreen('hubGarden');
+}
+
+function openWellHub() {
+  game.shopOpen = false;
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  stopCraftingBowString();
+  stopFishing();
+  stopStoneForging();
+  stopCookingChicken();
+  stopWoodcutting();
+
+  const wrapper = document.getElementById('hubWell');
+  
+  // Inject the UI with Progress Bar
+  wrapper.innerHTML = `
+    <h2>The Well</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: Empty Bucket.</div>
+    
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="wellProgress"></div>
+        <div class="progress-text" id="wellProgressText"></div>
+      </div>
+    </div>
+
+    <div class="action-buttons" style="margin-top: 20px;">
+      <button id="startWaterBtn" class="primary">Gather Water</button>
+      <button id="stopWaterBtn" class="primary" style="background:#555; display:none;">Stop</button>
+      <button id="hubWell_ReturnBtn" class="primary" style="background:#666;">Return</button>
+    </div>
+  `;
+
+  // Re-attach listeners
+  document.getElementById('startWaterBtn').onclick = startGatheringWater;
+  document.getElementById('stopWaterBtn').onclick = stopGatheringWater;
+  document.getElementById('hubWell_ReturnBtn').onclick = openPersonalFarmHub; // Return to Farm view
+
+  showMainScreen('hubWell');
+}
+
+async function startGatheringWater() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "Session not active.");
+    return;
+  }
+
+  // Check Inventory for Empty Bucket
+  let hasBucket = false;
+  for (const slot of game.inventory) {
+    if (slot && slot.name === 'Empty Bucket') {
+      hasBucket = true;
+      break;
+    }
+  }
+
+  if (!hasBucket) {
+    await showGameAlert("Requirement", "You need an Empty Bucket to gather water.");
+    return;
+  }
+
+  if (game.gatheringWaterActive) return;
+
+  game.gatheringWaterActive = true;
+  document.getElementById('startWaterBtn').style.display = 'none';
+  document.getElementById('stopWaterBtn').style.display = 'inline-block';
+  
+  game.progressFrame = setTimeout(() => gatheringWaterLoop(Date.now(), Date.now()), 16);
+}
+
+function gatheringWaterLoop(timestamp, startTime) {
+  if (!game.gatheringWaterActive) return;
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= WELL_GATHER_TIME_MS) {
+    // 1. Check for bucket again (in case they dropped it mid-action)
+    let hasBucket = false;
+    for (const slot of game.inventory) {
+      if (slot && slot.name === 'Empty Bucket') {
+        hasBucket = true;
+        break;
+      }
+    }
+
+    if (!hasBucket) {
+      showGameAlert("Out of Buckets", "You ran out of empty buckets.");
+      stopGatheringWater();
+      return;
+    }
+
+    // 2. Process Swap
+    removeItem('Empty Bucket', 1);
+    addItem('Bucket of Water', 1);
+    
+    showItemPopup('+1 Bucket of Water', 'wellProgress', 0);
+    
+    // Reset UI
+    const bar = document.getElementById('wellProgress');
+    if (bar) bar.style.width = '0%';
+    
+    // 3. Restart Loop
+    const overdueTime = elapsed - WELL_GATHER_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    return gatheringWaterLoop(Date.now(), newStartTime);
+
+  } else {
+    // Update Progress Bar
+    const progress = (elapsed / WELL_GATHER_TIME_MS) * 100;
+    const bar = document.getElementById('wellProgress');
+    if (bar) bar.style.width = progress + '%';
+    
+    game.progressFrame = setTimeout(() => gatheringWaterLoop(Date.now(), startTime), 16);
+  }
+}
+
+function stopGatheringWater() {
+  game.gatheringWaterActive = false;
+  if(game.progressFrame) clearTimeout(game.progressFrame);
+  
+  const bar = document.getElementById('wellProgress');
+  if(bar) bar.style.width = '0%';
+  
+  const startBtn = document.getElementById('startWaterBtn');
+  if(startBtn) startBtn.style.display = 'inline-block';
+  
+  const stopBtn = document.getElementById('stopWaterBtn');
+  if(stopBtn) stopBtn.style.display = 'none';
+  
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
 
 function openHuntingBoard() {
   showMainScreen('hubHuntingBoard');
@@ -13486,7 +15223,8 @@ function renderBankTabs() {
                 'oak_bow': 'oakbow', 'cow_hide': 'cowhide', 'leather': 'leather', 'leather_hood': 'leatherhood',
                 'leather_body': 'leatherarmor', 'leather_chaps': 'leatherpants', 'leather_boots': 'leatherboots',
                 'herring': 'herring', 'trout': 'trout', 'salmon': 'salmon', 'fishing_pole': 'fishingpole',
-                'fishing_bait': 'fishingbait'
+                'fishing_bait': 'fishingbait', 'empty_bucket': 'emptybucket', 'bucket_of_milk': 'bucketofmilk', 
+                'bucket_of_water': 'bucketofwater', 'grass_seed': 'grassseed', 'corn_seed': 'cornseed'
             };
             
             if (overrides[imgName]) {
@@ -13731,6 +15469,24 @@ function renderBankGrid() {
                   imgName = 'fishingpole';
               } else if (item.name === 'Fishing Bait') {
                   imgName = 'fishingbait';
+              }
+              // +++ NEW BUCKETS +++
+              else if (item.name === 'Empty Bucket' || imgName === 'empty_bucket') {
+                  imgName = 'emptybucket';
+              } else if (item.name === 'Bucket of Milk' || imgName === 'bucket_of_milk') {
+                  imgName = 'bucketofmilk';
+              } else if (item.name === 'Bucket of Water' || imgName === 'bucket_of_water') {
+                  imgName = 'bucketofwater';
+              }
+              // +++ NEW FARM ITEMS +++
+              else if (item.name === 'Grass Seed') {
+                  imgName = 'grassseed';
+              } else if (item.name === 'Grass') {
+                  imgName = 'grass';
+              } else if (item.name === 'Corn Seed') {
+                  imgName = 'cornseed';
+              } else if (item.name === 'Corn') {
+                  imgName = 'corn';
               }
 
               // --- END OF FIX ---
@@ -14300,7 +16056,16 @@ function resetGameState() {
 
   // +++ NEW RESET BOUNTY +++
   game.bountyhunting = { level: 1, xp: 0, totalXP: 0 };
+  game.farming = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
   game.activeBounty = null;
+
+  // Reset Farm
+  game.farm = {
+    chickens: [],
+    cows: [],
+    garden: new Array(16).fill(null),
+    buildings: { coop: false, barn: false, well: false, garden: false } // +++ NEW +++
+  };
 
   game.questLines = {}; // +++ FIX: RESET QUESTS +++
 
@@ -14455,8 +16220,8 @@ function closeSettings() {
  * @param {string} src - The path to the sound file
  */
 // +++ NEW: Hub Screen Toggler Function +++
-// +++ ADDED hubHuntingBoard +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubActiveCombat'];
+// +++ ADDED hubWell +++
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -14467,6 +16232,7 @@ function showMainScreen(screenIdToShow) {
   stopCraftingBowString();
   stopFishing(); 
   stopStoneForging(); // +++ NEW +++
+  stopGatheringWater(); // +++ NEW +++
   game.shopOpen = false;
   hideTooltip();
 
@@ -14507,6 +16273,11 @@ function showMainScreen(screenIdToShow) {
   // +++ NEW: Special case for crafting hub +++
   if (screenIdToShow === 'hubCrafting') {
     renderCraftingItems();
+  }
+
+  // +++ NEW: Special case for Garden hub +++
+  if (screenIdToShow === 'hubGarden') {
+    renderGarden();
   }
   
   // Special case: if we're showing the mine hub, apply level locks
@@ -14550,7 +16321,8 @@ function showMainScreen(screenIdToShow) {
   }
 }
 
-function playGlobalSound(src) {
+// Exposed to window so HTML elements can use it inline
+window.playGlobalSound = function(src) {
   if (game.settings.isSfxMuted) return; // Use new sfxMuted setting
   try {
     const sound = new Audio(src);
@@ -14559,7 +16331,7 @@ function playGlobalSound(src) {
   } catch (e) {
     console.warn("Could not play sound", src, e);
   }
-}
+};
 
 /**
  * Renders the Shop grid UI
@@ -14592,7 +16364,11 @@ function renderShopGrid() {
       else if (item.name === 'Bronze Axe') imgName = 'bronzeaxe';
       else if (item.name === 'Fishing Pole') imgName = 'fishingpole';
       else if (item.name === 'Fishing Bait') imgName = 'fishingbait';
-      // Add more image name fixes here if needed
+      else if (item.name === 'Empty Bucket') imgName = 'emptybucket';
+      // +++ NEW SEED FIX +++
+      else if (item.name === 'Grass Seed') imgName = 'grassseed';
+      else if (item.name === 'Corn Seed') imgName = 'cornseed';
+      // +++ END NEW +++
       
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
@@ -14914,6 +16690,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // +++ NEW BOUNTY TOOLTIP +++
   document.getElementById('huntingBoardActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Hunting Board</div>Take on bounties');
   document.getElementById('huntingBoardActionIcon').onmouseleave = hideTooltip;
+
+  // +++ NEW PERSONAL FARM LISTENERS +++
+  document.getElementById('personalFarmActionIcon').onclick = openPersonalFarmHub;
+  document.getElementById('hubPersonalFarm_ReturnBtn').onclick = backToActions;
+  document.getElementById('personalFarmActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Farm</div>Manage crops & livestock');
+  document.getElementById('personalFarmActionIcon').onmouseleave = hideTooltip;
+  
+  // Listeners for inside the Farm buildings (Return to the Farm view)
+  document.getElementById('hubBarn_ReturnBtn').onclick = openPersonalFarmHub;
+  document.getElementById('hubChickenCoop_ReturnBtn').onclick = openPersonalFarmHub;
+  document.getElementById('hubWindmill_ReturnBtn').onclick = openPersonalFarmHub;
+  document.getElementById('hubWell_ReturnBtn').onclick = openPersonalFarmHub;
+
+  // +++ NEW: Garden Navigation +++
+  document.getElementById('goToGardenBtn').onclick = handleGardenClick;
+  const backToFarmBtn = document.getElementById('backToFarmFromGardenBtn');
+  if (backToFarmBtn) {
+      backToFarmBtn.onclick = openPersonalFarmHub;
+      backToFarmBtn.style.transform = "rotate(180deg)"; // Flip the arrow to point left
+  }
+  document.getElementById('hubGarden_ReturnBtn').onclick = backToActions;
 
   // --- Hub Lottery Listeners ---
   document.getElementById('lotteryActionIcon').onclick = openLotteryHub;
@@ -15562,7 +17359,8 @@ function renderInspectEquipment(equipment, frame) {
         'Copper Platelegs': 'copperplatelegs', 'Iron Platelegs': 'ironplatelegs', 'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 
         'Copper Arrow': 'copperarrow', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
-        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', '1tapper': '1tapper', 'Pet Spider': 'petspider'
+        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', '1tapper': '1tapper', 'Pet Spider': 'petspider',
+        'Empty Bucket': 'emptybucket', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater'
     };
 
     slots.forEach(slotType => {
@@ -15987,7 +17785,14 @@ function renderInspectEquipment(equipment, frame) {
           xp: game.bountyhunting.xp,
           totalXP: game.bountyhunting.totalXP
         },
+        farming: {
+          level: game.farming.level,
+          xp: game.farming.xp,
+          totalXP: game.farming.totalXP
+        },
         activeBounty: game.activeBounty || null,
+        
+        farm: game.farm, // +++ NEW: Save Farm Data +++
         
         questLines: game.questLines, // +++ NEW: Save Quest Line Data +++
         // +++ END NEW SAVE LOGIC +++
@@ -16161,6 +17966,18 @@ window.inspectPlayer = async function(playerName) {
         }
 
         const data = snap.data();
+
+        // +++ FIX: CHECK NAME BEFORE LOCKING +++
+        // If the player has no name, they are still in the registration/creation phase.
+        // We must NOT attempt to acquire a session lock yet, or it will error.
+        if (!data.name) {
+          authScreen.style.display = 'none';
+          startScreen.style.display = 'block'; 
+          gameScreen.style.display = 'none';
+          return; // Stop here!
+        }
+        // +++ END FIX +++
+
         const lock = data.activeSession;
         const now = Date.now();
 
@@ -16441,7 +18258,115 @@ window.inspectPlayer = async function(playerName) {
         } else {
           game.bountyhunting = { level: 1, xp: 0, totalXP: 0 }; 
         }
+
+        // +++ NEW FARMING LOAD +++
+        if (data.farming) {
+          game.farming.level = data.farming.level || 1;
+          game.farming.xp = data.farming.xp || 0;
+          game.farming.totalXP = data.farming.totalXP || getTotalXPForLevel(data.farming.level - 1) + data.farming.xp || 0; 
+        } else {
+          game.farming = { level: 1, xp: 0, totalXP: 0 }; 
+        }
         game.activeBounty = data.activeBounty || null;
+        
+        // +++ NEW FARM LOADING & OFFLINE CALC (MULTI-CHICKEN & COWS) +++
+        game.farm = data.farm || { chickens: [], cows: [] };
+        if (!game.farm.cows) game.farm.cows = []; 
+        // +++ NEW: Init buildings if missing +++
+        if (!game.farm.buildings) {
+            game.farm.buildings = { coop: false, barn: false, well: false, garden: false };
+        }
+        
+        // Define constants locally
+        const _HP_DECAY_MS = 43200000; // 12 Hours
+        const _EGG_TIMER_MS = 43200000; 
+        const _COW_HP_DECAY = 43200000;
+        const _COW_MILK_TIMER = 43200000; // 12 Hours
+
+        // MIGRATION: Convert old single object to array if it exists
+        if (game.farm.chicken && !game.farm.chickens) {
+            if (game.farm.chicken.active) {
+                game.farm.chickens = [game.farm.chicken];
+            } else {
+                game.farm.chickens = [];
+            }
+            delete game.farm.chicken;
+        }
+        // Safety check
+        if (!game.farm.chickens) game.farm.chickens = [];
+
+        // OFFLINE CALCULATION LOOP
+        // (Variable 'now' is already defined at the top of this function)
+        
+        // Loop backwards to safely handle deaths
+        for (let i = game.farm.chickens.length - 1; i >= 0; i--) {
+            const c = game.farm.chickens[i];
+            const lastCalc = c.lastCalcTime || now;
+            const diff = now - lastCalc;
+
+            if (diff > 1000) {
+                // 1. Calculate HP Loss using local constant
+                const hpLost = Math.floor(diff / _HP_DECAY_MS);
+                
+                const startHp = c.hp;
+                const endHp = startHp - hpLost;
+                
+                if (endHp <= 0) {
+                    // Chicken died while offline
+                    game.farm.chickens.splice(i, 1);
+                    console.log(`Chicken #${i} died while offline.`);
+                } else {
+                    // Chicken survived. Update HP.
+                    c.hp = endHp;
+                    c.lastCalcTime = now;
+                    
+                    // 2. Calculate Eggs using local constant
+                    // Simplified: Only if it ended healthy do we award eggs for the full duration
+                    if (endHp >= 5) {
+                        const eggsGained = Math.floor(diff / _EGG_TIMER_MS);
+                        c.storedEggs = (c.storedEggs || 0) + eggsGained;
+                    }
+                }
+            }
+        }
+
+// COW OFFLINE LOOP
+        for (let i = game.farm.cows.length - 1; i >= 0; i--) {
+            const c = game.farm.cows[i];
+            const lastCalc = c.lastCalcTime || now;
+            const diff = now - lastCalc;
+
+            if (diff > 1000) {
+                // 1. Calculate HP Loss
+                const hpLost = Math.floor(diff / _COW_HP_DECAY);
+                
+                const startHp = c.hp;
+                const endHp = startHp - hpLost;
+                
+                if (endHp <= 0) {
+                    game.farm.cows.splice(i, 1);
+                    console.log(`Cow #${i} died while offline.`);
+                } else {
+                    c.hp = endHp;
+                    c.lastCalcTime = now;
+                    
+                    // 2. Calculate Milk (Only until full)
+                    // If it was already full, nothing happens.
+                    // If not full, check if time passed exceeds required time.
+                    if (!c.hasMilk && endHp >= 5) {
+                        // Add time passed to current accumulator
+                        let potentialProgress = (c.milkTimer || 0) + diff;
+                        if (potentialProgress >= _COW_MILK_TIMER) {
+                            c.hasMilk = true;
+                            c.milkTimer = 0;
+                        } else {
+                            c.milkTimer = potentialProgress;
+                        }
+                    }
+                }
+            }
+        }
+
         // +++ END NEW LOGIC +++
 
         setText('charName', game.name);
@@ -16784,10 +18709,23 @@ window.inspectPlayer = async function(playerName) {
                 return true;
             }
 
-            // +++ FIX: FORCE TITLE CASE (e.g. "empty vial" -> "Empty Vial") +++
-            const itemName = rawNameParts.map(word => {
+            // +++ FIX: FORCE TITLE CASE OR MATCH VALID LIST +++
+            // 1. Generate a default Title Case string (e.g. "Bucket Of Milk")
+            let itemName = rawNameParts.map(word => {
                 return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
             }).join(' ');
+
+            // 2. Check if this item exists in the game's master list (to fix "of", "the", etc.)
+            // We join the raw input to compare against the valid list
+            const rawInput = rawNameParts.join(' ').toLowerCase();
+            
+            // Access the global VALID_ITEMS list
+            if (typeof VALID_ITEMS !== 'undefined') {
+                const officialMatch = VALID_ITEMS.find(i => i.toLowerCase() === rawInput);
+                if (officialMatch) {
+                    itemName = officialMatch; // Use "Bucket of Milk" instead of "Bucket Of Milk"
+                }
+            }
             // +++ END FIX +++
             
             // Case A: Give to Self
@@ -16979,7 +18917,8 @@ window.inspectPlayer = async function(playerName) {
       await showGameAlert("Error", "Failed to send message. Please try again.");
     }
   }
-  function _addLocalMessageToDOM(text, type = 'system') {
+  // Renamed to match Admin Commands
+  function addLocalChatMessage(text, type = 'system') {
     const chatMessagesContainer = document.getElementById('chatMessages');
     if (!chatMessagesContainer) return;
     const msgElement = document.createElement('div');
@@ -17213,7 +19152,7 @@ window.inspectPlayer = async function(playerName) {
         });
         let hadQueuedMessages = localMessageQueue.length > 0;
         localMessageQueue.forEach(msg => {
-          _addLocalMessageToDOM(msg.text, msg.type);
+          addLocalChatMessage(msg.text, msg.type); // Updated name
         });
         localMessageQueue = []; 
         if (hadHistoryMessages || hadQueuedMessages) {
@@ -17355,6 +19294,14 @@ window.inspectPlayer = async function(playerName) {
     }
   });
 
+  // --- Game Loop (Runs every 1s) ---
+  setInterval(() => {
+      // Run Farm Logic locally every second
+      if (game.isSessionActive && typeof processFarmLogic === 'function') {
+          processFarmLogic();
+      }
+  }, 1000);
+
   // --- Autosave runs every 30s, but only performs writes if the tab is visible ---
   setInterval(async () => {
     const user = auth.currentUser;
@@ -17401,57 +19348,44 @@ window.inspectPlayer = async function(playerName) {
   // --- MODIFIED: Releases session lock on logout ---
   window.firebaseLogout = async function() {
   try {
-    // +++ NEW: STOP ALL ACTIONS +++
-    // This is the fix. Stop all intervals and set active flags to false.
-    if (game.inCombat) {
-      runFromCombat(false);
-    }
-    if (game.miningActive) {
-      stopMining();
-    }
-    if (game.blacksmithingActive) {
-      stopBlacksmithing();
-    }
-    if (game.cookingActive) {
-      stopCookingChicken();
-    }
-    if (game.woodcuttingActive) {
-      stopWoodcutting();
-    }
-    if (game.fletchingActive) {
-      stopFletching();
-    }
-    if (game.craftingActive) {
-      stopCraftingBowString();
-    }
-    if (game.fishingActive) {
-      stopFishing();
-    }
-    if (game.stoneforgingActive) { // +++ NEW +++
-      stopStoneForging();
-    }
-    // NEW: Clear autocast on logout
+    // 1. Stop all local game actions
+    if (game.inCombat) runFromCombat(false);
+    if (game.miningActive) stopMining();
+    if (game.blacksmithingActive) stopBlacksmithing();
+    if (game.cookingActive) stopCookingChicken();
+    if (game.woodcuttingActive) stopWoodcutting();
+    if (game.fletchingActive) stopFletching();
+    if (game.craftingActive) stopCraftingBowString();
+    if (game.fishingActive) stopFishing();
+    if (game.stoneforgingActive) stopStoneForging();
+    if (game.gatheringWaterActive) stopGatheringWater();
+    
     game.autocastSpell = null;
     if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
-    // +++ END NEW +++
-    
-    // 2. +++ NEW CRITICAL FIX +++: Release the session lock explicitly
+
+    // 2. Release Session Lock
     if (game.isSessionActive) {
       if (typeof window.releaseSessionLock === 'function') {
-        // Await the lock release before doing anything else
         await window.releaseSessionLock(true);
       }
     }
     stopSessionHeartbeat();
     
-    // 3. Save, then sign out
+    // 3. Save Data
     await window.savePlayerData();
     
-    // +++ FIX: Close Settings Modal immediately +++
-    const settingsModal = document.getElementById('settingsModalOverlay');
-    if (settingsModal) settingsModal.style.display = 'none';
+    // 4. +++ FIX: Unsubscribe from all listeners BEFORE signing out +++
+    // This prevents "Missing Permissions" errors because the listeners won't try to read after auth is gone.
+    if (typeof chatListenerUnsubscribe === 'function') { chatListenerUnsubscribe(); chatListenerUnsubscribe = null; }
+    if (typeof updatesListenerUnsubscribe === 'function') { updatesListenerUnsubscribe(); updatesListenerUnsubscribe = null; }
+    if (typeof broadcastListenerUnsubscribe === 'function') { broadcastListenerUnsubscribe(); broadcastListenerUnsubscribe = null; }
+    if (typeof playerDocListener === 'function') { playerDocListener(); playerDocListener = null; }
     // +++ END FIX +++
 
+    const settingsModal = document.getElementById('settingsModalOverlay');
+    if (settingsModal) settingsModal.style.display = 'none';
+
+    // 5. Sign Out
     await signOut(auth);
     
     await showGameAlert("Logged Out", "You have been successfully logged out.");
@@ -17509,6 +19443,21 @@ window.inspectPlayer = async function(playerName) {
       'images/oceanbutton.png',
       'images/riverbutton.jpeg',
       'images/madmaxcastle.jpeg',
+      // +++ NEW FARM ASSETS +++
+      'images/farmicon.jpeg',
+      'images/personalfarm.jpeg',
+      'images/cropfield.jpeg', 
+      // +++ Garden Assets +++
+      'images/grassseed.png',
+      'images/grassfirststage.png',
+      'images/grasssecondstage.png',
+      'images/grassthirdstage.png',
+      'images/grass.png',
+      'images/cornseed.png',
+      'images/cornfirststage.png',
+      'images/cornsecondstage.png',
+      'images/cornthirdstage.png',
+      'images/corn.png',
 
       // --- Skill Icons ---
       'images/miningskillicon.png',
@@ -17621,6 +19570,10 @@ window.inspectPlayer = async function(playerName) {
       // --- Items: Fishing ---
       'images/fishingpole.png',
       'images/fishingbait.png',
+      
+      // --- Farm Items ---
+      'images/personalchicken.png',
+      'images/egg.png',
 
       // --- Monsters & Animals ---
       'images/chickenmonster.png',
