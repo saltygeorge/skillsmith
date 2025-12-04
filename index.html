@@ -6,6 +6,17 @@
 <title>Rustic Skilling & Crafting Game</title>
 <style>
  /* --- Base / Background --- */
+/* Hide Number Input Arrows */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield; /* This line fixes the warning */
+}
+
 :root {
   --panel-bg: rgba(64, 40, 20, 0.95); /* Deeper, earthier brown */
   /* --- ADD THIS LINE --- */
@@ -2561,20 +2572,38 @@ button.primary:hover { background: var(--accent-hover); }
             <div id="bankContainer" style="width: 100%;">
               <div class="bank-content-wrapper"> 
                 <div id="bankGoldPanel">
-                  <div style="display: flex; align-items: center; gap: 10px;">
-                    <input type="number" id="bankGoldInput" min="0" placeholder="Amount...">
-                    <button id="bankDepositGoldBtn" class="primary">Deposit</button>
-                    <button id="bankWithdrawGoldBtn" class="primary">Withdraw</button>
-                  </div>
-                  <div>
-                    <div>Banked Gold</div>
-                    <div id="bankStoredGold" class="gold-display">0</div>
+                  <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="number" id="bankGoldInput" min="0" style="width: 70px;">
+                    
+                    <button id="bankDepositGoldBtn" class="primary" style="padding: 8px 12px;">Deposit</button>
+                    <button id="bankDepositAllGoldBtn" class="primary" style="padding: 4px 8px; display:flex; align-items:center;" onmouseenter="showTooltip(event, 'Deposit All Gold')" onmouseleave="hideTooltip()">
+                        <img src="images/goldpouch.png" style="width: 24px; height: 24px;">
+                    </button>
+                    
+                    <div style="width: 1px; height: 25px; background: #555; margin: 0 5px;"></div>
+
+                    <button id="bankWithdrawGoldBtn" class="primary" style="padding: 8px 12px;">Withdraw</button>
+                    <button id="bankWithdrawAllGoldBtn" class="primary" style="padding: 4px 8px; display:flex; align-items:center; background: #900;" onmouseenter="showTooltip(event, 'Withdraw All Gold')" onmouseleave="hideTooltip()">
+                        <img src="images/goldpouch.png" style="width: 24px; height: 24px;">
+                    </button>
                   </div>
                 </div>
+
                 <div id="bankPanel">
                   <h3></h3>
-                  <div class="bank-tabs" id="bankTabsContainer">
-                      </div>
+                  
+                  <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--accent); margin-bottom: 5px; padding-bottom: 5px;">
+                    
+                    <div class="bank-tabs" id="bankTabsContainer" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 5px; margin-right: 5px;">
+                        <div style="color: #ccc; font-weight: bold; font-size: 14px;">Bank:</div>
+                        <div id="bankStoredGold" class="gold-display" style="color:var(--gold); font-weight:bold; font-size:16px;">0</div>
+                    </div>
+
+                  </div>
+
                   <div class="inventory-grid-wrap" id="bankGridWrap">
                     <div class="inventory-grid" id="bankGrid"></div>
                   </div>
@@ -3902,12 +3931,12 @@ const ITEM_SELL_PRICES = {
   'Venom': 15,
   'Lottery Ticket': 100,
   'Empty Bucket': 2,
-  'Bucket of Milk': 15,
+  'Bucket of Milk': 250,
   'Bucket of Water': 5,
   'Grass Seed': 2,
-  'Grass': 5,
+  'Grass': 150,
   'Corn Seed': 5,
-  'Corn': 12 
+  'Corn': 80 
 };
 
 const WELL_GATHER_TIME_MS = 2000;
@@ -15846,17 +15875,17 @@ async function depositGold() { // <-- ADD 'async'
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
 
-async function withdrawGold() { // <-- ADD 'async'
+async function withdrawGold() { 
   const inputEl = document.getElementById('bankGoldInput');
   if (!inputEl) return;
   
   let amount = parseInt(inputEl.value);
   if (isNaN(amount) || amount <= 0) {
-    await showGameAlert("Invalid Amount", "Please enter a valid amount."); // <-- USE 'await showGameAlert'
+    await showGameAlert("Invalid Amount", "Please enter a valid amount.");
     return;
   }
   if (amount > game.bankGold) {
-    await showGameAlert("Not Enough Gold", "You don't have that much gold in your bank."); // <-- USE 'await showGameAlert'
+    await showGameAlert("Not Enough Gold", "You don't have that much gold in your bank.");
     return;
   }
 
@@ -15865,9 +15894,49 @@ async function withdrawGold() { // <-- ADD 'async'
 
   inputEl.value = '';
   updateBankGoldUI();
-  updateGoldUI(); // Update main UI
+  updateGoldUI(); 
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
+
+// +++ NEW: Deposit/Withdraw ALL Gold Functions +++
+async function depositAllGold() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "Session not active.");
+    return;
+  }
+  if (game.gold <= 0) {
+    await showGameAlert("No Gold", "You don't have any gold to deposit.");
+    return;
+  }
+
+  const amount = game.gold;
+  game.gold = 0;
+  game.bankGold += amount;
+
+  updateBankGoldUI();
+  updateGoldUI();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+async function withdrawAllGold() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "Session not active.");
+    return;
+  }
+  if (game.bankGold <= 0) {
+    await showGameAlert("Bank Empty", "You don't have any gold in the bank.");
+    return;
+  }
+
+  const amount = game.bankGold;
+  game.bankGold = 0;
+  game.gold += amount;
+
+  updateBankGoldUI();
+  updateGoldUI();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+// +++ END NEW +++
 
 async function dragWithdrawItem(fromBankIndex, toInventoryIndex) {
   // +++ USE ACTIVE TAB +++
@@ -15932,7 +16001,8 @@ async function dragWithdrawItem(fromBankIndex, toInventoryIndex) {
   hideTooltip();
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
-  
+
+
 // =================================================================
 // --- END NEW BANK FUNCTIONS ---
 // =================================================================
@@ -16658,6 +16728,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // --- Hub Bank Listeners ---
   document.getElementById('bankDepositGoldBtn').onclick = depositGold;
   document.getElementById('bankWithdrawGoldBtn').onclick = withdrawGold;
+  
+  // +++ NEW GOLD LISTENERS +++
+  document.getElementById('bankDepositAllGoldBtn').onclick = depositAllGold;
+  document.getElementById('bankWithdrawAllGoldBtn').onclick = withdrawAllGold;
+  // +++ END NEW +++
+
   document.getElementById('hubBank_ReturnBtn').onclick = backToActions;
 
   // --- Tooltips for Hub Icons ---
