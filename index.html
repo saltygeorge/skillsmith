@@ -4485,6 +4485,14 @@ slots.forEach(slotType => {
 
 function updateGoldUI() {
   setText('goldAmountText', formatAmount(game.gold));
+
+  // +++ NEW: Tooltip for exact amount +++
+  const container = document.getElementById('goldDisplay');
+  if (container) {
+    container.style.cursor = 'help'; 
+    container.onmouseenter = (e) => showTooltip(e, `<div style="color:var(--gold); font-weight:bold; font-size:14px;">${game.gold.toLocaleString()} Gold</div>`);
+    container.onmouseleave = hideTooltip;
+  }
 }
 
 function addGold(amount) {
@@ -15559,6 +15567,14 @@ function renderBankGrid() {
 function updateBankGoldUI() {
   setText('bankPlayerGold', formatAmount(game.gold));
   setText('bankStoredGold', formatAmount(game.bankGold));
+
+  // +++ NEW: Tooltip for exact bank amount +++
+  const bankDisplay = document.getElementById('bankStoredGold');
+  if (bankDisplay) {
+    bankDisplay.style.cursor = 'help';
+    bankDisplay.onmouseenter = (e) => showTooltip(e, `<div style="color:var(--gold); font-weight:bold; font-size:14px;">${game.bankGold.toLocaleString()} Gold</div>`);
+    bankDisplay.onmouseleave = hideTooltip;
+  }
 }
 
 /**
