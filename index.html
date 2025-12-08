@@ -453,6 +453,25 @@ button.primary:hover { background: var(--accent-hover); }
   100% { transform: translateY(-46px); opacity: 0; }
 }
 
+@keyframes shake {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  10% { transform: translate(-1px, -2px) rotate(-1deg); }
+  20% { transform: translate(-3px, 0px) rotate(1deg); }
+  30% { transform: translate(3px, 2px) rotate(0deg); }
+  40% { transform: translate(1px, -1px) rotate(1deg); }
+  50% { transform: translate(-1px, 2px) rotate(-1deg); }
+  60% { transform: translate(-3px, 1px) rotate(0deg); }
+  70% { transform: translate(3px, 1px) rotate(-1deg); }
+  80% { transform: translate(-1px, -1px) rotate(1deg); }
+  90% { transform: translate(1px, 2px) rotate(0deg); }
+  100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.shake-animation {
+  animation: shake 0.5s;
+  animation-iteration-count: infinite;
+}
+
 /* --- NEW WARNING POPUP --- */
 .warning-popup {
   position: absolute;
@@ -1980,6 +1999,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="questsActionIcon" src="images/questbuttonicon.jpg" alt="Quests" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="huntingBoardActionIcon" src="images/huntingboard.jpeg" alt="Hunting Board" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="personalFarmActionIcon" src="images/farmicon.jpeg" alt="My Farm" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="petYardActionIcon" src="images/petyardicon.jpeg" alt="Pet Yard" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
             </div>
           </div>
 
@@ -2063,6 +2083,16 @@ button.primary:hover { background: var(--accent-hover); }
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
               <button id="hubPersonalFarm_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubPetYard" class="hub-screen">
+            <h2>Pet Yard</h2>
+            
+            <div id="petYardContent" style="margin-top: 20px;"></div>
+
+            <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
+              <button id="hubPetYard_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
 
@@ -3019,6 +3049,12 @@ const game = {
   bountyhunting: { level: 1, xp: 0, totalXP: 0 },
   activeBounty: null, 
 
+// +++ NEW PET SYSTEM STATE +++
+  petmastery: { level: 1, xp: 0, totalXP: 0 },
+  pets: [], // Array of pet objects { id, type, name, level, xp, hp, lastCalcTime }
+  incubator: { active: false, startTime: 0, eggType: null }, 
+  // +++ END NEW STATE +++
+
   // +++ NEW FARMING SKILL +++
   farming: { level: 1, xp: 0, totalXP: 0 },
   
@@ -3292,8 +3328,8 @@ const VALID_ITEMS = [
   'Magic Staff',
   'Gold Crown',
   '1tapper', // +++ NEW ADMIN ITEM +++
-  'Pet Spider', // +++ NEW PET +++
   'Rat Tail', // +++ NEW ITEM +++
+  'Pet Spider Egg', // +++ NEW PET EGG +++
   'Sand', // +++ NEW +++
   'Empty Vial', // +++ NEW +++
   'Venom', // +++ NEW +++
@@ -3936,8 +3972,7 @@ const ITEM_SELL_PRICES = {
   'Grass Seed': 2,
   'Grass': 150,
   'Corn Seed': 5,
-  'Corn': 80, 
-  'Pet Spider': 10000
+  'Corn': 80
 };
 
 const WELL_GATHER_TIME_MS = 2000;
@@ -3962,6 +3997,36 @@ const GRASS_HARVEST_YIELD_MAX = 6;
 const CORN_SEEDS_REQ = 3;
 const CORN_HARVEST_YIELD_MIN = 3;
 const CORN_HARVEST_YIELD_MAX = 5;
+
+// +++ NEW PET CONSTANTS +++
+const PET_EGG_DROP_RATE = 25000;
+const PET_HATCH_TIME_MS = 7200000; // 2 Hours
+const PET_HP_DECAY_MS = 43200000; // 12 Hours
+const PET_MAX_HP = 10;
+const PET_FEED_XP = 25; // Pet Mastery XP for feeding
+const PET_HATCH_XP = 500; // Pet Mastery XP for hatching
+
+// +++ NEW: EGG CONFIGURATION +++
+const EGG_TYPES = {
+    'Pet Spider Egg': 'Spider'
+    // Future examples:
+    // 'Pet Dragon Egg': 'Dragon',
+    // 'Pet Rock Egg': 'Rock'
+};
+
+const PET_DATA = {
+    'Spider': {
+        name: 'Spider',
+        foodItem: 'Rat Tail',
+        img: 'petspider', // Requires images/petspider.png
+        bonus: (level) => {
+            let dmg = 0;
+            if (level >= 20) dmg += 1;
+            if (level >= 40) dmg += 1;
+            return { physicalDamage: dmg };
+        }
+    }
+};
 
 const CROPS = {
   'Grass': {
@@ -4193,6 +4258,21 @@ function getPlayerCombatStats() {
       }
     }
   }
+
+  // +++ NEW: CALCULATE PET BONUSES +++
+  if (game.equipment.pet) {
+      // Find real pet data to check stats/HP
+      const petData = game.pets.find(p => p.id === game.equipment.pet.id);
+      
+      // Only apply stats if pet exists and is NOT sick (HP > 0)
+      if (petData && petData.hp > 0) {
+          const def = PET_DATA[petData.type];
+          if (def && def.bonus) {
+              const bonuses = def.bonus(petData.level);
+              if (bonuses.physicalDamage) equipmentStats.equipmentDamage += bonuses.physicalDamage;
+          }
+      }
+  }
   
   // 4. Calculate Final Stats (Base + Skills + Equipment)
   const finalStats = {};
@@ -4409,9 +4489,52 @@ slots.forEach(slotType => {
 
     // --- Generate Stat Tooltip HTML ---
     let statsHtml = '';
-    if (itemStats) {
+
+    // +++ NEW: Pet Specific Tooltip Logic +++
+    if (slotType === 'pet' && item) {
+        // Find the actual pet data object from game.pets using the ID stored in equipment
+        const realPet = game.pets.find(p => p.id === item.id);
+        
+        if (realPet) {
+            // 1. Calculate XP Progress
+            const xpNeeded = realPet.level * 100;
+            const xpPercent = Math.min(100, (realPet.xp / xpNeeded) * 100);
+            
+            // 2. Determine HP Color
+            const hpColor = realPet.hp <= 0 ? '#ff4d4d' : (realPet.hp <= 3 ? '#d22' : '#44aa44');
+            
+            // 3. Determine Bonus Text
+            let bonusStr = "No bonus";
+            const petDef = PET_DATA[realPet.type];
+            if (petDef && petDef.bonus) {
+                const b = petDef.bonus(realPet.level);
+                if (b.physicalDamage) bonusStr = `+${b.physicalDamage} Phys Dmg`;
+                // You can add checks here for magic/speed if you add those pet types later
+            }
+            
+            // Override bonus text if sick
+            if (realPet.hp <= 0) bonusStr = "<span style='color:#ff4d4d;'>Sick (Inactive)</span>";
+            else bonusStr = `<span style='color:#aaffaa;'>${bonusStr}</span>`;
+
+            // 4. Build Custom HTML for Pet
+            statsHtml = `
+                <div style="margin-top:2px; font-size:12px; color:#efe3cf;">Lvl ${realPet.level}</div>
+                <div style="font-size:12px; color:#ccc;">HP: <span style="color:${hpColor}">${realPet.hp}/${PET_MAX_HP}</span></div>
+                <div style="font-size:12px; margin-bottom:6px;">${bonusStr}</div>
+                
+                <div style="font-size:10px; color:#aaa; display:flex; justify-content:space-between;">
+                    <span>XP</span>
+                    <span>${Math.floor(realPet.xp)} / ${xpNeeded}</span>
+                </div>
+                <div style="width:100%; height:4px; background:#333; border:1px solid #000; border-radius:2px; margin-bottom:5px;">
+                    <div style="height:100%; width:${xpPercent}%; background:var(--gold);"></div>
+                </div>
+            `;
+        }
+    } 
+    // +++ Standard Item Tooltip Logic +++
+    else if (itemStats) {
       if (itemStats.damage) {
-        // +++ FIX: Check weapon type to display correct label +++
         if (itemStats.weaponType === 'magic') {
            statsHtml += `<div style="color:#aaffaa;">+${itemStats.damage} Magic Damage</div>`;
         } else {
@@ -4446,17 +4569,29 @@ slots.forEach(slotType => {
       if (isTwoHandedBlock) {
          mainSlotEl.onclick = () => unequipItem('weapon');
          mainSlotEl.style.cursor = 'pointer';
+      } else if (slotType === 'pet') {
+         // +++ FIX: Disable click for pet slot +++
+         mainSlotEl.onclick = null;
+         mainSlotEl.style.cursor = 'default';
       } else {
          mainSlotEl.onclick = () => unequipItem(slotType);
       }
       
       if (item) {
         mainSlotEl.onmouseenter = (evt) => {
+          // +++ FIX: Real-Time Pet Tooltip +++
+          if (slotType === 'pet') {
+              showPetTooltip(evt, item.id);
+              return;
+          }
+          // +++ END FIX +++
+
+          let clickText = '<div style="color:#ffaaaa; margin-top: 5px;">Click to unequip...</div>';
           const tooltipContent = `
             <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
             ${qtyHtml} 
             ${statsHtml}
-            <div style="color:#ffaaaa; margin-top: 5px;">Click to unequip...</div>
+            ${clickText}
           `;
           showTooltip(evt, tooltipContent);
         };
@@ -4638,8 +4773,8 @@ function renderInventoryGrid(){
               else if (item.name === 'Wizard Trousers') imgName = 'wizardtrousers';
               else if (item.name === 'Wizard Boots') imgName = 'wizardboots';
               else if (item.name === 'Magic Staff') imgName = 'magicstaff'; // +++ NEW +++
-              else if (item.name === 'Pet Spider') imgName = 'petspider'; // +++ NEW PET +++
-              else if (item.name === 'Rat Tail') imgName = 'rattail'; // +++ NEW ITEM +++
+              else if (item.name === 'Pet Spider Egg') imgName = 'petegg1'; // +++ NEW PET EGG +++
+              else if (item.name === 'Rat Tail') imgName = 'rattail'; // +++ FIX: RESTORE RAT TAIL +++
               else if (item.name === 'Sand') imgName = 'sand'; // +++ NEW +++
               else if (item.name === 'Empty Vial') imgName = 'emptyvial'; // +++ NEW +++
               else if (item.name === 'Venom') imgName = 'venom'; // +++ NEW +++
@@ -4988,8 +5123,7 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Wizard Boots': 'boots',
     'Magic Staff': 'weapon',
     'Gold Crown': 'helmet',
-    '1tapper': 'weapon', // +++ NEW +++
-    'Pet Spider': 'pet' // +++ NEW PET SLOT +++
+    '1tapper': 'weapon' // +++ NEW +++
   };
   const itemSlotType = equipableItems[itemName];
   // --- END NEW ---
@@ -5294,6 +5428,13 @@ async function equipItem(slotType, fromInvIndex) {
  * @param {string} slotType - The type of slot ('helmet', 'chest', 'weapon', 'boots')
  */
 async function unequipItem(slotType) {
+  // +++ FIX: BLOCK PET UNEQUIP IN TAB +++
+  // Silently block pet unequip from this screen.
+  if (slotType === 'pet') {
+      return false;
+  }
+  // +++ END FIX +++
+
   const itemToUnequip = game.equipment[slotType];
   if (!itemToUnequip) return true; // Slot is already empty, consider it a success
 
@@ -5653,18 +5794,30 @@ function updateSkillUI(){
     `;
     
     // --- Create the tooltip content ---
-    const nextXP = getNextXP(data.level);
-    // Calculate progress percentage, ensuring it doesn't exceed 100%
-    const progressPercent = Math.min(100, (data.xp / nextXP) * 100);
+    let progressPercent = 0;
+    let xpText = "";
+    let barColor = "#4caf50"; // Green
+
+    if (data.level >= 100) {
+        // +++ MAX LEVEL LOGIC +++
+        progressPercent = 100;
+        xpText = `XP: ${data.totalXP.toLocaleString()} (Maxed)`;
+        barColor = "var(--gold)"; // Gold bar for max level
+    } else {
+        // Normal Logic
+        const nextXP = getNextXP(data.level);
+        progressPercent = Math.min(100, (data.xp / nextXP) * 100);
+        xpText = `XP: ${data.xp.toLocaleString()} / ${nextXP.toLocaleString()}`;
+    }
     
     const tooltipContent = `
       <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${skillName}</div>
       <div style="font-size: 14px; margin-bottom: 6px;">Level: <span style="font-weight: bold;">${data.level}</span></div>
-      <div>XP: ${data.xp.toLocaleString()} / ${nextXP.toLocaleString()}</div>
-      <div>(Total XP: ${data.totalXP.toLocaleString()})</div>
+      <div>${xpText}</div>
+      ${data.level >= 100 ? '' : `<div>(Total XP: ${data.totalXP.toLocaleString()})</div>`}
       
       <div style="width: 100%; height: 8px; background: #555; border-radius: 4px; margin-top: 8px; border: 1px solid #333;">
-        <div style="height: 100%; width: ${progressPercent}%; background: #4caf50; border-radius: 4px; transition: width 0.2s;"></div>
+        <div style="height: 100%; width: ${progressPercent}%; background: ${barColor}; border-radius: 4px; transition: width 0.2s;"></div>
       </div>
     `;
 
@@ -5718,6 +5871,7 @@ function updateSkillUI(){
   
   // +++ NEW FARMING ICON +++
   createSkillIcon('Farming', 'farming', 'farmingskillicon.jpeg');
+  createSkillIcon('Pet Mastery', 'petmastery', 'petmasteryskillicon.jpeg');
 }
 
 // +++ NEW: Level Up Popup Logic +++
@@ -5744,7 +5898,8 @@ function showLevelUpPopup(skill, newLevel) {
     'magic': 'magicskillicon.jpeg',
     'stoneforging': 'stoneforgingskillicon.jpeg',
     'bountyhunting': 'bountyhunterskillicon.jpeg',
-    'farming': 'farmingskillicon.jpeg' // +++ NEW +++
+    'farming': 'farmingskillicon.jpeg',
+    'petmastery': 'petmasteryskillicon.jpeg' // +++ FIX: Add Pet Mastery Icon +++
   };
 
   // Format Skill Name (capitalize first letter)
@@ -5853,7 +6008,10 @@ function addXP(skill, amount, delay = 0){
   game[skill].xp += amount;
 
   let leveledUp = false; 
-  while(game[skill].xp >= getNextXP(game[skill].level)){
+  
+  // +++ FIX: Stop leveling if max level (100) is reached +++
+  // We check if level < 100 before trying to calculate next XP
+  while(game[skill].level < 100 && game[skill].xp >= getNextXP(game[skill].level)){
     game[skill].xp -= getNextXP(game[skill].level);
     game[skill].level++;
     leveledUp = true; 
@@ -10591,6 +10749,307 @@ function openPersonalFarmHub() {
   showMainScreen('hubPersonalFarm');
 }
 
+function openPetYardHub() {
+  showMainScreen('hubPetYard');
+  renderPetYard('pets'); // Default to pets tab
+}
+
+function formatPetTime(ms) {
+    if (ms < 0) ms = 0;
+    const totalSec = Math.ceil(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    return `${h}h ${m}m`;
+}
+
+function updatePetTimers() {
+    if (!game.pets) return;
+    
+    // Only run if Pet Yard is open and on "My Pets" tab
+    const yard = document.getElementById('hubPetYard');
+    const petsContent = document.getElementById('petYardContent');
+    // Simple check: if the yard is active and we see a timer element, update them
+    if (!yard.classList.contains('active')) return;
+
+    const now = Date.now();
+    
+    game.pets.forEach(pet => {
+        const el = document.getElementById(`pet-timer-${pet.id}`);
+        if (el) {
+            if (pet.hp <= 0) {
+                el.innerHTML = "Status: <span style='color:#ff4d4d'>Sick (Paused)</span>";
+            } else {
+                const elapsed = now - (pet.lastCalcTime || now);
+                const remaining = Math.max(0, PET_HP_DECAY_MS - elapsed);
+                const timeStr = formatPetTime(remaining);
+                
+                // Color it red if less than 1 hour remains
+                const color = remaining < 3600000 ? "#ffaaaa" : "#ccc";
+                el.innerHTML = `Hunger in: <span style='color:${color}'>${timeStr}</span>`;
+            }
+        }
+    });
+}
+
+function renderPetYard(tab) {
+    const container = document.getElementById('petYardContent');
+    if (!container) return;
+
+    let html = `
+        <div class="sub-tabs" style="justify-content: center; margin-bottom: 20px;">
+            <button class="${tab === 'pets' ? 'active' : ''}" onclick="renderPetYard('pets')">My Pets</button>
+            <button class="${tab === 'hatchery' ? 'active' : ''}" onclick="renderPetYard('hatchery')">Hatchery</button>
+        </div>
+    `;
+
+    if (tab === 'pets') {
+        if (!game.pets || game.pets.length === 0) {
+            html += `<div style="text-align:center; color:#888; padding: 20px;">You have no pets yet. Visit the Hatchery!</div>`;
+        } else {
+            html += `<div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">`;
+            
+            game.pets.forEach((pet, index) => {
+                const config = PET_DATA[pet.type];
+                const isEquipped = game.equipment.pet && game.equipment.pet.id === pet.id;
+                const hpPercent = (pet.hp / PET_MAX_HP) * 100;
+                const hpColor = pet.hp <= 0 ? '#555' : (pet.hp <= 3 ? '#d22' : '#44aa44');
+                const status = pet.hp <= 0 ? '<div style="color:#ff4d4d; font-size:10px;">(SICK)</div>' : '';
+                
+                // Bonus Text
+                let bonusText = "No bonus";
+                if (pet.type === 'Spider') {
+                    if (pet.level >= 40) bonusText = "+2 Phys Dmg";
+                    else if (pet.level >= 20) bonusText = "+1 Phys Dmg";
+                }
+
+                // Compact Card Style (Timer moved to Tooltip)
+                html += `
+                <div 
+                    style="background:rgba(0,0,0,0.3); border:2px solid ${isEquipped ? 'var(--gold)' : '#553322'}; border-radius:6px; padding:6px; width:110px; text-align:center;"
+                    onmouseenter="showPetTooltip(event, '${pet.id}')" 
+                    onmouseleave="hideTooltip()"
+                >
+                    <div style="font-weight:bold; color:var(--gold); font-size:12px; margin-bottom:2px;">${pet.type} Lvl ${pet.level}</div>
+                    
+                    <img src="images/${config.img}.png" style="width:48px; height:48px; object-fit:contain; opacity:${pet.hp <= 0 ? '0.5' : '1'};">
+                    ${status}
+                    
+                    <div style="background:#333; width:100%; height:4px; border-radius:2px; margin:4px 0;">
+                        <div style="background:${hpColor}; width:${hpPercent}%; height:100%; border-radius:2px;"></div>
+                    </div>
+                    
+                    <div style="font-size:10px; color:#aaa; margin-top:-2px;">${pet.hp}/${PET_MAX_HP} HP</div>
+                    <div style="font-size:10px; color:#aaffaa; margin:2px 0;">${bonusText}</div>
+
+                    <div style="display:flex; flex-wrap: wrap; gap:4px; justify-content:center; margin-top:6px;">
+                        <button class="primary" style="padding:4px 8px; font-size:11px; flex: 1;" onclick="event.stopPropagation(); feedPet('${pet.id}')">Feed</button>
+                        <button class="primary" style="padding:4px 8px; font-size:11px; flex: 1; background:${isEquipped ? '#900' : 'var(--accent)'};" onclick="event.stopPropagation(); equipPetFromYard('${pet.id}')">
+                            ${isEquipped ? 'Unequip' : 'Equip'}
+                        </button>
+                        <button class="primary" style="padding:4px 8px; font-size:11px; width: 100%; background:#553322; border: 1px solid #774422;" onclick="event.stopPropagation(); sellPet('${pet.id}')">
+                            Sell
+                        </button>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+        }
+    } else if (tab === 'hatchery') {
+        // Incubator Logic
+        const now = Date.now();
+        const isActive = game.incubator.active;
+        const elapsed = isActive ? now - game.incubator.startTime : 0;
+        const isReady = isActive && elapsed >= PET_HATCH_TIME_MS;
+        
+        let displayImg = isActive ? 'incubator_active.png' : 'incubator_empty.png';
+        let buttonHtml = '';
+        let timerHtml = '';
+        let imgClass = ''; // +++ NEW variable for animation class +++
+
+        if (!isActive) {
+            // +++ NEW: DYNAMIC EGG DETECTION +++
+            // 1. Find which eggs the player actually has
+            const availableEggs = [];
+            if (game.inventory) {
+                game.inventory.forEach(slot => {
+                    // If item is in our EGG_TYPES list and not already added to our button list
+                    if (slot && EGG_TYPES[slot.name] && !availableEggs.includes(slot.name)) {
+                        availableEggs.push(slot.name);
+                    }
+                });
+            }
+
+            if (availableEggs.length === 0) {
+                // No eggs found: Generic message
+                timerHtml = `<div style="color:#aaa; margin-bottom:10px;">Requires: Pet Egg</div>`;
+                buttonHtml = `<button class="primary" disabled style="background:#555; opacity:0.7;">Incubate Pet Egg</button>`;
+            } else {
+                // Eggs found: Create a button for each type
+                timerHtml = `<div style="color:#efe3cf; margin-bottom:10px;">Select an egg to incubate:</div>`;
+                buttonHtml = `<div style="display:flex; flex-direction:column; gap:5px; align-items:center;">`;
+                
+                availableEggs.forEach(eggName => {
+                    // Passes the specific Item Name to the start function
+                    buttonHtml += `<button class="primary" onclick="startIncubation('${eggName}')">Incubate ${eggName}</button>`;
+                });
+                
+                buttonHtml += `</div>`;
+            }
+            // +++ END NEW +++
+            
+        } else if (isReady) {
+            buttonHtml = `<button class="primary" style="background:#44aa44; box-shadow:0 0 10px #44aa44;" onclick="hatchEgg()">HATCH!</button>`;
+            timerHtml = `<div style="color:#aaffaa; font-weight:bold; margin-bottom:10px;">Ready to Hatch!</div>`;
+            imgClass = 'shake-animation'; // +++ NEW: Add shake class +++
+        } else {
+            const remaining = PET_HATCH_TIME_MS - elapsed;
+            const mins = Math.ceil(remaining / 60000);
+            buttonHtml = `<button class="primary" disabled style="background:#555; opacity:0.7;">Incubating...</button>`;
+            timerHtml = `<div style="color:var(--gold); font-weight:bold; margin-bottom:10px;">Time left: ${mins}m</div>`;
+        }
+
+        // Vertical Center Fix: Height 320px matches the inventory grid exactly
+        html += `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 320px;">
+                <img src="images/${displayImg}" class="${imgClass}" style="width:120px; height:120px; object-fit:contain; margin-bottom:15px; display: block;">
+                ${timerHtml}
+                ${buttonHtml}
+            </div>
+        `;
+        
+        // Auto-refresh UI if incubating
+        if(isActive && !isReady) {
+            setTimeout(() => {
+                if(document.getElementById('hubPetYard').classList.contains('active')) renderPetYard('hatchery');
+            }, 10000); // Refresh every 10s
+        }
+    }
+
+    container.innerHTML = html;
+}
+
+function startIncubation(eggItemName) {
+    // Look up the Pet Type (e.g. 'Spider') from the Item Name (e.g. 'Pet Spider Egg')
+    const petType = EGG_TYPES[eggItemName];
+    
+    if (petType) {
+        if (removeItem(eggItemName, 1)) {
+            game.incubator.active = true;
+            game.incubator.startTime = Date.now();
+            game.incubator.eggType = petType;
+            renderPetYard('hatchery');
+            if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        } else {
+            showGameAlert("Requirement", `You need a ${eggItemName}.`);
+        }
+    }
+}
+
+function hatchEgg() {
+    if (!game.incubator.active) return;
+
+    // +++ NEW: MAX PET LIMIT +++
+    if (game.pets.length >= 6) {
+        showGameAlert("Pet Yard Full", "You can only house 6 pets at a time.");
+        return;
+    }
+    
+    // Create new Pet
+    const newPet = {
+        id: 'pet_' + Date.now(),
+        type: game.incubator.eggType,
+        level: 1,
+        xp: 0,
+        hp: PET_MAX_HP,
+        lastCalcTime: Date.now()
+    };
+    
+    game.pets.push(newPet);
+    
+    // Reset Incubator
+    game.incubator.active = false;
+    game.incubator.eggType = null;
+    game.incubator.startTime = 0;
+    
+    addXP('petmastery', PET_HATCH_XP);
+    playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+    showGameAlert("Hatched!", `You hatched a level 1 ${newPet.type}!`);
+    
+    renderPetYard('pets'); // Switch to pets tab
+    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function feedPet(petId) {
+    const pet = game.pets.find(p => p.id === petId);
+    if (!pet) return;
+    
+    if (pet.hp >= PET_MAX_HP) {
+        showGameAlert("Full", "This pet is not hungry.");
+        return;
+    }
+    
+    const config = PET_DATA[pet.type];
+    const food = config.foodItem;
+    
+    if (removeItem(food, 1)) {
+        pet.hp++;
+        addXP('petmastery', PET_FEED_XP);
+        playGlobalSound('sounds/soundeffects/inventorysound.mp3');
+        renderPetYard('pets');
+        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    } else {
+        showGameAlert("No Food", `This pet eats ${food}.`);
+    }
+}
+
+function equipPetFromYard(petId) {
+    const pet = game.pets.find(p => p.id === petId);
+    if (!pet) return;
+    
+    if (game.equipment.pet && game.equipment.pet.id === petId) {
+        // Unequip
+        game.equipment.pet = null;
+    } else {
+        // Equip (Simple reference, not an inventory item)
+        game.equipment.pet = { id: pet.id, name: "Pet " + pet.type, type: 'pet' }; 
+    }
+    
+    renderPetYard('pets');
+    renderEquipment(); // Update sidebar slot
+    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+async function sellPet(petId) {
+    const petIndex = game.pets.findIndex(p => p.id === petId);
+    if (petIndex === -1) return;
+    
+    const pet = game.pets[petIndex];
+    
+    // Formula: 100 Gold per Level (e.g. Lvl 1 = 100g, Lvl 50 = 5000g)
+    const sellPrice = pet.level * 100;
+    
+    const confirmed = await showGameConfirm("Sell Pet", `Are you sure you want to sell your Lvl ${pet.level} ${pet.type} for ${sellPrice} Gold?`);
+    
+    if (confirmed) {
+        // 1. Unequip if currently equipped
+        if (game.equipment.pet && game.equipment.pet.id === petId) {
+            game.equipment.pet = null;
+            renderEquipment();
+        }
+        
+        // 2. Remove from array
+        game.pets.splice(petIndex, 1);
+        
+        // 3. Add Gold
+        addGold(sellPrice);
+        
+        // 4. Save & Update
+        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        renderPetYard('pets');
+        await showGameAlert("Pet Sold", `You sold your pet for ${sellPrice} Gold.`);
+    }
+}
+
 // +++ NEW: FARM INTERACTION FUNCTIONS +++
 
 async function handleChickenCoopClick() {
@@ -10598,6 +11057,13 @@ async function handleChickenCoopClick() {
    if (!game.farm.buildings) game.farm.buildings = { coop: false, barn: false, well: false };
 
    if (!game.farm.buildings.coop) {
+       // +++ NEW: Level Requirement Check +++
+       if (game.farming.level < 1) {
+           await showGameAlert("Level Required", "You need Farming Level 1 to buy the Chicken Coop.");
+           return;
+       }
+       // +++ END NEW +++
+
        const confirmed = await showGameConfirm("Buy Chicken Coop", `Purchase the Chicken Coop for ${formatAmount(COOP_COST)} Gold?`);
        if (confirmed) {
            if (game.gold >= COOP_COST) {
@@ -10792,6 +11258,13 @@ async function handleBarnClick() {
    if (!game.farm.buildings) game.farm.buildings = { coop: false, barn: false, well: false };
 
    if (!game.farm.buildings.barn) {
+       // +++ NEW: Level Requirement Check +++
+       if (game.farming.level < 20) {
+           await showGameAlert("Level Required", "You need Farming Level 20 to buy the Barn.");
+           return;
+       }
+       // +++ END NEW +++
+
        const confirmed = await showGameConfirm("Buy The Barn", `Purchase the Barn for ${formatAmount(BARN_COST)} Gold?`);
        if (confirmed) {
            if (game.gold >= BARN_COST) {
@@ -10852,14 +11325,14 @@ function feedCow(index) {
         return;
     }
 
-    // Remove 10 Grass
-    if (removeItem('Grass', 10)) {
+    // Remove 5 Grass
+    if (removeItem('Grass', 5)) {
         c.hp = Math.min(COW_MAX_HP, c.hp + 2); // Heals 2 HP because it's bigger
         playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         updateBarnUI();
         if (typeof window.savePlayerData === 'function') window.savePlayerData();
     } else {
-        showGameAlert("No Food", "You need 10 Grass to feed the cow.");
+        showGameAlert("No Food", "You need 5 Grass to feed the cow.");
     }
 }
 
@@ -10954,7 +11427,7 @@ function updateBarnUI() {
                  onmouseleave="hideTooltip()">
             
             <button class="primary feed-btn" onclick="feedCow(${index})" 
-                    onmouseenter="showTooltip(event, 'Feed 10 Grass')" onmouseleave="hideTooltip()">
+                    onmouseenter="showTooltip(event, 'Feed 5 Grass')" onmouseleave="hideTooltip()">
                 Feed
             </button>
         `;
@@ -11266,6 +11739,79 @@ function processGardenGrowth(now) {
   }
 }
 
+// +++ NEW: Real-Time Pet Tooltip +++
+function showPetTooltip(e, petId) {
+    // Helper to generate the HTML based on CURRENT pet data
+    const getTooltipContent = () => {
+        const pet = game.pets.find(p => p.id === petId);
+        if (!pet) return null;
+
+        // Calculate Hunger Timer
+        const now = Date.now();
+        const elapsed = now - (pet.lastCalcTime || now);
+        const remaining = Math.max(0, PET_HP_DECAY_MS - elapsed);
+        
+        // Format time logic (replicated here for safety)
+        const totalSec = Math.ceil(remaining / 1000);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const timeStr = `${h}h ${m}m`;
+        const timeColor = remaining < 3600000 ? "#ffaaaa" : "#ccc"; // Red if < 1 hour
+
+        const xpNeeded = pet.level * 100;
+        const xpPercent = Math.min(100, (pet.xp / xpNeeded) * 100);
+        
+        // HP Color Logic
+        const hpColor = pet.hp <= 0 ? '#ff4d4d' : (pet.hp <= 3 ? '#d22' : '#44aa44');
+        
+        // Bonus Text Logic
+        let bonusStr = "No bonus";
+        const petDef = PET_DATA[pet.type];
+        if (petDef && petDef.bonus) {
+            const b = petDef.bonus(pet.level);
+            if (b.physicalDamage) bonusStr = `+${b.physicalDamage} Phys Dmg`;
+        }
+        
+        // Override bonus text if sick
+        if (pet.hp <= 0) bonusStr = "<span style='color:#ff4d4d;'>Sick (Inactive)</span>";
+        else bonusStr = `<span style='color:#aaffaa;'>${bonusStr}</span>`;
+
+        return `
+            <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${pet.type}</div>
+            <div style="margin-top:2px; font-size:12px; color:#efe3cf;">Lvl ${pet.level}</div>
+            <div style="font-size:12px; color:#ccc;">HP: <span style="color:${hpColor}">${pet.hp}/${PET_MAX_HP}</span></div>
+            <div style="font-size:12px; margin-bottom:6px;">${bonusStr}</div>
+            <div style="font-size:11px; color:#ccc; margin-bottom:6px;">Hunger in: <span style="color:${timeColor}">${timeStr}</span></div>
+            
+            <div style="font-size:10px; color:#aaa; display:flex; justify-content:space-between;">
+                <span>XP</span>
+                <span>${Math.floor(pet.xp)} / ${xpNeeded}</span>
+            </div>
+            <div style="width:100%; height:4px; background:#333; border:1px solid #000; border-radius:2px; margin-bottom:5px;">
+                <div style="height:100%; width:${xpPercent}%; background:var(--gold); transition: width 0.1s linear;"></div>
+            </div>
+            <div style="color:#666; margin-top: 5px; font-style:italic; font-size:11px;">(Manage in Pet Yard)</div>
+        `;
+    };
+
+    // 1. Show immediately
+    const initialContent = getTooltipContent();
+    if (initialContent) showTooltip(e, initialContent);
+
+    // 2. Start refreshing every 100ms
+    if (tooltipInterval) clearInterval(tooltipInterval);
+    tooltipInterval = setInterval(() => {
+        const newContent = getTooltipContent();
+        const tooltipEl = document.getElementById('tooltip');
+        // Only update if tooltip is still visible
+        if (newContent && tooltipEl && tooltipEl.style.display !== 'none') {
+            tooltipEl.innerHTML = newContent;
+        } else {
+            hideTooltip();
+        }
+    }, 100); 
+}
+
 function showCowTooltip(e, index) {
     // 1. Define Content Generator
     const getTooltipContent = () => {
@@ -11547,6 +12093,13 @@ async function handleWellClick() {
    if (!game.farm.buildings) game.farm.buildings = { coop: false, barn: false, well: false };
 
    if (!game.farm.buildings.well) {
+       // +++ NEW: Level Requirement Check +++
+       if (game.farming.level < 1) {
+           await showGameAlert("Level Required", "You need Farming Level 1 to restore the Well.");
+           return;
+       }
+       // +++ END NEW +++
+
        const confirmed = await showGameConfirm("Buy The Well", `Restore the Well for ${formatAmount(WELL_COST)} Gold?`);
        if (confirmed) {
            if (game.gold >= WELL_COST) {
@@ -11573,6 +12126,13 @@ async function handleGardenClick() {
    if (!game.farm.buildings) game.farm.buildings = { coop: false, barn: false, well: false, garden: false };
 
    if (!game.farm.buildings.garden) {
+       // +++ NEW: Level Requirement Check +++
+       if (game.farming.level < 1) {
+           await showGameAlert("Level Required", "You need Farming Level 1 to buy the Garden.");
+           return;
+       }
+       // +++ END NEW +++
+
        const confirmed = await showGameConfirm("Buy The Garden", `Clear the land for a Garden for ${formatAmount(GARDEN_COST)} Gold?`);
        if (confirmed) {
            if (game.gold >= GARDEN_COST) {
@@ -14632,7 +15192,37 @@ function playerAttackTurn(spellOverride = null) {
         // Melee (attack, strength, defence)
         addXP(game.playerAttackStyle, mainXPGained, 0);
     }
+
+    // +++ NEW: GIVE XP TO EQUIPPED PET +++
+    if (game.equipment.pet) {
+      // Find the real pet object in the array to update its data
+      const petIndex = game.pets.findIndex(p => p.id === game.equipment.pet.id);
+      
+      if (petIndex > -1) {
+          const pet = game.pets[petIndex];
+          
+          // Only gain XP if pet is alive (HP > 0) and under level cap
+          if (pet.hp > 0 && pet.level < 50) {
+              const petXPGained = Math.ceil(mainXPGained * 0.10); // 10% of player XP
+              pet.xp += petXPGained;
+              
+              // Simple leveling formula: Level * 100 XP required
+              const xpNeeded = pet.level * 100; 
+              
+              if (pet.xp >= xpNeeded) {
+                  pet.xp -= xpNeeded;
+                  pet.level++;
+                  showItemPopup(`Pet Lvl Up: ${pet.level}!`, null, 0);
+                  playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+                  
+                  // Save immediately on level up
+                  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+              }
+          }
+      }
+    }
   }
+  // --- END NEW XP LOGIC ---
   // --- END NEW XP LOGIC ---
 
   // --- 6. Check for Enemy Death ---
@@ -14674,16 +15264,14 @@ function playerAttackTurn(spellOverride = null) {
       
       showItemPopup(`+${silkQty} Silk`, null, dropDelay);
 
-      // +++ NEW PET DROP LOGIC (1 in 10,000) +++
-      // Pet drop is special/rare, we keep it at 500ms regardless of delay
-      if (Math.floor(Math.random() * 10000) === 0) {
-          addItem('Pet Spider', 1);
-          showItemPopup('<span style="color:#ff4d4d; font-size:16px;">PET DROP!</span>', null, 500);
+      // +++ NEW PET EGG DROP LOGIC +++
+      if (Math.floor(Math.random() * PET_EGG_DROP_RATE) === 0) {
+          addItem('Pet Spider Egg', 1);
+          showItemPopup('<span style="color:#ff4d4d; font-size:16px;">EGG DROP!</span>', null, dropDelay + 200);
           if (typeof addLocalChatMessage === 'function') {
-             addLocalChatMessage("You received a rare drop: Pet Spider!", "trade"); 
+             addLocalChatMessage("You found a rare Pet Spider Egg!", "trade"); 
           }
       }
-      // +++ END PET DROP LOGIC +++
 
     } else if (game.currentEnemy.name === 'Centipede') {
       // Check if player has an Empty Vial
@@ -15252,7 +15840,8 @@ function renderBankTabs() {
                 'copper_arrow_tip': 'copperarrowtip', 'unbound_arrow': 'unboundarrow', 'copper_arrow': 'copperarrow',
                 'silk': 'silk', 'cloth': 'cloth', 'wizard_hat': 'wizardhat', 'wizard_robe': 'wizardrobe',
                 'wizard_trousers': 'wizardtrousers', 'wizard_boots': 'wizardboots', 'magic_staff': 'magicstaff',
-                'pet_spider': 'petspider', 'rat_tail': 'rattail', 'sand': 'sand', 'empty_vial': 'emptyvial',
+                'pet_spider_egg': 'petegg1', // +++ NEW PET EGG +++
+                'rat_tail': 'rattail', 'sand': 'sand', 'empty_vial': 'emptyvial',
                 'venom': 'venom', 'lottery_ticket': 'lotteryticket', 'earth_crystal_shard': 'earthcrystalshard',
                 'air_crystal_shard': 'aircrystalshard', 'water_crystal_shard': 'watercrystalshard', 'bow_string': 'bowstring',
                 'unstrung_softwood_bow': 'unstrungsoftwoodbow', 'unstrung_oak_bow': 'unstrungoakbow', 'softwood_bow': 'softwoodbow',
@@ -15406,7 +15995,7 @@ function renderBankGrid() {
               else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
               else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
               
-              // +++ NEW COOKED FISH IMAGES +++
+              
               else if (item.name === 'Cooked Herring') imgName = 'cookedherring';
               else if (item.name === 'Burnt Herring') imgName = 'burntherring';
               else if (item.name === 'Cooked Trout') imgName = 'cookedtrout';
@@ -15414,15 +16003,15 @@ function renderBankGrid() {
               else if (item.name === 'Cooked Salmon') imgName = 'cookedsalmon';
               else if (item.name === 'Burnt Salmon') imgName = 'burntsalmon';
               
-              // +++ NEW BEEF IMAGES +++
+              
               else if (item.name === 'Beef') imgName = 'beef';
               else if (item.name === 'Cooked Beef') imgName = 'cookedbeef';
               else if (item.name === 'Burnt Beef') imgName = 'burntbeef';
 
-              // +++ FIX: Add Gold Crown mapping here +++
+              
               else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
-              // +++ END NEW +++
-
+              
+       
               else if (item.name === 'Coal Ore') imgName = 'coalore';
               else if (item.name === 'Iron Ore') imgName = 'ironore';
               else if (item.name === 'Iron Bar') imgName = 'ironbar';
@@ -15447,26 +16036,24 @@ function renderBankGrid() {
               else if (item.name === 'Copper Arrow') imgName = 'copperarrow'; // +++ NEW +++
               else if (item.name === 'Silk') imgName = 'silk'; // +++ NEW +++
 
-              // +++ NEW CLOTH & WIZARD ITEMS +++
+              
               else if (item.name === 'Cloth') imgName = 'cloth';
               else if (item.name === 'Wizard Hat') imgName = 'wizardhat';
               else if (item.name === 'Wizard Robe') imgName = 'wizardrobe';
               else if (item.name === 'Wizard Trousers') imgName = 'wizardtrousers';
               else if (item.name === 'Wizard Boots') imgName = 'wizardboots';
-              else if (item.name === 'Magic Staff') imgName = 'magicstaff'; // +++ NEW +++
-              else if (item.name === 'Pet Spider') imgName = 'petspider'; // +++ NEW PET +++
               else if (item.name === 'Rat Tail') imgName = 'rattail'; // +++ NEW ITEM +++
               else if (item.name === 'Sand') imgName = 'sand'; // +++ NEW +++
               else if (item.name === 'Empty Vial') imgName = 'emptyvial'; // +++ NEW +++
               else if (item.name === 'Venom') imgName = 'venom'; // +++ NEW +++
               else if (item.name === 'Lottery Ticket') imgName = 'lotteryticket'; // +++ NEW +++
               
-              // +++ NEW CRYSTAL SHARDS +++
+              
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
               else if (item.name === 'Air Crystal Shard') imgName = 'aircrystalshard';
               else if (item.name === 'Water Crystal Shard') imgName = 'watercrystalshard';
 
-              // --- THIS IS THE MISSING BLOCK ---
+              
               else if (item.name === 'Bow String') {
                   imgName = 'bowstring';
               } else if (item.name === 'Unstrung Softwood Bow') {
@@ -16306,7 +16893,7 @@ function closeSettings() {
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -16787,6 +17374,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('hubPersonalFarm_ReturnBtn').onclick = backToActions;
   document.getElementById('personalFarmActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Farm</div>Manage crops & livestock');
   document.getElementById('personalFarmActionIcon').onmouseleave = hideTooltip;
+
+  // +++ NEW PET YARD LISTENERS +++
+  document.getElementById('petYardActionIcon').onclick = openPetYardHub;
+  document.getElementById('hubPetYard_ReturnBtn').onclick = backToActions;
+  document.getElementById('petYardActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Pet Yard</div>Manage your pets');
+  document.getElementById('petYardActionIcon').onmouseleave = hideTooltip;
   
   // Listeners for inside the Farm buildings (Return to the Farm view)
   document.getElementById('hubBarn_ReturnBtn').onclick = openPersonalFarmHub;
@@ -17450,7 +18043,7 @@ function renderInspectEquipment(equipment, frame) {
         'Copper Platelegs': 'copperplatelegs', 'Iron Platelegs': 'ironplatelegs', 'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 
         'Copper Arrow': 'copperarrow', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
-        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', '1tapper': '1tapper', 'Pet Spider': 'petspider',
+        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Spider Egg': 'petegg1',
         'Empty Bucket': 'emptybucket', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater'
     };
 
@@ -17881,6 +18474,13 @@ function renderInspectEquipment(equipment, frame) {
           xp: game.farming.xp,
           totalXP: game.farming.totalXP
         },
+        petmastery: {
+          level: game.petmastery.level,
+          xp: game.petmastery.xp,
+          totalXP: game.petmastery.totalXP
+        },
+        pets: game.pets,
+        incubator: game.incubator,
         activeBounty: game.activeBounty || null,
         
         farm: game.farm, // +++ NEW: Save Farm Data +++
@@ -18350,6 +18950,17 @@ window.inspectPlayer = async function(playerName) {
           game.bountyhunting = { level: 1, xp: 0, totalXP: 0 }; 
         }
 
+        // +++ NEW PET LOAD +++
+        if (data.petmastery) {
+          game.petmastery.level = data.petmastery.level || 1;
+          game.petmastery.xp = data.petmastery.xp || 0;
+          game.petmastery.totalXP = data.petmastery.totalXP || getTotalXPForLevel(data.petmastery.level - 1) + data.petmastery.xp || 0;
+        } else {
+          game.petmastery = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+        game.pets = data.pets || [];
+        game.incubator = data.incubator || { active: false, startTime: 0, eggType: null };
+
         // +++ NEW FARMING LOAD +++
         if (data.farming) {
           game.farming.level = data.farming.level || 1;
@@ -18453,6 +19064,21 @@ window.inspectPlayer = async function(playerName) {
                         } else {
                             c.milkTimer = potentialProgress;
                         }
+                    }
+                }
+            }
+        }
+
+        // +++ NEW PET OFFLINE LOOP +++
+        if (game.pets && game.pets.length > 0) {
+            for (let p of game.pets) {
+                const lastCalc = p.lastCalcTime || now;
+                const diff = now - lastCalc;
+                if (diff > 1000) {
+                    const hpLost = Math.floor(diff / PET_HP_DECAY_MS);
+                    if (hpLost > 0) {
+                        p.hp = Math.max(0, p.hp - hpLost);
+                        p.lastCalcTime = now; // Update time so we don't decay again instantly
                     }
                 }
             }
@@ -18800,22 +19426,22 @@ window.inspectPlayer = async function(playerName) {
                 return true;
             }
 
-            // +++ FIX: FORCE TITLE CASE OR MATCH VALID LIST +++
-            // 1. Generate a default Title Case string (e.g. "Bucket Of Milk")
-            let itemName = rawNameParts.map(word => {
-                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-            }).join(' ');
-
-            // 2. Check if this item exists in the game's master list (to fix "of", "the", etc.)
-            // We join the raw input to compare against the valid list
+            // +++ FIX: VALIDATE ITEM EXISTENCE +++
             const rawInput = rawNameParts.join(' ').toLowerCase();
-            
-            // Access the global VALID_ITEMS list
+            let itemName = null;
+
+            // Check against VALID_ITEMS list
             if (typeof VALID_ITEMS !== 'undefined') {
                 const officialMatch = VALID_ITEMS.find(i => i.toLowerCase() === rawInput);
                 if (officialMatch) {
-                    itemName = officialMatch; // Use "Bucket of Milk" instead of "Bucket Of Milk"
+                    itemName = officialMatch; // Found it! Use exact name from list.
                 }
+            }
+
+            // If item was not found in the list, stop and show error
+            if (!itemName) {
+                addLocalChatMessage(`Error: '${rawNameParts.join(' ')}' is not a valid item.`, 'error');
+                return true;
             }
             // +++ END FIX +++
             
@@ -19193,19 +19819,34 @@ window.inspectPlayer = async function(playerName) {
           if (isChatHistoryLoaded) {
             hasAdds = true; 
             const msg = change.doc.data();
+
+            // +++ NEW: Quieter Chat Sound +++
+            if (auth.currentUser && msg.senderUid !== auth.currentUser.uid) {
+                // Check if global SFX is not muted
+                if (game.settings && !game.settings.isSfxMuted) {
+                    try {
+                        const audio = new Audio('sounds/soundeffects/chatsound.mp3');
+                        // VOLUME REDUCTION: 0.25 = 25% of the Master SFX Volume
+                        const masterVol = game.settings.sfxVolume || 0.5;
+                        audio.volume = Math.min(1, Math.max(0, masterVol * 0.25)); 
+                        audio.play().catch(e => {});
+                    } catch (e) {}
+                }
+            }
+            // +++ END NEW +++
+
             const msgElement = document.createElement('div');
             msgElement.style.marginBottom = '6px';
             msgElement.style.lineHeight = '1.3';
             msgElement.style.wordBreak = 'break-word';
             const sender = document.createElement('strong');
             
-            // +++ NEW: Admin Color Check +++
+            // Admin Color Check
             if (msg.senderUid === ADMIN_UID) {
               sender.style.color = '#ff4d4d'; // Admin Red
             } else {
               sender.style.color = 'var(--gold)'; // Default Gold
             }
-            // +++ END NEW +++
             
             sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
             const text = document.createTextNode(msg.text);
@@ -19227,13 +19868,11 @@ window.inspectPlayer = async function(playerName) {
             msgElement.style.wordBreak = 'break-word';
             const sender = document.createElement('strong');
             
-            // +++ NEW: Admin Color Check +++
             if (msg.senderUid === ADMIN_UID) {
               sender.style.color = '#ff4d4d'; // Admin Red
             } else {
               sender.style.color = 'var(--gold)'; // Default Gold
             }
-            // +++ END NEW +++
             
             sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
             const text = document.createTextNode(msg.text);
@@ -19243,7 +19882,7 @@ window.inspectPlayer = async function(playerName) {
         });
         let hadQueuedMessages = localMessageQueue.length > 0;
         localMessageQueue.forEach(msg => {
-          addLocalChatMessage(msg.text, msg.type); // Updated name
+          addLocalChatMessage(msg.text, msg.type); 
         });
         localMessageQueue = []; 
         if (hadHistoryMessages || hadQueuedMessages) {
@@ -19391,6 +20030,12 @@ window.inspectPlayer = async function(playerName) {
       if (game.isSessionActive && typeof processFarmLogic === 'function') {
           processFarmLogic();
       }
+      
+      // +++ NEW: Update Pet Timers (REMOVED - Timer moved to Tooltip) +++
+      /* if (game.isSessionActive && typeof updatePetTimers === 'function') {
+          updatePetTimers();
+      } 
+      */
   }, 1000);
 
   // --- Autosave runs every 30s, but only performs writes if the tab is visible ---
@@ -19536,6 +20181,11 @@ window.inspectPlayer = async function(playerName) {
       'images/madmaxcastle.jpeg',
       // +++ NEW FARM ASSETS +++
       'images/farmicon.jpeg',
+      'images/petyardicon.jpeg',
+      'images/petmasteryskillicon.jpeg',
+      'images/petegg1.png',
+      'images/incubator_empty.png',
+      'images/incubator_active.png',
       'images/personalfarm.jpeg',
       'images/cropfield.jpeg', 
       // +++ Garden Assets +++
@@ -19677,7 +20327,6 @@ window.inspectPlayer = async function(playerName) {
       'images/rattail.png',
       'images/spidermonster.png',
       'images/spideranim.gif',
-      'images/petspider.png',
       'images/centipedemonster.jpeg',
       'images/centipedeanim.webp',
       'images/madmaxmonster.jpeg',
