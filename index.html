@@ -18161,7 +18161,7 @@ function renderInspectEquipment(equipment, frame) {
 
   getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where,
     addDoc, serverTimestamp, onSnapshot, orderBy, limit, limitToLast, runTransaction, writeBatch, updateDoc,
-    increment // <-- ADD THIS
+    increment, arrayUnion // <-- ADDED arrayUnion here
     
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -18702,10 +18702,37 @@ window.inspectPlayer = async function(playerName) {
         if (snap.metadata.hasPendingWrites) {
           return;
         }
+
+        // --- NEW: Gift Inbox System (Receive Items ALWAYS) ---
+        // This runs BEFORE the busy check so you get items even while mining/fighting.
+        if (data.giftInbox && Array.isArray(data.giftInbox) && data.giftInbox.length > 0) {
+            let giftsReceived = false;
+            
+            // Loop through all gifts in the box
+            data.giftInbox.forEach(gift => {
+                if (gift && gift.name && gift.qty) {
+                    // Force add the item
+                    if (typeof addItem === 'function') {
+                        addItem(gift.name, gift.qty);
+                        // Show popup and chat message
+                        if (typeof showItemPopup === 'function') showItemPopup(`Gift: +${gift.qty} ${gift.name}`, null);
+                        if (typeof addLocalChatMessage === 'function') addLocalChatMessage(`🎁 Received Gift: ${gift.qty}x ${gift.name}`, 'trade');
+                        giftsReceived = true;
+                    }
+                }
+            });
+
+            // If we got items, clear the mailbox and save immediately
+            if (giftsReceived) {
+                updateDoc(doc(db, "players", user.uid), { giftInbox: [] }); // Clear DB inbox
+                if (typeof window.savePlayerData === 'function') window.savePlayerData(); // Save to secure the item
+            }
+        }
+        // -----------------------------------------------------
         
         // If we are the active tab, AND we are busy (mining, dragging, etc.),
         // do not sync data. This prevents rollbacks.
-        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.cookingActive || game.woodcuttingActive || game.fletchingActive || game.isDragging)) {
+        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.cookingActive || game.woodcuttingActive || game.fletchingActive || game.stoneforgingActive || game.fishingActive || game.isDragging)) {
           return;
         }
         
@@ -19419,8 +19446,6 @@ window.inspectPlayer = async function(playerName) {
         if (command === 'giveitem') {
             const targetName = args[0] ? args[0].toLowerCase() : '';
             const qty = parseInt(args[args.length - 1]);
-            
-            // Extract the raw name parts
             const rawNameParts = args.slice(1, -1);
             
             if (!targetName || rawNameParts.length === 0 || isNaN(qty) || qty <= 0) {
@@ -19428,52 +19453,52 @@ window.inspectPlayer = async function(playerName) {
                 return true;
             }
 
-            // +++ FIX: VALIDATE ITEM EXISTENCE +++
+            // 1. Resolve Item Name
             const rawInput = rawNameParts.join(' ').toLowerCase();
             let itemName = null;
 
-            // Check against VALID_ITEMS list
             if (typeof VALID_ITEMS !== 'undefined') {
                 const officialMatch = VALID_ITEMS.find(i => i.toLowerCase() === rawInput);
-                if (officialMatch) {
-                    itemName = officialMatch; // Found it! Use exact name from list.
-                }
+                if (officialMatch) itemName = officialMatch;
             }
 
-            // If item was not found in the list, stop and show error
             if (!itemName) {
-                addLocalChatMessage(`Error: '${rawNameParts.join(' ')}' is not a valid item.`, 'error');
-                return true;
-            }
-            // +++ END FIX +++
-            
-            // Case A: Give to Self
-            if (targetName === game.name.toLowerCase()) {
-                if (typeof window.addItem === 'function') {
-                    window.addItem(itemName, qty); 
-                    await window.savePlayerData();
-                    addLocalChatMessage(`Admin: Spawning ${qty} x ${itemName}`, 'system');
-                }
+                addLocalChatMessage(`❌ Error: '${rawNameParts.join(' ')}' is not a valid item.`, 'error');
                 return true;
             }
 
-            // Case B: Give to Others
+            // Case A: Give to Self (Instant Local Add)
+            if (targetName === game.name.toLowerCase()) {
+                window.addItem(itemName, qty); 
+                window.savePlayerData();
+                addLocalChatMessage(`Admin: Spawning ${qty} x ${itemName}`, 'system');
+                return true;
+            }
+
+            // Case B: Give to Others (Via Gift Inbox)
             try {
                 const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
                 const querySnapshot = await getDocs(q);
+                
                 if (querySnapshot.empty) {
                     addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
                     return true;
                 }
+                
                 const playerDoc = querySnapshot.docs[0];
-                const playerData = playerDoc.data();
                 
-                let currentLocalInv = convertSavedInvToLocal(playerData.inventory || []);
-                const newLocalInv = modifyInventory(currentLocalInv, itemName, qty);
-                const newSavedInv = convertLocalInvToSaved(newLocalInv);
+                // We use arrayUnion to push a "Gift Package" to their inbox.
+                // We add a timestamp 'id' so every gift is unique (allows sending the same item multiple times).
+                await updateDoc(doc(db, "players", playerDoc.id), {
+                    giftInbox: arrayUnion({ 
+                        name: itemName, 
+                        qty: qty, 
+                        id: Date.now() // Unique ID to prevent database merging duplicates
+                    })
+                });
                 
-                await updateDoc(doc(db, "players", playerDoc.id), { inventory: newSavedInv });
-                addLocalChatMessage(`Admin: Gave ${qty}x ${itemName} to ${playerData.name}.`, 'system');
+                addLocalChatMessage(`✅ Admin: Sent ${qty}x ${itemName} to ${playerDoc.data().name}'s Inbox.`, 'system');
+
             } catch (e) {
                 console.error(e);
                 addLocalChatMessage(`Error giving item: ${e.message}`, 'error');
