@@ -472,6 +472,21 @@ button.primary:hover { background: var(--accent-hover); }
   animation-iteration-count: infinite;
 }
 
+/* --- NEW: Monster Damage Shake Animation --- */
+@keyframes damageShake {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-6px, 2px) rotate(-3deg); }
+  40% { transform: translate(6px, -2px) rotate(3deg); }
+  60% { transform: translate(-3px, 1px) rotate(-1deg); }
+  80% { transform: translate(3px, -1px) rotate(1deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.enemy-hit-anim {
+  animation: damageShake 0.4s ease-out;
+}
+
+
 /* --- NEW WARNING POPUP --- */
 .warning-popup {
   position: absolute;
@@ -1530,7 +1545,10 @@ button.primary:hover { background: var(--accent-hover); }
   z-index: 6000;
   justify-content: center;
   align-items: center;
-  pointer-events: none;
+  
+  /* CHANGED: Allow clicks on the overlay to block game interaction */
+  pointer-events: auto; 
+  cursor: pointer; /* Indicates it can be clicked to close */
   
   /* +++ FADE EFFECT SETTINGS +++ */
   opacity: 0;
@@ -2032,7 +2050,7 @@ button.primary:hover { background: var(--accent-hover); }
             <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
                 
                 <div class="interactive-container">
-                    <img src="images/personalfarm.jpeg" alt="Personal Farm" class="interactive-bg">
+                    <img src="images/personalfarm.webp" alt="Personal Farm" class="interactive-bg">
                     
                     <svg class="interactive-overlay" viewBox="0 0 488 300" preserveAspectRatio="none">
                         
@@ -2044,28 +2062,37 @@ button.primary:hover { background: var(--accent-hover); }
                         </defs>
 
                         <polygon class="farm-zone" 
-                                 points="155,192 306,192 306,273 155,273" 
+                                 points="177,217 281,217 281,276 177,276" 
                                  onclick="handleBarnClick(); playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');" 
                                  onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Barn</div>Manage Cows'); playGlobalSound('sounds/soundeffects/cowbuttonsoundeffect.mp3');" 
                                  onmouseleave="hideTooltip()">
                         </polygon>
 
                         <polygon class="farm-zone" 
-                                 points="18,218 105,190 105,273 18,273" 
+                                 points="113,241 125,231 163,231 175,241 175,276 113,276" 
+                                 onclick="handleCellarClick(); playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');" 
+                                 onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Cellar</div>Grow Mushrooms');" 
+                                onmouseleave="hideTooltip()">
+                                </polygon>                       
+
+                        <polygon class="farm-zone" 
+                                 points="18,218 105,190 105,276 18,276" 
                                  onclick="handleChickenCoopClick(); playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');" 
                                  onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Chicken Coop</div>Manage Chickens'); playGlobalSound('sounds/soundeffects/chickenbuttonsoundeffect.mp3');" 
                                  onmouseleave="hideTooltip()">
                         </polygon>
 
+                        
+                      
                         <polygon class="farm-zone" 
-                                 points="352,208 395,208 395,248 352,248" 
+                                 points="345,126 334,126 334,110 322,110 322,105 368,63 378,63 423,105 423,110 411,110 411,126 403,126 412,250 333,250" 
                                  onclick="handleWindmillClick()" 
                                  onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Windmill</div>Process Flour')" 
                                  onmouseleave="hideTooltip()">
                         </polygon>
 
                         <polygon class="farm-zone" 
-                                 points="408,210 467,210 467,270 408,270" 
+                                 points="395,194 483,194 483,280 395,280" 
                                  onclick="handleWellClick(); playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');" 
                                  onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Well</div>Fresh Water'); playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');" 
                                  onmouseleave="hideTooltip()">
@@ -2297,6 +2324,53 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="hubGarden_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
+         
+         <div id="hubCellar" class="hub-screen">
+            <h2>The Cellar</h2>
+            <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
+                <div class="interactive-container" style="height: 320px;">
+                    <img src="images/cellar.jpeg" alt="The Cellar" class="interactive-bg" style="width: 100%; height: 100%; object-fit: cover; object-position: top;">
+                    <svg class="interactive-overlay" viewBox="0 0 600 400" preserveAspectRatio="none">
+                        <!-- Polygons 0-15 -->
+                        <polygon id="cellar-poly-0" points="113,192 199,192 191,225 98,225" class="garden-zone" onclick="handleCellarSlotClick(event, 0)"></polygon>
+                        <image id="cellar-img-0" x="101" y="152" width="100" height="100" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-1" points="212,192 296,192 296,225 205,225" class="garden-zone" onclick="handleCellarSlotClick(event, 1)"></polygon>
+                        <image id="cellar-img-1" x="204" y="152" width="100" height="100" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-2" points="309,192 394,192 402,225 309,225" class="garden-zone" onclick="handleCellarSlotClick(event, 2)"></polygon>
+                        <image id="cellar-img-2" x="305" y="152" width="100" height="100" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-3" points="406,192 492,192 507,225 415,225" class="garden-zone" onclick="handleCellarSlotClick(event, 3)"></polygon>
+                        <image id="cellar-img-3" x="407" y="152" width="100" height="100" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-4" points="92,236 189,236 181,273 73,273" class="garden-zone" onclick="handleCellarSlotClick(event, 4)"></polygon>
+                        <image id="cellar-img-4" x="85" y="198" width="100" height="100" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-5" points="203,236 296,236 296,272 194,272" class="garden-zone" onclick="handleCellarSlotClick(event, 5)"></polygon>
+                        <image id="cellar-img-5" x="200" y="198" width="100" height="100" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-6" points="308,236 405,236 414,272 308,272" class="garden-zone" onclick="handleCellarSlotClick(event, 6)"></polygon>
+                        <image id="cellar-img-6" x="309" y="198" width="100" height="100" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-7" points="418,236 514,236 530,272 429,272" class="garden-zone" onclick="handleCellarSlotClick(event, 7)"></polygon>
+                        <image id="cellar-img-7" x="423" y="198" width="100" height="100" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-8" points="68,282 178,282 167,327 46,327" class="garden-zone" onclick="handleCellarSlotClick(event, 8)"></polygon>
+                        <image id="cellar-img-8" x="62" y="241" width="110" height="110" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-9" points="189,282 298,282 298,327 179,327" class="garden-zone" onclick="handleCellarSlotClick(event, 9)"></polygon>
+                        <image id="cellar-img-9" x="189" y="241" width="110" height="110" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-10" points="308,282 418,282 429,327 308,327" class="garden-zone" onclick="handleCellarSlotClick(event, 10)"></polygon>
+                        <image id="cellar-img-10" x="310" y="241" width="110" height="110" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-11" points="430,282 538,282 558,327 440,327" class="garden-zone" onclick="handleCellarSlotClick(event, 11)"></polygon>
+                        <image id="cellar-img-11" x="435" y="241" width="110" height="110" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-12" points="39,336 162,336 144,400 6,400" class="garden-zone" onclick="handleCellarSlotClick(event, 12)"></polygon>
+                        <image id="cellar-img-12" x="25" y="300" width="130" height="130" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-13" points="175,336 298,336 298,400 161,400" class="garden-zone" onclick="handleCellarSlotClick(event, 13)"></polygon>
+                        <image id="cellar-img-13" x="173" y="300" width="130" height="130" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-14" points="308,336 430,336 446,400 308,400" class="garden-zone" onclick="handleCellarSlotClick(event, 14)"></polygon>
+                        <image id="cellar-img-14" x="310" y="300" width="130" height="130" class="crop-svg-img" style="display:none;"></image>
+                        <polygon id="cellar-poly-15" points="444,336 566,336 601,400 461,400" class="garden-zone" onclick="handleCellarSlotClick(event, 15)"></polygon>
+                        <image id="cellar-img-15" x="454" y="300" width="130" height="130" class="crop-svg-img" style="display:none;"></image>
+                    </svg>
+                </div>
+            </div>
+            <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
+              <button id="hubCellar_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
 
           <div id="hubWell" class="hub-screen">
             <h2>The Well</h2>
@@ -2409,6 +2483,12 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="ironVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/ironvein.png" alt="Iron Vein" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
+              <button id="silverVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/silvervein.jpeg" alt="Silver Vein" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+              </button>
+              <button id="goldVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                <img src="images/goldvein.jpeg" alt="Gold Vein" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+              </button>
             </div>
             <div class="action-buttons" style="margin-top: 14px;">
               <button id="hubMine_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
@@ -2438,9 +2518,11 @@ button.primary:hover { background: var(--accent-hover); }
             <h2>Blacksmithing</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose an item to smith.</div>
             <div class="tabs" style="margin-top: 14px; margin-bottom: 14px; width: 100%;">
-              <button id="smithCopperTab" class="active">Copper</button>
-              <button id="smithIronTab">Iron</button>
-            </div>
+    <button id="smithCopperTab" class="active">Copper</button>
+    <button id="smithIronTab">Iron</button>
+    <button id="smithSilverTab">Silver</button>
+    <button id="smithGoldTab">Gold</button>
+</div>
             <div id="smithingItemsContainer" class="action-buttons" style="margin-top: 0; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
               </div>
             <div class="action-buttons" style="margin-top: 14px; width: 100%;">
@@ -2459,20 +2541,36 @@ button.primary:hover { background: var(--accent-hover); }
           </div>
           
           <div id="hubForest" class="hub-screen">
-            <h2>Forest</h2>
-            <div style="margin-top:8px; color:#efe3cf;">Choose a tree to chop.</div>
-            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
-              <button id="softwoodTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-                <img src="images/softwood.png" alt="Softwood Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
-              </button>
-              <button id="oakTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
-                <img src="images/oak.png" alt="Oak Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
-              </button>
-            </div>
-            <div class="action-buttons" style="margin-top: 14px;">
-              <button id="hubForest_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
-            </div>
-          </div>
+    <h2>Forest</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Choose a tree to chop.</div>
+    
+    <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+      <button id="softwoodTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/softwood.png" alt="Softwood Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+      </button>
+      
+      <button id="oakTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/oak.png" alt="Oak Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+      </button>
+
+      <button id="birchTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/birch.png" alt="Birch Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+      </button>
+      
+      <button id="mapleTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/maple.png" alt="Maple Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+      </button>
+      
+      <button id="mahoganyTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/mahogany.png" alt="Mahogany Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+      </button>
+    </div>
+
+    <div class="action-buttons" style="margin-top: 14px;">
+      <button id="hubForest_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
+    </div>
+</div>
+          
           
           <div id="hubKitchen" class="hub-screen">
             <h2>Kitchen</h2>
@@ -2537,19 +2635,22 @@ button.primary:hover { background: var(--accent-hover); }
               <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Rat')" 
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Rat (Lvl 1)</div>')"
                    onmouseleave="hideTooltip()">
-                <img src="images/ratmonster.jpeg" alt="Rat" style="height: 100px;">
+                <!-- Reverted height to 100px, added object-fit and object-position -->
+                <img src="images/ratmonster.jpeg" alt="Rat" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
               
               <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Spider')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Spider (Lvl 2)</div>')"
                    onmouseleave="hideTooltip()">
-                <img src="images/spidermonster.png" alt="Spider" style="height: 100px;">
+                <!-- Reverted height to 100px, added object-fit and object-position -->
+                <img src="images/spidermonster.jpeg" alt="Spider" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
               
               <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Centipede')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Centipede (Lvl 5)</div>')"
                    onmouseleave="hideTooltip()">
-                <img src="images/centipedemonster.jpeg" alt="Centipede" style="height: 100px;">
+                <!-- Reverted height to 100px, added object-fit and object-position -->
+                <img src="images/centipedemonster.jpeg" alt="Centipede" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
             
             </div>
@@ -3068,7 +3169,8 @@ const game = {
   farm: {
     chickens: [], 
     cows: [],
-    garden: new Array(16).fill(null) // 16 Crop Tiles
+    garden: new Array(16).fill(null), // 16 Crop Tiles
+    cellar: new Array(16).fill(null)  // 16 Mushroom Tiles
   },
   
   // +++ NEW MAGIC STATE +++
@@ -3249,8 +3351,13 @@ const VALID_ITEMS = [
   'Copper Axe',     // +++ NEW +++
   'Iron Pickaxe',   // +++ NEW +++
   'Iron Axe',       // +++ NEW +++
+  'Silver Pickaxe',
+  'Silver Axe',
   'Softwood',
   'Oak',
+  'Birch',
+  'Maple',
+  'Mahogany',
   'Copper Ore',
   'Copper Bar',
   'Copper Chestplate',
@@ -3267,7 +3374,11 @@ const VALID_ITEMS = [
   'Iron Chestplate',
   'Iron Boots',
   'Iron Shortsword',
-  'Feather', // +++ NEW +++
+  'Silver Ore',
+  'Gold Ore',
+  'Silver Bar', // +++ NEW +++
+  'Gold Bar',   // +++ NEW +++
+  'Feather',
   'Arrow Shaft', // +++ NEW +++
   'Copper Arrow Tip', // +++ NEW +++
   'Unbound Arrow', // +++ NEW +++
@@ -3338,7 +3449,10 @@ const VALID_ITEMS = [
   'Bucket of Milk', // +++ NEW +++
   'Bucket of Water', // +++ NEW +++
   'Grass Seed',      // +++ NEW +++
-  'Grass'            // +++ NEW +++
+  'Grass',
+  'Corn Seed', // ... existing items
+  'Corn',      // ... existing items
+  'Dirt Shroom'            // +++ NEW +++
 ];
 
 const XP_TABLE = [
@@ -3502,6 +3616,16 @@ const IRON_MINE_TIME_MS = 3000;
 const IRON_MINE_XP = 35;
 const IRON_MINE_ITEM = 'Iron Ore';
 
+const SILVER_MINE_LVL = 20;
+const SILVER_MINE_TIME_MS = 4000;
+const SILVER_MINE_XP = 50;
+const SILVER_MINE_ITEM = 'Silver Ore';
+
+const GOLD_MINE_LVL = 30;
+const GOLD_MINE_TIME_MS = 5000;
+const GOLD_MINE_XP = 75;
+const GOLD_MINE_ITEM = 'Gold Ore';
+
 // --- NEW: Crystal Mining Constants ---
 const EARTH_CRYSTAL_LVL = 20;
 const EARTH_CRYSTAL_TIME_MS = 4000;
@@ -3521,6 +3645,8 @@ const WATER_CRYSTAL_ITEM = 'Water Crystal Shard';
 const MINE_COOLDOWN_COPPER_MS = 1000; // 1.0s
 const MINE_COOLDOWN_COAL_MS = 1500;   // 1.5s
 const MINE_COOLDOWN_IRON_MS = 1500;   // 1.5s
+const MINE_COOLDOWN_SILVER_MS = 1500; // 1.5s
+const MINE_COOLDOWN_GOLD_MS = 1500;   // 1.5s
 
 // --- NEW: Blacksmith Level Requirements ---
 const COPPER_BAR_LVL = 1;
@@ -3541,6 +3667,18 @@ const IRON_BOOTS_LVL = 15;
 const IRON_HELMET_LVL = 16;
 const IRON_PLATELEGS_LVL = 17; // +++ NEW +++
 const IRON_CHEST_LVL = 18;
+const SILVER_BAR_LVL = 21;
+const GOLD_BAR_LVL = 31;
+
+const SILVER_BAR_ORE_COST = 1;
+const SILVER_BAR_COAL_COST = 2;
+const SILVER_BAR_XP = 50;
+const SILVER_BAR_TIME_MS = 8000;
+
+const GOLD_BAR_ORE_COST = 1;
+const GOLD_BAR_COAL_COST = 2;
+const GOLD_BAR_XP = 80;
+const GOLD_BAR_TIME_MS = 10000;
 
 // --- NEW: Fletching Level Requirements ---
 const FLETCHING_SHAFT_LVL = 1;
@@ -3745,9 +3883,20 @@ const IRON_PICKAXE_WOOD_COST = 2;
 const IRON_PICKAXE_XP = 140;
 const IRON_PICKAXE_TIME_MS = 6500;
 
+// --- SILVER TOOLS ---
+const SILVER_AXE_BAR_COST = 3;
+const SILVER_AXE_WOOD_COST = 2; // Birch
+const SILVER_AXE_XP = 250;
+const SILVER_AXE_TIME_MS = 8000;
+
+const SILVER_PICKAXE_BAR_COST = 4;
+const SILVER_PICKAXE_WOOD_COST = 2; // Birch
+const SILVER_PICKAXE_XP = 300;
+const SILVER_PICKAXE_TIME_MS = 9000;
+
 // --- NEW: Tool Tier Definitions ---
-const PICKAXE_TIERS = { "Bronze Pickaxe": 1, "Copper Pickaxe": 2, "Iron Pickaxe": 3 };
-const AXE_TIERS = { "Bronze Axe": 1, "Copper Axe": 2, "Iron Axe": 3 };
+const PICKAXE_TIERS = { "Bronze Pickaxe": 1, "Copper Pickaxe": 2, "Iron Pickaxe": 3, "Silver Pickaxe": 4 };
+const AXE_TIERS = { "Bronze Axe": 1, "Copper Axe": 2, "Iron Axe": 3, "Silver Axe": 4 };
 
 // --- NEW: Central Item Stat Definitions ---
 const ITEM_STATS = {
@@ -3897,6 +4046,8 @@ const ITEM_SELL_PRICES = {
   'Copper Ore': 1,
   'Coal Ore': 2,
   'Iron Ore': 4,
+  'Silver Ore': 7,
+  'Gold Ore': 12,
   'Softwood': 1,
   'Oak': 3,
   'Copper Bar': 3,
@@ -3923,6 +4074,8 @@ const ITEM_SELL_PRICES = {
   'Iron Platelegs': 75,
   'Iron Boots': 55,
   'Iron Shortsword': 65,
+  'Silver Pickaxe': 150,
+  'Silver Axe': 150,
   'Feather': 1,
   'Arrow Shaft': 1,
   'Copper Arrow Tip': 2,
@@ -3979,9 +4132,9 @@ const WELL_GATHER_TIME_MS = 2000;
 
 // +++ NEW: Farming Constants ---
 // 5 Hours, 10 Hours, 12 Hours (in milliseconds)
-const FARM_STAGE_2_TIME = 18000000; // 5 Hours (Visual update)
-const FARM_STAGE_3_TIME = 36000000; // 10 Hours (Visual update)
-const FARM_HARVEST_TIME = 43200000; // 12 Hours (Ready)
+const FARM_STAGE_2_TIME = 18000000; // 5 Hours (Visual update to stage 2)
+const FARM_STAGE_3_TIME = 36000000; // 10 Hours (Visual update to stage 3)
+const FARM_HARVEST_TIME = 43200000; // 12 Hours (Ready to harvest + Glow)
 
 const GRASS_SEEDS_REQ = 5;
 
@@ -4053,6 +4206,43 @@ const CROPS = {
     ]
   }
 };
+
+const DIRT_SHROOM_PLANT_COST = 10;
+const DIRT_SHROOM_HARVEST_MIN = 20;
+const DIRT_SHROOM_HARVEST_MAX = 35;
+const HARVEST_SHROOM_XP = 50;
+
+const MUSHROOMS = {
+  'Dirt Shroom': {
+    productName: 'Dirt Shroom',
+    levelReq: 1, 
+    stages: 3,
+    images: ['dirtshroomfirststage.png', 'dirtshroomsecondstage.png', 'dirtshroomthirdstage.png'],
+    // Default global offsets for all tiles
+    stageOffsets: [ {x:0,y:0}, {x:0,y:0}, {x:0,y:0} ],
+    
+    // TILE SPECIFIC OFFSETS (Stage 1, Stage 2, Stage 3)
+    tileSpecificOffsets: {
+      0:  [ {x:-2, y:0}, {x:0, y:0}, {x:-5, y:0} ],
+      1:  [ {x:-2, y:0}, {x:0, y:0}, {x:-3, y:0} ],
+      2:  [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ],
+      3:  [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ],
+      4:  [ {x:-2, y:0}, {x:0, y:0}, {x:-3, y:0} ],
+      5:  [ {x:-2, y:0}, {x:0, y:0}, {x:-3, y:0} ],
+      6:  [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ],
+      7:  [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ],
+      8:  [ {x:-2, y:0}, {x:0, y:0}, {x:-3, y:0} ],
+      9:  [ {x:-2, y:0}, {x:0, y:0}, {x:-3, y:0} ],
+      10: [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ],
+      11: [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ],
+      12: [ {x:-4, y:0}, {x:0, y:0}, {x:-3, y:0} ],
+      13: [ {x:-5, y:0}, {x:0, y:0}, {x:-5, y:0} ],
+      14: [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ],
+      15: [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ]
+    }
+  }
+};
+
 
 // --- QUEST LINES DATABASE ---
 const QUEST_LINES = {
@@ -4718,6 +4908,8 @@ function renderInventoryGrid(){
               let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
               if (item.name === 'Copper Bar') imgName = 'copperbar';
               else if (item.name === 'Copper Chestplate') imgName = 'copperchestplate';
+              else if (item.name === 'Silver Ore') imgName = 'silverore';
+              else if (item.name === 'Gold Ore') imgName = 'goldore';
               else if (item.name === 'Copper Shortsword') imgName = 'coppershortsword';
               else if (item.name === 'Copper Helmet') imgName = 'copperhelmet';
               else if (item.name === 'Copper Boots') imgName = 'copperboots';
@@ -4745,6 +4937,8 @@ function renderInventoryGrid(){
               else if (item.name === 'Coal Ore') imgName = 'coalore';
               else if (item.name === 'Iron Ore') imgName = 'ironore';
               else if (item.name === 'Iron Bar') imgName = 'ironbar';
+              else if (item.name === 'Silver Bar') imgName = 'silverbar';
+              else if (item.name === 'Gold Bar') imgName = 'goldbar';
               else if (item.name === 'Iron Helmet') imgName = 'ironhelmet';
               else if (item.name === 'Iron Chestplate') imgName = 'ironchestplate';
               else if (item.name === 'Iron Boots') imgName = 'ironboots';
@@ -4759,6 +4953,8 @@ function renderInventoryGrid(){
               else if (item.name === 'Copper Axe') imgName = 'copperaxe'; // +++ NEW +++
               else if (item.name === 'Iron Pickaxe') imgName = 'ironpickaxe'; // +++ NEW +++
               else if (item.name === 'Iron Axe') imgName = 'ironaxe'; // +++ NEW +++
+              else if (item.name === 'Silver Pickaxe') imgName = 'silverpickaxe'; // +++ NEW +++
+              else if (item.name === 'Silver Axe') imgName = 'silveraxe'; // +++ NEW +++
               else if (item.name === 'Feather') imgName = 'feather'; // +++ NEW +++
               else if (item.name === 'Arrow Shaft') imgName = 'arrowshaft'; // +++ NEW +++
               else if (item.name === 'Copper Arrow Tip') imgName = 'copperarrowtip'; // +++ NEW +++
@@ -4842,7 +5038,9 @@ function renderInventoryGrid(){
                   imgName = 'cornseed';
               } else if (item.name === 'Corn') {
                   imgName = 'corn';
-              }
+              } else if (item.name === 'Dirt Shroom') {
+                  imgName = 'dirtshroom';}
+              
 
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
@@ -5876,6 +6074,7 @@ function updateSkillUI(){
 
 // +++ NEW: Level Up Popup Logic +++
 function showLevelUpPopup(skill, newLevel) {
+hideTooltip();
   const overlay = document.getElementById('levelUpOverlay');
   const iconEl = document.getElementById('levelUpIcon');
   const skillNameEl = document.getElementById('levelUpSkillName');
@@ -5899,7 +6098,7 @@ function showLevelUpPopup(skill, newLevel) {
     'stoneforging': 'stoneforgingskillicon.jpeg',
     'bountyhunting': 'bountyhunterskillicon.jpeg',
     'farming': 'farmingskillicon.jpeg',
-    'petmastery': 'petmasteryskillicon.jpeg' // +++ FIX: Add Pet Mastery Icon +++
+    'petmastery': 'petmasteryskillicon.jpeg'
   };
 
   // Format Skill Name (capitalize first letter)
@@ -5924,21 +6123,35 @@ function showLevelUpPopup(skill, newLevel) {
     // 2. Fade In
     overlay.classList.add('visible');
     
-    // Clear any existing timeout to prevent early closing
+    // Clear any existing timeout to prevent early closing logic from running twice
     if (game.levelUpTimeout) clearTimeout(game.levelUpTimeout);
     if (game.levelUpFadeTimeout) clearTimeout(game.levelUpFadeTimeout);
-    
-    // 3. Schedule Fade Out (4.5 seconds visible + 0.5s fade = 5s total)
-    game.levelUpTimeout = setTimeout(() => {
-        // Trigger CSS Fade Out
+
+    // --- NEW: Helper function to close the popup ---
+    const closePopup = () => {
+        // Clear timers so they don't fire later if we clicked early
+        if (game.levelUpTimeout) clearTimeout(game.levelUpTimeout);
+        if (game.levelUpFadeTimeout) clearTimeout(game.levelUpFadeTimeout);
+        
+        // Start Fade Out
         overlay.classList.remove('visible');
         
-        // 4. Remove from display after transition completes (0.5s)
+        // Remove from display after transition completes (0.5s)
         game.levelUpFadeTimeout = setTimeout(() => {
             overlay.style.display = 'none';
-        }, 500); // Match CSS transition time
-        
-    }, 4500);
+            overlay.onclick = null; // Clean up listener
+        }, 500); 
+    };
+
+    // --- NEW: Click anywhere on overlay to close ---
+    overlay.onclick = (e) => {
+        e.stopPropagation(); // Prevent clicking elements behind it
+        closePopup();
+    };
+    
+    // 3. Set auto-close timer (Fallback if user doesn't click)
+    // 4.5 seconds visible + 0.5s fade = 5s total
+    game.levelUpTimeout = setTimeout(closePopup, 4500);
   }
 }
 
@@ -6035,7 +6248,7 @@ function addXP(skill, amount, delay = 0){
   if (skill === 'crafting') barId = 'craftProgress'; 
   
   // +++ FIX: Added 'farming' to this exclusion list +++
-  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting' && skill !== 'crafting' && skill !== 'fletching' && skill !== 'fishing' && skill !== 'stoneforging' && skill !== 'farming') { 
+  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting' && skill !== 'crafting' && skill !== 'fletching' && skill !== 'fishing' && skill !== 'stoneforging' && skill !== 'farming' && skill !== 'strength') { 
     if (delay > 0) {
       setTimeout(() => {
         showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
@@ -8189,6 +8402,375 @@ function openIronShortswordSmith(){
   document.getElementById('stopShortswordBtn').onclick = () => stopBlacksmithing('shortswordProgress', 'startShortswordBtn', 'stopShortswordBtn');
   showMainScreen('hubDynamic'); // <-- 2. ADDED
   }
+
+  // --- SILVER BAR SMITHING ---
+// --- SILVER BAR SMITHING ---
+function openSilverBarSmith(){
+  game.shopOpen = false; 
+  hideTooltip(); 
+  stopMining();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Smithing - Silver Bar</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${SILVER_BAR_ORE_COST} Silver Ore, ${SILVER_BAR_COAL_COST} Coal Ore.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="smithProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startSmithBtn" class="primary">Start Smithing</button>
+      <button id="stopSmithBtn" class="primary" style="background:#555; display:none;">Stop Smithing</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> 
+    </div>
+  `;
+  document.getElementById('startSmithBtn').onclick = startSilverBarCrafting;
+  document.getElementById('stopSmithBtn').onclick = stopBlacksmithing;
+  showMainScreen('hubDynamic');
+}
+
+async function startSilverBarCrafting() {
+  if (!game.isSessionActive) { await showGameAlert("Session Not Active", "Take control to act."); return; }
+  if (!canReceiveItem('Silver Bar')) { await showGameAlert("Inventory Full", "No room in inventory."); return; }
+  
+  if (game.blacksmithingActive) return;
+
+  let silver = 0, coal = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Silver Ore') silver += slot.qty;
+      if (slot && slot.name === 'Coal Ore') coal += slot.qty;
+  }
+
+  if (silver < SILVER_BAR_ORE_COST || coal < SILVER_BAR_COAL_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${SILVER_BAR_ORE_COST} Silver Ore and ${SILVER_BAR_COAL_COST} Coal Ore.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  document.getElementById('startSmithBtn').style.display = 'none';
+  document.getElementById('stopSmithBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => silverBarLoop(Date.now(), Date.now()), 16);
+}
+
+async function silverBarLoop(ts, startTime) {
+  if (!game.blacksmithingActive) return;
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= SILVER_BAR_TIME_MS) {
+    let silver = 0, coal = 0;
+    for (const slot of game.inventory) {
+      if (slot && slot.name === 'Silver Ore') silver += slot.qty;
+      if (slot && slot.name === 'Coal Ore') coal += slot.qty;
+    }
+
+    if (silver >= SILVER_BAR_ORE_COST && coal >= SILVER_BAR_COAL_COST) {
+      removeItem('Silver Ore', SILVER_BAR_ORE_COST);
+      removeItem('Coal Ore', SILVER_BAR_COAL_COST);
+      addItem('Silver Bar', 1);
+      
+      // AWARD XP
+      addXP('blacksmith', SILVER_BAR_XP);
+      
+      // VISUAL FEEDBACK (Since addXP hides blacksmith popups)
+      showItemPopup(`+${SILVER_BAR_XP} Blacksmith XP`, 'smithProgress', 0);
+      showItemPopup(`+1 Silver Bar`, 'smithProgress', 450);
+      
+      document.getElementById('smithProgress').style.width = '0%';
+
+      // Check for next loop
+      let nextSilver = 0, nextCoal = 0;
+      for (const slot of game.inventory) {
+        if (slot && slot.name === 'Silver Ore') nextSilver += slot.qty;
+        if (slot && slot.name === 'Coal Ore') nextCoal += slot.qty;
+      }
+
+      if (nextSilver >= SILVER_BAR_ORE_COST && nextCoal >= SILVER_BAR_COAL_COST) {
+        return silverBarLoop(Date.now(), Date.now());
+      } else {
+        stopBlacksmithing();
+        showGameAlert("Out of Materials", "You don't have enough materials to smith another Silver Bar.");
+      }
+    } else {
+      stopBlacksmithing();
+      await showGameAlert("Not Enough Materials", `You need at least ${SILVER_BAR_ORE_COST} Silver Ore and ${SILVER_BAR_COAL_COST} Coal Ore.`);
+    }
+  } else {
+    document.getElementById('smithProgress').style.width = (elapsed / SILVER_BAR_TIME_MS) * 100 + '%';
+    game.progressFrame = setTimeout(() => silverBarLoop(Date.now(), startTime), 16);
+  }
+}
+
+// --- GOLD BAR SMITHING ---
+function openGoldBarSmith(){
+  game.shopOpen = false; 
+  hideTooltip(); 
+  stopMining();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Smithing - Gold Bar</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${GOLD_BAR_ORE_COST} Gold Ore, ${GOLD_BAR_COAL_COST} Coal Ore.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="smithProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startSmithBtn" class="primary">Start Smithing</button>
+      <button id="stopSmithBtn" class="primary" style="background:#555; display:none;">Stop Smithing</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> 
+    </div>
+  `;
+  document.getElementById('startSmithBtn').onclick = startGoldBarCrafting;
+  document.getElementById('stopSmithBtn').onclick = stopBlacksmithing;
+  showMainScreen('hubDynamic');
+}
+
+async function startGoldBarCrafting() {
+  if (!game.isSessionActive) { await showGameAlert("Session Not Active", "Take control to act."); return; }
+  if (!canReceiveItem('Gold Bar')) { await showGameAlert("Inventory Full", "No room in inventory."); return; }
+  
+  if (game.blacksmithingActive) return;
+
+  let goldOre = 0, coal = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Gold Ore') goldOre += slot.qty;
+      if (slot && slot.name === 'Coal Ore') coal += slot.qty;
+  }
+
+  if (goldOre < GOLD_BAR_ORE_COST || coal < GOLD_BAR_COAL_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${GOLD_BAR_ORE_COST} Gold Ore and ${GOLD_BAR_COAL_COST} Coal Ore.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  document.getElementById('startSmithBtn').style.display = 'none';
+  document.getElementById('stopSmithBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => goldBarLoop(Date.now(), Date.now()), 16);
+}
+
+async function goldBarLoop(ts, startTime) {
+  if (!game.blacksmithingActive) return;
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= GOLD_BAR_TIME_MS) {
+    let goldOre = 0, coal = 0;
+    for (const slot of game.inventory) {
+      if (slot && slot.name === 'Gold Ore') goldOre += slot.qty;
+      if (slot && slot.name === 'Coal Ore') coal += slot.qty;
+    }
+
+    if (goldOre >= GOLD_BAR_ORE_COST && coal >= GOLD_BAR_COAL_COST) {
+      removeItem('Gold Ore', GOLD_BAR_ORE_COST);
+      removeItem('Coal Ore', GOLD_BAR_COAL_COST);
+      addItem('Gold Bar', 1);
+      
+      // AWARD XP
+      addXP('blacksmith', GOLD_BAR_XP);
+      
+      // VISUAL FEEDBACK
+      showItemPopup(`+${GOLD_BAR_XP} Blacksmith XP`, 'smithProgress', 0);
+      showItemPopup(`+1 Gold Bar`, 'smithProgress', 450);
+      
+      document.getElementById('smithProgress').style.width = '0%';
+
+      // Check for next loop
+      let nextGold = 0, nextCoal = 0;
+      for (const slot of game.inventory) {
+        if (slot && slot.name === 'Gold Ore') nextGold += slot.qty;
+        if (slot && slot.name === 'Coal Ore') nextCoal += slot.qty;
+      }
+
+      if (nextGold >= GOLD_BAR_ORE_COST && nextCoal >= GOLD_BAR_COAL_COST) {
+        return goldBarLoop(Date.now(), Date.now());
+      } else {
+        stopBlacksmithing();
+        showGameAlert("Out of Materials", "You don't have enough materials to smith another Gold Bar.");
+      }
+    } else {
+      stopBlacksmithing();
+      await showGameAlert("Not Enough Materials", `You need at least ${GOLD_BAR_ORE_COST} Gold Ore and ${GOLD_BAR_COAL_COST} Coal Ore.`);
+    }
+  } else {
+    document.getElementById('smithProgress').style.width = (elapsed / GOLD_BAR_TIME_MS) * 100 + '%';
+    game.progressFrame = setTimeout(() => goldBarLoop(Date.now(), startTime), 16);
+  }
+}
+
+// --- SILVER AXE UI ---
+function openSilverAxeSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Smithing - Silver Axe</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${SILVER_AXE_BAR_COST} Silver Bars, ${SILVER_AXE_WOOD_COST} Birch.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="axeProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startAxeBtn" class="primary">Start Crafting</button>
+      <button id="stopAxeBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startAxeBtn').onclick = startSilverAxeCrafting;
+  document.getElementById('stopAxeBtn').onclick = () => stopBlacksmithing('axeProgress', 'startAxeBtn', 'stopAxeBtn');
+  showMainScreen('hubDynamic');
+}
+
+async function startSilverAxeCrafting() {
+  if (!game.isSessionActive) { await showGameAlert("Session Not Active", "Take control to act."); return; }
+  if (!canReceiveItem('Silver Axe')) { await showGameAlert("Inventory Full", "No room in inventory."); return; }
+  
+  if (game.blacksmithingActive) return;
+
+  let bars = 0, birch = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Silver Bar') bars += slot.qty;
+      if (slot && slot.name === 'Birch') birch += slot.qty;
+  }
+
+  if (bars < SILVER_AXE_BAR_COST || birch < SILVER_AXE_WOOD_COST) {
+      await showGameAlert("Not Enough Materials", `You need ${SILVER_AXE_BAR_COST} Silver Bars and ${SILVER_AXE_WOOD_COST} Birch.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  document.getElementById('startAxeBtn').style.display = 'none';
+  document.getElementById('stopAxeBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => silverAxeLoop(Date.now(), Date.now()), 16);
+}
+
+async function silverAxeLoop(ts, startTime) {
+  if (!game.blacksmithingActive) return;
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= SILVER_AXE_TIME_MS) {
+    let bars = 0, birch = 0;
+    for (const slot of game.inventory) {
+      if (slot && slot.name === 'Silver Bar') bars += slot.qty;
+      if (slot && slot.name === 'Birch') birch += slot.qty;
+    }
+
+    if (bars >= SILVER_AXE_BAR_COST && birch >= SILVER_AXE_WOOD_COST) {
+      removeItem('Silver Bar', SILVER_AXE_BAR_COST);
+      removeItem('Birch', SILVER_AXE_WOOD_COST);
+      addItem('Silver Axe', 1);
+      addXP('blacksmith', SILVER_AXE_XP);
+      showItemPopup(`+${SILVER_AXE_XP} Blacksmith XP`, 'axeProgress', 0);
+      showItemPopup(`+1 Silver Axe`, 'axeProgress', 450);
+      document.getElementById('axeProgress').style.width = '0%';
+
+      let nextBars = 0, nextBirch = 0;
+      for (const slot of game.inventory) {
+        if (slot && slot.name === 'Silver Bar') nextBars += slot.qty;
+        if (slot && slot.name === 'Birch') nextBirch += slot.qty;
+      }
+
+      if (nextBars >= SILVER_AXE_BAR_COST && nextBirch >= SILVER_AXE_WOOD_COST) {
+        return silverAxeLoop(Date.now(), Date.now());
+      } else {
+        stopBlacksmithing('axeProgress', 'startAxeBtn', 'stopAxeBtn');
+        showGameAlert("Out of Materials", "You don't have enough materials to craft another Silver Axe.");
+      }
+    } else {
+      stopBlacksmithing('axeProgress', 'startAxeBtn', 'stopAxeBtn');
+    }
+  } else {
+    document.getElementById('axeProgress').style.width = (elapsed / SILVER_AXE_TIME_MS) * 100 + '%';
+    game.progressFrame = setTimeout(() => silverAxeLoop(Date.now(), startTime), 16);
+  }
+}
+
+// --- SILVER PICKAXE UI ---
+function openSilverPickaxeSmith(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Smithing - Silver Pickaxe</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${SILVER_PICKAXE_BAR_COST} Silver Bars, ${SILVER_PICKAXE_WOOD_COST} Birch.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="pickaxeProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startPickaxeBtn" class="primary">Start Crafting</button>
+      <button id="stopPickaxeBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openBlacksmithHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startPickaxeBtn').onclick = startSilverPickaxeCrafting;
+  document.getElementById('stopPickaxeBtn').onclick = () => stopBlacksmithing('pickaxeProgress', 'startPickaxeBtn', 'stopPickaxeBtn');
+  showMainScreen('hubDynamic');
+}
+
+async function startSilverPickaxeCrafting() {
+  if (!game.isSessionActive) { await showGameAlert("Session Not Active", "Take control to act."); return; }
+  if (!canReceiveItem('Silver Pickaxe')) { await showGameAlert("Inventory Full", "No room in inventory."); return; }
+  
+  if (game.blacksmithingActive) return;
+
+  let bars = 0, birch = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Silver Bar') bars += slot.qty;
+      if (slot && slot.name === 'Birch') birch += slot.qty;
+  }
+
+  if (bars < SILVER_PICKAXE_BAR_COST || birch < SILVER_PICKAXE_WOOD_COST) {
+      await showGameAlert("Not Enough Materials", `You need ${SILVER_PICKAXE_BAR_COST} Silver Bars and ${SILVER_PICKAXE_WOOD_COST} Birch.`);
+      return;
+  }
+  
+  game.blacksmithingActive = true;
+  document.getElementById('startPickaxeBtn').style.display = 'none';
+  document.getElementById('stopPickaxeBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => silverPickaxeLoop(Date.now(), Date.now()), 16);
+}
+
+async function silverPickaxeLoop(ts, startTime) {
+  if (!game.blacksmithingActive) return;
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= SILVER_PICKAXE_TIME_MS) {
+    let bars = 0, birch = 0;
+    for (const slot of game.inventory) {
+      if (slot && slot.name === 'Silver Bar') bars += slot.qty;
+      if (slot && slot.name === 'Birch') birch += slot.qty;
+    }
+
+    if (bars >= SILVER_PICKAXE_BAR_COST && birch >= SILVER_PICKAXE_WOOD_COST) {
+      removeItem('Silver Bar', SILVER_PICKAXE_BAR_COST);
+      removeItem('Birch', SILVER_PICKAXE_WOOD_COST);
+      addItem('Silver Pickaxe', 1);
+      addXP('blacksmith', SILVER_PICKAXE_XP);
+      showItemPopup(`+${SILVER_PICKAXE_XP} Blacksmith XP`, 'pickaxeProgress', 0);
+      showItemPopup(`+1 Silver Pickaxe`, 'pickaxeProgress', 450);
+      document.getElementById('pickaxeProgress').style.width = '0%';
+
+      let nextBars = 0, nextBirch = 0;
+      for (const slot of game.inventory) {
+        if (slot && slot.name === 'Silver Bar') nextBars += slot.qty;
+        if (slot && slot.name === 'Birch') nextBirch += slot.qty;
+      }
+
+      if (nextBars >= SILVER_PICKAXE_BAR_COST && nextBirch >= SILVER_PICKAXE_WOOD_COST) {
+        return silverPickaxeLoop(Date.now(), Date.now());
+      } else {
+        stopBlacksmithing('pickaxeProgress', 'startPickaxeBtn', 'stopPickaxeBtn');
+        showGameAlert("Out of Materials", "You don't have enough materials to craft another Silver Pickaxe.");
+      }
+    } else {
+      stopBlacksmithing('pickaxeProgress', 'startPickaxeBtn', 'stopPickaxeBtn');
+    }
+  } else {
+    document.getElementById('pickaxeProgress').style.width = (elapsed / SILVER_PICKAXE_TIME_MS) * 100 + '%';
+    game.progressFrame = setTimeout(() => silverPickaxeLoop(Date.now(), startTime), 16);
+  }
+}
 
 // +++ NEW: COPPER AXE UI +++
 function openCopperAxeSmith(){
@@ -10663,7 +11245,8 @@ const MAX_COWS = 5;
 const COOP_COST = 75000;
 const BARN_COST = 150000;
 const WELL_COST = 30000;
-const GARDEN_COST = 75000; // +++ NEW +++
+const GARDEN_COST = 75000;
+const CELLAR_BUILDING_COST = 60000; // Added Cellar Cost // +++ NEW +++
 
 // +++ NEW BOUNTY HUNTING CONSTANTS +++
 const BOUNTY_TIER_1_TARGETS = ['Rat', 'Spider', 'Chicken', 'Cow', 'Centipede'];
@@ -11049,6 +11632,63 @@ async function sellPet(petId) {
         await showGameAlert("Pet Sold", `You sold your pet for ${sellPrice} Gold.`);
     }
 }
+
+function stopCombat() {
+  // Check if we are in combat, then run away/stop
+  if (game.inCombat) {
+    runFromCombat(false);
+  }
+}
+
+// --- CELLAR FUNCTIONS ---
+
+async function handleCellarClick() {
+   // Initialize if missing (backward compatibility)
+   if (!game.farm.buildings) game.farm.buildings = { coop: false, barn: false, well: false, garden: false, cellar: false };
+
+   if (!game.farm.buildings.cellar) {
+       // Requirement check
+       if (game.farming.level < 1) {
+           await showGameAlert("Level Required", "You need Farming Level 1 to clear the Cellar.");
+           return;
+       }
+
+       const confirmed = await showGameConfirm("Buy Cellar", `Clear and repair the Cellar for ${formatAmount(CELLAR_BUILDING_COST)} Gold?`);
+       if (confirmed) {
+           if (game.gold >= CELLAR_BUILDING_COST) {
+               addGold(-CELLAR_BUILDING_COST);
+               game.farm.buildings.cellar = true;
+               if (typeof window.savePlayerData === 'function') window.savePlayerData();
+               await showGameAlert("Success", "You now have access to the Cellar!");
+               
+               // Open after purchase
+               stopMining();
+               stopBlacksmithing();
+               stopCombat();
+               openCellarHub();
+           } else {
+               await showGameAlert("Not Enough Gold", `You need ${formatAmount(CELLAR_BUILDING_COST)} Gold.`);
+           }
+       }
+       return;
+   }
+
+   // If already owned
+   stopMining();
+   stopBlacksmithing();
+   stopCombat();
+   openCellarHub();
+}
+
+function openCellarHub() {
+  // Attach button listener for the main return button
+  const returnBtn = document.getElementById('hubCellar_ReturnBtn');
+  if (returnBtn) returnBtn.onclick = openPersonalFarmHub;
+
+  showMainScreen('hubCellar');
+}
+
+
 
 // +++ NEW: FARM INTERACTION FUNCTIONS +++
 
@@ -11470,11 +12110,10 @@ function renderGarden() {
     const poly = document.getElementById(`garden-poly-${index}`);
     const imgEl = document.getElementById(`garden-img-${index}`);
 
-    if (!poly) return; 
+    if (!poly || !imgEl) return; 
 
     poly.onmouseleave = hideTooltip;
 
-    // +++ Wet Soil Visual +++
     if (slotData && slotData.watered) {
         poly.classList.add('watered-soil');
     } else {
@@ -11488,59 +12127,245 @@ function renderGarden() {
          if (imgEl) imgEl.style.display = 'none';
          poly.onmouseenter = (e) => showTooltip(e, `<div style="color:#ffaaaa;">Needs Water!</div>Click to water`);
       } else {
-        // +++ NEW TIMING VISUALS +++
         const elapsed = Date.now() - slotData.waterTime;
         let stageIndex = 0;
-        
-        // Determine Image Stage (0 = Start, 1 = 5hrs, 2 = 10hrs)
         if (elapsed >= FARM_STAGE_3_TIME) stageIndex = 2;
         else if (elapsed >= FARM_STAGE_2_TIME) stageIndex = 1;
-        
-        // Safety check if arrays are smaller
         stageIndex = Math.min(stageIndex, cropDef.stages - 1);
         
         const imgName = cropDef.images[stageIndex];
 
-        if (imgEl) {
-          // Dynamic Positioning
-          if (!imgEl.hasAttribute('data-base-y')) {
-              imgEl.setAttribute('data-base-x', imgEl.getAttribute('x'));
-              imgEl.setAttribute('data-base-y', imgEl.getAttribute('y'));
-          }
-
-          let osX = 0;
-          let osY = 0;
-          if (cropDef.stageOffsets && cropDef.stageOffsets[stageIndex]) {
-              osX = cropDef.stageOffsets[stageIndex].x;
-              osY = cropDef.stageOffsets[stageIndex].y;
-          }
-
-          const baseX = parseFloat(imgEl.getAttribute('data-base-x'));
-          const baseY = parseFloat(imgEl.getAttribute('data-base-y'));
-          imgEl.setAttribute('x', baseX + osX);
-          imgEl.setAttribute('y', baseY + osY);
-
-          imgEl.style.display = 'block';
-          imgEl.setAttribute('href', `images/${imgName}`); 
-          
-          // +++ HARVEST GLOW AT 12 HOURS +++
-          if (elapsed >= FARM_HARVEST_TIME) {
-             imgEl.style.filter = "drop-shadow(0 0 3px #44aa44)"; // Green glow
-             imgEl.style.opacity = "1";
-          } else {
-             imgEl.style.filter = "none";
-             imgEl.style.opacity = "1";
-          }
+        if (!imgEl.hasAttribute('data-base-x')) {
+            imgEl.setAttribute('data-base-x', imgEl.getAttribute('x'));
+            imgEl.setAttribute('data-base-y', imgEl.getAttribute('y'));
         }
+
+        let osX = 0;
+        let osY = 0;
+        // FIXED: Now correctly checks cropDef instead of shroomDef
+        if (cropDef.stageOffsets && cropDef.stageOffsets[stageIndex]) {
+            osX = cropDef.stageOffsets[stageIndex].x;
+            osY = cropDef.stageOffsets[stageIndex].y;
+        }
+
+        const baseX = parseFloat(imgEl.getAttribute('data-base-x'));
+        const baseY = parseFloat(imgEl.getAttribute('data-base-y'));
+        imgEl.setAttribute('x', baseX + osX);
+        imgEl.setAttribute('y', baseY + osY);
+
+        imgEl.style.display = 'block';
+        imgEl.setAttribute('href', `images/${imgName}`); 
         
+        if (elapsed >= FARM_HARVEST_TIME) {
+           imgEl.style.filter = "drop-shadow(0 0 3px #44aa44)";
+        } else {
+           imgEl.style.filter = "none";
+        }
         poly.onmouseenter = (e) => showCropTooltip(e, index);
       }
-
     } else {
       if (imgEl) imgEl.style.display = 'none';
       poly.onmouseenter = (e) => showTooltip(e, "Empty Plot<br><span style='color:#aaffaa'>Click to plant</span>");
     }
   });
+}
+
+// =================================================================
+// +++ NEW: CELLAR MUSHROOM SYSTEM +++
+// =================================================================
+
+function renderCellar() {
+  if (!game.farm.cellar) game.farm.cellar = new Array(16).fill(null);
+
+  game.farm.cellar.forEach((slotData, index) => {
+    const poly = document.getElementById(`cellar-poly-${index}`);
+    const imgEl = document.getElementById(`cellar-img-${index}`);
+    if (!poly || !imgEl) return;
+
+    poly.onmouseleave = hideTooltip;
+
+    if (slotData) {
+      const shroomDef = MUSHROOMS[slotData.crop];
+      const elapsed = Date.now() - slotData.waterTime; 
+      let stageIndex = 0;
+
+      if (elapsed >= FARM_STAGE_3_TIME) stageIndex = 2;
+      else if (elapsed >= FARM_STAGE_2_TIME) stageIndex = 1;
+      
+      const imgName = shroomDef.images[stageIndex];
+
+      // --- COORDINATE LOGIC ---
+      if (!imgEl.hasAttribute('data-base-x')) {
+          imgEl.setAttribute('data-base-x', imgEl.getAttribute('x'));
+          imgEl.setAttribute('data-base-y', imgEl.getAttribute('y'));
+      }
+
+      let osX = 0;
+      let osY = 0;
+
+      // 1. Check for tile specific offset
+      if (shroomDef.tileSpecificOffsets && shroomDef.tileSpecificOffsets[index] && shroomDef.tileSpecificOffsets[index][stageIndex]) {
+          osX = shroomDef.tileSpecificOffsets[index][stageIndex].x;
+          osY = shroomDef.tileSpecificOffsets[index][stageIndex].y;
+      } 
+      // 2. Otherwise use global stage offset
+      else if (shroomDef.stageOffsets && shroomDef.stageOffsets[stageIndex]) {
+          osX = shroomDef.stageOffsets[stageIndex].x;
+          osY = shroomDef.stageOffsets[stageIndex].y;
+      }
+
+      const baseX = parseFloat(imgEl.getAttribute('data-base-x'));
+      const baseY = parseFloat(imgEl.getAttribute('data-base-y'));
+      imgEl.setAttribute('x', baseX + osX);
+      imgEl.setAttribute('y', baseY + osY);
+
+      // --- VISUALS ---
+      imgEl.style.display = 'block';
+      imgEl.setAttribute('href', `images/${imgName}`); 
+      
+      if (elapsed >= FARM_HARVEST_TIME) {
+         imgEl.style.filter = "drop-shadow(0 0 5px #b300ff)"; 
+      } else {
+         imgEl.style.filter = "none";
+      }
+      poly.onmouseenter = (e) => showShroomTooltip(e, index);
+    } else {
+      if (imgEl) imgEl.style.display = 'none';
+      poly.onmouseenter = (e) => showTooltip(e, "Dark Damp Soil<br><span style='color:#aaffaa'>Click to plant Mushroom</span>");
+    }
+  });
+}
+
+function handleCellarSlotClick(e, index) {
+  hideItemContextMenu();
+  const slotData = game.farm.cellar[index];
+  if (!slotData) {
+    showMushroomMenu(e, index);
+  } else {
+    const elapsed = Date.now() - slotData.waterTime;
+    if (elapsed >= FARM_HARVEST_TIME) { 
+      harvestMushroom(index);
+    }
+  }
+}
+
+function showMushroomMenu(event, index) {
+  const menu = document.getElementById('itemContextMenu');
+  let menuContent = `<div style="padding:5px 8px; font-weight:bold; color:var(--gold); border-bottom:1px solid #555;">Plant Mushroom</div>`;
+  
+  let shroomCount = 0;
+  for(const slot of game.inventory) {
+    if(slot && slot.name === 'Dirt Shroom') shroomCount += slot.qty;
+  }
+
+  if (shroomCount >= DIRT_SHROOM_PLANT_COST) {
+     menuContent += `
+       <div class="planting-menu-item" onclick="plantMushroom(${index}, 'Dirt Shroom')" style="display:flex; align-items:center; gap:10px; padding:8px; cursor:pointer;">
+          <img src="images/dirtshroom.png" style="width:32px; height:32px;">
+          <div>
+            <div>Dirt Shroom</div>
+            <div style="font-size:11px; color:#aaa;">Cost: ${DIRT_SHROOM_PLANT_COST} Shrooms</div>
+          </div>
+       </div>
+     `;
+  } else {
+    menuContent += `<div style="padding:10px; font-style:italic; color:#ffaaaa; font-size:12px;">Need 10 Dirt Shrooms to plant.</div>`;
+  }
+
+  menu.innerHTML = menuContent;
+  menu.style.display = 'block';
+  const rect = document.body.getBoundingClientRect();
+  menu.style.left = (event.clientX - rect.left + 5) + 'px';
+  menu.style.top = (event.clientY - rect.top + 5) + 'px';
+
+  setTimeout(() => {
+    document.addEventListener('click', hideItemContextMenu, { once: true });
+  }, 0);
+}
+
+function plantMushroom(index, name) {
+  if (!removeItem('Dirt Shroom', DIRT_SHROOM_PLANT_COST)) return;
+
+  game.farm.cellar[index] = {
+    crop: name,
+    stage: 0,
+    watered: true, // Shrooms start "watered" (growing) automatically
+    plantTime: Date.now(),
+    waterTime: Date.now() 
+  };
+
+  playGlobalSound('sounds/soundeffects/inventorysound.mp3');
+  renderCellar();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function harvestMushroom(index) {
+  const slotData = game.farm.cellar[index];
+  if (!slotData) return;
+
+  if (!canReceiveItem('Dirt Shroom')) {
+    showGameAlert("Inventory Full", "Clear space to harvest.");
+    return;
+  }
+
+  const yieldAmount = Math.floor(Math.random() * (DIRT_SHROOM_HARVEST_MAX - DIRT_SHROOM_HARVEST_MIN + 1)) + DIRT_SHROOM_HARVEST_MIN;
+  addItem('Dirt Shroom', yieldAmount);
+  addXP('farming', HARVEST_SHROOM_XP);
+  
+  showItemPopup(`+${HARVEST_SHROOM_XP} Farming XP`, null, 0);
+  showItemPopup(`+${yieldAmount} Dirt Shrooms`, null, 450);
+
+  game.farm.cellar[index] = null;
+  playGlobalSound('sounds/soundeffects/inventorysound.mp3');
+  renderCellar();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function showShroomTooltip(e, index) {
+    const getTooltipContent = () => {
+        const slot = (game.farm.cellar && game.farm.cellar[index]) ? game.farm.cellar[index] : null;
+        if (!slot) return null;
+
+        const elapsed = Date.now() - slot.waterTime;
+        let remaining = 0;
+        let statusText = "";
+
+        if (elapsed >= FARM_HARVEST_TIME) {
+            statusText = `<span style="color:#aaffaa; font-weight:bold;">Ready to Harvest!</span>`;
+        } else {
+            statusText = `<span style="color:#ccc;">Fungus Spreading...</span>`;
+            remaining = FARM_HARVEST_TIME - elapsed;
+        }
+
+        const formatTimer = (ms) => {
+            if (ms < 0) ms = 0;
+            const totalSec = Math.ceil(ms / 1000);
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            return `${h}h ${m}m ${s}s`;
+        };
+
+        return `
+            <div style="font-weight:bold; color:var(--gold); margin-bottom:5px; border-bottom:1px solid #555; padding-bottom:3px;">${slot.crop}</div>
+            <div style="margin-bottom:5px;">${statusText}</div>
+            ${elapsed < FARM_HARVEST_TIME ? `<div style="font-size:12px;">Harvest in: <span style="color:#fff; font-family:monospace;">${formatTimer(remaining)}</span></div>` : ''}
+        `;
+    };
+
+    const initialContent = getTooltipContent();
+    if (initialContent) showTooltip(e, initialContent);
+
+    if (tooltipInterval) clearInterval(tooltipInterval);
+    tooltipInterval = setInterval(() => {
+        const newContent = getTooltipContent();
+        const tooltipEl = document.getElementById('tooltip');
+        if (newContent && tooltipEl && tooltipEl.style.display !== 'none') {
+            tooltipEl.innerHTML = newContent;
+        } else {
+            hideTooltip();
+        }
+    }, 1000);
 }
 
 function handleGardenSlotClick(e, index) {
@@ -12080,8 +12905,25 @@ function processFarmLogic() {
         if (cowUpdate) updateBarnUI();
     }
 
-    // 3. Process Garden
+    // 3. Process Garden & Cellar
     processGardenGrowth(now);
+    processCellarGrowth(now);
+}
+
+function processCellarGrowth(now) {
+  if (!game.farm.cellar) return;
+  const isCellarOpen = document.getElementById('hubCellar').classList.contains('active');
+  game.farm.cellar.forEach(slot => {
+    if (slot) {
+      const elapsed = now - slot.waterTime;
+      let calculatedStage = 0;
+      if (elapsed >= FARM_STAGE_3_TIME) calculatedStage = 2;
+      else if (elapsed >= FARM_STAGE_2_TIME) calculatedStage = 1;
+      else calculatedStage = 0;
+      slot.stage = calculatedStage;
+    }
+  });
+  if (isCellarOpen) renderCellar();
 }
 
 function handleWindmillClick() {
@@ -12228,7 +13070,7 @@ function gatheringWaterLoop(timestamp, startTime) {
   const elapsed = Date.now() - startTime;
 
   if (elapsed >= WELL_GATHER_TIME_MS) {
-    // 1. Check for bucket again (in case they dropped it mid-action)
+    // 1. Check for bucket again
     let hasBucket = false;
     for (const slot of game.inventory) {
       if (slot && slot.name === 'Empty Bucket') {
@@ -12243,17 +13085,25 @@ function gatheringWaterLoop(timestamp, startTime) {
       return;
     }
 
-    // 2. Process Swap
+    // 2. Process Swap & Add XP
     removeItem('Empty Bucket', 1);
     addItem('Bucket of Water', 1);
     
+    // Add XP (Silenced by the change in part1.txt)
+    addXP('strength', 1); 
+    
+    // 3. Custom Popups
+    // Water first (Delay 0)
     showItemPopup('+1 Bucket of Water', 'wellProgress', 0);
+    
+    // Strength XP second (Delay 450) - This makes it appear "under" or after the water
+    showItemPopup('+1 Strength XP', 'wellProgress', 450);
     
     // Reset UI
     const bar = document.getElementById('wellProgress');
     if (bar) bar.style.width = '0%';
     
-    // 3. Restart Loop
+    // 4. Restart Loop
     const overdueTime = elapsed - WELL_GATHER_TIME_MS;
     const newStartTime = Date.now() - overdueTime;
     return gatheringWaterLoop(Date.now(), newStartTime);
@@ -13846,22 +14696,16 @@ function renderSmithingItems(metalType) {
   
   const smithLvl = game.blacksmith.level;
   
-  // --- Helper function for locked buttons (moved inside) ---
-  const setupSmithButton = (btnId, locked, onclick, levelReq, tooltipText, itemName) => { // Added itemName
+  const setupSmithButton = (btnId, locked, onclick, levelReq, tooltipText, itemName) => {
     const btn = document.getElementById(btnId);
     if (btn) {
-      // Create the new tooltip header
       const nameHtml = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">${itemName}</div>`;
-      
       if (locked) {
         btn.onclick = null;
-        // Add name to the locked tooltip
-        // FIX: Added red color to requirement
         const lockedTT = nameHtml + `<div style="color:#ff8888;">Requires Blacksmith Lvl: ${levelReq}</div>`;
         btn.onmouseenter = (event) => showTooltip(event, lockedTT);
       } else {
         btn.onclick = onclick;
-        // Add name to the unlocked tooltip
         const unlockedTT = nameHtml + tooltipText;
         btn.onmouseenter = (event) => showTooltip(event, unlockedTT);
       }
@@ -13870,16 +14714,15 @@ function renderSmithingItems(metalType) {
   };
   
   if (metalType === 'copper') {
-    // --- Copper Level Locks ---
     const copperBarLocked = smithLvl < COPPER_BAR_LVL;
-    const copperPickaxeLocked = smithLvl < COPPER_PICKAXE_LVL; // +++ NEW +++
-    const copperAxeLocked = smithLvl < COPPER_AXE_LVL;       // +++ NEW +++
+    const copperPickaxeLocked = smithLvl < COPPER_PICKAXE_LVL;
+    const copperAxeLocked = smithLvl < COPPER_AXE_LVL;
     const copperSwordLocked = smithLvl < COPPER_SWORD_LVL;
     const copperBootsLocked = smithLvl < COPPER_BOOTS_LVL;
     const copperHelmetLocked = smithLvl < COPPER_HELMET_LVL;
-    const copperPlatelegsLocked = smithLvl < COPPER_PLATELEGS_LVL; // +++ NEW +++
+    const copperPlatelegsLocked = smithLvl < COPPER_PLATELEGS_LVL;
     const copperChestLocked = smithLvl < COPPER_CHEST_LVL;
-    const copperTipsLocked = smithLvl < BLACKSMITH_COPPER_TIPS_LVL; // +++ NEW +++
+    const copperTipsLocked = smithLvl < BLACKSMITH_COPPER_TIPS_LVL;
     
     container.innerHTML = `
       <button id="copperBarBtn" class="primary ${copperBarLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
@@ -13911,26 +14754,24 @@ function renderSmithingItems(metalType) {
       </button>
     `;
     
-    // --- Re-attach listeners for copper items ---
     setupSmithButton('copperBarBtn', copperBarLocked, openCopperBarSmith, COPPER_BAR_LVL, 'Requires: 2 Copper Ore', 'Copper Bar');
     setupSmithButton('copperPickaxeBtn', copperPickaxeLocked, openCopperPickaxeSmith, COPPER_PICKAXE_LVL, `Requires: ${COPPER_PICKAXE_BAR_COST} Copper Bars, ${COPPER_PICKAXE_WOOD_COST} Softwood`, 'Copper Pickaxe');
     setupSmithButton('copperAxeBtn', copperAxeLocked, openCopperAxeSmith, COPPER_AXE_LVL, `Requires: ${COPPER_AXE_BAR_COST} Copper Bars, ${COPPER_AXE_WOOD_COST} Softwood`, 'Copper Axe');
     setupSmithButton('copperShortswordBtn', copperSwordLocked, openCopperShortswordSmith, COPPER_SWORD_LVL, `Requires: ${SHORTSWORD_BAR_COST} Copper Bars`, 'Copper Shortsword');
     setupSmithButton('copperBootsBtn', copperBootsLocked, openCopperBootsSmith, COPPER_BOOTS_LVL, `Requires: ${BOOTS_BAR_COST} Copper Bars`, 'Copper Boots');
     setupSmithButton('copperHelmetBtn', copperHelmetLocked, openCopperHelmetSmith, COPPER_HELMET_LVL, `Requires: ${HELMET_BAR_COST} Copper Bars`, 'Copper Helmet');
-    setupSmithButton('copperPlatelegsBtn', copperPlatelegsLocked, openCopperPlatelegsSmith, COPPER_PLATELEGS_LVL, `Requires: ${COPPER_PLATELEGS_BAR_COST} Copper Bars`, 'Copper Platelegs'); // +++ NEW +++
+    setupSmithButton('copperPlatelegsBtn', copperPlatelegsLocked, openCopperPlatelegsSmith, COPPER_PLATELEGS_LVL, `Requires: ${COPPER_PLATELEGS_BAR_COST} Copper Bars`, 'Copper Platelegs');
     setupSmithButton('copperChestplateBtn', copperChestLocked, openCopperChestplateSmith, COPPER_CHEST_LVL, `Requires: ${CHESTPLATE_BAR_COST} Copper Bars`, 'Copper Chestplate');
-    setupSmithButton('copperArrowTipBtn', copperTipsLocked, openSmithCopperArrowTip, BLACKSMITH_COPPER_TIPS_LVL, `Requires: ${COPPER_ARROW_TIP_BAR_COST} Copper Bars`, `Copper Arrow Tip x${COPPER_ARROW_TIP_YIELD}`); // +++ NEW +++
+    setupSmithButton('copperArrowTipBtn', copperTipsLocked, openSmithCopperArrowTip, BLACKSMITH_COPPER_TIPS_LVL, `Requires: ${COPPER_ARROW_TIP_BAR_COST} Copper Bars`, `Copper Arrow Tip x${COPPER_ARROW_TIP_YIELD}`);
     
   } else if (metalType === 'iron') {
-    // --- Iron Level Locks ---
     const ironBarLocked = smithLvl < IRON_BAR_LVL;
-    const ironPickaxeLocked = smithLvl < IRON_PICKAXE_LVL; // +++ NEW +++
-    const ironAxeLocked = smithLvl < IRON_AXE_LVL;       // +++ NEW +++
+    const ironPickaxeLocked = smithLvl < IRON_PICKAXE_LVL;
+    const ironAxeLocked = smithLvl < IRON_AXE_LVL;
     const ironSwordLocked = smithLvl < IRON_SWORD_LVL;
     const ironBootsLocked = smithLvl < IRON_BOOTS_LVL;
     const ironHelmetLocked = smithLvl < IRON_HELMET_LVL;
-    const ironPlatelegsLocked = smithLvl < IRON_PLATELEGS_LVL; // +++ NEW +++
+    const ironPlatelegsLocked = smithLvl < IRON_PLATELEGS_LVL;
     const ironChestLocked = smithLvl < IRON_CHEST_LVL;
     
     container.innerHTML = `
@@ -13960,15 +14801,42 @@ function renderSmithingItems(metalType) {
       </button>
     `;
     
-    // --- Re-attach listeners for iron items ---
     setupSmithButton('ironBarBtn', ironBarLocked, openIronBarSmith, IRON_BAR_LVL, `Requires: ${IRON_BAR_ORE_COST} Iron Ore, ${IRON_BAR_COAL_COST} Coal Ore`, 'Iron Bar');
     setupSmithButton('ironPickaxeBtn', ironPickaxeLocked, openIronPickaxeSmith, IRON_PICKAXE_LVL, `Requires: ${IRON_PICKAXE_BAR_COST} Iron Bars, ${IRON_PICKAXE_WOOD_COST} Oak`, 'Iron Pickaxe');
     setupSmithButton('ironAxeBtn', ironAxeLocked, openIronAxeSmith, IRON_AXE_LVL, `Requires: ${IRON_AXE_BAR_COST} Iron Bars, ${IRON_AXE_WOOD_COST} Oak`, 'Iron Axe');
     setupSmithButton('ironShortswordBtn', ironSwordLocked, openIronShortswordSmith, IRON_SWORD_LVL, `Requires: ${IRON_SHORTSWORD_BAR_COST} Iron Bars`, 'Iron Shortsword');
     setupSmithButton('ironBootsBtn', ironBootsLocked, openIronBootsSmith, IRON_BOOTS_LVL, `Requires: ${IRON_BOOTS_BAR_COST} Iron Bars`, 'Iron Boots');
     setupSmithButton('ironHelmetBtn', ironHelmetLocked, openIronHelmetSmith, IRON_HELMET_LVL, `Requires: ${IRON_HELMET_BAR_COST} Iron Bars`, 'Iron Helmet');
-    setupSmithButton('ironPlatelegsBtn', ironPlatelegsLocked, openIronPlatelegsSmith, IRON_PLATELEGS_LVL, `Requires: ${IRON_PLATELEGS_BAR_COST} Iron Bars`, 'Iron Platelegs'); // +++ NEW +++
+    setupSmithButton('ironPlatelegsBtn', ironPlatelegsLocked, openIronPlatelegsSmith, IRON_PLATELEGS_LVL, `Requires: ${IRON_PLATELEGS_BAR_COST} Iron Bars`, 'Iron Platelegs');
     setupSmithButton('ironChestplateBtn', ironChestLocked, openIronChestplateSmith, IRON_CHEST_LVL, `Requires: ${IRON_CHESTPLATE_BAR_COST} Iron Bars`, 'Iron Chestplate');
+    
+  } else if (metalType === 'silver') {
+    const silverBarLocked = smithLvl < SILVER_BAR_LVL;
+    const silverPickaxeLocked = smithLvl < 22;
+    const silverAxeLocked = smithLvl < 22;
+
+    container.innerHTML = `
+      <button id="silverBarBtn" class="primary ${silverBarLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/silverbar.png" alt="Silver Bar" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+      </button>
+      <button id="silverPickaxeBtn" class="primary ${silverPickaxeLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/silverpickaxe.png" alt="Silver Pickaxe" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+      </button>
+      <button id="silverAxeBtn" class="primary ${silverAxeLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/silveraxe.png" alt="Silver Axe" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+      </button>
+    `;
+    
+    setupSmithButton('silverBarBtn', silverBarLocked, openSilverBarSmith, SILVER_BAR_LVL, `Requires: ${SILVER_BAR_ORE_COST} Silver Ore, ${SILVER_BAR_COAL_COST} Coal Ore`, 'Silver Bar');
+    setupSmithButton('silverPickaxeBtn', silverPickaxeLocked, openSilverPickaxeSmith, 22, `Requires: ${SILVER_PICKAXE_BAR_COST} Silver Bars, ${SILVER_PICKAXE_WOOD_COST} Birch`, 'Silver Pickaxe');
+    setupSmithButton('silverAxeBtn', silverAxeLocked, openSilverAxeSmith, 22, `Requires: ${SILVER_AXE_BAR_COST} Silver Bars, ${SILVER_AXE_WOOD_COST} Birch`, 'Silver Axe');
+  } else if (metalType === 'gold') {
+    const goldBarLocked = smithLvl < GOLD_BAR_LVL;
+    container.innerHTML = `
+      <button id="goldBarBtn" class="primary ${goldBarLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+        <img src="images/goldbar.png" alt="Gold Bar" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+      </button>`;
+    setupSmithButton('goldBarBtn', goldBarLocked, openGoldBarSmith, GOLD_BAR_LVL, `Requires: ${GOLD_BAR_ORE_COST} Gold Ore, ${GOLD_BAR_COAL_COST} Coal Ore`, 'Gold Bar');
   }
 }
 
@@ -14181,6 +15049,120 @@ function openIronMine(){
   document.getElementById('startMineBtn').onclick = () => startIronMining();
   document.getElementById('stopMineBtn').onclick = stopMining;
   showMainScreen('hubDynamic'); // <-- 2. ADDED
+}
+
+function openSilverMine(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Mine - Silver Vein</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A shimmering silver vein.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="mineProgress"></div>
+        <div class="progress-text" id="mineProgressText"></div> </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startMineBtn" class="primary">Start Mining</button>
+      <button id="stopMineBtn" class="primary" style="background:#555; display:none;">Stop Mining</button>
+      <button onclick="openMineHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startMineBtn').onclick = () => startSilverMining();
+  document.getElementById('stopMineBtn').onclick = stopMining;
+  showMainScreen('hubDynamic');
+}
+
+async function startSilverMining() {
+  if (getBestTool('pickaxe') < 3) { 
+    await showGameAlert("Tool Required", "You need at least an Iron Pickaxe in your inventory to mine silver.");
+    return;
+  }
+  if (!game.isSessionActive) { await showGameAlert("Session Not Active", "Session not active."); return; }
+  if (!canReceiveItem(SILVER_MINE_ITEM)) { await showGameAlert("Inventory Full", "You have no room."); return; }
+
+  if (game.miningActive) return; 
+  game.miningActive = true;
+  document.getElementById('startMineBtn').style.display = 'none';
+  document.getElementById('stopMineBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => silverMiningLoop(Date.now(), Date.now()), 16);
+}
+
+function silverMiningLoop(timestamp, startTime) {
+  if (!game.miningActive) return; 
+  const elapsed = Date.now() - startTime;
+  if (elapsed >= SILVER_MINE_TIME_MS) {
+    addItem(SILVER_MINE_ITEM, 1);
+    addXP('mining', SILVER_MINE_XP);
+    showItemPopup(`+${SILVER_MINE_XP} Mining XP`, 'mineProgress', 0);
+    showItemPopup(`+1 Silver Ore`, 'mineProgress', 450);
+    document.getElementById('mineProgress').style.width = '0%';
+    const overdueTime = elapsed - SILVER_MINE_TIME_MS;
+    return miningCooldownLoop(Date.now(), Date.now() - overdueTime, MINE_COOLDOWN_SILVER_MS, 'mineProgressText', silverMiningLoop);
+  } else {
+    const progress = (elapsed / SILVER_MINE_TIME_MS) * 100;
+    document.getElementById('mineProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => silverMiningLoop(Date.now(), startTime), 16);
+  }
+}
+
+function openGoldMine(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Mine - Gold Vein</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A rich gold vein.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="mineProgress"></div>
+        <div class="progress-text" id="mineProgressText"></div> </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startMineBtn" class="primary">Start Mining</button>
+      <button id="stopMineBtn" class="primary" style="background:#555; display:none;">Stop Mining</button>
+      <button onclick="openMineHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startMineBtn').onclick = () => startGoldMining();
+  document.getElementById('stopMineBtn').onclick = stopMining;
+  showMainScreen('hubDynamic');
+}
+
+async function startGoldMining() {
+  if (getBestTool('pickaxe') < 3) { 
+    await showGameAlert("Tool Required", "You need at least an Iron Pickaxe in your inventory to mine gold.");
+    return;
+  }
+  if (!game.isSessionActive) { await showGameAlert("Session Not Active", "Session not active."); return; }
+  if (!canReceiveItem(GOLD_MINE_ITEM)) { await showGameAlert("Inventory Full", "You have no room."); return; }
+
+  if (game.miningActive) return; 
+  game.miningActive = true;
+  document.getElementById('startMineBtn').style.display = 'none';
+  document.getElementById('stopMineBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => goldMiningLoop(Date.now(), Date.now()), 16);
+}
+
+function goldMiningLoop(timestamp, startTime) {
+  if (!game.miningActive) return; 
+  const elapsed = Date.now() - startTime;
+  if (elapsed >= GOLD_MINE_TIME_MS) {
+    addItem(GOLD_MINE_ITEM, 1);
+    addXP('mining', GOLD_MINE_XP);
+    showItemPopup(`+${GOLD_MINE_XP} Mining XP`, 'mineProgress', 0);
+    showItemPopup(`+1 Gold Ore`, 'mineProgress', 450);
+    document.getElementById('mineProgress').style.width = '0%';
+    const overdueTime = elapsed - GOLD_MINE_TIME_MS;
+    return miningCooldownLoop(Date.now(), Date.now() - overdueTime, MINE_COOLDOWN_GOLD_MS, 'mineProgressText', goldMiningLoop);
+  } else {
+    const progress = (elapsed / GOLD_MINE_TIME_MS) * 100;
+    document.getElementById('mineProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => goldMiningLoop(Date.now(), startTime), 16);
+  }
 }
 
 // --- NEW: Iron Mine Logic ---
@@ -14450,6 +15432,290 @@ function openOakTree(){
   showMainScreen('hubDynamic'); // <-- 2. ADDED
 }
 
+// =================================================================
+// +++ NEW: ADVANCED WOODCUTTING (Birch, Maple, Mahogany) +++
+// =================================================================
+
+// --- Constants ---
+const BIRCH_LEVEL = 20;
+const BIRCH_XP = 40;
+const BIRCH_TIME_MS = 5000; // 5 seconds
+
+const MAPLE_LEVEL = 30;
+const MAPLE_XP = 70;
+const MAPLE_TIME_MS = 8000; // 8 seconds
+
+const MAHOGANY_LEVEL = 40;
+const MAHOGANY_XP = 110;
+const MAHOGANY_TIME_MS = 12000; // 12 seconds
+
+// --- Birch Functions ---
+function openBirchTree() {
+  
+  game.shopOpen = false;
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  stopCraftingBowString();
+  stopFishing();
+  stopStoneForging();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Woodcutting - Birch</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A sturdy birch tree with white bark.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="woodcutProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startWoodcutBtn" class="primary">Chop Tree</button>
+      <button id="stopWoodcutBtn" class="primary" style="background:#555; display:none;">Stop Chopping</button>
+      <button onclick="openForestHub()" class="primary" style="background:#666;">Return</button> 
+    </div>
+  `;
+  document.getElementById('startWoodcutBtn').onclick = startChoppingBirch;
+  document.getElementById('stopWoodcutBtn').onclick = stopWoodcutting;
+  showMainScreen('hubDynamic');
+}
+
+async function startChoppingBirch() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "Session not active.");
+    return;
+  }
+  if (!canReceiveItem('Birch')) {
+    await showGameAlert("Inventory Full", "Inventory full.");
+    return;
+  }
+  // Check Tool: Tier 2 is Copper
+  if (getBestTool('axe') < 2) {
+      await showGameAlert("Tool Required", "You need at least a Copper Axe to chop this tree.");
+      return;
+  }
+
+  if (game.woodcuttingActive) return;
+  game.woodcuttingActive = true;
+  
+  document.getElementById('startWoodcutBtn').style.display = 'none';
+  document.getElementById('stopWoodcutBtn').style.display = 'inline-block';
+  
+  game.progressFrame = setTimeout(() => woodcutBirchLoop(Date.now(), Date.now()), 16);
+}
+
+function woodcutBirchLoop(timestamp, startTime) {
+  if (!game.woodcuttingActive) return;
+  const elapsed = Date.now() - startTime;
+  
+  if (elapsed >= BIRCH_TIME_MS) {
+      addItem('Birch', 1);
+      addXP('woodcutting', BIRCH_XP);
+      showItemPopup(`+${BIRCH_XP} Woodcutting XP`, 'woodcutProgress', 0);
+      showItemPopup('+1 Birch', 'woodcutProgress', 450);
+      
+      document.getElementById('woodcutProgress').style.width = '0%';
+      
+      if (!canReceiveItem('Birch')) {
+          showGameAlert("Inventory Full", "Inventory is full.");
+          stopWoodcutting();
+          return;
+      }
+      
+      const overdueTime = elapsed - BIRCH_TIME_MS;
+      const newStartTime = Date.now() - overdueTime;
+      return woodcutBirchLoop(Date.now(), newStartTime);
+  } else {
+      const progress = (elapsed / BIRCH_TIME_MS) * 100;
+      const bar = document.getElementById('woodcutProgress');
+      if (bar) bar.style.width = progress + '%';
+      game.progressFrame = setTimeout(() => woodcutBirchLoop(Date.now(), startTime), 16);
+  }
+}
+
+// --- Maple Functions ---
+function openMapleTree() {
+  
+  game.shopOpen = false;
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  stopCraftingBowString();
+  stopFishing();
+  stopStoneForging();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Woodcutting - Maple</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A beautiful maple tree.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="woodcutProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startWoodcutBtn" class="primary">Chop Tree</button>
+      <button id="stopWoodcutBtn" class="primary" style="background:#555; display:none;">Stop Chopping</button>
+      <button onclick="openForestHub()" class="primary" style="background:#666;">Return</button> 
+    </div>
+  `;
+  document.getElementById('startWoodcutBtn').onclick = startChoppingMaple;
+  document.getElementById('stopWoodcutBtn').onclick = stopWoodcutting;
+  showMainScreen('hubDynamic');
+}
+
+async function startChoppingMaple() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "Session not active.");
+    return;
+  }
+  if (!canReceiveItem('Maple')) {
+    await showGameAlert("Inventory Full", "Inventory full.");
+    return;
+  }
+  // Check Tool: Tier 2 is Copper (User requirement)
+  if (getBestTool('axe') < 2) {
+      await showGameAlert("Tool Required", "You need at least a Copper Axe to chop this tree.");
+      return;
+  }
+
+  if (game.woodcuttingActive) return;
+  game.woodcuttingActive = true;
+  
+  document.getElementById('startWoodcutBtn').style.display = 'none';
+  document.getElementById('stopWoodcutBtn').style.display = 'inline-block';
+  
+  game.progressFrame = setTimeout(() => woodcutMapleLoop(Date.now(), Date.now()), 16);
+}
+
+function woodcutMapleLoop(timestamp, startTime) {
+  if (!game.woodcuttingActive) return;
+  const elapsed = Date.now() - startTime;
+  
+  if (elapsed >= MAPLE_TIME_MS) {
+      addItem('Maple', 1);
+      addXP('woodcutting', MAPLE_XP);
+      showItemPopup(`+${MAPLE_XP} Woodcutting XP`, 'woodcutProgress', 0);
+      showItemPopup('+1 Maple', 'woodcutProgress', 450);
+      
+      document.getElementById('woodcutProgress').style.width = '0%';
+      
+      if (!canReceiveItem('Maple')) {
+          showGameAlert("Inventory Full", "Inventory is full.");
+          stopWoodcutting();
+          return;
+      }
+      
+      const overdueTime = elapsed - MAPLE_TIME_MS;
+      const newStartTime = Date.now() - overdueTime;
+      return woodcutMapleLoop(Date.now(), newStartTime);
+  } else {
+      const progress = (elapsed / MAPLE_TIME_MS) * 100;
+      const bar = document.getElementById('woodcutProgress');
+      if (bar) bar.style.width = progress + '%';
+      game.progressFrame = setTimeout(() => woodcutMapleLoop(Date.now(), startTime), 16);
+  }
+}
+
+// --- Mahogany Functions ---
+function openMahoganyTree() {
+  
+  game.shopOpen = false;
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  stopCraftingBowString();
+  stopFishing();
+  stopStoneForging();
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Woodcutting - Mahogany</h2>
+    <div style="margin-top:8px; color:#efe3cf;">A hard, tropical wood.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="woodcutProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startWoodcutBtn" class="primary">Chop Tree</button>
+      <button id="stopWoodcutBtn" class="primary" style="background:#555; display:none;">Stop Chopping</button>
+      <button onclick="openForestHub()" class="primary" style="background:#666;">Return</button> 
+    </div>
+  `;
+  document.getElementById('startWoodcutBtn').onclick = startChoppingMahogany;
+  document.getElementById('stopWoodcutBtn').onclick = stopWoodcutting;
+  showMainScreen('hubDynamic');
+}
+
+async function startChoppingMahogany() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "Session not active.");
+    return;
+  }
+  if (!canReceiveItem('Mahogany')) {
+    await showGameAlert("Inventory Full", "Inventory full.");
+    return;
+  }
+  // Check Tool: Tier 2 is Copper
+  if (getBestTool('axe') < 2) {
+      await showGameAlert("Tool Required", "You need at least a Copper Axe to chop this tree.");
+      return;
+  }
+
+  if (game.woodcuttingActive) return;
+  game.woodcuttingActive = true;
+  
+  document.getElementById('startWoodcutBtn').style.display = 'none';
+  document.getElementById('stopWoodcutBtn').style.display = 'inline-block';
+  
+  game.progressFrame = setTimeout(() => woodcutMahoganyLoop(Date.now(), Date.now()), 16);
+}
+
+function woodcutMahoganyLoop(timestamp, startTime) {
+  if (!game.woodcuttingActive) return;
+  const elapsed = Date.now() - startTime;
+  
+  if (elapsed >= MAHOGANY_TIME_MS) {
+      addItem('Mahogany', 1);
+      addXP('woodcutting', MAHOGANY_XP);
+      showItemPopup(`+${MAHOGANY_XP} Woodcutting XP`, 'woodcutProgress', 0);
+      showItemPopup('+1 Mahogany', 'woodcutProgress', 450);
+      
+      document.getElementById('woodcutProgress').style.width = '0%';
+      
+      if (!canReceiveItem('Mahogany')) {
+          showGameAlert("Inventory Full", "Inventory is full.");
+          stopWoodcutting();
+          return;
+      }
+      
+      const overdueTime = elapsed - MAHOGANY_TIME_MS;
+      const newStartTime = Date.now() - overdueTime;
+      return woodcutMahoganyLoop(Date.now(), newStartTime);
+  } else {
+      const progress = (elapsed / MAHOGANY_TIME_MS) * 100;
+      const bar = document.getElementById('woodcutProgress');
+      if (bar) bar.style.width = progress + '%';
+      game.progressFrame = setTimeout(() => woodcutMahoganyLoop(Date.now(), startTime), 16);
+  }
+}
+
+// Attach Listeners when DOM is ready (or manually attach if injecting)
+document.addEventListener('DOMContentLoaded', () => {
+    const birchBtn = document.getElementById('birchTreeBtn');
+    if(birchBtn) birchBtn.onclick = openBirchTree;
+    
+    const mapleBtn = document.getElementById('mapleTreeBtn');
+    if(mapleBtn) mapleBtn.onclick = openMapleTree;
+    
+    const mahoganyBtn = document.getElementById('mahoganyTreeBtn');
+    if(mahoganyBtn) mahoganyBtn.onclick = openMahoganyTree;
+});
+
 // --- NEW: Stop Woodcutting Logic ---
 function stopWoodcutting(){
   game.woodcuttingActive = false;
@@ -14591,28 +15857,36 @@ async function startChoppingOak() {
 }
 
 function oakChoppingLoop(timestamp, startTime) {
-  if (!game.woodcuttingActive) return; 
+  if (!game.woodcuttingActive) return;
   const elapsed = Date.now() - startTime;
 
   if (elapsed >= OAK_CHOP_TIME_MS) {
+    // 1. Give Log & XP
     addItem(OAK_CHOP_ITEM, 1);
     addXP('woodcutting', OAK_CHOP_XP);
     showItemPopup(`+${OAK_CHOP_XP} Woodcutting XP`, 'woodcutProgress', 0);
     showItemPopup(`+1 ${OAK_CHOP_ITEM}`, 'woodcutProgress', 450);
-    
+
+    // +++ NEW: 5% Chance for Dirt Shroom +++
+    if (Math.random() < 0.05) {
+        addItem('Dirt Shroom', 1);
+        showItemPopup('+1 Dirt Shroom', 'woodcutProgress', 900); // 900ms delay to appear 3rd
+    }
+    // +++ END NEW +++
+
     const bar = document.getElementById('woodcutProgress');
     if (bar) bar.style.width = '0%';
     
     const overdueTime = elapsed - OAK_CHOP_TIME_MS;
     const newCooldownStartTime = Date.now() - overdueTime;
-
-    // --- THIS IS THE FIX: Immediately call the cooldown loop ---
+    
     return woodcuttingCooldownLoop(Date.now(), newCooldownStartTime, CHOP_COOLDOWN_OAK_MS, 'woodcutProgressText', oakChoppingLoop);
 
   } else {
     const progress = (elapsed / OAK_CHOP_TIME_MS) * 100;
     const bar = document.getElementById('woodcutProgress');
     if (bar) bar.style.width = progress + '%';
+    
     game.progressFrame = setTimeout(() => oakChoppingLoop(Date.now(), startTime), 16);
   }
 }
@@ -14649,27 +15923,27 @@ function openCombatInterface(enemyName) {
   if (game.fishingActive) { stopFishing(); game.wasFishingBeforeCombat = true; }
   if (game.stoneforgingActive) { stopStoneForging(); game.wasStoneForgingBeforeCombat = true; }
 
-  // Define our enemy
+  // Define our enemy with STATIC images
   if (enemyName === 'Chicken') {
-    game.currentEnemy = { name: 'Chicken', level: 1, maxHp: 10, currentHp: 10, attack: 1, strength: 1, defence: 1, img: 'images/chickenanim.gif' };
+    game.currentEnemy = { name: 'Chicken', level: 1, maxHp: 10, currentHp: 10, attack: 1, strength: 1, defence: 1, img: 'images/chickenmonster.png' };
   } else if (enemyName === 'Rat') {
-    game.currentEnemy = { name: 'Rat', level: 1, maxHp: 10, currentHp: 10, attack: 1, strength: 1, defence: 1, img: 'images/ratanim.webp' };
+    game.currentEnemy = { name: 'Rat', level: 1, maxHp: 10, currentHp: 10, attack: 1, strength: 1, defence: 1, img: 'images/ratmonster.jpeg' };
   } else if (enemyName === 'Spider') { 
-    game.currentEnemy = { name: 'Spider', level: 2, maxHp: 12, currentHp: 12, attack: 2, strength: 2, defence: 2, img: 'images/spideranim.gif' };
+    game.currentEnemy = { name: 'Spider', level: 2, maxHp: 12, currentHp: 12, attack: 2, strength: 2, defence: 2, img: 'images/spidermonster.jpeg' };
   } else if (enemyName === 'Centipede') {
-    game.currentEnemy = { name: 'Centipede', level: 5, maxHp: 20, currentHp: 20, attack: 5, strength: 5, defence: 5, img: 'images/centipedeanim.webp' };
+    game.currentEnemy = { name: 'Centipede', level: 5, maxHp: 20, currentHp: 20, attack: 5, strength: 5, defence: 5, img: 'images/centipedemonster.jpeg' };
   } else if (enemyName === 'Cow') {
-    game.currentEnemy = { name: 'Cow', level: 2, maxHp: 12, currentHp: 12, attack: 2, strength: 2, defence: 2, img: 'images/cowanim.webp' };
+    game.currentEnemy = { name: 'Cow', level: 2, maxHp: 12, currentHp: 12, attack: 2, strength: 2, defence: 2, img: 'images/cowmonster.png' };
   } else if (enemyName === 'Madmax') {
     game.currentEnemy = { 
         name: 'Madmax', 
         level: 69, 
         maxHp: 500, 
         currentHp: 500, 
-        attack: 75, // Increased for accuracy
-        strength: 55, // Increased for damage scaling
+        attack: 75, 
+        strength: 55, 
         defence: 25, 
-        img: 'images/madmaxanim.webp',
+        img: 'images/madmaxmonster.jpeg', // Static image
         lastSpecialTime: Date.now() 
     };
   } else {
@@ -14680,9 +15954,11 @@ function openCombatInterface(enemyName) {
   // --- STATIC DOM UPDATE (No innerHTML) ---
   const imgEl = document.getElementById('combat-enemy-img');
   
-  // Only update the source if it has changed. This prevents the browser from reloading/flickering the GIF if you click the same monster.
-  if (imgEl && imgEl.getAttribute('src') !== game.currentEnemy.img) {
+  // Update image source
+  if (imgEl) {
       imgEl.src = game.currentEnemy.img;
+      // Reset height style in case it was modified elsewhere, but let CSS handle max-height/width
+      imgEl.style.height = ''; 
   }
   
   // Reset Buttons
@@ -14699,6 +15975,7 @@ function openCombatInterface(enemyName) {
   // Show the new static screen
   showMainScreen('hubActiveCombat'); 
 }
+
 function setAttackStyle(style, isInitialization = false) {
   game.playerAttackStyle = style;
   
@@ -15019,11 +16296,11 @@ function playerAttackTurn(spellOverride = null) {
   
   if (spellOverride) {
       currentSpell = spellOverride; // Manual click overrides autocast
-  } else if (game.autocastSpell && isMagic) { // <--- FIX: Only autocast if holding staff
+  } else if (game.autocastSpell && isMagic) { 
       // Find the spell object from the name
       currentSpell = SPELL_LIST.find(s => s.name === game.autocastSpell);
       if (!currentSpell) {
-          game.autocastSpell = null; // Autocast spell not found/cleared
+          game.autocastSpell = null; 
           showWarningPopup("Autocast spell cleared.");
       }
   }
@@ -15037,23 +16314,20 @@ function playerAttackTurn(spellOverride = null) {
           return; 
       }
   } else if (currentSpell && !isMagic) {
-      // Trying to cast a spell but not equipped with a magic staff
       showWarningPopup("You need a Magic Staff equipped to cast spells!");
       return;
   } else if (currentSpell && game.magic.level < currentSpell.level) {
-      // Should be prevented by UI, but check anyway
       showWarningPopup(`Magic level too low for ${currentSpell.name}!`);
       return;
   }
 
-  // +++ NEW STONE AMMUNITION CHECK +++
+  // --- Stone Ammunition Check ---
   if (currentSpell) {
       let requiredStone = '';
       if (currentSpell.name === 'Earth Bolt') requiredStone = 'Earthstone';
       else if (currentSpell.name === 'Air Bolt') requiredStone = 'Airstone';
       else if (currentSpell.name === 'Water Bolt') requiredStone = 'Waterstone';
       
-      // Check inventory for 3 stones (sums up all stacks)
       let stoneCount = 0;
       for (const slot of game.inventory) {
           if (slot && slot.name === requiredStone) stoneCount += slot.qty;
@@ -15061,44 +16335,34 @@ function playerAttackTurn(spellOverride = null) {
       
       if (stoneCount < 3) {
           showWarningPopup(`Need 3 ${requiredStone} to cast!`);
-          return; // Stop cast (miss turn)
+          return; 
       }
-      
-      // Remove stones
       removeItem(requiredStone, 3);
   }
-  // +++ END NEW STONE AMMUNITION CHECK +++
 
-  // If we have a magic staff but no autocast/manual spell, default to doing nothing/waiting.
-  // This is how we allow the player to wait for a manual click when they have no autocast selected.
+  // If holding staff but no spell selected, do nothing
   if (isMagic && !currentSpell && !spellOverride) return; 
-  
-  // FIX: Removed the check for game.playerCombatInterval. 
-  // Spam is now prevented by the Time Check in handleSpellClick.
 
   // --- 1. Get Player's Current Stats ---
   const playerStats = getPlayerCombatStats();
-
-  // --- FIX: Record the time of this attack ---
   game.lastAttackTime = Date.now(); 
 
   // --- 2. Play Attack Sound ---
   if (currentSpell) {
-      playGlobalSound('sounds/soundeffects/earthblastsoundeffect.mp3'); // Generic magic sound for now
+      playGlobalSound('sounds/soundeffects/earthblastsoundeffect.mp3'); 
   } else if (isRanged) {
       playGlobalSound('sounds/soundeffects/arrowsoundeffect.mp3');
   } else {
       playGlobalSound('sounds/soundeffects/swordsoundeffect.mp3');
   }
 
-  // --- 3. Calculate Hit Chance (ALL NEW LOGIC) ---
+  // --- 3. Calculate Hit Chance ---
   const baseHitChance = 70;
   let playerAccuracy = 0;
   
   if (currentSpell) {
-      playerAccuracy = game.magic.level; // Uses Magic Level for accuracy
+      playerAccuracy = game.magic.level; 
   } else {
-      // Uses Ranged or Attack Level
       playerAccuracy = playerStats.offensiveSkillLevel + playerStats.accuracyBonus;
   }
   
@@ -15111,37 +16375,41 @@ function playerAttackTurn(spellOverride = null) {
     showDamageSplat('enemy', 0, 'block'); 
     return;
   }
-  // --- END NEW HIT CHANCE ---
 
-  // --- 4. Calculate Damage (If Hit) ---
+  // --- 4. Calculate Damage ---
   let maxHit = 0;
   let skillXP = 0;
-  let skillName = game.playerAttackStyle; // Default to old melee skill name
+  let skillName = game.playerAttackStyle; 
   
   if (currentSpell) {
       const spellStats = getSpellStats(currentSpell);
       maxHit = spellStats.maxHit;
-      skillXP = currentSpell.xp; // XP based on the spell's static XP, not damage
+      skillXP = currentSpell.xp; 
       skillName = 'magic';
   } else if (playerStats.magicDamage > 0) {
-      // This path should only be hit if the weapon type is magic and we weren't
-      // able to find a spell. We prevent this from happening earlier.
       maxHit = playerStats.magicDamage;
       skillName = 'magic';
-
   } else {
     maxHit = playerStats.physicalDamage;
     skillName = isRanged ? 'ranged' : game.playerAttackStyle;
   }
   
-  // Damage is a random number from 0 to your max hit
   let damage = Math.floor(Math.random() * (maxHit + 1));
-  
-  // +++ FIX: CAP DAMAGE TO ENEMY'S REMAINING HP +++
   let damageApplied = Math.min(damage, game.currentEnemy.currentHp);
 
   if (damageApplied > 0) {
     showDamageSplat('enemy', damageApplied, 'damage'); 
+    
+    // +++ NEW: Trigger Shake Animation +++
+    const enemyImg = document.getElementById('combat-enemy-img');
+    if (enemyImg) {
+        // Remove class, trigger reflow, add class to restart animation
+        enemyImg.classList.remove('enemy-hit-anim');
+        void enemyImg.offsetWidth; 
+        enemyImg.classList.add('enemy-hit-anim');
+    }
+    // +++ END NEW +++
+
   } else {
     showDamageSplat('enemy', 0, 'block');
   }
@@ -15150,7 +16418,6 @@ function playerAttackTurn(spellOverride = null) {
   game.currentEnemy.currentHp -= damageApplied;
   updateEnemyCombatUI();
   
-  // --- Consume Arrow AFTER shot ---
   if (isRanged) {
       game.equipment.arrows.qty--;
       if (game.equipment.arrows.qty <= 0) {
@@ -15159,17 +16426,13 @@ function playerAttackTurn(spellOverride = null) {
       renderEquipment(); 
   }
   
-  // --- 5. Grant XP (MODIFIED) ---
+  // --- 5. Grant XP ---
   if (damageApplied > 0) {
-    // Magic now behaves exactly like Melee/Ranged (4 XP per damage point)
     let mainXPGained = damageApplied * 4;
     let vitalityXPGained = Math.ceil(mainXPGained / 2);
     
-    // REMOVED: The block that gave fixed XP per cast and reduced damage XP.
-
     addXP('vitality', vitalityXPGained, 450);
     
-    // --- SKILL XP LOGIC ---
     if (skillName === 'magic') {
         if (game.playerAttackStyle === 'defence') {
             let defenceXp = Math.floor(mainXPGained / 2);
@@ -15189,70 +16452,48 @@ function playerAttackTurn(spellOverride = null) {
             addXP('ranged', mainXPGained, 0);
         }
     } else {
-        // Melee (attack, strength, defence)
         addXP(game.playerAttackStyle, mainXPGained, 0);
     }
 
-    // +++ NEW: GIVE XP TO EQUIPPED PET +++
     if (game.equipment.pet) {
-      // Find the real pet object in the array to update its data
       const petIndex = game.pets.findIndex(p => p.id === game.equipment.pet.id);
-      
       if (petIndex > -1) {
           const pet = game.pets[petIndex];
-          
-          // Only gain XP if pet is alive (HP > 0) and under level cap
           if (pet.hp > 0 && pet.level < 50) {
-              const petXPGained = Math.ceil(mainXPGained * 0.10); // 10% of player XP
+              const petXPGained = Math.ceil(mainXPGained * 0.10); 
               pet.xp += petXPGained;
-              
-              // Simple leveling formula: Level * 100 XP required
               const xpNeeded = pet.level * 100; 
-              
               if (pet.xp >= xpNeeded) {
                   pet.xp -= xpNeeded;
                   pet.level++;
                   showItemPopup(`Pet Lvl Up: ${pet.level}!`, null, 0);
                   playGlobalSound('sounds/soundeffects/levelupsound.mp3');
-                  
-                  // Save immediately on level up
                   if (typeof window.savePlayerData === 'function') window.savePlayerData();
               }
           }
       }
     }
   }
-  // --- END NEW XP LOGIC ---
-  // --- END NEW XP LOGIC ---
 
   // --- 6. Check for Enemy Death ---
   if (game.currentEnemy.currentHp <= 0) {
-    
-    // +++ NEW: QUEST KILL UPDATE +++
     updateQuestKillCount(game.currentEnemy.name);
-    // +++ END NEW +++
 
-    // --- DYNAMIC DELAY CALCULATION ---
-    let dropDelay = 900; // Default: Drops start here if no bounty (replacing the gap)
-
-    // Check if this is a valid active bounty target
+    let dropDelay = 900; 
     const isBountyTarget = game.activeBounty && 
                            game.activeBounty.target === game.currentEnemy.name && 
                            game.activeBounty.kills < game.activeBounty.req;
 
     if (isBountyTarget) {
-        // Yes Bounty: Show XP at 900ms, push drops to 1350ms
         updateBountyProgress(game.currentEnemy.name, 900);
         dropDelay = 1350;
     }
-    // If No Bounty: dropDelay remains 900ms
 
-    // ... existing loot logic with dynamic delay ...
+    // --- Drop Logic ---
     if (game.currentEnemy.name === 'Chicken') { 
       addItem('Raw Chicken', 1);
       const featherQty = Math.floor(Math.random() * 5) + 2; 
       addItem('Feather', featherQty);
-      
       showItemPopup('+1 Raw Chicken', null, dropDelay);
       showItemPopup(`+${featherQty} Feather`, null, dropDelay + 450); 
     } else if (game.currentEnemy.name === 'Rat') {
@@ -15261,10 +16502,8 @@ function playerAttackTurn(spellOverride = null) {
     } else if (game.currentEnemy.name === 'Spider') { 
       const silkQty = Math.floor(Math.random() * 3) + 1; 
       addItem('Silk', silkQty);
-      
       showItemPopup(`+${silkQty} Silk`, null, dropDelay);
 
-      // +++ NEW PET EGG DROP LOGIC +++
       if (Math.floor(Math.random() * PET_EGG_DROP_RATE) === 0) {
           addItem('Pet Spider Egg', 1);
           showItemPopup('<span style="color:#ff4d4d; font-size:16px;">EGG DROP!</span>', null, dropDelay + 200);
@@ -15272,27 +16511,21 @@ function playerAttackTurn(spellOverride = null) {
              addLocalChatMessage("You found a rare Pet Spider Egg!", "trade"); 
           }
       }
-
     } else if (game.currentEnemy.name === 'Centipede') {
-      // Check if player has an Empty Vial
       if (removeItem('Empty Vial', 1)) {
           addItem('Venom', 1);
           showItemPopup(`+1 Venom`, null, dropDelay);
       } 
-
     } else if (game.currentEnemy.name === 'Cow') {
-      // +++ FIXED COW DROPS: Hide and Beef only +++
       addItem('Cow Hide', 1);
       addItem('Beef', 1); 
       showItemPopup(`+1 Cow Hide`, null, dropDelay);
       showItemPopup(`+1 Beef`, null, dropDelay + 450);
     } else if (game.currentEnemy.name === 'Madmax') {
-      // +++ NEW MADMAX DROP +++
       addItem('Lottery Ticket', 3);
       showItemPopup('+3 Lottery Ticket', null, dropDelay);
     }
     
-    // --- FIX: Changed maxHP to maxHp (Case sensitive) ---
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
     updateEnemyCombatUI();
   }
@@ -15834,9 +17067,10 @@ function renderBankTabs() {
                 'coal_ore': 'coalore', 'iron_ore': 'ironore', 'iron_bar': 'ironbar',
                 'iron_helmet': 'ironhelmet', 'iron_chestplate': 'ironchestplate', 'iron_boots': 'ironboots',
                 'iron_shortsword': 'ironshortsword', 'copper_platelegs': 'copperplatelegs', 'iron_platelegs': 'ironplatelegs',
+                'silver_ore': 'silverore', 'gold_ore': 'goldore',
                 'softwood': 'softwood', 'oak': 'oak', 'bronze_pickaxe': 'bronzepickaxe', 'bronze_axe': 'bronzeaxe',
                 'copper_pickaxe': 'copperpickaxe', 'copper_axe': 'copperaxe', 'iron_pickaxe': 'ironpickaxe',
-                'iron_axe': 'ironaxe', 'feather': 'feather', 'arrow_shaft': 'arrowshaft',
+                'iron_axe': 'ironaxe', 'silver_pickaxe': 'silverpickaxe', 'silver_axe': 'silveraxe', 'feather': 'feather', 'arrow_shaft': 'arrowshaft',
                 'copper_arrow_tip': 'copperarrowtip', 'unbound_arrow': 'unboundarrow', 'copper_arrow': 'copperarrow',
                 'silk': 'silk', 'cloth': 'cloth', 'wizard_hat': 'wizardhat', 'wizard_robe': 'wizardrobe',
                 'wizard_trousers': 'wizardtrousers', 'wizard_boots': 'wizardboots', 'magic_staff': 'magicstaff',
@@ -15988,6 +17222,8 @@ function renderBankGrid() {
               let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
               if (item.name === 'Copper Bar') imgName = 'copperbar';
               else if (item.name === 'Copper Chestplate') imgName = 'copperchestplate';
+              else if (item.name === 'Silver Ore') imgName = 'silverore';
+              else if (item.name === 'Gold Ore') imgName = 'goldore';
               else if (item.name === 'Copper Shortsword') imgName = 'coppershortsword';
               else if (item.name === 'Copper Helmet') imgName = 'copperhelmet';
               else if (item.name === 'Copper Boots') imgName = 'copperboots';
@@ -16015,6 +17251,8 @@ function renderBankGrid() {
               else if (item.name === 'Coal Ore') imgName = 'coalore';
               else if (item.name === 'Iron Ore') imgName = 'ironore';
               else if (item.name === 'Iron Bar') imgName = 'ironbar';
+              else if (item.name === 'Silver Bar') imgName = 'silverbar';
+              else if (item.name === 'Gold Bar') imgName = 'goldbar';
               else if (item.name === 'Iron Helmet') imgName = 'ironhelmet';
               else if (item.name === 'Iron Chestplate') imgName = 'ironchestplate';
               else if (item.name === 'Iron Boots') imgName = 'ironboots';
@@ -16029,6 +17267,8 @@ function renderBankGrid() {
               else if (item.name === 'Copper Axe') imgName = 'copperaxe'; // +++ NEW +++
               else if (item.name === 'Iron Pickaxe') imgName = 'ironpickaxe'; // +++ NEW +++
               else if (item.name === 'Iron Axe') imgName = 'ironaxe'; // +++ NEW +++
+              else if (item.name === 'Silver Pickaxe') imgName = 'silverpickaxe'; // +++ NEW +++
+              else if (item.name === 'Silver Axe') imgName = 'silveraxe'; // +++ NEW +++
               else if (item.name === 'Feather') imgName = 'feather'; // +++ NEW +++
               else if (item.name === 'Arrow Shaft') imgName = 'arrowshaft'; // +++ NEW +++
               else if (item.name === 'Copper Arrow Tip') imgName = 'copperarrowtip'; // +++ NEW +++
@@ -16112,7 +17352,9 @@ function renderBankGrid() {
                   imgName = 'cornseed';
               } else if (item.name === 'Corn') {
                   imgName = 'corn';
-              }
+              } else if (item.name === 'Dirt Shroom') {
+                  imgName = 'dirtshroom'; }
+              
 
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
@@ -16738,7 +17980,8 @@ function resetGameState() {
     chickens: [],
     cows: [],
     garden: new Array(16).fill(null),
-    buildings: { coop: false, barn: false, well: false, garden: false } // +++ NEW +++
+    cellar: new Array(16).fill(null),
+    buildings: { coop: false, barn: false, well: false, garden: false, cellar: false }
   };
 
   game.questLines = {}; // +++ FIX: RESET QUESTS +++
@@ -16895,7 +18138,8 @@ function closeSettings() {
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard',
+  'hubCellar'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -16930,18 +18174,23 @@ function showMainScreen(screenIdToShow) {
 
   // Special case: if we're showing the blacksmith hub, render its items
   if (screenIdToShow === 'hubBlacksmith') {
-    // --- FIX: Use the last saved tab ---
     const lastTab = game.lastSmithingTab || 'copper';
     renderSmithingItems(lastTab);
-    // Also set the active button class
-    if (lastTab === 'iron') {
-      document.getElementById('smithIronTab').classList.add('active');
-      document.getElementById('smithCopperTab').classList.remove('active');
-    } else {
-      document.getElementById('smithCopperTab').classList.add('active');
-      document.getElementById('smithIronTab').classList.remove('active');
-    }
-    // --- END FIX ---
+
+    // Update all tab buttons to ensure the correct one is highlighted
+    const smithTabs = ['smithCopperTab', 'smithIronTab', 'smithSilverTab', 'smithGoldTab'];
+    smithTabs.forEach(tabId => {
+      const btn = document.getElementById(tabId);
+      if (btn) {
+        // Extract the metal name from the button ID (e.g., smithSilverTab -> silver)
+        const metalName = tabId.replace('smith', '').replace('Tab', '').toLowerCase();
+        if (metalName === lastTab) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+    });
   }
   
   // +++ NEW: Special case for crafting hub +++
@@ -16953,12 +18202,19 @@ function showMainScreen(screenIdToShow) {
   if (screenIdToShow === 'hubGarden') {
     renderGarden();
   }
+
+  // +++ NEW: Special case for Cellar hub +++
+  if (screenIdToShow === 'hubCellar') {
+    renderCellar();
+  }
   
   // Special case: if we're showing the mine hub, apply level locks
   if (screenIdToShow === 'hubMine') {
     const miningLvl = game.mining.level;
     document.getElementById('ironVeinBtn').classList.toggle('locked-item', miningLvl < IRON_MINE_LVL);
     document.getElementById('coalVeinBtn').classList.toggle('locked-item', miningLvl < COAL_MINE_LVL);
+    document.getElementById('silverVeinBtn').classList.toggle('locked-item', miningLvl < SILVER_MINE_LVL);
+    document.getElementById('goldVeinBtn').classList.toggle('locked-item', miningLvl < GOLD_MINE_LVL);
   }
 
   // Special case: if we're showing the crystal mine hub, apply level locks
@@ -16974,6 +18230,17 @@ function showMainScreen(screenIdToShow) {
   if (screenIdToShow === 'hubForest') {
     const woodcuttingLvl = game.woodcutting.level;
     document.getElementById('oakTreeBtn').classList.toggle('locked-item', woodcuttingLvl < OAK_TREE_LVL);
+    // Added locks for new trees
+    document.getElementById('birchTreeBtn').classList.toggle('locked-item', woodcuttingLvl < BIRCH_LEVEL);
+    document.getElementById('mapleTreeBtn').classList.toggle('locked-item', woodcuttingLvl < MAPLE_LEVEL);
+    document.getElementById('mahoganyTreeBtn').classList.toggle('locked-item', woodcuttingLvl < MAHOGANY_LEVEL);
+  }
+
+// Special case: if we're showing the kitchen hub, apply level locks
+  if (screenIdToShow === 'hubKitchen') {
+    const cookLvl = game.cooking.level;
+    document.getElementById('cookTroutBtn').classList.toggle('locked-item', cookLvl < COOK_TROUT_LVL);
+    document.getElementById('cookSalmonBtn').classList.toggle('locked-item', cookLvl < COOK_SALMON_LVL);
   }
 
   // +++ NEW: Special case for hubRiver level locks +++
@@ -17229,36 +18496,38 @@ document.addEventListener('DOMContentLoaded', ()=>{
   };
 
   document.getElementById('copperVeinBtn').onclick = openCopperMine;
-  document.getElementById('ironVeinBtn').onclick = () => {
-    // We check the level *before* trying to open the screen
-    if (game.mining.level >= IRON_MINE_LVL) {
-        openIronMine();
-    } else {
-        // Do nothing if locked, the CSS class handles the visuals.
-    }
-  };
-  document.getElementById('coalVeinBtn').onclick = () => {
-    // We check the level *before* trying to open the screen
-    if (game.mining.level >= COAL_MINE_LVL) {
-        openCoalMine();
-    } else {
-        // Do nothing if locked, the CSS class handles the visuals.
-    }
-  };
+  document.getElementById('ironVeinBtn').onclick = () => { if (game.mining.level >= IRON_MINE_LVL) openIronMine(); };
+  document.getElementById('coalVeinBtn').onclick = () => { if (game.mining.level >= COAL_MINE_LVL) openCoalMine(); };
+  document.getElementById('silverVeinBtn').onclick = () => { if (game.mining.level >= SILVER_MINE_LVL) openSilverMine(); };
+  document.getElementById('goldVeinBtn').onclick = () => { if (game.mining.level >= GOLD_MINE_LVL) openGoldMine(); };
   document.getElementById('hubMine_ReturnBtn').onclick = backToActions;
   
   // --- Hub Blacksmith Listeners ---
+  const smithTabs = ['smithCopperTab', 'smithIronTab', 'smithSilverTab', 'smithGoldTab'];
+  
   document.getElementById('smithCopperTab').onclick = () => {
+    smithTabs.forEach(tab => document.getElementById(tab).classList.remove('active'));
     document.getElementById('smithCopperTab').classList.add('active');
-    document.getElementById('smithIronTab').classList.remove('active');
-    game.lastSmithingTab = 'copper'; // <-- ADD THIS LINE
+    game.lastSmithingTab = 'copper';
     renderSmithingItems('copper');
   };
   document.getElementById('smithIronTab').onclick = () => {
+    smithTabs.forEach(tab => document.getElementById(tab).classList.remove('active'));
     document.getElementById('smithIronTab').classList.add('active');
-    document.getElementById('smithCopperTab').classList.remove('active');
-    game.lastSmithingTab = 'iron'; // <-- ADD THIS LINE
+    game.lastSmithingTab = 'iron';
     renderSmithingItems('iron');
+  };
+  document.getElementById('smithSilverTab').onclick = () => {
+    smithTabs.forEach(tab => document.getElementById(tab).classList.remove('active'));
+    document.getElementById('smithSilverTab').classList.add('active');
+    game.lastSmithingTab = 'silver';
+    renderSmithingItems('silver');
+  };
+  document.getElementById('smithGoldTab').onclick = () => {
+    smithTabs.forEach(tab => document.getElementById(tab).classList.remove('active'));
+    document.getElementById('smithGoldTab').classList.add('active');
+    game.lastSmithingTab = 'gold';
+    renderSmithingItems('gold');
   };
   document.getElementById('hubBlacksmith_ReturnBtn').onclick = backToActions;
 
@@ -17268,32 +18537,62 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // --- Hub Forest Listeners ---
   document.getElementById('softwoodTreeBtn').onclick = openSoftwoodTree;
   document.getElementById('oakTreeBtn').onclick = () => {
-    // We check the level *before* trying to open the screen
-    if (game.woodcutting.level >= OAK_TREE_LVL) {
-        openOakTree();
-    } else {
-        // Do nothing if locked, the CSS class handles the visuals.
-    }
+    if (game.woodcutting.level >= OAK_TREE_LVL) openOakTree();
+  };
+  document.getElementById('birchTreeBtn').onclick = () => {
+    if (game.woodcutting.level >= BIRCH_LEVEL) openBirchTree();
+  };
+  document.getElementById('mapleTreeBtn').onclick = () => {
+    if (game.woodcutting.level >= MAPLE_LEVEL) openMapleTree();
+  };
+  document.getElementById('mahoganyTreeBtn').onclick = () => {
+    if (game.woodcutting.level >= MAHOGANY_LEVEL) openMahoganyTree();
   };
   document.getElementById('hubForest_ReturnBtn').onclick = backToActions;
 
+  // --- Tooltips for Hub Forest ---
+  document.getElementById('softwoodTreeBtn').onmouseenter = (e) => {
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Softwood Tree</div><div style="color:#fff;">Requires Woodcutting Lvl: ${SOFTWOOD_TREE_LVL}</div>`);
+  };
+  document.getElementById('softwoodTreeBtn').onmouseleave = hideTooltip;
+
+  document.getElementById('oakTreeBtn').onmouseenter = (e) => {
+      const isLowLvl = game.woodcutting.level < OAK_TREE_LVL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Oak Tree</div><div style="color:${textColor};">Requires Woodcutting Lvl: ${OAK_TREE_LVL}</div>`);
+  };
+  document.getElementById('oakTreeBtn').onmouseleave = hideTooltip;
+
+  document.getElementById('birchTreeBtn').onmouseenter = (e) => {
+      const isLowLvl = game.woodcutting.level < BIRCH_LEVEL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Birch Tree</div><div style="color:${textColor};">Requires Woodcutting Lvl: ${BIRCH_LEVEL}</div>`);
+  };
+  document.getElementById('birchTreeBtn').onmouseleave = hideTooltip;
+
+  document.getElementById('mapleTreeBtn').onmouseenter = (e) => {
+      const isLowLvl = game.woodcutting.level < MAPLE_LEVEL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Maple Tree</div><div style="color:${textColor};">Requires Woodcutting Lvl: ${MAPLE_LEVEL}</div>`);
+  };
+  document.getElementById('mapleTreeBtn').onmouseleave = hideTooltip;
+
+  document.getElementById('mahoganyTreeBtn').onmouseenter = (e) => {
+      const isLowLvl = game.woodcutting.level < MAHOGANY_LEVEL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Mahogany Tree</div><div style="color:${textColor};">Requires Woodcutting Lvl: ${MAHOGANY_LEVEL}</div>`);
+  };
+  document.getElementById('mahoganyTreeBtn').onmouseleave = hideTooltip;
+
   // --- Hub Kitchen Listeners ---
   document.getElementById('cookChickenBtn').onclick = openCookChicken;
-  document.getElementById('cookBeefBtn').onclick = openCookBeef; // +++ NEW +++
-  document.getElementById('cookHerringBtn').onclick = openCookHerring; // +++ NEW +++
-  document.getElementById('cookTroutBtn').onclick = () => { // +++ NEW +++
-    if (game.cooking.level >= COOK_TROUT_LVL) {
-      openCookTrout();
-    } else {
-      document.getElementById('cookTroutBtn').classList.add('locked-item');
-    }
+  document.getElementById('cookBeefBtn').onclick = openCookBeef;
+  document.getElementById('cookHerringBtn').onclick = openCookHerring;
+  document.getElementById('cookTroutBtn').onclick = () => {
+    if (game.cooking.level >= COOK_TROUT_LVL) openCookTrout();
   };
-  document.getElementById('cookSalmonBtn').onclick = () => { // +++ NEW +++
-    if (game.cooking.level >= COOK_SALMON_LVL) {
-      openCookSalmon();
-    } else {
-      document.getElementById('cookSalmonBtn').classList.add('locked-item');
-    }
+  document.getElementById('cookSalmonBtn').onclick = () => {
+    if (game.cooking.level >= COOK_SALMON_LVL) openCookSalmon();
   };
   document.getElementById('hubKitchen_ReturnBtn').onclick = backToActions;
 
@@ -17430,19 +18729,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // --- Tooltips for Hub Mine ---
   
-  // New Sand Vein Logic
+  // Sand
   document.getElementById('sandVeinBtn').onclick = openSandMine;
   document.getElementById('sandVeinBtn').onmouseenter = (e) => {
       showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Sand</div><div style="color:#fff;">Requires Mining Lvl: 1</div>Tool: Bronze Pickaxe');
   };
   document.getElementById('sandVeinBtn').onmouseleave = hideTooltip;
 
+  // Copper
   document.getElementById('copperVeinBtn').onmouseenter = (e) => {
-      // Level 1 is always unlocked, so always white
       showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Copper Vein</div><div style="color:#fff;">Requires Mining Lvl: 1</div>Tool: Bronze Pickaxe');
   };
   document.getElementById('copperVeinBtn').onmouseleave = hideTooltip;
 
+  // Iron
   document.getElementById('ironVeinBtn').onmouseenter = (e) => {
     const isLowLvl = game.mining.level < IRON_MINE_LVL;
     const textColor = isLowLvl ? '#ff8888' : '#fff';
@@ -17451,6 +18751,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   };
   document.getElementById('ironVeinBtn').onmouseleave = hideTooltip;
   
+  // Coal
   document.getElementById('coalVeinBtn').onmouseenter = (e) => {
     const isLowLvl = game.mining.level < COAL_MINE_LVL;
     const textColor = isLowLvl ? '#ff8888' : '#fff';
@@ -17458,6 +18759,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
     showTooltip(e, tt);
   };
   document.getElementById('coalVeinBtn').onmouseleave = hideTooltip;
+
+  // Silver
+  document.getElementById('silverVeinBtn').onmouseenter = (e) => {
+    const isLowLvl = game.mining.level < SILVER_MINE_LVL;
+    const textColor = isLowLvl ? '#ff8888' : '#fff';
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Silver Vein</div><div style="color:${textColor};">Requires Mining Lvl: ${SILVER_MINE_LVL}</div>Tool: Iron Pickaxe`;
+    showTooltip(e, tt);
+  };
+  document.getElementById('silverVeinBtn').onmouseleave = hideTooltip;
+
+  // Gold
+  document.getElementById('goldVeinBtn').onmouseenter = (e) => {
+    const isLowLvl = game.mining.level < GOLD_MINE_LVL;
+    const textColor = isLowLvl ? '#ff8888' : '#fff';
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Gold Vein</div><div style="color:${textColor};">Requires Mining Lvl: ${GOLD_MINE_LVL}</div>Tool: Iron Pickaxe`;
+    showTooltip(e, tt);
+  };
+  document.getElementById('goldVeinBtn').onmouseleave = hideTooltip;
   
   // --- Tooltips for Hub Forest ---
   document.getElementById('softwoodTreeBtn').onmouseenter = (e) => {
@@ -17471,6 +18790,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
       showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Oak Tree</div><div style="color:${textColor};">Requires Woodcutting Lvl: ${OAK_TREE_LVL}</div>`);
   };
   document.getElementById('oakTreeBtn').onmouseleave = hideTooltip;
+
+  document.getElementById('birchTreeBtn').onmouseenter = (e) => {
+      const isLowLvl = game.woodcutting.level < BIRCH_LEVEL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Birch Tree</div><div style="color:${textColor};">Requires Woodcutting Lvl: ${BIRCH_LEVEL}</div>`);
+  };
+  document.getElementById('birchTreeBtn').onmouseleave = hideTooltip;
+
+  document.getElementById('mapleTreeBtn').onmouseenter = (e) => {
+      const isLowLvl = game.woodcutting.level < MAPLE_LEVEL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Maple Tree</div><div style="color:${textColor};">Requires Woodcutting Lvl: ${MAPLE_LEVEL}</div>`);
+  };
+  document.getElementById('mapleTreeBtn').onmouseleave = hideTooltip;
+
+  document.getElementById('mahoganyTreeBtn').onmouseenter = (e) => {
+      const isLowLvl = game.woodcutting.level < MAHOGANY_LEVEL;
+      const textColor = isLowLvl ? '#ff8888' : '#fff';
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Mahogany Tree</div><div style="color:${textColor};">Requires Woodcutting Lvl: ${MAHOGANY_LEVEL}</div>`);
+  };
+  document.getElementById('mahoganyTreeBtn').onmouseleave = hideTooltip;
 
   // --- Tooltips for Hub Kitchen ---
   
@@ -17494,23 +18834,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
   };
   document.getElementById('cookHerringBtn').onmouseleave = hideTooltip;
   
-  // Trout (Updated text)
+  // Trout Tooltip
   document.getElementById('cookTroutBtn').onmouseenter = (e) => {
     const isLowLvl = game.cooking.level < COOK_TROUT_LVL;
     const textColor = isLowLvl ? '#ff8888' : '#fff';
     const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cooked Trout</div>Requires: 1 Trout<br><div style="color:${textColor};">Requires Cooking Lvl: ${COOK_TROUT_LVL}</div>`;
     showTooltip(e, tt);
-    document.getElementById('cookTroutBtn').classList.toggle('locked-item', isLowLvl);
   };
   document.getElementById('cookTroutBtn').onmouseleave = hideTooltip;
   
-  // Salmon (Updated text)
+  // Salmon Tooltip
   document.getElementById('cookSalmonBtn').onmouseenter = (e) => {
     const isLowLvl = game.cooking.level < COOK_SALMON_LVL;
     const textColor = isLowLvl ? '#ff8888' : '#fff';
     const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Cooked Salmon</div>Requires: 1 Salmon<br><div style="color:${textColor};">Requires Cooking Lvl: ${COOK_SALMON_LVL}</div>`;
     showTooltip(e, tt);
-    document.getElementById('cookSalmonBtn').classList.toggle('locked-item', isLowLvl);
   };
   document.getElementById('cookSalmonBtn').onmouseleave = hideTooltip;
 
@@ -18042,7 +19380,9 @@ function renderInspectEquipment(equipment, frame) {
     const itemImageMap = {
         'Copper Helmet': 'copperhelmet', 'Copper Chestplate': 'copperchestplate', 'Copper Shortsword': 'coppershortsword', 'Copper Boots': 'copperboots', 
         'Iron Helmet': 'ironhelmet', 'Iron Chestplate': 'ironchestplate', 'Iron Shortsword': 'ironshortsword', 'Iron Boots': 'ironboots', 
-        'Copper Platelegs': 'copperplatelegs', 'Iron Platelegs': 'ironplatelegs', 'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 
+        'Copper Platelegs': 'copperplatelegs', 'Iron Platelegs': 'ironplatelegs', 
+        'Silver Pickaxe': 'silverpickaxe', 'Silver Axe': 'silveraxe',
+        'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 
         'Copper Arrow': 'copperarrow', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
         'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Spider Egg': 'petegg1',
@@ -18161,7 +19501,7 @@ function renderInspectEquipment(equipment, frame) {
 
   getFirestore, doc, setDoc, getDoc, collection, query, getDocs, where,
     addDoc, serverTimestamp, onSnapshot, orderBy, limit, limitToLast, runTransaction, writeBatch, updateDoc,
-    increment, arrayUnion // <-- ADDED arrayUnion here
+    increment // <-- ADD THIS
     
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -18702,37 +20042,10 @@ window.inspectPlayer = async function(playerName) {
         if (snap.metadata.hasPendingWrites) {
           return;
         }
-
-        // --- NEW: Gift Inbox System (Receive Items ALWAYS) ---
-        // This runs BEFORE the busy check so you get items even while mining/fighting.
-        if (data.giftInbox && Array.isArray(data.giftInbox) && data.giftInbox.length > 0) {
-            let giftsReceived = false;
-            
-            // Loop through all gifts in the box
-            data.giftInbox.forEach(gift => {
-                if (gift && gift.name && gift.qty) {
-                    // Force add the item
-                    if (typeof addItem === 'function') {
-                        addItem(gift.name, gift.qty);
-                        // Show popup and chat message
-                        if (typeof showItemPopup === 'function') showItemPopup(`Gift: +${gift.qty} ${gift.name}`, null);
-                        if (typeof addLocalChatMessage === 'function') addLocalChatMessage(`🎁 Received Gift: ${gift.qty}x ${gift.name}`, 'trade');
-                        giftsReceived = true;
-                    }
-                }
-            });
-
-            // If we got items, clear the mailbox and save immediately
-            if (giftsReceived) {
-                updateDoc(doc(db, "players", user.uid), { giftInbox: [] }); // Clear DB inbox
-                if (typeof window.savePlayerData === 'function') window.savePlayerData(); // Save to secure the item
-            }
-        }
-        // -----------------------------------------------------
         
         // If we are the active tab, AND we are busy (mining, dragging, etc.),
         // do not sync data. This prevents rollbacks.
-        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.cookingActive || game.woodcuttingActive || game.fletchingActive || game.stoneforgingActive || game.fishingActive || game.isDragging)) {
+        if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.cookingActive || game.woodcuttingActive || game.fletchingActive || game.isDragging)) {
           return;
         }
         
@@ -19001,11 +20314,16 @@ window.inspectPlayer = async function(playerName) {
         game.activeBounty = data.activeBounty || null;
         
         // +++ NEW FARM LOADING & OFFLINE CALC (MULTI-CHICKEN & COWS) +++
-        game.farm = data.farm || { chickens: [], cows: [] };
+        game.farm = data.farm || { chickens: [], cows: [], garden: new Array(16).fill(null), cellar: new Array(16).fill(null) };
+        if (!game.farm.cellar) game.farm.cellar = new Array(16).fill(null);
         if (!game.farm.cows) game.farm.cows = []; 
         // +++ NEW: Init buildings if missing +++
         if (!game.farm.buildings) {
-            game.farm.buildings = { coop: false, barn: false, well: false, garden: false };
+            game.farm.buildings = { coop: false, barn: false, well: false, garden: false, cellar: false };
+        }
+        // Ensure the cellar property exists specifically for old saves
+        if (game.farm.buildings.cellar === undefined) {
+            game.farm.buildings.cellar = false;
         }
         
         // Define constants locally
@@ -19446,6 +20764,8 @@ window.inspectPlayer = async function(playerName) {
         if (command === 'giveitem') {
             const targetName = args[0] ? args[0].toLowerCase() : '';
             const qty = parseInt(args[args.length - 1]);
+            
+            // Extract the raw name parts
             const rawNameParts = args.slice(1, -1);
             
             if (!targetName || rawNameParts.length === 0 || isNaN(qty) || qty <= 0) {
@@ -19453,52 +20773,52 @@ window.inspectPlayer = async function(playerName) {
                 return true;
             }
 
-            // 1. Resolve Item Name
+            // +++ FIX: VALIDATE ITEM EXISTENCE +++
             const rawInput = rawNameParts.join(' ').toLowerCase();
             let itemName = null;
 
+            // Check against VALID_ITEMS list
             if (typeof VALID_ITEMS !== 'undefined') {
                 const officialMatch = VALID_ITEMS.find(i => i.toLowerCase() === rawInput);
-                if (officialMatch) itemName = officialMatch;
+                if (officialMatch) {
+                    itemName = officialMatch; // Found it! Use exact name from list.
+                }
             }
 
+            // If item was not found in the list, stop and show error
             if (!itemName) {
-                addLocalChatMessage(`❌ Error: '${rawNameParts.join(' ')}' is not a valid item.`, 'error');
+                addLocalChatMessage(`Error: '${rawNameParts.join(' ')}' is not a valid item.`, 'error');
                 return true;
             }
-
-            // Case A: Give to Self (Instant Local Add)
+            // +++ END FIX +++
+            
+            // Case A: Give to Self
             if (targetName === game.name.toLowerCase()) {
-                window.addItem(itemName, qty); 
-                window.savePlayerData();
-                addLocalChatMessage(`Admin: Spawning ${qty} x ${itemName}`, 'system');
+                if (typeof window.addItem === 'function') {
+                    window.addItem(itemName, qty); 
+                    await window.savePlayerData();
+                    addLocalChatMessage(`Admin: Spawning ${qty} x ${itemName}`, 'system');
+                }
                 return true;
             }
 
-            // Case B: Give to Others (Via Gift Inbox)
+            // Case B: Give to Others
             try {
                 const q = query(collection(db, "players"), where("name_lowercase", "==", targetName));
                 const querySnapshot = await getDocs(q);
-                
                 if (querySnapshot.empty) {
                     addLocalChatMessage(`Player not found: ${args[0]}`, 'error');
                     return true;
                 }
-                
                 const playerDoc = querySnapshot.docs[0];
+                const playerData = playerDoc.data();
                 
-                // We use arrayUnion to push a "Gift Package" to their inbox.
-                // We add a timestamp 'id' so every gift is unique (allows sending the same item multiple times).
-                await updateDoc(doc(db, "players", playerDoc.id), {
-                    giftInbox: arrayUnion({ 
-                        name: itemName, 
-                        qty: qty, 
-                        id: Date.now() // Unique ID to prevent database merging duplicates
-                    })
-                });
+                let currentLocalInv = convertSavedInvToLocal(playerData.inventory || []);
+                const newLocalInv = modifyInventory(currentLocalInv, itemName, qty);
+                const newSavedInv = convertLocalInvToSaved(newLocalInv);
                 
-                addLocalChatMessage(`✅ Admin: Sent ${qty}x ${itemName} to ${playerDoc.data().name}'s Inbox.`, 'system');
-
+                await updateDoc(doc(db, "players", playerDoc.id), { inventory: newSavedInv });
+                addLocalChatMessage(`Admin: Gave ${qty}x ${itemName} to ${playerData.name}.`, 'system');
             } catch (e) {
                 console.error(e);
                 addLocalChatMessage(`Error giving item: ${e.message}`, 'error');
@@ -20213,7 +21533,7 @@ window.inspectPlayer = async function(playerName) {
       'images/petegg1.png',
       'images/incubator_empty.png',
       'images/incubator_active.png',
-      'images/personalfarm.jpeg',
+      'images/personalfarm.webp',
       'images/cropfield.jpeg', 
       // +++ Garden Assets +++
       'images/grassseed.png',
@@ -20226,6 +21546,12 @@ window.inspectPlayer = async function(playerName) {
       'images/cornsecondstage.png',
       'images/cornthirdstage.png',
       'images/corn.png',
+
+      // --- shrooms ---
+
+      'images/dirtshroomfirststage.png',
+      'images/dirtshroomsecondstage.png',
+      'images/dirtshroomthirdstage.png',
 
       // --- Skill Icons ---
       'images/miningskillicon.png',
@@ -20250,6 +21576,8 @@ window.inspectPlayer = async function(playerName) {
       'images/coalore.png',
       'images/ironore.png',
       'images/ironbar.png',
+      'images/silverbar.png',
+      'images/goldbar.png',
       'images/sand.png',
       'images/goldpouch.png',
 
@@ -20270,6 +21598,8 @@ window.inspectPlayer = async function(playerName) {
       'images/ironplatelegs.png',
       'images/ironpickaxe.png',
       'images/ironaxe.png',
+      'images/silverpickaxe.png',
+      'images/silveraxe.png',
 
       // --- Items: Bronze Tools ---
       'images/bronzepickaxe.png',
@@ -20352,7 +21682,7 @@ window.inspectPlayer = async function(playerName) {
       'images/ratmonster.jpeg', 
       'images/ratanim.webp',
       'images/rattail.png',
-      'images/spidermonster.png',
+      'images/spidermonster.jpeg',
       'images/spideranim.gif',
       'images/centipedemonster.jpeg',
       'images/centipedeanim.webp',
@@ -20364,6 +21694,10 @@ window.inspectPlayer = async function(playerName) {
       'images/coalvein.png',
       'images/ironvein.png',
       'images/sandvein.jpeg',
+      'images/silvervein.jpeg',
+      'images/goldvein.jpeg',
+      'images/silverore.png',
+      'images/goldore.png',
       'images/crystalmine.jpeg',
       'images/earthcrystalvein.png',
       'images/aircrystalvein.png',
@@ -20487,6 +21821,8 @@ window.inspectPlayer = async function(playerName) {
     });
 
   })();
+
+  
 </script>
 </body>
 </html>
