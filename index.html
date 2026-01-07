@@ -5590,9 +5590,10 @@ async function drinkVitalityPotion() {
   }
   if (removeItem('Vitality Potion', 1)) {
     game.hp = Math.min(game.maxHP, game.hp + 10); // Heals 10 HP
+    addItem('Empty Vial', 1); // +++ NEW: GIVE VIAL BACK +++
     updateHPUI();
     renderInventoryGrid();
-    playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3'); // Potion drinking sound
+    playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3'); 
     if (typeof window.savePlayerData === 'function') {
         window.savePlayerData();
     }
@@ -13539,7 +13540,7 @@ function renderAlchemyItems() {
   btn.innerHTML = `<img src="images/vitalitypotion.png" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">`;
   
   btn.onclick = openBrewVitalityPotion;
-  btn.onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Vitality Potion</div>Requires: 10 Dirt Shrooms, 6 Wild Herbs<br><div style="color:#fff;">Requires Alchemy Lvl: 1</div>`);
+  btn.onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Vitality Potion</div>Requires: 10 Dirt Shrooms, 6 Wild Herbs, 1 Empty Vial<br><div style="color:#fff;">Requires Alchemy Lvl: 1</div>`);
   btn.onmouseleave = hideTooltip;
   
   container.appendChild(btn);
@@ -13551,7 +13552,7 @@ function openBrewVitalityPotion() {
   const wrapper = document.getElementById('hubDynamic');
   wrapper.innerHTML = `
     <h2>Brewing - Vitality Potion</h2>
-    <div style="margin-top:8px; color:#efe3cf;">Requires: 10 Dirt Shrooms, 6 Wild Herbs.</div>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: 10 Dirt Shrooms, 6 Wild Herbs, 1 Empty Vial.</div>
     <div style="margin-top:16px;">
       <div class="progress-container">
         <div class="progress-fill" id="brewProgress"></div>
@@ -13571,14 +13572,15 @@ async function startBrewingVitality() {
   if (!game.isSessionActive) return;
   if (!canReceiveItem('Vitality Potion')) { await showGameAlert("Inventory Full", "No room."); return; }
   
-  let shrooms = 0, herbs = 0;
+  let shrooms = 0, herbs = 0, vials = 0;
   game.inventory.forEach(s => {
     if(s && s.name === 'Dirt Shroom') shrooms += s.qty;
     if(s && s.name === 'Wild Herb') herbs += s.qty;
+    if(s && s.name === 'Empty Vial') vials += s.qty;
   });
 
-  if (shrooms < 10 || herbs < 6) {
-    await showGameAlert("Not Enough Materials", "You need 10 Dirt Shrooms and 6 Wild Herbs.");
+  if (shrooms < 10 || herbs < 6 || vials < 1) {
+    await showGameAlert("Not Enough Materials", "You need 10 Dirt Shrooms, 6 Wild Herbs and 1 Empty Vial.");
     return;
   }
 
@@ -13593,19 +13595,20 @@ function brewLoop(ts, startTime) {
   const elapsed = Date.now() - startTime;
 
   if (elapsed >= BREW_TIME_MS) {
-    if (removeItem('Dirt Shroom', 10) && removeItem('Wild Herb', 6)) {
+    if (removeItem('Dirt Shroom', 10) && removeItem('Wild Herb', 6) && removeItem('Empty Vial', 1)) {
       addItem('Vitality Potion', 1);
       addXP('alchemy', VITALITY_POTION_XP);
       showItemPopup(`+${VITALITY_POTION_XP} Alchemy XP`, 'brewProgress', 0);
       showItemPopup(`+1 Vitality Potion`, 'brewProgress', 450);
       
       // Check for next loop
-      let s = 0, h = 0;
+      let s = 0, h = 0, v = 0;
       game.inventory.forEach(slot => {
         if(slot && slot.name === 'Dirt Shroom') s += slot.qty;
         if(slot && slot.name === 'Wild Herb') h += slot.qty;
+        if(slot && slot.name === 'Empty Vial') v += slot.qty;
       });
-      if (s >= 10 && h >= 6 && canReceiveItem('Vitality Potion')) {
+      if (s >= 10 && h >= 6 && v >= 1 && canReceiveItem('Vitality Potion')) {
         return brewLoop(Date.now(), Date.now());
       }
     }
