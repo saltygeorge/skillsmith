@@ -2615,6 +2615,24 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="caveAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/cave.png" alt="Cave Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
               </button>
+
+              <!-- NEW FOREST BUTTON -->
+              <button id="normalForestAreaBtn" class="primary" 
+                      style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; outline: none; background: transparent; border: none; box-shadow: none; overflow: hidden;"
+                      onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Forest</div>')" 
+                      onmouseleave="hideTooltip()">
+                <img src="images/normalforest.jpeg" alt="Forest Area" 
+                     style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover; display: block; image-rendering: auto; backface-visibility: hidden;">
+              </button>
+
+              <!-- DARK FOREST BUTTON -->
+              <button id="darkForestAreaBtn" class="primary" 
+                      style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; outline: none; background: transparent; border: none; box-shadow: none; overflow: hidden;"
+                      onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Dark Forest</div>')" 
+                      onmouseleave="hideTooltip()">
+                <img src="images/darkforest.jpeg" alt="Dark Forest Area" 
+                     style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover; display: block; image-rendering: auto; backface-visibility: hidden;">
+              </button>
               
               <button id="madmaxCastleBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; border: 2px solid #900;">
                 <img src="images/madmaxcastle.jpeg" alt="Madmax Castle" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
@@ -2635,22 +2653,26 @@ button.primary:hover { background: var(--accent-hover); }
               <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Rat')" 
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Rat (Lvl 1)</div>')"
                    onmouseleave="hideTooltip()">
-                <!-- Reverted height to 100px, added object-fit and object-position -->
                 <img src="images/ratmonster.jpeg" alt="Rat" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
               
               <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Spider')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Spider (Lvl 2)</div>')"
                    onmouseleave="hideTooltip()">
-                <!-- Reverted height to 100px, added object-fit and object-position -->
                 <img src="images/spidermonster.jpeg" alt="Spider" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
               
               <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Centipede')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Centipede (Lvl 5)</div>')"
                    onmouseleave="hideTooltip()">
-                <!-- Reverted height to 100px, added object-fit and object-position -->
                 <img src="images/centipedemonster.jpeg" alt="Centipede" style="height: 100px; object-fit: cover; object-position: center;">
+              </div>
+
+              <!-- NEW GOBLIN MONSTER -->
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Goblin')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Goblin (Lvl 8)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/goblinmonster.jpeg" alt="Goblin" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
             
             </div>
@@ -2676,6 +2698,51 @@ button.primary:hover { background: var(--accent-hover); }
             
             <div class="action-buttons" style="margin-top: 14px;">
               <button id="hubMadmaxCastle_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <!-- NEW FOREST COMBAT HUB -->
+          <div id="hubNormalForest" class="hub-screen">
+            <h2>The Forest</h2>
+            <div style="margin-top:8px; color:#efe3cf;">A dense forest filled with strange creatures.</div>
+            
+            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+              
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Crazy Platypus')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Crazy Platypus (Lvl 5)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/platypusmonster.jpeg" alt="Crazy Platypus" style="height: 100px; object-fit: cover; object-position: center;">
+              </div>
+            
+            </div>
+            
+            <div class="action-buttons" style="margin-top: 14px;">
+              <button id="hubNormalForest_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubDarkForest" class="hub-screen">
+            <h2>The Dark Forest</h2>
+            <div style="margin-top:8px; color:#efe3cf;">The trees seem to watch you as you walk...</div>
+            
+            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+              
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Crazy Owl')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Crazy Owl (Lvl 10)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/crazyowlmonster.jpeg" alt="Crazy Owl" style="height: 100px; object-fit: cover; border-radius: 8px;">
+              </div>
+
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('The Witch')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Witch (Lvl 15)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/witchmonster.jpeg" alt="The Witch" style="height: 100px; object-fit: cover; border-radius: 8px;">
+              </div>
+            
+            </div>
+            
+            <div class="action-buttons" style="margin-top: 24px;">
+              <button id="hubDarkForest_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
           <div id="hubShop" class="hub-screen">
@@ -3452,7 +3519,8 @@ const VALID_ITEMS = [
   'Grass',
   'Corn Seed', // ... existing items
   'Corn',      // ... existing items
-  'Dirt Shroom'            // +++ NEW +++
+  'Dirt Shroom',            // +++ NEW +++
+  'Wild Herb'
 ];
 
 const XP_TABLE = [
@@ -4125,7 +4193,8 @@ const ITEM_SELL_PRICES = {
   'Grass Seed': 2,
   'Grass': 150,
   'Corn Seed': 5,
-  'Corn': 80
+  'Corn': 80,
+  'Wild Herb': 25
 };
 
 const WELL_GATHER_TIME_MS = 2000;
@@ -5040,7 +5109,8 @@ function renderInventoryGrid(){
                   imgName = 'corn';
               } else if (item.name === 'Dirt Shroom') {
                   imgName = 'dirtshroom';}
-              
+              else if (item.name === 'Wild Herb') {
+                  imgName = 'wildherb';}
 
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
@@ -15932,6 +16002,14 @@ function openCombatInterface(enemyName) {
     game.currentEnemy = { name: 'Spider', level: 2, maxHp: 12, currentHp: 12, attack: 2, strength: 2, defence: 2, img: 'images/spidermonster.jpeg' };
   } else if (enemyName === 'Centipede') {
     game.currentEnemy = { name: 'Centipede', level: 5, maxHp: 20, currentHp: 20, attack: 5, strength: 5, defence: 5, img: 'images/centipedemonster.jpeg' };
+  } else if (enemyName === 'Goblin') {
+    game.currentEnemy = { name: 'Goblin', level: 8, maxHp: 35, currentHp: 35, attack: 8, strength: 8, defence: 8, img: 'images/goblinmonster.jpeg' };
+  } else if (enemyName === 'Crazy Platypus') {
+    game.currentEnemy = { name: 'Crazy Platypus', level: 5, maxHp: 20, currentHp: 20, attack: 5, strength: 5, defence: 5, img: 'images/platypusmonster.jpeg' };
+  } else if (enemyName === 'Crazy Owl') {
+    game.currentEnemy = { name: 'Crazy Owl', level: 10, maxHp: 45, currentHp: 45, attack: 12, strength: 10, defence: 10, img: 'images/crazyowlmonster.jpeg' };
+  } else if (enemyName === 'The Witch') {
+    game.currentEnemy = { name: 'The Witch', level: 15, maxHp: 70, currentHp: 70, attack: 20, strength: 16, defence: 15, img: 'images/witchmonster.jpeg' };
   } else if (enemyName === 'Cow') {
     game.currentEnemy = { name: 'Cow', level: 2, maxHp: 12, currentHp: 12, attack: 2, strength: 2, defence: 2, img: 'images/cowmonster.png' };
   } else if (enemyName === 'Madmax') {
@@ -16521,10 +16599,37 @@ function playerAttackTurn(spellOverride = null) {
       addItem('Beef', 1); 
       showItemPopup(`+1 Cow Hide`, null, dropDelay);
       showItemPopup(`+1 Beef`, null, dropDelay + 450);
+    } else if (game.currentEnemy.name === 'Goblin') {
+      addItem('Copper Ore', 5);
+      showItemPopup(`+5 Copper Ore`, null, dropDelay);
+    } else if (game.currentEnemy.name === 'Crazy Platypus') {
+      addItem('Fishing Bait', 2);
+      showItemPopup(`+2 Fishing Bait`, null, dropDelay);
+      } else if (game.currentEnemy.name === 'Crazy Owl') {
+      addItem('Feather', 10);
+      showItemPopup(`+10 Feather`, null, dropDelay);
+    } else if (game.currentEnemy.name === 'The Witch') {
+      // Vials are a guaranteed drop
+      addItem('Empty Vial', 2);
+      showItemPopup(`+2 Empty Vial`, null, dropDelay);
+
+      // Wild Herb - 1/2 chance (50%)
+      if (Math.random() < 0.5) {
+          addItem('Wild Herb', 1);
+          showItemPopup(`+1 Wild Herb`, null, dropDelay + 450);
+          dropDelay += 450;
+      }
+
+      // Magic Staff is a 1 in 30 chance
+      if (Math.floor(Math.random() * 30) === 0) {
+          addItem('Magic Staff', 1);
+          showItemPopup(`+1 Magic Staff`, null, dropDelay + 450);
+      }
     } else if (game.currentEnemy.name === 'Madmax') {
       addItem('Lottery Ticket', 3);
       showItemPopup('+3 Lottery Ticket', null, dropDelay);
     }
+    
     
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
     updateEnemyCombatUI();
@@ -17354,7 +17459,8 @@ function renderBankGrid() {
                   imgName = 'corn';
               } else if (item.name === 'Dirt Shroom') {
                   imgName = 'dirtshroom'; }
-              
+              else if (item.name === 'Wild Herb') {
+                  imgName = 'wildherb'; }
 
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
@@ -18138,8 +18244,7 @@ function closeSettings() {
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard',
-  'hubCellar'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -18618,6 +18723,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('madmaxCastleBtn').onclick = openMadmaxCastle;
   document.getElementById('hubMadmaxCastle_ReturnBtn').onclick = openCombatHub;
 
+  // --- Hub Forest Listeners ---
+  document.getElementById('normalForestAreaBtn').onclick = () => {
+    game.lastCombatAreaHub = 'hubNormalForest'; 
+    showMainScreen('hubNormalForest');
+  };
+  document.getElementById('hubNormalForest_ReturnBtn').onclick = openCombatHub;
+
+  // --- Hub Dark Forest Listeners ---
+  document.getElementById('darkForestAreaBtn').onclick = () => {
+    game.lastCombatAreaHub = 'hubDarkForest'; 
+    showMainScreen('hubDarkForest');
+  };
+  document.getElementById('hubDarkForest_ReturnBtn').onclick = openCombatHub;
+
   // --- Hub Fishing Level Locks (in Listeners) ---
   document.getElementById('fishTroutBtn').onclick = () => {
     if (game.fishing.level >= TROUT_FISH_LVL) openFishTrout();
@@ -18858,6 +18977,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('farmAreaBtn').onmouseleave = hideTooltip;
   document.getElementById('caveAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Cave</div>'); 
   document.getElementById('caveAreaBtn').onmouseleave = hideTooltip; 
+
+  document.getElementById('normalForestAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Forest</div>');
+  document.getElementById('normalForestAreaBtn').onmouseleave = hideTooltip;
 
   document.getElementById('madmaxCastleBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:red; margin-bottom: 4px;">Madmax Castle</div>'); 
   document.getElementById('madmaxCastleBtn').onmouseleave = hideTooltip; 
@@ -21526,6 +21648,12 @@ window.inspectPlayer = async function(playerName) {
       'images/oceanbutton.png',
       'images/riverbutton.jpeg',
       'images/madmaxcastle.jpeg',
+      'images/normalforest.jpeg',
+      'images/darkforest.jpeg',
+      'images/crazyowlmonster.jpeg',
+      'images/witchmonster.jpeg',
+      'images/goblinmonster.jpeg',
+      'images/platypusmonster.jpeg',
       // +++ NEW FARM ASSETS +++
       'images/farmicon.jpeg',
       'images/petyardicon.jpeg',
@@ -21664,6 +21792,7 @@ window.inspectPlayer = async function(playerName) {
       'images/emptyvial.png',
       'images/venom.png',
       'images/lotteryticket.png', // +++ NEW +++
+      'images/wildherb.png',
       
       // --- Items: Fishing ---
       'images/fishingpole.png',
