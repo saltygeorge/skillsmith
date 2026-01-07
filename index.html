@@ -2018,6 +2018,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="huntingBoardActionIcon" src="images/huntingboard.jpeg" alt="Hunting Board" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="personalFarmActionIcon" src="images/farmicon.jpeg" alt="My Farm" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="petYardActionIcon" src="images/petyardicon.jpeg" alt="Pet Yard" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="alchemyActionIcon" src="images/alchemyicon.jpeg" alt="Alchemy Table" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
             </div>
           </div>
 
@@ -2120,6 +2121,16 @@ button.primary:hover { background: var(--accent-hover); }
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
               <button id="hubPetYard_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubAlchemy" class="hub-screen">
+            <h2>Alchemy Table</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Brew powerful potions from mushrooms and herbs.</div>
+            <div id="alchemyItemsContainer" class="action-buttons" style="margin-top: 14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+              </div>
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+              <button id="hubAlchemy_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
 
@@ -3225,6 +3236,9 @@ const game = {
 
   // +++ NEW FARMING SKILL +++
   farming: { level: 1, xp: 0, totalXP: 0 },
+  alchemy: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW ALCHEMY SKILL +++
+  alchemyActive: false, // +++ NEW STATE +++
+  wasAlchemyBeforeCombat: false, 
   
   // Stores progress: { 'tutorial': { completed: ['tut_1'], activeQuestId: 'tut_2', kills: 0 } }
   questLines: {},
@@ -3517,10 +3531,11 @@ const VALID_ITEMS = [
   'Bucket of Water', // +++ NEW +++
   'Grass Seed',      // +++ NEW +++
   'Grass',
-  'Corn Seed', // ... existing items
-  'Corn',      // ... existing items
-  'Dirt Shroom',            // +++ NEW +++
-  'Wild Herb'
+  'Corn Seed',
+  'Corn',
+  'Dirt Shroom',
+  'Wild Herb',
+  'Vitality Potion' // +++ NEW ITEM +++
 ];
 
 const XP_TABLE = [
@@ -4194,7 +4209,8 @@ const ITEM_SELL_PRICES = {
   'Grass': 150,
   'Corn Seed': 5,
   'Corn': 80,
-  'Wild Herb': 25
+  'Wild Herb': 25,
+  'Vitality Potion': 150 // +++ NEW SELL PRICE +++
 };
 
 const WELL_GATHER_TIME_MS = 2000;
@@ -5111,6 +5127,8 @@ function renderInventoryGrid(){
                   imgName = 'dirtshroom';}
               else if (item.name === 'Wild Herb') {
                   imgName = 'wildherb';}
+              else if (item.name === 'Vitality Potion') {
+                  imgName = 'vitalitypotion';}
 
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
@@ -5162,6 +5180,10 @@ function renderInventoryGrid(){
         // This is consumable
         itemStats = `<div style="color:#aaffaa; margin-top:4px;">+${COOK_SALMON_HEAL} HP</div>`;
         clickAction = '<div style="color:#aaffaa; margin-top: 5px;">Click to eat...</div>';
+      } else if (itemName === 'Vitality Potion') {
+        // +++ NEW POTION TOOLTIP +++
+        itemStats = `<div style="color:#aaffaa; margin-top:4px;">+10 HP</div>`;
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px;">Click to drink...</div>';
       } else if (itemName === 'Cooked Beef') {
         // This is consumable
         itemStats = `<div style="color:#aaffaa; margin-top:4px;">+${COOK_BEEF_HEAL} HP</div>`;
@@ -5403,8 +5425,8 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     // --- NEW: This is an equipable item! ---
     // We pass the slot *type* (e.g., 'helmet') and the inventory *index*
     equipItem(itemSlotType, slotIndex);
-  } else if (itemName === 'Cooked Chicken' || itemName === 'Cooked Beef' || itemName === 'Cooked Herring' || itemName === 'Cooked Trout' || itemName === 'Cooked Salmon') {
-    // Not in shop, not equipable, and it's food. Show eat menu.
+  } else if (itemName === 'Cooked Chicken' || itemName === 'Cooked Beef' || itemName === 'Cooked Herring' || itemName === 'Cooked Trout' || itemName === 'Cooked Salmon' || itemName === 'Vitality Potion') {
+    // Not in shop, not equipable, and it's food/potion. Show use menu.
     showItemContextMenu(event, itemName);
   }
   // Other items (like ores) do nothing when clicked.
@@ -5425,6 +5447,8 @@ function showItemContextMenu(event, itemName) {
     menuContent += `<button class="context-menu-btn" onclick="eatCookedTrout()">Eat</button>`;
   } else if (itemName === 'Cooked Salmon') {
     menuContent += `<button class="context-menu-btn" onclick="eatCookedSalmon()">Eat</button>`;
+  } else if (itemName === 'Vitality Potion') {
+    menuContent += `<button class="context-menu-btn" onclick="drinkVitalityPotion()">Drink</button>`;
   }
   
   // We can add other options here later (e.g., "Drop")
@@ -5554,6 +5578,24 @@ async function eatCookedSalmon() {
     }
   } else {
     console.warn('Tried to eat Cooked Salmon, but removeItem failed.');
+  }
+}
+
+// +++ NEW: DRINK VITALITY POTION +++
+async function drinkVitalityPotion() {
+  hideItemContextMenu(); 
+  if (game.hp >= game.maxHP) {
+    await showGameAlert("HP Full", "Your HP is already full.");
+    return;
+  }
+  if (removeItem('Vitality Potion', 1)) {
+    game.hp = Math.min(game.maxHP, game.hp + 10); // Heals 10 HP
+    updateHPUI();
+    renderInventoryGrid();
+    playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3'); // Potion drinking sound
+    if (typeof window.savePlayerData === 'function') {
+        window.savePlayerData();
+    }
   }
 }
 
@@ -6140,6 +6182,7 @@ function updateSkillUI(){
   // +++ NEW FARMING ICON +++
   createSkillIcon('Farming', 'farming', 'farmingskillicon.jpeg');
   createSkillIcon('Pet Mastery', 'petmastery', 'petmasteryskillicon.jpeg');
+  createSkillIcon('Alchemy', 'alchemy', 'alchemyskillicon.jpeg'); // +++ NEW ICON +++
 }
 
 // +++ NEW: Level Up Popup Logic +++
@@ -6168,7 +6211,8 @@ hideTooltip();
     'stoneforging': 'stoneforgingskillicon.jpeg',
     'bountyhunting': 'bountyhunterskillicon.jpeg',
     'farming': 'farmingskillicon.jpeg',
-    'petmastery': 'petmasteryskillicon.jpeg'
+    'petmastery': 'petmasteryskillicon.jpeg',
+    'alchemy': 'alchemyskillicon.jpeg' // +++ NEW +++
   };
 
   // Format Skill Name (capitalize first letter)
@@ -6316,9 +6360,10 @@ function addXP(skill, amount, delay = 0){
   if (skill === 'blacksmith') barId = 'smithProgress';
   if (skill === 'woodcutting') barId = 'woodcutProgress';
   if (skill === 'crafting') barId = 'craftProgress'; 
+  if (skill === 'alchemy') barId = 'brewProgress'; // +++ NEW +++
   
-  // +++ FIX: Added 'farming' to this exclusion list +++
-  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting' && skill !== 'crafting' && skill !== 'fletching' && skill !== 'fishing' && skill !== 'stoneforging' && skill !== 'farming' && skill !== 'strength') { 
+  // +++ FIX: Added 'alchemy' to this exclusion list +++
+  if (skill !== 'blacksmith' && skill !== 'mining' && skill !== 'cooking' && skill !== 'woodcutting' && skill !== 'crafting' && skill !== 'fletching' && skill !== 'fishing' && skill !== 'stoneforging' && skill !== 'farming' && skill !== 'strength' && skill !== 'alchemy') { 
     if (delay > 0) {
       setTimeout(() => {
         showItemPopup(`+${amount} ${skill.toUpperCase()} XP`, barId);
@@ -11319,10 +11364,10 @@ const GARDEN_COST = 75000;
 const CELLAR_BUILDING_COST = 60000; // Added Cellar Cost // +++ NEW +++
 
 // +++ NEW BOUNTY HUNTING CONSTANTS +++
-const BOUNTY_TIER_1_TARGETS = ['Rat', 'Spider', 'Chicken', 'Cow', 'Centipede'];
-const BOUNTY_KILL_XP = 8; // XP gained per kill on a bounty target (Reduced from 15)
-const BOUNTY_REWARD_GOLD = 500;
-const BOUNTY_REQ_COUNT = 100; // Default kill count
+const BOUNTY_TIER_1_TARGETS = ['Rat', 'Spider', 'Chicken', 'Cow', 'Centipede', 'Goblin', 'Crazy Platypus'];
+const BOUNTY_TIER_2_TARGETS = ['Crazy Owl', 'The Witch']; 
+const BOUNTY_KILL_XP = 8; 
+const BOUNTY_REQ_COUNT = 100;
 
 function openElementalForgeHub() {
   showMainScreen('hubElementalForge');
@@ -13233,7 +13278,7 @@ function renderBountyInterface() {
            <div style="width: ${Math.min(100, (b.kills / b.req) * 100)}%; height: 100%; background: var(--gold);"></div>
         </div>
         <div style="margin-top: 15px; font-size: 14px; color: #ccc;">
-           Reward: ${BOUNTY_REWARD_GOLD} Gold
+           Reward: ${b.reward} Gold
         </div>
         
         ${isComplete ? 
@@ -13246,12 +13291,22 @@ function renderBountyInterface() {
 
   } else {
     // --- SELECT MISSION VIEW ---
-    // Currently only Lvl 1 Category
+    const bhLvl = game.bountyhunting.level;
+    const isLvl2Locked = bhLvl < 10;
+
     container.innerHTML = `
-      <div onclick="assignBounty(1)" class="quest-line-card" style="text-align: left;">
+      <div onclick="assignBounty(1)" class="quest-line-card" style="text-align: left; margin-bottom: 12px;">
         <div style="font-size: 18px; font-weight: bold; color: var(--gold);">Level 1 Bounties</div>
-        <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Simple tasks for beginners. Rats, Spiders, Chickens, etc.</div>
-        <div style="margin-top: 8px; color: #aaffaa;">Click to accept a random mission</div>
+        <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Rats, Spiders, Chickens, Goblins, etc.</div>
+        <div style="margin-top: 8px; color: #aaffaa;">Reward: 500 Gold</div>
+      </div>
+
+      <div onclick="assignBounty(2)" class="quest-line-card ${isLvl2Locked ? 'locked-item' : ''}" style="text-align: left;">
+        <div style="font-size: 18px; font-weight: bold; color: ${isLvl2Locked ? '#888' : '#ff4d4d'};">Level 2 Bounties</div>
+        <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Elite targets like Crazy Owls and The Witch.</div>
+        <div style="margin-top: 8px; color: ${isLvl2Locked ? '#ff8888' : '#aaffaa'};">
+            ${isLvl2Locked ? 'Requires Bounty Hunting Lvl 10' : 'Reward: 1,000 - 1,500 Gold'}
+        </div>
       </div>
     `;
   }
@@ -13262,20 +13317,37 @@ async function assignBounty(tier) {
     await showGameAlert("Session Error", "Session not active.");
     return;
   }
+
+  // --- FIX: Level 10 requirement for Tier 2 ---
+  if (tier === 2 && game.bountyhunting.level < 10) {
+    await showGameAlert("Level Required", "You need Bounty Hunting Level 10 to take on elite contracts.");
+    return;
+  }
   
-  // Pick random target
-  const targets = BOUNTY_TIER_1_TARGETS;
+  // Pick random target based on tier
+  const targets = (tier === 2) ? BOUNTY_TIER_2_TARGETS : BOUNTY_TIER_1_TARGETS;
   const randomTarget = targets[Math.floor(Math.random() * targets.length)];
   
+  // Determine reward based on monster name
+  let reward = 500; 
+  if (randomTarget === 'Crazy Owl') reward = 1000;
+  if (randomTarget === 'The Witch') reward = 1500;
+
   game.activeBounty = {
     target: randomTarget,
     req: BOUNTY_REQ_COUNT,
     kills: 0,
-    tier: tier
+    tier: tier,
+    reward: reward
   };
   
   await showGameAlert("Bounty Accepted", `Your mission: Kill ${BOUNTY_REQ_COUNT} ${randomTarget}s.`);
   
+  // --- FIX: Update Sidebar Mission Tab in real-time ---
+  if (typeof renderBountyDetails === 'function') {
+      renderBountyDetails();
+  }
+
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
   renderBountyInterface();
 }
@@ -13283,7 +13355,8 @@ async function assignBounty(tier) {
 async function claimBountyReward() {
   if (!game.activeBounty || game.activeBounty.kills < game.activeBounty.req) return;
   
-  addGold(BOUNTY_REWARD_GOLD);
+  const rewardAmount = game.activeBounty.reward || 500;
+  addGold(rewardAmount);
   playGlobalSound('sounds/soundeffects/levelupsound.mp3');
   
   game.activeBounty = null; // Clear mission
@@ -13441,6 +13514,114 @@ async function stoneForgingLoop(timestamp, startTime, type) {
     document.getElementById('forgeProgress').style.width = progress + '%';
     game.progressFrame = setTimeout(() => stoneForgingLoop(Date.now(), startTime, type), 16);
   }
+}
+
+// =================================================================
+// +++ NEW: ALCHEMY BREWING FUNCTIONS +++
+// =================================================================
+const BREW_TIME_MS = 5000;
+const VITALITY_POTION_XP = 60;
+
+function openAlchemyHub() {
+  showMainScreen('hubAlchemy');
+  renderAlchemyItems();
+}
+
+function renderAlchemyItems() {
+  const container = document.getElementById('alchemyItemsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // Vitality Potion (Level 1)
+  const btn = document.createElement('button');
+  btn.className = 'primary';
+  btn.style.cssText = 'width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;';
+  btn.innerHTML = `<img src="images/vitalitypotion.png" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">`;
+  
+  btn.onclick = openBrewVitalityPotion;
+  btn.onmouseenter = (e) => showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Vitality Potion</div>Requires: 10 Dirt Shrooms, 6 Wild Herbs<br><div style="color:#fff;">Requires Alchemy Lvl: 1</div>`);
+  btn.onmouseleave = hideTooltip;
+  
+  container.appendChild(btn);
+}
+
+function openBrewVitalityPotion() {
+  game.shopOpen = false; 
+  hideTooltip();
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Brewing - Vitality Potion</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: 10 Dirt Shrooms, 6 Wild Herbs.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="brewProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startBrewBtn" class="primary">Start Brewing</button>
+      <button id="stopBrewBtn" class="primary" style="background:#555; display:none;">Stop Brewing</button>
+      <button onclick="openAlchemyHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startBrewBtn').onclick = startBrewingVitality;
+  document.getElementById('stopBrewBtn').onclick = stopBrewing;
+  showMainScreen('hubDynamic');
+}
+
+async function startBrewingVitality() {
+  if (!game.isSessionActive) return;
+  if (!canReceiveItem('Vitality Potion')) { await showGameAlert("Inventory Full", "No room."); return; }
+  
+  let shrooms = 0, herbs = 0;
+  game.inventory.forEach(s => {
+    if(s && s.name === 'Dirt Shroom') shrooms += s.qty;
+    if(s && s.name === 'Wild Herb') herbs += s.qty;
+  });
+
+  if (shrooms < 10 || herbs < 6) {
+    await showGameAlert("Not Enough Materials", "You need 10 Dirt Shrooms and 6 Wild Herbs.");
+    return;
+  }
+
+  game.alchemyActive = true;
+  document.getElementById('startBrewBtn').style.display = 'none';
+  document.getElementById('stopBrewBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => brewLoop(Date.now(), Date.now()), 16);
+}
+
+function brewLoop(ts, startTime) {
+  if (!game.alchemyActive) return;
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= BREW_TIME_MS) {
+    if (removeItem('Dirt Shroom', 10) && removeItem('Wild Herb', 6)) {
+      addItem('Vitality Potion', 1);
+      addXP('alchemy', VITALITY_POTION_XP);
+      showItemPopup(`+${VITALITY_POTION_XP} Alchemy XP`, 'brewProgress', 0);
+      showItemPopup(`+1 Vitality Potion`, 'brewProgress', 450);
+      
+      // Check for next loop
+      let s = 0, h = 0;
+      game.inventory.forEach(slot => {
+        if(slot && slot.name === 'Dirt Shroom') s += slot.qty;
+        if(slot && slot.name === 'Wild Herb') h += slot.qty;
+      });
+      if (s >= 10 && h >= 6 && canReceiveItem('Vitality Potion')) {
+        return brewLoop(Date.now(), Date.now());
+      }
+    }
+    stopBrewing();
+  } else {
+    document.getElementById('brewProgress').style.width = (elapsed / BREW_TIME_MS) * 100 + '%';
+    game.progressFrame = setTimeout(() => brewLoop(Date.now(), startTime), 16);
+  }
+}
+
+function stopBrewing() {
+  game.alchemyActive = false;
+  if(game.progressFrame) clearTimeout(game.progressFrame);
+  if(document.getElementById('startBrewBtn')) document.getElementById('startBrewBtn').style.display = 'inline-block';
+  if(document.getElementById('stopBrewBtn')) document.getElementById('stopBrewBtn').style.display = 'none';
+  if(document.getElementById('brewProgress')) document.getElementById('brewProgress').style.width = '0%';
 }
 
 
@@ -14078,7 +14259,7 @@ function renderBountyDetails() {
                <div style="width: ${Math.min(100, (b.kills / b.req) * 100)}%; height: 100%; background: var(--gold);"></div>
             </div>
             <div style="font-size: 14px; color: #aaffaa;">
-               Reward: ${BOUNTY_REWARD_GOLD} Gold
+               Reward: ${b.reward} Gold
             </div>
         </div>
     `;
@@ -17188,7 +17369,8 @@ function renderBankTabs() {
                 'leather_body': 'leatherarmor', 'leather_chaps': 'leatherpants', 'leather_boots': 'leatherboots',
                 'herring': 'herring', 'trout': 'trout', 'salmon': 'salmon', 'fishing_pole': 'fishingpole',
                 'fishing_bait': 'fishingbait', 'empty_bucket': 'emptybucket', 'bucket_of_milk': 'bucketofmilk', 
-                'bucket_of_water': 'bucketofwater', 'grass_seed': 'grassseed', 'corn_seed': 'cornseed'
+                'bucket_of_water': 'bucketofwater', 'grass_seed': 'grassseed', 'corn_seed': 'cornseed',
+                'vitality_potion': 'vitalitypotion'
             };
             
             if (overrides[imgName]) {
@@ -17461,6 +17643,8 @@ function renderBankGrid() {
                   imgName = 'dirtshroom'; }
               else if (item.name === 'Wild Herb') {
                   imgName = 'wildherb'; }
+              else if (item.name === 'Vitality Potion') {
+                  imgName = 'vitalitypotion'; }
 
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
@@ -18093,13 +18277,15 @@ function resetGameState() {
   game.questLines = {}; // +++ FIX: RESET QUESTS +++
 
   game.miningActive = false;
-  game.blacksmithingActive = false; // +++ NEW +++
+  game.blacksmithingActive = false;
   game.cookingActive = false;
-  game.woodcuttingActive = false; // +++ NEW +++
+  game.woodcuttingActive = false;
   game.fletchingActive = false; 
   game.craftingActive = false; 
   game.fishingActive = false; 
-  game.stoneforgingActive = false; // +++ NEW +++
+  game.stoneforgingActive = false;
+  game.alchemyActive = false; // +++ NEW +++
+  game.gatheringWaterActive = false;
   game.shopOpen = false;
   game.isAdmin = false;
   
@@ -18244,7 +18430,7 @@ function closeSettings() {
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy'];
 function showMainScreen(screenIdToShow) {
   // Stop all skilling actions
   stopMining();
@@ -18566,8 +18752,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('fletchingActionIcon').onclick = openFletchingHub; // +++ NEW +++
   document.getElementById('craftingActionIcon').onclick = openCraftingHub; 
   document.getElementById('elementalForgeActionIcon').onclick = openElementalForgeHub; // +++ NEW +++
-  document.getElementById('huntingBoardActionIcon').onclick = openHuntingBoard; // +++ NEW +++
-  document.getElementById('hubHuntingBoard_ReturnBtn').onclick = backToActions; // +++ NEW +++
+  document.getElementById('huntingBoardActionIcon').onclick = openHuntingBoard;
+  document.getElementById('hubHuntingBoard_ReturnBtn').onclick = backToActions;
+  document.getElementById('alchemyActionIcon').onclick = openAlchemyHub; // +++ NEW +++
+  document.getElementById('hubAlchemy_ReturnBtn').onclick = backToActions; // +++ NEW +++
   
   // +++ NEW: Quest Button Listener +++
   const questBtn = document.getElementById('questsActionIcon');
@@ -18788,6 +18976,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // +++ NEW BOUNTY TOOLTIP +++
   document.getElementById('huntingBoardActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Hunting Board</div>Take on bounties');
   document.getElementById('huntingBoardActionIcon').onmouseleave = hideTooltip;
+  
+  // +++ NEW ALCHEMY TOOLTIP +++
+  document.getElementById('alchemyActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Alchemy Table</div>Brew powerful potions');
+  document.getElementById('alchemyActionIcon').onmouseleave = hideTooltip;
 
   // +++ NEW PERSONAL FARM LISTENERS +++
   document.getElementById('personalFarmActionIcon').onclick = openPersonalFarmHub;
@@ -19508,7 +19700,7 @@ function renderInspectEquipment(equipment, frame) {
         'Copper Arrow': 'copperarrow', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
         'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Spider Egg': 'petegg1',
-        'Empty Bucket': 'emptybucket', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater'
+        'Empty Bucket': 'emptybucket', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Vitality Potion': 'vitalitypotion'
     };
 
     slots.forEach(slotType => {
@@ -19937,6 +20129,11 @@ function renderInspectEquipment(equipment, frame) {
           level: game.farming.level,
           xp: game.farming.xp,
           totalXP: game.farming.totalXP
+        },
+        alchemy: {
+          level: game.alchemy.level,
+          xp: game.alchemy.xp,
+          totalXP: game.alchemy.totalXP
         },
         petmastery: {
           level: game.petmastery.level,
@@ -20414,6 +20611,15 @@ window.inspectPlayer = async function(playerName) {
           game.bountyhunting = { level: 1, xp: 0, totalXP: 0 }; 
         }
 
+        // +++ NEW: LOAD ALCHEMY DATA +++
+        if (data.alchemy) {
+          game.alchemy.level = data.alchemy.level || 1;
+          game.alchemy.xp = data.alchemy.xp || 0;
+          game.alchemy.totalXP = data.alchemy.totalXP || getTotalXPForLevel(data.alchemy.level - 1) + data.alchemy.xp || 0; 
+        } else {
+          game.alchemy = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+
         // +++ NEW PET LOAD +++
         if (data.petmastery) {
           game.petmastery.level = data.petmastery.level || 1;
@@ -20636,8 +20842,9 @@ window.inspectPlayer = async function(playerName) {
         crafting: { level: 1, xp: 0, totalXP: 0 },
         ranged: { level: 1, xp: 0, totalXP: 0 },
         fishing: { level: 1, xp: 0, totalXP: 0 },
-        stoneforging: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW +++
+        stoneforging: { level: 1, xp: 0, totalXP: 0 },
         magic: { level: 1, xp: 0, totalXP: 0 }, 
+        alchemy: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW +++ 
         
         playerAttackStyle: 'strength',
         activeSession: null, // +++ ADD THIS
@@ -21793,6 +22000,9 @@ window.inspectPlayer = async function(playerName) {
       'images/venom.png',
       'images/lotteryticket.png', // +++ NEW +++
       'images/wildherb.png',
+      'images/alchemyicon.jpeg',
+      'images/alchemyskillicon.jpeg',
+      'images/vitalitypotion.png',
       
       // --- Items: Fishing ---
       'images/fishingpole.png',
