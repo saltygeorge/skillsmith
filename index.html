@@ -2822,7 +2822,7 @@ button.primary:hover { background: var(--accent-hover); }
               <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Chicken')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Chicken (Lvl 1)</div>')"
                    onmouseleave="hideTooltip()">
-                <img src="images/chickenmonster.png" alt="Chicken" style="height: 100px;">
+                <img src="images/chickenmonster.jpeg" alt="Chicken" style="height: 100px;">
               </div>
               
               <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Cow')"
@@ -4277,8 +4277,8 @@ const CROPS = {
 };
 
 const DIRT_SHROOM_PLANT_COST = 10;
-const DIRT_SHROOM_HARVEST_MIN = 20;
-const DIRT_SHROOM_HARVEST_MAX = 35;
+const DIRT_SHROOM_HARVEST_MIN = 80;
+const DIRT_SHROOM_HARVEST_MAX = 120;
 const HARVEST_SHROOM_XP = 50;
 
 const MUSHROOMS = {
@@ -15995,7 +15995,7 @@ function openCombatInterface(enemyName) {
 
   // Define our enemy with STATIC images
   if (enemyName === 'Chicken') {
-    game.currentEnemy = { name: 'Chicken', level: 1, maxHp: 10, currentHp: 10, attack: 1, strength: 1, defence: 1, img: 'images/chickenmonster.png' };
+    game.currentEnemy = { name: 'Chicken', level: 1, maxHp: 10, currentHp: 10, attack: 1, strength: 1, defence: 1, img: 'images/chickenmonster.jpeg' };
   } else if (enemyName === 'Rat') {
     game.currentEnemy = { name: 'Rat', level: 1, maxHp: 10, currentHp: 10, attack: 1, strength: 1, defence: 1, img: 'images/ratmonster.jpeg' };
   } else if (enemyName === 'Spider') { 
@@ -21803,7 +21803,7 @@ window.inspectPlayer = async function(playerName) {
       'images/egg.png',
 
       // --- Monsters & Animals ---
-      'images/chickenmonster.png',
+      'images/chickenmonster.jpeg',
       'images/chickenanim.gif',
       'images/cowmonster.png',
       'images/cowanim.webp',
