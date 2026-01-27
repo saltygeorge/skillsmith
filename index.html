@@ -1057,8 +1057,8 @@ button.primary:hover { background: var(--accent-hover); }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 4px;
-  font-size: 15px;
+  padding: 3px 4px; /* Shrunk padding */
+  font-size: 13px;   /* Shrunk font */
 }
 .stat-row:not(:last-child) {
   border-bottom: 1px solid var(--accent);
@@ -1273,20 +1273,16 @@ button.primary:hover { background: var(--accent-hover); }
 
 /* --- NEW: Stats Panel --- */
 #statsPanel {
-  display: flex; /* Always flex */
-  visibility: hidden; /* Hidden visually, but keeps the space reserved */
-  
-  /* This width perfectly matches the .sidebar panel above it */
+  display: flex;
+  visibility: hidden;
   width: calc((var(--slot-size) * 4) + (var(--slot-gap) * 3) + 32px + 8px);
-  
-  /* This height perfectly matches the .chat-panel next to it */
   min-height: 200px; 
-  
-  /* New layout styles */
   padding: 16px;
   box-sizing: border-box;
   flex-direction: column;
   flex-shrink: 0;
+  justify-content: space-between; 
+  align-items: stretch; /* Changed from center to stretch so children fill width */
 }
 #statsPanelHeader {
   font-size: 18px;
@@ -1297,17 +1293,50 @@ button.primary:hover { background: var(--accent-hover); }
   border-bottom: 2px solid var(--accent);
 }
 #statsPanelContent {
-  /* We can re-use the .stat-row styles here */
-  padding: 10px;
+  padding: 12px;
   background: rgba(0,0,0,0.15);
   border-radius: 6px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  /* Centering Logic */
+  width: 100%;             /* Ensures the box fills the panel width */
+  margin: auto 0;          /* Pushes the box to the vertical center of the panel */
+  box-sizing: border-box;
+}
+.stats-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-row {
+  display: flex;
+  justify-content: space-between; /* Pushes name to left, value to right */
+  align-items: center;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(109, 69, 45, 0.3);
+  padding-bottom: 2px;
+  width: 100%;
+}
+.stat-label {
+  color: #efe3cf;
+  font-weight: bold;
+  flex-shrink: 1;    /* Allows text to breathe */
+  padding-right: 4px; /* Small safety gap */
+}
+.stat-value {
+  color: var(--gold);
+  font-weight: bold;
 }
 #statsPanelFooter {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-end; 
+  align-items: center;
   margin-top: 15px;
+  width: 100%;            /* Added to span the full width */
+  box-sizing: border-box; /* Ensures padding doesn't cause overflow */
 }
-/* --- END: Stats Panel --- */
 
 /* --- NEW: Updates Panel --- */
 #updatesContent {
@@ -1861,6 +1890,106 @@ button.primary:hover { background: var(--accent-hover); }
   font-style: italic;
 }
 
+/* --- Enchanting Glows --- */
+.enchant-glow-1 { 
+  filter: drop-shadow(0 0 8px rgba(0, 255, 0, 0.8)); 
+  border: 2px solid rgba(0, 255, 0, 1) !important; 
+  background: rgba(20, 40, 20, 0.8) !important; /* Dark Greenish Background */
+}
+.enchant-glow-2 { 
+  filter: drop-shadow(0 0 8px rgba(0, 100, 255, 0.8)); 
+  border: 2px solid rgba(0, 150, 255, 1) !important; 
+  background: rgba(10, 20, 40, 0.8) !important; /* Dark Blueish Background */
+}
+.enchant-glow-3 { 
+  filter: drop-shadow(0 0 10px rgba(180, 0, 255, 0.8)); 
+  border: 2px solid rgba(180, 0, 255, 1) !important; 
+  background: rgba(30, 10, 40, 0.8) !important; /* Dark Purplish Background */
+}
+.enchant-glow-4 { 
+  filter: drop-shadow(0 0 12px rgba(255, 120, 0, 1)); 
+  border: 2px solid rgba(255, 120, 0, 1) !important; 
+  background: rgba(40, 20, 10, 0.8) !important; /* Dark Orangish Background */
+}
+
+.legendary-glow {
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.8)); 
+  border: 2px solid rgba(255, 215, 0, 1) !important; 
+  background: rgba(45, 35, 10, 0.9) !important; /* Rich Dark Gold Background */
+  box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.2) !important;
+}
+
+.enchant-level-badge {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 11px;
+  text-shadow: 1px 1px 2px #000;
+  pointer-events: none;
+  background: rgba(0,0,0,0.5); /* Semi-transparent circle background */
+  padding: 1px 4px;
+  border-radius: 4px;
+  z-index: 5;
+}
+
+#enchant-slot-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -150%); /* Moved higher up */
+  z-index: 20;
+}
+
+/* --- NEW: Enchanting Visuals --- */
+#enchantOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: black;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4900; /* Below modals, above game */
+  transition: opacity 0.5s ease-in-out;
+}
+
+#enchantOverlay.active {
+  opacity: 0.7; /* Darkens screen */
+}
+
+/* Intense Shake for Enchanting */
+@keyframes intenseShake {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-5px, -5px) rotate(-1deg); }
+  20% { transform: translate(5px, 5px) rotate(1deg); }
+  30% { transform: translate(-5px, 5px) rotate(0deg); }
+  40% { transform: translate(5px, -5px) rotate(1deg); }
+  50% { transform: translate(-5px, 0px) rotate(-1deg); }
+  60% { transform: translate(5px, 0px) rotate(0deg); }
+  70% { transform: translate(0px, 5px) rotate(1deg); }
+  80% { transform: translate(0px, -5px) rotate(-1deg); }
+  90% { transform: translate(-2px, 2px) rotate(0deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.enchant-shake {
+  animation: intenseShake 0.1s infinite; /* Fast shake */
+}
+
+/* Particles */
+.magic-particle {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 10px white, 0 0 20px var(--gold);
+  pointer-events: none;
+  z-index: 5005; /* Above everything */
+}
+
+
 </style>
 </head>
 <body>
@@ -2048,6 +2177,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="alchemyActionIcon" src="images/alchemyicon.jpeg" alt="Alchemy Table" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="tailoringActionIcon" src="images/tailoringtable.png" alt="Tailoring Table" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="thievingActionIcon" src="images/thievingicon.jpeg" alt="Thieving" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Thieving</div>Pickpocket and loot')" onmouseleave="hideTooltip()">
+              <img id="enchantingActionIcon" src="images/enchantingtableicon.jpeg" alt="Enchanting Table" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Enchanting Table</div>Upgrade your gear')" onmouseleave="hideTooltip()">
             </div>
           </div>
 
@@ -2806,6 +2936,28 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="hubDarkForest_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
+          <div id="hubEnchanting" class="hub-screen">
+            <h2>Enchanting Altar</h2>
+            <div style="position: relative; width: 300px; height: 250px; margin: 20px auto;">
+                <img src="images/enchantingtable.png" alt="Enchanting Table" style="width: 100%; height: 100%; object-fit: contain; margin-top: 40px;">
+                
+                <div id="enchant-slot-container">
+                    <div id="enchantSlot" class="inv-slot" style="width: 70px; height: 70px; background: rgba(0,0,0,0.5); border: 2px dashed var(--gold);" onclick="returnEnchantItem()">
+                        <!-- Item appears here -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="enchantInfo" style="text-align: center; min-height: 50px; margin-top: 0px;">
+                <p id="enchantCostText" style="color: var(--gold); font-size: 18px; font-weight: bold; margin-top: 0;"></p>
+                <button id="enchantBtn" class="primary" style="display: none; margin: 0 auto;" onclick="attemptEnchant()">Enchant</button>
+            </div>
+
+            <div class="action-buttons" style="margin-top: 20px;">
+              <button onclick="backToActions()" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
           <div id="hubShop" class="hub-screen">
             <h2>General Store</h2>
             
@@ -3056,20 +3208,22 @@ button.primary:hover { background: var(--accent-hover); }
       <div id="statsPanel">
         <div id="statsPanelHeader">Player Stats</div>
         <div id="statsPanelContent">
-          <div class="stat-row">
-            <span class="stat-label">Physical Damage</span>
-            <span class="stat-value" id="stat-phys-dmg-panel">0</span>
+          <!-- Left Column: Offense -->
+          <div class="stats-column">
+            <div class="stat-row"><span class="stat-label">Melee Strength</span><span class="stat-value" id="stat-m-str" style="color:#ff4d4d;">0</span></div>
+            <div class="stat-row"><span class="stat-label">Ranged Strength</span><span class="stat-value" id="stat-r-str" style="color:#44aa44;">0</span></div>
+            <div class="stat-row"><span class="stat-label">Magic Damage</span><span class="stat-value" id="stat-mag-dmg" style="color:#4da6ff;">0</span></div>
           </div>
-          <div class="stat-row">
-            <span class="stat-label">Magic Damage</span>
-            <span class="stat-value" id="stat-magic-dmg-panel">0</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Armor</span>
-            <span class="stat-value" id="stat-armor-panel">0</span>
+          
+          <!-- Right Column: Defense -->
+          <div class="stats-column" style="border-left: 1px solid rgba(109, 69, 45, 0.5); padding-left: 10px;">
+            <div class="stat-row"><span class="stat-label">Melee Defense</span><span class="stat-value" id="stat-m-def" style="color:#e38a42;">0</span></div>
+            <div class="stat-row"><span class="stat-label">Ranged Defense</span><span class="stat-value" id="stat-r-def" style="color:#aaffaa;">0</span></div>
+            <div class="stat-row"><span class="stat-label">Magic Defense</span><span class="stat-value" id="stat-mag-def" style="color:#6dafff;">0</span></div>
           </div>
         </div>
         <div id="statsPanelFooter">
+          <!-- The button is now pushed to the right by the CSS change above -->
           <button id="closeStatsBtn" class="primary" style="background:#666;">Close</button>
         </div>
       </div>
@@ -3173,7 +3327,7 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
 
             <div style="margin-top: 15px;">
-                <div id="inspectStatsPanel" style="padding: 10px; background: rgba(0,0,0,0.15); border-radius: 6px;">
+                <div id="inspectStatsPanel" style="padding: 10px; background: rgba(0,0,0,0.15); border-radius: 6px; width: 100%; box-sizing: border-box;">
                     </div>
             </div>
             
@@ -3183,6 +3337,9 @@ button.primary:hover { background: var(--accent-hover); }
         </div>
     </div>
 </div>
+
+<!-- NEW: Enchant Overlay -->
+<div id="enchantOverlay"></div>
 <script>
 // --- Game State (MODIFIED) ---
 const game = {
@@ -3327,7 +3484,21 @@ const game = {
 lockHeartbeat: null,    // This will hold the setInterval ID for the heartbeat
 isSessionActive: false, // Is this tab the "master" tab?
 isDragging: false,      // Are we currently dragging an item?
+  enchantSlot: null,      // Holds the item currently on the table
+  enchantingActive: false
+};
 
+const MATERIAL_TIERS = {
+    // Tier 1
+    'Bronze': 1, 'Softwood': 1,
+    // Tier 2
+    'Copper': 2, 'Leather': 2,
+    // Tier 3
+    'Iron': 3, 'Cloth': 3, 'Wizard': 3, 'Oak': 3,
+    // Tier 4
+    'Silver': 4, 'Birch': 4,
+    // Tier 5
+    'Gold': 5, 'Maple': 5, 'Mahogany': 5, 'Ring': 5
 };
 // +++ END MODIFICATION +++
 
@@ -4059,17 +4230,17 @@ const AXE_TIERS = { "Bronze Axe": 1, "Copper Axe": 2, "Iron Axe": 3, "Silver Axe
 
 // --- NEW: OSRS Style Item Definitions ---
 const ITEM_STATS = {
-  // --- MELEE GEAR (High Melee Def, Negative Magic/Range Atk) ---
-  'Copper Helmet': { meleeDef: 3, rangedDef: 4, magicDef: -1, magicAtk: -3, rangedAtk: -2, armorType: 'melee' },
-  'Copper Chestplate': { meleeDef: 8, rangedDef: 9, magicDef: -4, magicAtk: -10, rangedAtk: -6, armorType: 'melee' },
-  'Copper Platelegs': { meleeDef: 5, rangedDef: 6, magicDef: -2, magicAtk: -7, rangedAtk: -4, armorType: 'melee' },
-  'Copper Boots': { meleeDef: 2, rangedDef: 2, magicDef: -1, magicAtk: -3, rangedAtk: -1, armorType: 'melee' },
+  // --- MELEE GEAR (High Melee Def, 0 or Low Magic Def, Negative Magic/Range Atk) ---
+  'Copper Helmet': { meleeDef: 3, rangedDef: 4, magicDef: 0, magicAtk: -3, rangedAtk: -2, armorType: 'melee' },
+  'Copper Chestplate': { meleeDef: 8, rangedDef: 9, magicDef: 0, magicAtk: -10, rangedAtk: -6, armorType: 'melee' },
+  'Copper Platelegs': { meleeDef: 5, rangedDef: 6, magicDef: 0, magicAtk: -7, rangedAtk: -4, armorType: 'melee' },
+  'Copper Boots': { meleeDef: 2, rangedDef: 2, magicDef: 0, magicAtk: -3, rangedAtk: -1, armorType: 'melee' },
   'Copper Shortsword': { meleeStr: 4, meleeAtk: 5, weaponType: 'melee', speed: 2000 },
 
-  'Iron Helmet': { meleeDef: 5, rangedDef: 6, magicDef: -2, magicAtk: -4, rangedAtk: -2, armorType: 'melee' },
-  'Iron Chestplate': { meleeDef: 12, rangedDef: 13, magicDef: -6, magicAtk: -15, rangedAtk: -10, armorType: 'melee' },
-  'Iron Platelegs': { meleeDef: 8, rangedDef: 9, magicDef: -3, magicAtk: -10, rangedAtk: -6, armorType: 'melee' },
-  'Iron Boots': { meleeDef: 3, rangedDef: 3, magicDef: -1, magicAtk: -3, rangedAtk: -1, armorType: 'melee' },
+  'Iron Helmet': { meleeDef: 5, rangedDef: 6, magicDef: 1, magicAtk: -4, rangedAtk: -2, armorType: 'melee' },
+  'Iron Chestplate': { meleeDef: 12, rangedDef: 13, magicDef: 2, magicAtk: -15, rangedAtk: -10, armorType: 'melee' },
+  'Iron Platelegs': { meleeDef: 8, rangedDef: 9, magicDef: 1, magicAtk: -10, rangedAtk: -6, armorType: 'melee' },
+  'Iron Boots': { meleeDef: 3, rangedDef: 3, magicDef: 1, magicAtk: -3, rangedAtk: -1, armorType: 'melee' },
   'Iron Shortsword': { meleeStr: 7, meleeAtk: 9, weaponType: 'melee', speed: 2000 },
 
   // --- RANGED GEAR (High Magic Def, Positive Range Atk) ---
@@ -4083,10 +4254,10 @@ const ITEM_STATS = {
   'Copper Arrow': { rangedStr: 2 }, 
 
   // --- MAGIC GEAR (Low Melee Def, High Magic Atk/Def) ---
-  'Wizard Hat': { meleeDef: 0, rangedDef: 0, magicDef: 3, magicAtk: 3, armorType: 'magic' },
-  'Wizard Robe': { meleeDef: 1, rangedDef: 1, magicDef: 6, magicAtk: 6, armorType: 'magic' },
-  'Wizard Trousers': { meleeDef: 0, rangedDef: 0, magicDef: 4, magicAtk: 4, armorType: 'magic' },
-  'Wizard Boots': { meleeDef: 0, rangedDef: 0, magicDef: 2, magicAtk: 2, armorType: 'magic' },
+  'Wizard Hat': { meleeDef: 1, rangedDef: 1, magicDef: 3, magicAtk: 3, armorType: 'magic' },
+  'Wizard Robe': { meleeDef: 2, rangedDef: 2, magicDef: 6, magicAtk: 6, armorType: 'magic' },
+  'Wizard Trousers': { meleeDef: 1, rangedDef: 1, magicDef: 4, magicAtk: 4, armorType: 'magic' },
+  'Wizard Boots': { meleeDef: 1, rangedDef: 1, magicDef: 2, magicAtk: 2, armorType: 'magic' },
   
   'Magic Staff': { magicAtk: 10, magicDmg: 2, weaponType: 'magic', twoHanded: true, speed: 3000 },
 
@@ -4479,23 +4650,22 @@ function createCharacter(){
 }
 
 function updateHPUI(){
-  // Calculate base maxHP based on Vitality level
+  // 1. Calculate base maxHP based on Vitality level
   let baseMax = 10 + (game.vitality ? (game.vitality.level - 1) : 0);
   
-  // Topaz Ring Bonus (+2 HP per ring)
-  if (game.equipment.ring1 && game.equipment.ring1.name === 'Topaz Ring') baseMax += 2;
-  if (game.equipment.ring2 && game.equipment.ring2.name === 'Topaz Ring') baseMax += 2;
+  // 2. Add scaling equipment bonuses (Enchanted Topaz Rings, etc)
+  const stats = getPlayerCombatStats();
+  baseMax += stats.maxHPBonus;
 
   game.maxHP = baseMax;
   
-  // Auto-heal if HP is higher than new Max (optional safety)
+  // Auto-heal if HP is higher than new Max
   if (game.hp > game.maxHP) game.hp = game.maxHP;
-  
-  // Ensure current HP doesn't exceed max HP
   game.hp = Math.min(game.hp, game.maxHP); 
   
   const percent = Math.min(100, Math.round((game.hp / game.maxHP) * 100));
-  document.getElementById('hpFill').style.width = percent + '%';
+  const hpFill = document.getElementById('hpFill');
+  if (hpFill) hpFill.style.width = percent + '%';
   setText('hpText', `${game.hp} / ${game.maxHP} HP`);
 }
 
@@ -4509,7 +4679,8 @@ function getPlayerCombatStats() {
     meleeAtk: 0, rangedAtk: 0, magicAtk: 0,
     meleeStr: 0, rangedStr: 0, magicDmg: 0,
     meleeDef: 0, rangedDef: 0, magicDef: 0,
-    attackSpeed: 2400 // Default unarmed speed
+    maxHPBonus: 0,
+    attackSpeed: 2400 
   };
 
   let equippedWeaponType = 'melee'; 
@@ -4517,18 +4688,41 @@ function getPlayerCombatStats() {
   for (const [slotType, item] of Object.entries(game.equipment)) {
     if (item && ITEM_STATS[item.name]) {
       const def = ITEM_STATS[item.name];
+      const enchantLvl = item.enchantLevel || 0;
       
+      // Calculate two different types of scaling
+      const standardBonus = enchantLvl;
+      const penalizedBonus = Math.floor(enchantLvl / 2);
+
       stats.meleeAtk += def.meleeAtk || 0;
       stats.rangedAtk += def.rangedAtk || 0;
       stats.magicAtk += def.magicAtk || 0;
       
-      stats.meleeStr += def.meleeStr || 0;
-      stats.rangedStr += def.rangedStr || 0;
-      stats.magicDmg += def.magicDmg || 0;
+      // Offense and HP always use standard scaling
+      stats.meleeStr += (def.meleeStr || 0) + (def.meleeStr ? standardBonus : 0);
+      stats.rangedStr += (def.rangedStr || 0) + (def.rangedStr ? standardBonus : 0);
+      stats.magicDmg += (def.magicDmg || 0) + (def.magicDmg ? standardBonus : 0);
+      stats.maxHPBonus += (def.maxHPBonus || 0) + (def.maxHPBonus ? standardBonus : 0);
       
-      stats.meleeDef += def.meleeDef || 0;
-      stats.rangedDef += def.rangedDef || 0;
-      stats.magicDef += def.magicDef || 0;
+      // DEFENSE SCALING BASED ON ARMOR TYPE
+      if (def.armorType === 'melee') {
+          stats.meleeDef += (def.meleeDef || 0) + standardBonus;
+          stats.rangedDef += (def.rangedDef || 0) + standardBonus;
+          stats.magicDef += (def.magicDef || 0) + penalizedBonus; // Penalized
+      } else if (def.armorType === 'ranged') {
+          stats.meleeDef += (def.meleeDef || 0) + penalizedBonus; // Penalized
+          stats.rangedDef += (def.rangedDef || 0) + standardBonus;
+          stats.magicDef += (def.magicDef || 0) + standardBonus;
+      } else if (def.armorType === 'magic') {
+          stats.meleeDef += (def.meleeDef || 0) + penalizedBonus; // Penalized
+          stats.rangedDef += (def.rangedDef || 0) + standardBonus;
+          stats.magicDef += (def.magicDef || 0) + standardBonus;
+      } else {
+          // Jewelry or hybrid gear uses standard for all
+          stats.meleeDef += (def.meleeDef || 0) + standardBonus;
+          stats.rangedDef += (def.rangedDef || 0) + standardBonus;
+          stats.magicDef += (def.magicDef || 0) + standardBonus;
+      }
 
       if (slotType === 'weapon') {
         if (def.speed) stats.attackSpeed = def.speed;
@@ -4537,7 +4731,6 @@ function getPlayerCombatStats() {
     }
   }
 
-  // Pet Bonuses
   if (game.equipment.pet) {
       const petData = game.pets.find(p => p.id === game.equipment.pet.id);
       if (petData && petData.hp > 0) {
@@ -4549,21 +4742,17 @@ function getPlayerCombatStats() {
       }
   }
 
-  // Style Bonuses
   if (game.playerAttackStyle === 'attack') {
-      // Accurate Style: +3 Accuracy to the relevant stat
       if (equippedWeaponType === 'melee') stats.meleeAtk += 3;
       if (equippedWeaponType === 'ranged') stats.rangedAtk += 3;
       if (equippedWeaponType === 'magic') stats.magicAtk += 3;
   } 
   else if (game.playerAttackStyle === 'strength') {
-      // Aggressive Style: +3 Strength/Damage to the relevant stat
       if (equippedWeaponType === 'melee') stats.meleeStr += 3;
       if (equippedWeaponType === 'ranged') stats.rangedStr += 3;
       if (equippedWeaponType === 'magic') stats.magicDmg += 3;
   } 
   else if (game.playerAttackStyle === 'defence') {
-      // Defensive Style: +3 to All Defense stats
       stats.meleeDef += 3;
       stats.rangedDef += 3;
       stats.magicDef += 3;
@@ -4576,12 +4765,18 @@ function getPlayerCombatStats() {
 function renderEquipment() {
   const stats = getPlayerCombatStats();
   
-  // 1. Update standard Stats Panel UI
-  setText('stat-phys-dmg-panel', `+${stats.meleeStr}`);
-  setText('stat-magic-dmg-panel', `+${stats.magicDmg}`);
-  setText('stat-armor-panel', `+${stats.meleeDef}`);
+  // Update Offense Stats (Colors are handled by CSS/HTML styles)
+  setText('stat-m-str', `+${stats.meleeStr}`);
+  setText('stat-r-str', `+${stats.rangedStr}`);
+  setText('stat-mag-dmg', `+${stats.magicDmg}`);
 
-  // --- RANGED DAMAGE FIX: Dynamically inject the Ranged Strength row if it doesn't exist ---
+  // Update Defense Stats
+  setText('stat-m-def', `+${stats.meleeDef}`);
+  setText('stat-r-def', `+${stats.rangedDef}`);
+  setText('stat-mag-def', `+${stats.magicDef}`);
+
+  // (The rest of the function remains the same...)
+
   const physDmgEl = document.getElementById('stat-phys-dmg-panel');
   if (physDmgEl) {
       const parentRow = physDmgEl.closest('.stat-row');
@@ -4599,7 +4794,6 @@ function renderEquipment() {
       setText('stat-range-str-val', `+${stats.rangedStr}`);
   }
 
-  // 2. Define the slots and image mappings
   const slots = ['necklace', 'helmet', 'cape', 'weapon', 'chest', 'shield', 'ring1', 'legs', 'ring2', 'arrows', 'boots', 'pet'];
   
   const itemImageMap = {
@@ -4610,27 +4804,21 @@ function renderEquipment() {
     'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 'Leather Boots': 'leatherboots',
     'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff',
     'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider',
-    'Gold Ring': 'goldring',
-    'Diamond Ring': 'diamondring',
-    'Emerald Ring': 'emeraldring',
-    'Ruby Ring': 'rubyring',
-    'Sapphire Ring': 'sapphirering',
-    'Topaz Ring': 'topazring'
+    'Gold Ring': 'goldring', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring'
   };
 
-  // 3. Render each slot
   slots.forEach(slotType => {
     const item = game.equipment[slotType];
     const mainSlotEl = document.getElementById(slotType);
     if (!mainSlotEl) return;
 
-    // --- FIX FOR PLACEHOLDER IMAGES ---
-    let imgName = item ? (itemImageMap[item.name] || 'helmet') : slotType; 
+    mainSlotEl.className = 'equipment-slot'; 
+    mainSlotEl.innerHTML = '';
     
-    // Redirect slot names to the correct image file names if empty
+    let imgName = item ? (itemImageMap[item.name] || 'helmet') : slotType; 
     if (!item) {
         if (slotType === 'chest') imgName = 'chestplate';
-        if (slotType === 'ring1' || slotType === 'ring2') imgName = 'ring'; // Forces both ring slots to use ring.png
+        if (slotType === 'ring1' || slotType === 'ring2') imgName = 'ring';
     }
     
     let isTwoHandedBlock = false;
@@ -4639,27 +4827,62 @@ function renderEquipment() {
         imgName = itemImageMap[game.equipment.weapon.name];
     }
 
-    let imgHtml = `<img src="images/${imgName}.png" alt="${slotType}" style="${isTwoHandedBlock ? 'opacity:0.5; filter:grayscale(100%);' : ''}">`;
-    mainSlotEl.innerHTML = imgHtml;
+    let img = document.createElement('img');
+    img.src = `images/${imgName}.png`;
+    img.alt = slotType;
+    if (isTwoHandedBlock) { img.style.opacity = '0.5'; img.style.filter = 'grayscale(100%)'; }
+    mainSlotEl.appendChild(img);
 
-    // Add Arrow quantity indicator
-    if (item && slotType === 'arrows') {
+    if (item && item.qty > 1) {
         const amt = document.createElement('div');
         amt.className = 'inv-amount';
-        amt.innerText = formatAmount(item.qty);
+        amt.innerText = formatAmount(item.qty); 
         mainSlotEl.appendChild(amt);
     }
 
     if (item) {
+        const eLvl = item.enchantLevel || 0;
+        // Apply Gold Aura for Legendary items, otherwise apply Enchantment glows
+        if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
+            mainSlotEl.classList.add('legendary-glow');
+        } else if (eLvl > 0) {
+            mainSlotEl.classList.add(`enchant-glow-${eLvl}`);
+        }
+
+        if (eLvl > 0) {
+            const badge = document.createElement('div');
+            badge.className = 'enchant-level-badge';
+            badge.innerText = `+${eLvl}`;
+            mainSlotEl.appendChild(badge);
+        }
+
         const def = ITEM_STATS[item.name];
-        let html = `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>`;
+        let html = `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name} ${eLvl > 0 ? `+${eLvl}` : ''}</div>`;
         
         if (def) {
-            if (def.meleeStr) html += `<div style="color:#ff4d4d;">+${def.meleeStr} Melee Strength</div>`;
-            if (def.rangedStr) html += `<div style="color:#44aa44;">+${def.rangedStr} Ranged Strength</div>`;
-            if (def.magicDmg) html += `<div style="color:#4da6ff;">+${def.magicDmg} Magic Damage</div>`;
-            if (def.meleeDef) html += `<div style="color:#aaffaa;">+${def.meleeDef} Armor</div>`;
-            if (def.maxHPBonus) html += `<div style="color:#ffaaaa;">+${def.maxHPBonus} Max HP</div>`;
+            // Standard Bonus: +1 per upgrade level
+            const stdB = eLvl; 
+            // Penalized Bonus: +1 every 2 upgrades
+            const penB = Math.floor(eLvl / 2); 
+
+            if (def.meleeStr) html += `<div style="color:#ff4d4d;">+${def.meleeStr + stdB} Melee Strength</div>`;
+            if (def.rangedStr) html += `<div style="color:#44aa44;">+${def.rangedStr + stdB} Ranged Strength</div>`;
+            if (def.magicDmg) html += `<div style="color:#4da6ff;">+${def.magicDmg + stdB} Magic Damage</div>`;
+            
+            // Logic to decide which stats are penalized based on the armor type
+            let mBonus = stdB, rBonus = stdB, magBonus = stdB;
+            if (def.armorType === 'melee') {
+                magBonus = penB; // Melee armor is bad at Magic Def
+            } else if (def.armorType === 'ranged' || def.armorType === 'magic') {
+                mBonus = penB;   // Ranged/Magic armor is bad at Melee Def
+            }
+
+            if (def.meleeDef !== undefined) html += `<div style="color:#e38a42;">+${def.meleeDef + mBonus} Melee Def</div>`;
+            if (def.rangedDef !== undefined) html += `<div style="color:#aaffaa;">+${def.rangedDef + rBonus} Ranged Def</div>`;
+            if (def.magicDef !== undefined) html += `<div style="color:#6dafff;">+${def.magicDef + magBonus} Magic Def</div>`;
+
+            // Attack penalties (Red lines)
+            if (def.maxHPBonus) html += `<div style="color:#ffaaaa;">+${def.maxHPBonus + stdB} Max HP</div>`;
             if (def.speed) html += `<div style="color:var(--gold);">Speed: ${(def.speed / 1000).toFixed(1)}s</div>`;
         }
         html += `<div style="color:#ffaaaa; margin-top:5px; font-size:11px;">Click to unequip</div>`;
@@ -4785,25 +5008,17 @@ function renderInventoryGrid(){
               else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
               else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
               else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
-              
-              // +++ NEW COOKED FISH IMAGES +++
               else if (item.name === 'Cooked Herring') imgName = 'cookedherring';
               else if (item.name === 'Burnt Herring') imgName = 'burntherring';
               else if (item.name === 'Cooked Trout') imgName = 'cookedtrout';
               else if (item.name === 'Burnt Trout') imgName = 'burnttrout';
               else if (item.name === 'Cooked Salmon') imgName = 'cookedsalmon';
               else if (item.name === 'Burnt Salmon') imgName = 'burntsalmon';
-              
-              // +++ NEW BEEF IMAGES +++
               else if (item.name === 'Beef') imgName = 'beef';
               else if (item.name === 'Cooked Beef') imgName = 'cookedbeef';
               else if (item.name === 'Burnt Beef') imgName = 'burntbeef';
-
-              // +++ FIX: Add Gold Crown and Cape mapping here +++
               else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
               else if (item.name === 'Elegant Black Cape') imgName = 'elegantblackcape';
-              // +++ END NEW +++
-
               else if (item.name === 'Coal Ore') imgName = 'coalore';
               else if (item.name === 'Iron Ore') imgName = 'ironore';
               else if (item.name === 'Iron Bar') imgName = 'ironbar';
@@ -4813,117 +5028,71 @@ function renderInventoryGrid(){
               else if (item.name === 'Iron Chestplate') imgName = 'ironchestplate';
               else if (item.name === 'Iron Boots') imgName = 'ironboots';
               else if (item.name === 'Iron Shortsword') imgName = 'ironshortsword';
-              else if (item.name === 'Copper Platelegs') imgName = 'copperplatelegs'; // +++ NEW +++
-              else if (item.name === 'Iron Platelegs') imgName = 'ironplatelegs'; // +++ NEW +++
+              else if (item.name === 'Copper Platelegs') imgName = 'copperplatelegs';
+              else if (item.name === 'Iron Platelegs') imgName = 'ironplatelegs';
               else if (item.name === 'Softwood') imgName = 'softwood';
               else if (item.name === 'Oak') imgName = 'oak';
-              else if (item.name === 'Bronze Pickaxe') imgName = 'bronzepickaxe'; // +++ NEW +++
-              else if (item.name === 'Bronze Axe') imgName = 'bronzeaxe'; // +++ NEW +++
-              else if (item.name === 'Copper Pickaxe') imgName = 'copperpickaxe'; // +++ NEW +++
-              else if (item.name === 'Copper Axe') imgName = 'copperaxe'; // +++ NEW +++
-              else if (item.name === 'Iron Pickaxe') imgName = 'ironpickaxe'; // +++ NEW +++
-              else if (item.name === 'Iron Axe') imgName = 'ironaxe'; // +++ NEW +++
-              else if (item.name === 'Silver Pickaxe') imgName = 'silverpickaxe'; // +++ NEW +++
-              else if (item.name === 'Silver Axe') imgName = 'silveraxe'; // +++ NEW +++
-              else if (item.name === 'Feather') imgName = 'feather'; // +++ NEW +++
-              else if (item.name === 'Arrow Shaft') imgName = 'arrowshaft'; // +++ NEW +++
-              else if (item.name === 'Copper Arrow Tip') imgName = 'copperarrowtip'; // +++ NEW +++
-              else if (item.name === 'Unbound Arrow') imgName = 'unboundarrow'; // +++ NEW +++
-              else if (item.name === 'Copper Arrow') imgName = 'copperarrow'; // +++ NEW +++
-              else if (item.name === 'Silk') imgName = 'silk'; // +++ NEW +++
-              
-              // +++ NEW CLOTH & WIZARD ITEMS +++
+              else if (item.name === 'Bronze Pickaxe') imgName = 'bronzepickaxe';
+              else if (item.name === 'Bronze Axe') imgName = 'bronzeaxe';
+              else if (item.name === 'Copper Pickaxe') imgName = 'copperpickaxe';
+              else if (item.name === 'Copper Axe') imgName = 'copperaxe';
+              else if (item.name === 'Iron Pickaxe') imgName = 'ironpickaxe';
+              else if (item.name === 'Iron Axe') imgName = 'ironaxe';
+              else if (item.name === 'Silver Pickaxe') imgName = 'silverpickaxe';
+              else if (item.name === 'Silver Axe') imgName = 'silveraxe';
+              else if (item.name === 'Feather') imgName = 'feather';
+              else if (item.name === 'Arrow Shaft') imgName = 'arrowshaft';
+              else if (item.name === 'Copper Arrow Tip') imgName = 'copperarrowtip';
+              else if (item.name === 'Unbound Arrow') imgName = 'unboundarrow';
+              else if (item.name === 'Copper Arrow') imgName = 'copperarrow';
+              else if (item.name === 'Silk') imgName = 'silk';
               else if (item.name === 'Cloth') imgName = 'cloth';
               else if (item.name === 'Wizard Hat') imgName = 'wizardhat';
               else if (item.name === 'Wizard Robe') imgName = 'wizardrobe';
               else if (item.name === 'Wizard Trousers') imgName = 'wizardtrousers';
               else if (item.name === 'Wizard Boots') imgName = 'wizardboots';
-              else if (item.name === 'Magic Staff') imgName = 'magicstaff'; // +++ NEW +++
-              else if (item.name === 'Pet Spider Egg') imgName = 'petegg1'; // +++ NEW PET EGG +++
-              else if (item.name === 'Rat Tail') imgName = 'rattail'; // +++ FIX: RESTORE RAT TAIL +++
-              else if (item.name === 'Sand') imgName = 'sand'; // +++ NEW +++
-              else if (item.name === 'Empty Vial') imgName = 'emptyvial'; // +++ NEW +++
-              else if (item.name === 'Venom') imgName = 'venom'; // +++ NEW +++
-              else if (item.name === 'Lottery Ticket') imgName = 'lotteryticket'; // +++ NEW +++
-              
-              // +++ NEW CRYSTAL SHARDS +++
+              else if (item.name === 'Magic Staff') imgName = 'magicstaff';
+              else if (item.name === 'Pet Spider Egg') imgName = 'petegg1';
+              else if (item.name === 'Rat Tail') imgName = 'rattail';
+              else if (item.name === 'Sand') imgName = 'sand';
+              else if (item.name === 'Empty Vial') imgName = 'emptyvial';
+              else if (item.name === 'Venom') imgName = 'venom';
+              else if (item.name === 'Lottery Ticket') imgName = 'lotteryticket';
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
               else if (item.name === 'Air Crystal Shard') imgName = 'aircrystalshard';
               else if (item.name === 'Water Crystal Shard') imgName = 'watercrystalshard';
-
-              // --- THIS IS THE FIX ---
-              else if (item.name === 'Bow String') {
-                  imgName = 'bowstring';
-              } else if (item.name === 'Unstrung Softwood Bow') {
-                  imgName = 'unstrungsoftwoodbow';
-              } else if (item.name === 'Unstrung Oak Bow') {
-                  imgName = 'unstrungoakbow';
-              } else if (item.name === 'Softwood Bow') {
-                  imgName = 'softwoodbow';
-              } else if (item.name === 'Oak Bow') {
-                  imgName = 'oakbow';
-              }
-
-// +++ NEW LEATHER +++
-              else if (item.name === 'Cow Hide') {
-                  imgName = 'cowhide';
-              } else if (item.name === 'Leather') {
-                  imgName = 'leather';
-              } else if (item.name === 'Leather Hood') {
-                  imgName = 'leatherhood';
-              } else if (item.name === 'Leather Body') {
-                  imgName = 'leatherarmor';
-              } else if (item.name === 'Leather Chaps') {
-                  imgName = 'leatherpants';
-              } else if (item.name === 'Leather Boots') {
-                  imgName = 'leatherboots';
-              }
-
-              // +++ NEW FISHING ITEMS +++
-              else if (item.name === 'Herring') {
-                  imgName = 'herring';
-              } else if (item.name === 'Trout') {
-                  imgName = 'trout';
-              } else if (item.name === 'Salmon') {
-                  imgName = 'salmon';
-              } else if (item.name === 'Fishing Pole') {
-                  imgName = 'fishingpole';
-              } else if (item.name === 'Fishing Bait') {
-                  imgName = 'fishingbait';
-              }
-              // +++ NEW BUCKETS +++
-              else if (item.name === 'Empty Bucket' || imgName === 'empty_bucket') {
-                  imgName = 'emptybucket';
-              } else if (item.name === 'Bucket of Milk' || imgName === 'bucket_of_milk') {
-                  imgName = 'bucketofmilk';
-              } else if (item.name === 'Bucket of Water' || imgName === 'bucket_of_water') {
-                  imgName = 'bucketofwater';
-              }
-              // +++ NEW FARM ITEMS +++
-              else if (item.name === 'Grass Seed') {
-                  imgName = 'grassseed';
-              } else if (item.name === 'Grass') {
-                  imgName = 'grass';
-              } else if (item.name === 'Corn Seed') {
-                  imgName = 'cornseed';
-              } else if (item.name === 'Corn') {
-                  imgName = 'corn';
-              } else if (item.name === 'Dirt Shroom') {
-                  imgName = 'dirtshroom';}
-              else if (item.name === 'Wild Herb') {
-                  imgName = 'wildherb';}
-              else if (item.name === 'Vitality Potion') {
-                  imgName = 'vitalitypotion';}
-              
-              // +++ NEW GEMS +++
+              else if (item.name === 'Bow String') imgName = 'bowstring';
+              else if (item.name === 'Unstrung Softwood Bow') imgName = 'unstrungsoftwoodbow';
+              else if (item.name === 'Unstrung Oak Bow') imgName = 'unstrungoakbow';
+              else if (item.name === 'Softwood Bow') imgName = 'softwoodbow';
+              else if (item.name === 'Oak Bow') imgName = 'oakbow';
+              else if (item.name === 'Cow Hide') imgName = 'cowhide';
+              else if (item.name === 'Leather') imgName = 'leather';
+              else if (item.name === 'Leather Hood') imgName = 'leatherhood';
+              else if (item.name === 'Leather Body') imgName = 'leatherarmor';
+              else if (item.name === 'Leather Chaps') imgName = 'leatherpants';
+              else if (item.name === 'Leather Boots') imgName = 'leatherboots';
+              else if (item.name === 'Herring') imgName = 'herring';
+              else if (item.name === 'Trout') imgName = 'trout';
+              else if (item.name === 'Salmon') imgName = 'salmon';
+              else if (item.name === 'Fishing Pole') imgName = 'fishingpole';
+              else if (item.name === 'Fishing Bait') imgName = 'fishingbait';
+              else if (item.name === 'Empty Bucket') imgName = 'emptybucket';
+              else if (item.name === 'Bucket of Milk') imgName = 'bucketofmilk';
+              else if (item.name === 'Bucket of Water') imgName = 'bucketofwater';
+              else if (item.name === 'Grass Seed') imgName = 'grassseed';
+              else if (item.name === 'Grass') imgName = 'grass';
+              else if (item.name === 'Corn Seed') imgName = 'cornseed';
+              else if (item.name === 'Corn') imgName = 'corn';
+              else if (item.name === 'Dirt Shroom') imgName = 'dirtshroom';
+              else if (item.name === 'Wild Herb') imgName = 'wildherb';
+              else if (item.name === 'Vitality Potion') imgName = 'vitalitypotion';
               else if (item.name === 'Uncut Topaz') imgName = 'uncuttopaz';
               else if (item.name === 'Uncut Diamond') imgName = 'uncutdiamond';
               else if (item.name === 'Uncut Emerald') imgName = 'uncutemerald';
               else if (item.name === 'Uncut Jade') imgName = 'uncutjade';
               else if (item.name === 'Uncut Ruby') imgName = 'uncutruby';
               else if (item.name === 'Uncut Sapphire') imgName = 'uncutsapphire';
-              
-              // +++ NEW CUT GEMS +++
               else if (item.name === 'Topaz') imgName = 'topaz';
               else if (item.name === 'Diamond') imgName = 'diamond';
               else if (item.name === 'Emerald') imgName = 'emerald';
@@ -4937,10 +5106,23 @@ function renderInventoryGrid(){
               else if (item.name === 'Sapphire Ring') imgName = 'sapphirering';
               else if (item.name === 'Topaz Ring') imgName = 'topazring';
 
-      // --- SET IMAGE AND RENDER SLOT ---
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
-      // Shrink diamond images slightly to match higher res gems
+      
+      const eLvl = item.enchantLevel || 0;
+      if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
+          slot.classList.add('legendary-glow');
+      } else if (eLvl > 0) {
+          slot.classList.add(`enchant-glow-${eLvl}`);
+      }
+
+      if (eLvl > 0) {
+          const badge = document.createElement('div');
+          badge.className = 'enchant-level-badge';
+          badge.innerText = `+${eLvl}`;
+          slot.appendChild(badge);
+      }
+
       if (item.name === 'Diamond' || item.name === 'Uncut Diamond') {
           img.style.transform = 'scale(0.93)';
       }
@@ -4957,17 +5139,25 @@ function renderInventoryGrid(){
       let itemStats = '';
       let clickAction = '';
 
-      // --- CORRECTED TOOLTIP LOGIC ---
       if (stats) {
-        // Only show relevant combat stats
-        if (stats.meleeStr) itemStats += `<div style="color:#ff4d4d;">+${stats.meleeStr} Melee Strength</div>`;
-        if (stats.rangedStr) itemStats += `<div style="color:#44aa44;">+${stats.rangedStr} Ranged Strength</div>`;
-        if (stats.magicDmg) itemStats += `<div style="color:#4da6ff;">+${stats.magicDmg} Magic Damage</div>`;
-        if (stats.meleeDef) itemStats += `<div style="color:#aaffaa;">+${stats.meleeDef} Armor</div>`;
-        if (stats.maxHPBonus) itemStats += `<div style="color:#ffaaaa;">+${stats.maxHPBonus} Max HP</div>`;
+        const enchantLvl = item.enchantLevel || 0;
+        const stdB = enchantLvl;
+        const penB = Math.floor(enchantLvl / 2);
+
+        if (stats.meleeStr) itemStats += `<div style="color:#ff4d4d;">+${stats.meleeStr + stdB} Melee Strength</div>`;
+        if (stats.rangedStr) itemStats += `<div style="color:#44aa44;">+${stats.rangedStr + stdB} Ranged Strength</div>`;
+        if (stats.magicDmg) itemStats += `<div style="color:#4da6ff;">+${stats.magicDmg + stdB} Magic Damage</div>`;
         
-        // Formatted Speed (e.g. 2.4s)
-        if (stats.speed) itemStats += `<div style="color:var(--gold);">Speed: ${(stats.speed / 1000).toFixed(1)}s</div>`;
+        // Define which bonus to use per stat based on armor type
+        let mBonus = stdB, rBonus = stdB, magBonus = stdB;
+        if (stats.armorType === 'melee') magBonus = penB;
+        else if (stats.armorType === 'ranged' || stats.armorType === 'magic') mBonus = penB;
+
+        if (stats.meleeDef !== undefined) itemStats += `<div style="color:#e38a42;">+${stats.meleeDef + mBonus} Melee Def</div>`;
+        if (stats.rangedDef !== undefined) itemStats += `<div style="color:#aaffaa;">+${stats.rangedDef + rBonus} Ranged Def</div>`;
+        if (stats.magicDef !== undefined) itemStats += `<div style="color:#6dafff;">+${stats.magicDef + magBonus} Magic Def</div>`;
+
+        if (stats.maxHPBonus) itemStats += `<div style="color:#ffaaaa;">+${stats.maxHPBonus + stdB} Max HP</div>`;
         
         clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Click to equip</div>';
       } else if (itemName.includes('Cooked')) {
@@ -5010,96 +5200,90 @@ function renderInventoryGrid(){
 // --- 1. REPLACED 'addItem' FUNCTION (non-module script) ---
 // This function now correctly handles multiple stacks.
 // =================================================================
-function addItem(name, qty = 1) {
+// =================================================================
+// --- 6. Inventory Logic (Stacking & Enchanting) ---
+// =================================================================
+
+function addItem(name, qty = 1, enchantLevel = 0) {
   let amountToAdd = qty;
 
-  // 1. Try to stack in existing slots first
+  // 1. Try to stack in existing slots first 
+  // IMPORTANT: Items only stack if Name AND Enchant Level match exactly
   for (const slot of game.inventory) {
-    if (slot && slot.name === name) {
+    if (slot && slot.name === name && (slot.enchantLevel || 0) === enchantLevel) {
       slot.qty += amountToAdd;
       amountToAdd = 0;
-      break; // Found a stack, stop looking
+      break; 
     }
   }
 
-  // 2. If items are left (no existing stack found), find an empty slot
+  // 2. If items are left, find an empty slot
   if (amountToAdd > 0) {
     let emptySlotIndex = game.inventory.findIndex(slot => slot === null);
     if (emptySlotIndex > -1) {
-      game.inventory[emptySlotIndex] = { name: name, qty: amountToAdd };
+      game.inventory[emptySlotIndex] = { 
+        name: name, 
+        qty: amountToAdd, 
+        enchantLevel: enchantLevel 
+      };
       amountToAdd = 0;
     } else {
       console.warn(`Inventory full! Could not add ${amountToAdd} ${name}`);
-      // Note: We don't return, so the inventory still renders
     }
   }
 
-  if (!game.isDragging) {
-    renderInventoryGrid();
-  }
+  // Always render to ensure UI is in sync
+  renderInventoryGrid();
 }
 
-// =================================================================
-// --- 2. REPLACED 'removeItem' FUNCTION (non-module script) ---
-// This function now correctly removes from multiple stacks.
-// =================================================================
-function removeItem(name, qty = 1) {
+function removeItem(name, qty = 1, enchantLevel = 0) {
   let amountToRemove = qty;
   let totalAvailable = 0;
 
-  // 1. First, check if we even have enough across ALL stacks
+  // Ensure enchantLevel is treated as a number
+  const targetEnchant = Number(enchantLevel || 0);
+
+  // 1. Check availability
   for (const slot of game.inventory) {
-    if (slot && slot.name === name) {
+    if (slot && slot.name === name && Number(slot.enchantLevel || 0) === targetEnchant) {
       totalAvailable += slot.qty;
     }
   }
 
-  if (totalAvailable < amountToRemove) {
-    console.warn(`Tried to remove ${qty} ${name}, but only have ${totalAvailable}`);
-    return false; // Not enough items
-  }
+  if (totalAvailable < amountToRemove) return false; 
 
-  // 2. If we have enough, remove them. Iterate backwards is safer.
+  // 2. Remove items
   for (let i = game.inventory.length - 1; i >= 0; i--) {
     const slot = game.inventory[i];
-    if (slot && slot.name === name) {
+    if (slot && slot.name === name && Number(slot.enchantLevel || 0) === targetEnchant) {
       if (slot.qty > amountToRemove) {
-        // This stack has more than we need
         slot.qty -= amountToRemove;
         amountToRemove = 0;
       } else {
-        // This stack will be emptied
         amountToRemove -= slot.qty;
-        game.inventory[i] = null; // Empty the slot
+        game.inventory[i] = null; 
       }
     }
-    if (amountToRemove === 0) break; // We're done
+    if (amountToRemove === 0) break;
   }
   
-  // +++ FIX: Update UI immediately +++
   renderInventoryGrid();
-  
-  return true; // Successfully removed
+  return true; 
 }
 
-/**
- * Checks if the inventory has space for a given item.
- * Returns true if there is an empty slot OR an existing stack of that item.
- * @param {string} itemName - The name of the item to check for.
- * @returns {boolean}
- */
-function canReceiveItem(itemName) {
+function canReceiveItem(itemName, enchantLevel = 0) {
   let hasEmptySlot = false;
   let hasStack = false;
 
   for (const slot of game.inventory) {
     if (slot === null) {
       hasEmptySlot = true;
-      break; // Found an empty slot, we can stop
+      break; 
     }
-    if (slot.name === itemName) {
+    // Stacks only if the enchant level matches
+    if (slot.name === itemName && (slot.enchantLevel || 0) === enchantLevel) {
       hasStack = true;
-      break; // Found an existing stack, we can stop
+      break; 
     }
   }
   return hasEmptySlot || hasStack;
@@ -5108,125 +5292,95 @@ function canReceiveItem(itemName) {
 // --- END OF REPLACEMENTS IN THIS SCRIPT BLOCK ---
 // =================================================================
 
-async function handleSellItemClick(itemName, currentQty) {
+async function handleSellItemClick(slotIndex) {
   if (!game.shopOpen) return;
   
-  // --- MODIFIED: Look up sell price in the new map ---
-  const sellPrice = ITEM_SELL_PRICES[itemName] || 0;
+  const item = game.inventory[slotIndex];
+  if (!item) return;
 
-  if (sellPrice <= 0) {
-    await showGameAlert("Cannot Sell", "This shop doesn't buy that item."); // Replaced alert
+  const itemName = item.name;
+  const enchant = item.enchantLevel || 0;
+  
+  let baseSellPrice = ITEM_SELL_PRICES[itemName] || 0;
+
+  if (baseSellPrice <= 0) {
+    await showGameAlert("Cannot Sell", "This shop doesn't buy that item.");
     return;
   }
-  // --- END MODIFICATION ---
-  
-  let totalQty = 0;
-  for (const slot of game.inventory) {
-      if(slot && slot.name === itemName) {
-          totalQty += slot.qty;
-      }
-  }
 
+  // --- NEW SCALING PRICE LOGIC ---
+  // 1. Get the total gold it cost to reach this enchant level
+  const totalInvestment = getCumulativeEnchantInvestment(itemName, enchant);
+  
+  // 2. New Price = Base Price + (50% of the gold spent on enchanting)
+  const pricePerItem = Math.floor(baseSellPrice + (totalInvestment / 2));
+  
+  // 3. Determine Quantity
   let qtyToSell = 0;
-  if (totalQty === 1) {
+  if (item.qty === 1) {
     qtyToSell = 1;
   } else {
-    // --- MODIFICATION HERE ---
     const input = await showGamePrompt(
-      `Sell ${itemName}`, 
-      `How many ${itemName} do you want to sell? (You have: ${totalQty}) (Price: ${sellPrice}ea)`, 
-      totalQty
+      `Sell ${itemName} ${enchant > 0 ? '+' + enchant : ''}`, 
+      `How many? (Stack: ${item.qty}) (Price: ${pricePerItem.toLocaleString()}ea)`, 
+      item.qty
     );
     if (input === null) return;
     qtyToSell = parseInt(input);
-    // --- END MODIFICATION ---
   }
 
-  if (isNaN(qtyToSell) || qtyToSell <= 0) return;
-  if (qtyToSell > totalQty) {
-    await showGameAlert("Invalid Amount", "You don't have that many to sell."); // Replaced alert
-    return;
-  }
+  if (isNaN(qtyToSell) || qtyToSell <= 0 || qtyToSell > item.qty) return;
   
-  const totalGold = qtyToSell * sellPrice;
+  const totalGold = qtyToSell * pricePerItem;
   
-  const confirmed = await showGameConfirm( // <-- USE 'await showGameConfirm'
+  const confirmed = await showGameConfirm(
     "Confirm Sale", 
-    `Are you sure you want to sell ${qtyToSell} ${itemName} for ${totalGold} Gold?`
+    `Sell ${qtyToSell}x ${itemName} ${enchant > 0 ? '+' + enchant : ''} for ${totalGold.toLocaleString()} Gold?`
   );
   
   if (confirmed) {
-    if (removeItem(itemName, qtyToSell)) {
+    if (removeItem(itemName, qtyToSell, enchant)) {
         addGold(totalGold);
         hideTooltip(); 
         renderInventoryGrid();
-        await showGameAlert("Sale Complete", `You sold ${qtyToSell} ${itemName} for ${totalGold} Gold.`);
+        if (document.getElementById('hubBank').classList.contains('active')) renderBankGrid();
+        
+        await showGameAlert("Sale Complete", `You received ${totalGold.toLocaleString()} Gold.`);
+        if (typeof window.savePlayerData === 'function') window.savePlayerData();
     } else {
-        await showGameAlert("Error", "Something went wrong, the sale did not complete."); // Replaced alert
+        await showGameAlert("Error", "Something went wrong, the sale did not complete.");
     }
   }
 }
 
 function handleItemClick(event, itemName, itemQty, slotIndex) {
-  // Always close any open menu first
   hideItemContextMenu();
 
-  // --- NEW: Define equipable items and their slots ---
+  if (document.getElementById('hubEnchanting').classList.contains('active')) {
+      const itemData = game.inventory[slotIndex];
+      if (handleEnchantItemClick(itemData, slotIndex)) return;
+  }
+
   const equipableItems = {
-    'Copper Helmet': 'helmet',
-    'Copper Chestplate': 'chest',
-    'Copper Shortsword': 'weapon',
-    'Copper Boots': 'boots',
-    'Iron Helmet': 'helmet',
-    'Iron Chestplate': 'chest',
-    'Iron Shortsword': 'weapon',
-    'Iron Boots': 'boots',
-    'Copper Platelegs': 'legs', // +++ NEW +++
-    'Iron Platelegs': 'legs', // +++ NEW +++
-    
-    // +++ NEW BOWS +++
-    'Softwood Bow': 'weapon',
-    'Oak Bow': 'weapon',
-    
-    // +++ NEW ARROWS (THIS IS THE FIX) +++
-    'Copper Arrow': 'arrows',
-    // +++ NEW LEATHER +++
-    'Leather Hood': 'helmet',
-    'Leather Body': 'chest',
-    'Leather Chaps': 'legs',
-    'Leather Boots': 'boots',
-    
-    // +++ NEW WIZARD GEAR +++
-    'Wizard Hat': 'helmet',
-    'Wizard Robe': 'chest',
-    'Wizard Trousers': 'legs',
-    'Wizard Boots': 'boots',
-    'Magic Staff': 'weapon',
-    'Gold Crown': 'helmet',
-    'Elegant Black Cape': 'cape',
-    '1tapper': 'weapon',
-    'Gold Ring': 'ring_choice',
-    'Diamond Ring': 'ring_choice',
-    'Emerald Ring': 'ring_choice',
-    'Ruby Ring': 'ring_choice',
-    'Sapphire Ring': 'ring_choice',
-    'Topaz Ring': 'ring_choice'
+    'Copper Helmet': 'helmet', 'Copper Chestplate': 'chest', 'Copper Shortsword': 'weapon', 'Copper Boots': 'boots',
+    'Iron Helmet': 'helmet', 'Iron Chestplate': 'chest', 'Iron Shortsword': 'weapon', 'Iron Boots': 'boots',
+    'Copper Platelegs': 'legs', 'Iron Platelegs': 'legs', 'Softwood Bow': 'weapon', 'Oak Bow': 'weapon',
+    'Copper Arrow': 'arrows', 'Leather Hood': 'helmet', 'Leather Body': 'chest', 'Leather Chaps': 'legs',
+    'Leather Boots': 'boots', 'Wizard Hat': 'helmet', 'Wizard Robe': 'chest', 'Wizard Trousers': 'legs',
+    'Wizard Boots': 'boots', 'Magic Staff': 'weapon', 'Gold Crown': 'helmet', 'Elegant Black Cape': 'cape',
+    '1tapper': 'weapon', 'Gold Ring': 'ring_choice', 'Diamond Ring': 'ring_choice', 'Emerald Ring': 'ring_choice',
+    'Ruby Ring': 'ring_choice', 'Sapphire Ring': 'ring_choice', 'Topaz Ring': 'ring_choice'
   };
   const itemSlotType = equipableItems[itemName];
-  // --- END NEW ---
 
   if (game.shopOpen) {
-    // If shop is open, we're selling
-    handleSellItemClick(itemName, itemQty);
+    // Pass the slotIndex so the shop knows exactly which item (and enchant level) you are selling
+    handleSellItemClick(slotIndex);
   } else if (itemSlotType) {
-    // --- NEW: This is an equipable item! ---
-    // We pass the slot *type* (e.g., 'helmet') and the inventory *index*
     equipItem(itemSlotType, slotIndex);
-  } else if (itemName === 'Cooked Chicken' || itemName === 'Cooked Beef' || itemName === 'Cooked Herring' || itemName === 'Cooked Trout' || itemName === 'Cooked Salmon' || itemName === 'Vitality Potion') {
-    // Not in shop, not equipable, and it's food/potion. Show use menu.
+  } else if (itemName.includes('Cooked') || itemName === 'Vitality Potion') {
     showItemContextMenu(event, itemName);
   }
-  // Other items (like ores) do nothing when clicked.
 }
 
 // NEW: Shows the right-click-style menu
@@ -5411,20 +5565,18 @@ async function equipItem(slotType, fromInvIndex) {
   const itemStack = game.inventory[fromInvIndex];
   if (!itemStack) return;
 
-  // +++ NEW: SMART RING SELECTION LOGIC +++
   if (slotType === 'ring_choice') {
     if (!game.equipment.ring1) {
       slotType = 'ring1';
     } else if (!game.equipment.ring2) {
       slotType = 'ring2';
     } else {
-      // Both slots full: Ask the player which one to replace
       const choice = await _createModal("Equip Ring", "<p>Which ring slot would you like to replace?</p>", [
         { text: "Ring Slot 1", value: "ring1", class: "primary" },
         { text: "Ring Slot 2", value: "ring2", class: "primary" },
         { text: "Cancel", value: null, class: "primary", style: "#666" }
       ]);
-      if (choice === null) return; // Exit if user cancelled
+      if (choice === null) return;
       slotType = choice;
     }
   }
@@ -5432,84 +5584,65 @@ async function equipItem(slotType, fromInvIndex) {
   const stats = ITEM_STATS[itemStack.name];
   const isTwoHanded = stats && stats.twoHanded;
 
-  if (slotType === 'weapon' && itemStack.name !== 'Magic Staff') {
-    if (game.equipment.weapon && game.equipment.weapon.name === 'Magic Staff') {
-      setAttackStyle('strength', true); 
-      if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
-    }
-  } else if (slotType === 'weapon' && itemStack.name === 'Magic Staff') {
-    setAttackStyle('magic', true);
+  if (slotType === 'weapon') {
+    if (itemStack.name === 'Magic Staff') setAttackStyle('magic', true);
+    else if (game.equipment.weapon && game.equipment.weapon.name === 'Magic Staff') setAttackStyle('strength', true);
   }
 
-  if (slotType === 'weapon' && isTwoHanded) {
-    if (game.equipment.shield) {
+  if (slotType === 'weapon' && isTwoHanded && game.equipment.shield) {
       const success = await unequipItem('shield');
       if (!success) return;
-    }
   }
   
-  if (slotType === 'shield') {
-    const currentWeapon = game.equipment.weapon;
-    if (currentWeapon && ITEM_STATS[currentWeapon.name] && ITEM_STATS[currentWeapon.name].twoHanded) {
+  if (slotType === 'shield' && game.equipment.weapon && ITEM_STATS[game.equipment.weapon.name]?.twoHanded) {
        const success = await unequipItem('weapon');
        if (!success) return;
-    }
   }
 
   const itemBeingWorn = game.equipment[slotType];
 
   if (slotType === 'arrows') {
-    const itemName = itemStack.name;
-    if (itemBeingWorn && itemBeingWorn.name === itemName) {
+    if (itemBeingWorn && itemBeingWorn.name === itemStack.name) {
       game.equipment[slotType].qty += itemStack.qty;
       game.inventory[fromInvIndex] = null;
     } else {
-      game.equipment[slotType] = { name: itemStack.name, qty: itemStack.qty };
+      game.equipment[slotType] = { ...itemStack }; // Copy whole object
       game.inventory[fromInvIndex] = itemBeingWorn;
     }
   } else {
-    if (itemBeingWorn) {
-      const canStackOnSelf = (itemStack.name === itemBeingWorn.name);
-      const hasStackingSlot = game.inventory.find(slot => slot && slot.name === itemBeingWorn.name && slot !== itemStack);
-      const hasEmptySlot = game.inventory.some(slot => slot === null);
-      if (itemStack.qty > 1 && !canStackOnSelf && !hasStackingSlot && !hasEmptySlot) {
-        await showGameAlert("Inventory Full", "You have no room to unequip your currently worn item.");
+    // Check if we can safely unequip existing item
+    if (itemBeingWorn && itemStack.qty > 1) {
+      const hasRoom = game.inventory.some(s => s === null || (s.name === itemBeingWorn.name && (s.enchantLevel || 0) === (itemBeingWorn.enchantLevel || 0)));
+      if (!hasRoom) {
+        await showGameAlert("Inventory Full", "No room to swap equipment.");
         return;
       }
     }
 
-    const newItemToEquip = { name: itemStack.name, qty: 1 };
-    game.equipment[slotType] = newItemToEquip;
+    // EQUIP NEW ITEM (Maintaining Enchantment)
+    const newItem = { 
+      name: itemStack.name, 
+      qty: 1, 
+      enchantLevel: itemStack.enchantLevel || 0 
+    };
+    
+    game.equipment[slotType] = newItem;
     itemStack.qty -= 1;
 
     if (itemStack.qty <= 0) {
       game.inventory[fromInvIndex] = itemBeingWorn;
     } else if (itemBeingWorn) {
-      let stacked = false;
-      for (const slot of game.inventory) {
-        if (slot && slot.name === itemBeingWorn.name) {
-          slot.qty += 1;
-          stacked = true;
-          break;
-        }
-      }
-      if (!stacked) {
-        const emptySlot = game.inventory.findIndex(s => s === null);
-        if (emptySlot !== -1) {
-           game.inventory[emptySlot] = itemBeingWorn;
-        }
-      }
+      // Put old item back using the fixed addItem logic
+      addItem(itemBeingWorn.name, 1, itemBeingWorn.enchantLevel || 0);
     }
   }
   
-  updateHPUI(); // Recalculate Max HP immediately
+  updateHPUI();
   renderEquipment(); 
   renderInventoryGrid();
   hideTooltip();
   playGlobalSound('sounds/soundeffects/itemequipsoundeffect.mp3');
-  if (typeof window.savePlayerData === 'function') {
-    window.savePlayerData();
-  }
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
 
 /**
@@ -5521,64 +5654,37 @@ async function equipItem(slotType, fromInvIndex) {
  * @param {string} slotType - The type of slot ('helmet', 'chest', 'weapon', 'boots')
  */
 async function unequipItem(slotType) {
-  // +++ FIX: BLOCK PET UNEQUIP IN TAB +++
-  // Silently block pet unequip from this screen.
-  if (slotType === 'pet') {
-      return false;
-  }
-  // +++ END FIX +++
+  if (slotType === 'pet') return false;
 
-  const itemToUnequip = game.equipment[slotType];
-  if (!itemToUnequip) return true; // Slot is already empty, consider it a success
+  const item = game.equipment[slotType];
+  if (!item) return true;
 
-  // --- NEW: Smart unequip logic ---
-  // 1. Try to find an existing stack to add to
-  let stacked = false;
-  for (const slot of game.inventory) {
-    if (slot && slot.name === itemToUnequip.name) {
-      slot.qty += itemToUnequip.qty; 
-      stacked = true;
-      break;
-    }
-  }
-
-  // 2. If not stacked, find an empty slot
-  if (!stacked) {
-    const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
-    if (emptySlotIndex === -1) {
-      // Inventory is full
-      await showGameAlert("Inventory Full", "You can't unequip this, your inventory is full.");
-      return false; // <--- RETURN FALSE (Failed)
-    }
-    // Put item in the empty slot
-    game.inventory[emptySlotIndex] = itemToUnequip;
-  }
-
+  // Check room using our logic: can it stack or is there an empty slot?
+  const hasRoom = game.inventory.some(s => s === null || (s.name === item.name && (s.enchantLevel || 0) === (item.enchantLevel || 0)));
   
-  // 3. Clear the equipment slot (since item is safely in inventory)
-  
-  // +++ NEW: Reset style if Magic Staff is unequipped, but KEEP autocast +++
-  if (slotType === 'weapon' && itemToUnequip.name === 'Magic Staff') {
-    // game.autocastSpell = null; // <-- REMOVED to remember spell
-    // Reset style to a physical default so combat doesn't break
+  if (!hasRoom) {
+    await showGameAlert("Inventory Full", "Your inventory is full.");
+    return false;
+  }
+
+  // Use the fixed addItem function to handle stacking vs new slot automatically
+  addItem(item.name, item.qty, item.enchantLevel || 0);
+
+  if (slotType === 'weapon' && item.name === 'Magic Staff') {
     setAttackStyle('strength', true);
     if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
   }
-  // +++ END NEW +++
   
   game.equipment[slotType] = null; 
   
-  // 4. Re-render everything
-  updateHPUI(); // Recalculate Max HP immediately
+  updateHPUI();
   renderEquipment(); 
   renderInventoryGrid();
   hideTooltip();
   playGlobalSound('sounds/soundeffects/itemequipsoundeffect.mp3');
-  if (typeof window.savePlayerData === 'function') {
-    window.savePlayerData();
-  }
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
   
-  return true; // <--- RETURN TRUE (Success)
+  return true;
 }
 
 const tooltip = document.getElementById('tooltip');
@@ -16928,11 +17034,13 @@ function enemyAttackTurn() {
   let enemyAtkRoll = enemy.attackLvl * 64;
   let playerDefRoll = 0;
   
-  if (enemy.style === 'melee') playerDefRoll = game.defence.level * (playerStats.meleeDef + 64);
-  else if (enemy.style === 'ranged') playerDefRoll = game.defence.level * (playerStats.rangedDef + 64);
-  else if (enemy.style === 'magic') {
+  if (enemy.style === 'melee') {
+      playerDefRoll = Math.max(0, game.defence.level * (playerStats.meleeDef + 64));
+  } else if (enemy.style === 'ranged') {
+      playerDefRoll = Math.max(0, game.defence.level * (playerStats.rangedDef + 64));
+  } else if (enemy.style === 'magic') {
       const magicDefLevel = Math.floor((game.magic.level * 0.7) + (game.defence.level * 0.3));
-      playerDefRoll = magicDefLevel * (playerStats.magicDef + 64);
+      playerDefRoll = Math.max(0, magicDefLevel * (playerStats.magicDef + 64));
   }
 
   let hitChance = 0;
@@ -17816,11 +17924,28 @@ function renderBankGrid() {
               else if (item.name === 'Emerald Ring') imgName = 'emeraldring';
               else if (item.name === 'Ruby Ring') imgName = 'rubyring';
               else if (item.name === 'Sapphire Ring') imgName = 'sapphirering';
-              else if (item.name === 'Topaze Ring') imgName = 'topazering';
+              else if (item.name === 'Topaz Ring') imgName = 'topazring';
 
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
       img.alt = item.name;
+      
+      // Apply Enchantment Glows
+      const eLvl = item.enchantLevel || 0;
+      if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
+          slot.classList.add('legendary-glow');
+      } else if (eLvl > 0) {
+          slot.classList.add(`enchant-glow-${eLvl}`);
+      }
+
+      if (eLvl > 0) {
+          const badge = document.createElement('div');
+          badge.className = 'enchant-level-badge';
+          badge.innerText = `+${eLvl}`;
+          slot.appendChild(badge);
+      }
+
+      // Shrink diamond images slightly...
       // Shrink diamond images slightly to match higher res gems
       if (item.name === 'Diamond' || item.name === 'Uncut Diamond') {
           img.style.transform = 'scale(0.93)';
@@ -18067,57 +18192,41 @@ function handleBankWithdrawDragStart(e, item, fromBankIndex) {
 
 async function depositItem(item, fromInventoryIndex, toBankIndex) {
   if (!item) return;
-
-  // +++ USE ACTIVE TAB +++
   const currentTab = game.bankTabs[game.activeBankTabIndex];
   const bankSlot = currentTab[toBankIndex];
   
-  // --- NEW: SWAP LOGIC (Inventory -> Bank) ---
-  // If target slot has a DIFFERENT item, swap them immediately (skip prompt)
-  if (bankSlot && bankSlot.name !== item.name) {
-      // Verify source item still exists
+  // 1. Swap Logic
+  if (bankSlot && (bankSlot.name !== item.name || (bankSlot.enchantLevel || 0) !== (item.enchantLevel || 0))) {
       if (game.inventory[fromInventoryIndex].name !== item.name) return;
-
-      // Perform Swap
       const temp = bankSlot;
       currentTab[toBankIndex] = game.inventory[fromInventoryIndex];
       game.inventory[fromInventoryIndex] = temp;
-
       renderBankGrid();
       renderInventoryGrid();
       hideTooltip();
       if (typeof window.savePlayerData === 'function') window.savePlayerData();
       return true;
   }
-  // --- END SWAP LOGIC ---
 
+  // 2. Quantity Logic
   let qtyToDeposit = item.qty;
-
   if (item.qty > 1) {
-    const input = await showGamePrompt(
-      `Deposit ${item.name}`,
-      `How many ${item.name} do you want to deposit? (You have: ${item.qty})`,
-      item.qty
-    );
+    const input = await showGamePrompt(`Deposit ${item.name}`, `How many to deposit? (You have: ${item.qty})`, item.qty);
     if (input === null) return false;
     qtyToDeposit = parseInt(input);
   }
 
-  if (isNaN(qtyToDeposit) || qtyToDeposit <= 0) return;
-  if (qtyToDeposit > item.qty) {
-    await showGameAlert("Invalid Amount", "You don't have that many to deposit."); 
-    return;
-  }
+  if (isNaN(qtyToDeposit) || qtyToDeposit <= 0 || qtyToDeposit > item.qty) return;
 
+  // 3. Deposit logic preserving enchantment
+  const enchant = item.enchantLevel || 0;
   game.inventory[fromInventoryIndex].qty -= qtyToDeposit;
-  if (game.inventory[fromInventoryIndex].qty <= 0) {
-    game.inventory[fromInventoryIndex] = null;
-  }
+  if (game.inventory[fromInventoryIndex].qty <= 0) game.inventory[fromInventoryIndex] = null;
 
   if (bankSlot) {
     bankSlot.qty += qtyToDeposit;
   } else {
-    currentTab[toBankIndex] = { name: item.name, qty: qtyToDeposit }; // <-- Use currentTab
+    currentTab[toBankIndex] = { name: item.name, qty: qtyToDeposit, enchantLevel: enchant };
   }
 
   renderBankGrid();
@@ -18128,37 +18237,24 @@ async function depositItem(item, fromInventoryIndex, toBankIndex) {
 }
 
 async function withdrawItem(fromBankIndex) {
-  // +++ USE ACTIVE TAB +++
   const currentTab = game.bankTabs[game.activeBankTabIndex];
-  const item = currentTab[fromBankIndex]; // <-- Use currentTab
-  
+  const item = currentTab[fromBankIndex];
   if (!item) return;
 
   let qtyToWithdraw = item.qty;
-
   if (item.qty > 1) {
-    const input = await showGamePrompt(
-      `Withdraw ${item.name}`,
-      `How many ${item.name} do you want to withdraw? (Bank has: ${item.qty})`,
-      item.qty
-    );
+    const input = await showGamePrompt(`Withdraw ${item.name}`, `How many to withdraw? (Bank has: ${item.qty})`, item.qty);
     if (input === null) return;
     qtyToWithdraw = parseInt(input);
   }
   
-  if (isNaN(qtyToWithdraw) || qtyToWithdraw <= 0) return;
-  if (qtyToWithdraw > item.qty) {
-    await showGameAlert("Invalid Amount", "You don't have that many to withdraw.");
-    return;
-  }
+  if (isNaN(qtyToWithdraw) || qtyToWithdraw <= 0 || qtyToWithdraw > item.qty) return;
   
-  const itemToAdd = { name: item.name, qty: qtyToWithdraw };
-  addItem(itemToAdd.name, itemToAdd.qty); 
+  // Call addItem with the enchantment level
+  addItem(item.name, qtyToWithdraw, item.enchantLevel || 0); 
   
-  currentTab[fromBankIndex].qty -= qtyToWithdraw; // <-- Use currentTab
-  if (currentTab[fromBankIndex].qty <= 0) {
-    currentTab[fromBankIndex] = null; // <-- Use currentTab
-  }
+  currentTab[fromBankIndex].qty -= qtyToWithdraw;
+  if (currentTab[fromBankIndex].qty <= 0) currentTab[fromBankIndex] = null;
   
   renderBankGrid();
   renderInventoryGrid(); 
@@ -18253,59 +18349,45 @@ async function withdrawAllGold() {
 // +++ END NEW +++
 
 async function dragWithdrawItem(fromBankIndex, toInventoryIndex) {
-  // +++ USE ACTIVE TAB +++
   const currentTab = game.bankTabs[game.activeBankTabIndex];
   const bankItem = currentTab[fromBankIndex];
   const inventorySlotItem = game.inventory[toInventoryIndex];
 
   if (!bankItem) return;
 
-  // --- NEW: SWAP LOGIC (Bank -> Inventory) ---
-  // If target occupied by DIFFERENT item, swap immediately (skip prompt)
-  if (inventorySlotItem && inventorySlotItem.name !== bankItem.name) {
+  const enchant = bankItem.enchantLevel || 0;
+
+  // Swap Logic (Checks both Name and Enchantment)
+  if (inventorySlotItem && (inventorySlotItem.name !== bankItem.name || (inventorySlotItem.enchantLevel || 0) !== enchant)) {
       currentTab[fromBankIndex] = inventorySlotItem;
       game.inventory[toInventoryIndex] = bankItem;
-      
       renderBankGrid();
       renderInventoryGrid();
       hideTooltip();
       if (typeof window.savePlayerData === 'function') window.savePlayerData();
       return;
   }
-  // --- END SWAP LOGIC ---
 
   let qtyToWithdraw = bankItem.qty;
-
   if (bankItem.qty > 1) {
-    const input = await showGamePrompt(
-      `Withdraw ${bankItem.name}`,
-      `How many ${bankItem.name} do you want to withdraw? (Bank has: ${bankItem.qty})`,
-      bankItem.qty
-    );
+    const input = await showGamePrompt(`Withdraw ${bankItem.name}`, `How many to withdraw? (Bank has: ${bankItem.qty})`, bankItem.qty);
     if (input === null) return; 
     qtyToWithdraw = parseInt(input);
   }
   
-  if (isNaN(qtyToWithdraw) || qtyToWithdraw <= 0 || qtyToWithdraw > bankItem.qty) {
-    await showGameAlert("Invalid Amount", "Invalid or excessive amount entered.");
-    return;
-  }
+  if (isNaN(qtyToWithdraw) || qtyToWithdraw <= 0 || qtyToWithdraw > bankItem.qty) return;
 
-  if (inventorySlotItem && inventorySlotItem.name === bankItem.name) {
-    // Stack onto existing item
+  // Added check for enchantment level matching
+  if (inventorySlotItem && inventorySlotItem.name === bankItem.name && (inventorySlotItem.enchantLevel || 0) === enchant) {
     inventorySlotItem.qty += qtyToWithdraw;
     bankItem.qty -= qtyToWithdraw;
-    if (bankItem.qty <= 0) {
-      currentTab[fromBankIndex] = null;
-    }
-
+    if (bankItem.qty <= 0) currentTab[fromBankIndex] = null;
   } else {
-    // Move to empty slot (Swap handled above, so this must be empty)
     if (qtyToWithdraw === bankItem.qty) {
         game.inventory[toInventoryIndex] = bankItem;
         currentTab[fromBankIndex] = null;
     } else {
-        game.inventory[toInventoryIndex] = { name: bankItem.name, qty: qtyToWithdraw };
+        game.inventory[toInventoryIndex] = { name: bankItem.name, qty: qtyToWithdraw, enchantLevel: enchant };
         bankItem.qty -= qtyToWithdraw;
     }
   }
@@ -18386,12 +18468,15 @@ function resetGameState() {
   stopFletching(); 
   stopCraftingBowString(); 
   stopFishing(); 
-  stopStoneForging(); // +++ NEW +++
+  stopStoneForging();
   
-  // +++ NEW: Add combat stop +++
   if (game.inCombat) {
-    runFromCombat(false); // Stop combat loops
+    runFromCombat(false);
   }
+
+  // CLEANUP ENCHANTING
+  game.enchantSlot = null;
+  game.enchantingActive = false;
   // +++ END NEW +++
 
   game.name = '';
@@ -18464,6 +18549,9 @@ function resetGameState() {
   game.gatheringWaterActive = false;
   game.tailoring = { level: 1, xp: 0, totalXP: 0 };
   game.tailoringActive = false;
+  game.thieving = { level: 1, xp: 0, totalXP: 0 };
+  game.petmastery = { level: 1, xp: 0, totalXP: 0 };
+  game.alchemy = { level: 1, xp: 0, totalXP: 0 };
   game.thieving = { level: 1, xp: 0, totalXP: 0 };
   game.thievingTargets = [];
   game.shopOpen = false;
@@ -18610,8 +18698,13 @@ function closeSettings() {
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
 function showMainScreen(screenIdToShow) {
+  // NEW: Safely return item from enchanting table if player navigates away
+  if (typeof returnEnchantItem === 'function' && game.enchantSlot) {
+    returnEnchantItem();
+  }
+
   // Stop all skilling actions
   stopMining();
   stopBlacksmithing();
@@ -18789,6 +18882,23 @@ function renderShopGrid() {
       
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
+      
+      // Apply Enchantment Glows
+      const eLvl = item.enchantLevel || 0;
+      if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
+          slot.classList.add('legendary-glow');
+      } else if (eLvl > 0) {
+          slot.classList.add(`enchant-glow-${eLvl}`);
+      }
+
+      if (eLvl > 0) {
+          const badge = document.createElement('div');
+          badge.className = 'enchant-level-badge';
+          badge.innerText = `+${eLvl}`;
+          slot.appendChild(badge);
+      }
+
+      // Shrink diamond images slightly...
       // Shrink diamond images slightly to match higher res gems
       if (item.name === 'Diamond' || item.name === 'Uncut Diamond') {
           img.style.transform = 'scale(0.93)';
@@ -18948,6 +19058,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('tailoringActionIcon').onclick = openTailoringHub;
   document.getElementById('hubTailoring_ReturnBtn').onclick = backToActions;
   document.getElementById('thievingActionIcon').onclick = openThievingHub;
+  document.getElementById('enchantingActionIcon').onclick = openEnchantingHub;
   document.getElementById('hubThieving_ReturnBtn').onclick = backToActions; // +++ NEW +++
   
   // +++ NEW: Quest Button Listener +++
@@ -19873,6 +19984,9 @@ window.showSaveIndicator = function() {
  * @param {object} equipment - The equipment object from the inspected player's save data.
  * @param {HTMLElement} frame - The DOM element to render into.
  */
+/**
+ * Helper to render the *inspected* player's equipment using dummy slots.
+ */
 function renderInspectEquipment(equipment, frame) {
     frame.innerHTML = '';
     const slots = [
@@ -19882,10 +19996,8 @@ function renderInspectEquipment(equipment, frame) {
         'arrows', 'boots', 'pet'
     ];
 
-    // Helper to safely access global stats
     const getStats = (name) => (window.ITEM_STATS && window.ITEM_STATS[name]) ? window.ITEM_STATS[name] : null;
 
-    // Image mapping for all items
     const itemImageMap = {
         'Copper Helmet': 'copperhelmet', 'Copper Chestplate': 'copperchestplate', 'Copper Shortsword': 'coppershortsword', 'Copper Boots': 'copperboots', 
         'Iron Helmet': 'ironhelmet', 'Iron Chestplate': 'ironchestplate', 'Iron Shortsword': 'ironshortsword', 'Iron Boots': 'ironboots', 
@@ -19896,11 +20008,7 @@ function renderInspectEquipment(equipment, frame) {
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
         'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Spider Egg': 'petegg1',
         'Empty Bucket': 'emptybucket', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
-        'Diamond Ring': 'diamondring',
-        'Emerald Ring': 'emeraldring',
-        'Ruby Ring': 'rubyring',
-        'Sapphire Ring': 'sapphirering',
-        'Topaz Ring': 'topazring'
+        'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring'
     };
 
     slots.forEach(slotType => {
@@ -19911,11 +20019,9 @@ function renderInspectEquipment(equipment, frame) {
         let imgName = '';
         let isTwoHandedBlock = false;
         
-        // 1. Determine Image
         if (item) {
             imgName = itemImageMap[item.name] || item.name.toLowerCase().replace(/\s+/g,'_');
         } else {
-            // Placeholder Logic
             if (slotType === 'helmet') imgName = 'helmet'; else if (slotType === 'chest') imgName = 'chestplate';
             else if (slotType === 'weapon') imgName = 'weapon'; else if (slotType === 'boots') imgName = 'boots';
             else if (slotType === 'necklace') imgName = 'necklace'; else if (slotType === 'cape') imgName = 'cape';
@@ -19924,77 +20030,75 @@ function renderInspectEquipment(equipment, frame) {
             else if (slotType === 'pet') imgName = 'pet';
         }
 
-        // 2. Handle 2H Weapon for Shield Slot
-        if (slotType === 'shield' && !item) {
-            const weapon = equipment.weapon;
-            const weaponStats = weapon ? getStats(weapon.name) : null;
-            if (weapon && weaponStats && weaponStats.twoHanded) {
+        if (slotType === 'shield' && !item && equipment.weapon) {
+            const weaponStats = getStats(equipment.weapon.name);
+            if (weaponStats && weaponStats.twoHanded) {
                 isTwoHandedBlock = true;
-                imgName = itemImageMap[weapon.name] || 'weapon';
+                imgName = itemImageMap[equipment.weapon.name] || 'weapon';
             }
         }
         
-        // --- FIX: Added loading="eager" and onerror to prevent broken icons and force update ---
         let extraStyle = '';
         if (item && (item.name === 'Diamond' || item.name === 'Uncut Diamond')) extraStyle = 'transform: scale(0.93);';
-        let imgHtml = `<img src="images/${imgName}.png" alt="${slotType}" loading="eager" onerror="this.style.display='none'" style="${isTwoHandedBlock ? 'opacity: 0.5; filter: grayscale(50%);' : ''} ${extraStyle}">`;
-        slotEl.innerHTML = imgHtml;
+        slotEl.innerHTML = `<img src="images/${imgName}.png" alt="${slotType}" loading="eager" style="${isTwoHandedBlock ? 'opacity: 0.5; filter: grayscale(50%);' : ''} ${extraStyle}">`;
         
-        // 3. Add Quantity for Arrows
-        if (item && slotType === 'arrows' && item.qty > 0) {
-            const amt = document.createElement('div');
-            amt.className = 'inv-amount';
-            amt.innerText = formatAmount(item.qty); 
-            slotEl.appendChild(amt);
-        }
-
-        // 4. Add Tooltip with Stats
         if (item) {
+            const enchantLvl = item.enchantLevel || 0;
+            if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
+                slotEl.classList.add('legendary-glow');
+            } else if (enchantLvl > 0) {
+                slotEl.classList.add(`enchant-glow-${enchantLvl}`);
+            }
+
+            if (enchantLvl > 0) {
+                const badge = document.createElement('div');
+                badge.className = 'enchant-level-badge';
+                badge.innerText = `+${enchantLvl}`;
+                slotEl.appendChild(badge);
+            }
+
             const itemStats = getStats(item.name);
             let statsHtml = '';
             
-            // Show quantity for arrows
-            let qtyHtml = (slotType === 'arrows') ? `<div style="color:#fff;">Amount: ${item.qty.toLocaleString()}</div>` : '';
+            // --- SYNCED CALCULATION LOGIC ---
+            let tier = 1;
+            const MATERIAL_TIERS = { 'Bronze': 1, 'Softwood': 1, 'Copper': 2, 'Leather': 2, 'Iron': 3, 'Cloth': 3, 'Wizard': 3, 'Oak': 3, 'Silver': 4, 'Birch': 4, 'Gold': 5, 'Maple': 5, 'Mahogany': 5, 'Ring': 5 };
+            for (let [mat, val] of Object.entries(MATERIAL_TIERS)) { if (item.name.includes(mat)) { tier = val; break; } }
             
+            let bonus = 0;
+            if (item.name.includes("Ring") || item.name.includes("Wizard")) {
+                bonus = enchantLvl; // +1 per level for Wizard and Rings
+            } else {
+                bonus = Math.floor(enchantLvl * (tier * 0.5)); // Tier scaling for others
+            }
+            const bonusText = bonus > 0 ? `<span style="font-size:10px;"> (+${bonus})</span>` : '';
+
             if (itemStats) {
-                if (itemStats.damage) {
-                    const dmgType = itemStats.weaponType === 'magic' ? 'Magic' : 'Physical';
-                    statsHtml += `<div style="color:#aaffaa;">+${itemStats.damage} ${dmgType} Damage</div>`;
-                }
-                if (itemStats.styleBonus) {
-                     statsHtml += `<div style="color:#aaffaa;">+${itemStats.styleBonus} Physical Damage (if accurate)</div>`;
-                }
-                if (itemStats.armor) {
-                    statsHtml += `<div style="color:#aaffaa;">+${itemStats.armor} Armor</div>`;
-                }
-                if (itemStats.speed) {
-                    statsHtml += `<div style="color:#aaffaa;">+${itemStats.speed} Speed</div>`;
-                }
+                const stdB = item.enchantLevel || 0;
+                const penB = Math.floor(stdB / 2);
+
+                if (itemStats.meleeStr) statsHtml += `<div style="color:#ff4d4d;">+${itemStats.meleeStr + stdB} Melee Strength</div>`;
+                if (itemStats.rangedStr) statsHtml += `<div style="color:#44aa44;">+${itemStats.rangedStr + stdB} Ranged Strength</div>`;
+                if (itemStats.magicDmg) statsHtml += `<div style="color:#4da6ff;">+${itemStats.magicDmg + stdB} Magic Damage</div>`;
+                
+                let mBonus = stdB, rBonus = stdB, magBonus = stdB;
+                if (itemStats.armorType === 'melee') magBonus = penB;
+                else if (itemStats.armorType === 'ranged' || itemStats.armorType === 'magic') mBonus = penB;
+
+                if (itemStats.meleeDef !== undefined) statsHtml += `<div style="color:#e38a42;">+${itemStats.meleeDef + mBonus} Melee Def</div>`;
+                if (itemStats.rangedDef !== undefined) statsHtml += `<div style="color:#aaffaa;">+${itemStats.rangedDef + rBonus} Ranged Def</div>`;
+                if (itemStats.magicDef !== undefined) statsHtml += `<div style="color:#6dafff;">+${itemStats.magicDef + magBonus} Magic Def</div>`;
+                
+                if (itemStats.maxHPBonus) statsHtml += `<div style="color:#ffaaaa;">+${itemStats.maxHPBonus + stdB} Max HP</div>`;
             }
 
-            const tooltipContent = `
-                <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
-                ${qtyHtml} 
-                ${statsHtml}
-            `;
-            
-            slotEl.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
-            slotEl.onmouseleave = hideTooltip;
-            
-        } else if (isTwoHandedBlock) {
-             const weapon = equipment.weapon;
-             const weaponName = weapon ? weapon.name : 'Weapon';
-             const tooltipContent = `
-                <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${weaponName}</div>
-                <div style="color:#ccc;">(Occupies Both Hands)</div>
-             `;
-             slotEl.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
-             slotEl.onmouseleave = hideTooltip;
+            const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name} ${enchantLvl > 0 ? `+${enchantLvl}` : ''}</div>${statsHtml}`;
+            slotEl.onmouseenter = (evt) => window.showTooltip(evt, tooltipContent);
+            slotEl.onmouseleave = window.hideTooltip;
         } else {
-            slotEl.onmouseenter = (evt) => showTooltip(evt, `Empty ${slotType.charAt(0).toUpperCase() + slotType.slice(1)} Slot`);
-            slotEl.onmouseleave = hideTooltip;
+            slotEl.onmouseenter = (evt) => window.showTooltip(evt, isTwoHandedBlock ? "Occupied by 2H Weapon" : `Empty Slot`);
+            slotEl.onmouseleave = window.hideTooltip;
         }
-
         frame.appendChild(slotEl);
     });
 }
@@ -20088,14 +20192,11 @@ async function attemptSteal(instanceId) {
     } else {
         // SUCCESS
         addXP('thieving', target.xp);
-        
         let popupDelay = 0; 
 
-        // 1. Show XP Popup first (addXP is now excluded, so we handle it here with the delay)
         showItemPopup(`+${target.xp} Thieving XP`, null, popupDelay);
         popupDelay += 450; 
 
-        // 2. Handle Gold Reward
         if (target.reward.gold) {
             const amount = Math.floor(Math.random() * (target.reward.gold[1] - target.reward.gold[0] + 1)) + target.reward.gold[0];
             addGold(amount);
@@ -20103,7 +20204,6 @@ async function attemptSteal(instanceId) {
             popupDelay += 450; 
         }
 
-        // 3. Handle Item Rewards (Individual staggered delays)
         let itemsFound = false;
         if (target.reward.items) {
             target.reward.items.forEach((itemDef) => {
@@ -20114,10 +20214,7 @@ async function attemptSteal(instanceId) {
                     itemsFound = true;
                 }
             });
-            
-            if (!itemsFound && !target.reward.gold) {
-                showWarningPopup("Nothing of value found...");
-            }
+            if (!itemsFound && !target.reward.gold) showWarningPopup("Nothing of value found...");
         }
         
         playGlobalSound('sounds/soundeffects/inventorysound.mp3');
@@ -20125,6 +20222,292 @@ async function attemptSteal(instanceId) {
         refreshThievingTargets();
     }
     if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+// --- ENCHANTING LOGIC ---
+
+function openEnchantingHub() {
+    game.enchantSlot = null;
+    showMainScreen('hubEnchanting');
+    renderEnchantSlot();
+}
+
+function renderEnchantSlot() {
+    const container = document.getElementById('enchantSlot');
+    const costText = document.getElementById('enchantCostText');
+    const enchantBtn = document.getElementById('enchantBtn');
+    if(!container) return;
+    
+    container.innerHTML = '';
+    // IMPORTANT: Reset the class list so the green glow doesn't get stuck
+    container.className = "inv-slot"; 
+    container.style.border = "2px dashed var(--gold)";
+
+    if (!game.enchantSlot) {
+        costText.innerText = "Select an item from your inventory";
+        enchantBtn.style.display = "none";
+        return;
+    }
+
+    const item = game.enchantSlot;
+    const img = document.createElement('img');
+    
+    // Improved Image logic to match all equipment
+    let imgName = item.name.toLowerCase().replace(/\s+/g, '');
+    // Specific Fixes for filenames
+    if (item.name === "Leather Body") imgName = "leatherarmor";
+    if (item.name === "Leather Chaps") imgName = "leatherpants";
+    if (item.name.includes("Ring") && item.name !== "Gold Ring") imgName = item.name.toLowerCase().replace(" ", "");
+
+    img.src = `images/${imgName}.png`;
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.objectFit = "contain";
+    container.appendChild(img);
+
+    const eLvl = item.enchantLevel || 0;
+    if (eLvl > 0) {
+        container.classList.add(`enchant-glow-${eLvl}`);
+        const badge = document.createElement('div');
+        badge.className = 'enchant-level-badge';
+        badge.innerText = `+${eLvl}`;
+        container.appendChild(badge);
+    }
+
+    if (eLvl >= 4) {
+        costText.innerText = "Maximum Enchantment Reached";
+        enchantBtn.style.display = "none";
+    } else {
+        const cost = calculateEnchantCost(item);
+        costText.innerText = `Upgrade to +${eLvl + 1}: ${cost.toLocaleString()} Gold`;
+        enchantBtn.style.display = "block";
+    }
+}
+
+// --- NEW HELPER FOR SHOP VALUE ---
+function getCumulativeEnchantInvestment(itemName, level) {
+    if (level <= 0) return 0;
+    
+    // Find the tier (matches your calculateEnchantCost logic)
+    let tier = 1;
+    const MATERIAL_TIERS = { 
+        'Bronze': 1, 'Softwood': 1, 'Copper': 2, 'Leather': 2, 
+        'Iron': 3, 'Cloth': 3, 'Wizard': 3, 'Oak': 3, 
+        'Silver': 4, 'Birch': 4, 'Gold': 5, 'Maple': 5, 
+        'Mahogany': 5, 'Ring': 5 
+    };
+    for (let mat in MATERIAL_TIERS) {
+        if (itemName.includes(mat)) { 
+            tier = MATERIAL_TIERS[mat]; 
+            break; 
+        }
+    }
+
+    let totalCost = 0;
+    // Calculate the sum of all previous upgrade costs
+    // Level 1 cost: 1^2, Level 2: 2^2, Level 3: 3^2, Level 4: 4^2
+    for (let i = 1; i <= level; i++) {
+        totalCost += (tier * 500) * Math.pow(i, 2);
+    }
+    return totalCost;
+}
+
+
+function calculateEnchantCost(item) {
+    let tier = 1;
+    // We check the MATERIAL_TIERS keys to see if the item name contains them
+    for (let mat in MATERIAL_TIERS) {
+        if (item.name.includes(mat)) { 
+            tier = MATERIAL_TIERS[mat]; 
+            break; 
+        }
+    }
+    const currentLvl = item.enchantLevel || 0;
+    return (tier * 500) * Math.pow((currentLvl + 1), 2);
+}
+
+function handleEnchantItemClick(item, index) {
+    const screen = document.getElementById('hubEnchanting');
+    if (!screen.classList.contains('active')) return false;
+
+    // NEW: Hide tooltip immediately on click to prevent "ghosting"
+    hideTooltip();
+
+    // Prevent legendary/jewelry items from being enchanted
+    if (item.name === "Gold Ring" || item.name === "Gold Crown" || item.name === "Elegant Black Cape") {
+        showWarningPopup(`The ${item.name} cannot be enchanted!`);
+        return true;
+    }
+
+    const stats = ITEM_STATS[item.name];
+    if (!stats || (!stats.weaponType && !stats.armorType)) {
+        showWarningPopup("Only weapons and armor can be enchanted!");
+        return true; 
+    }
+
+    if (game.enchantSlot) returnEnchantItem();
+
+    game.enchantSlot = { ...item, qty: 1 };
+    removeItem(item.name, 1, item.enchantLevel || 0);
+    renderEnchantSlot();
+    
+    // Save immediately so the item doesn't disappear on refresh
+    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    return true;
+}
+
+function returnEnchantItem() {
+    if (!game.enchantSlot) return;
+
+    // NEW: Hide tooltip immediately on click
+    hideTooltip();
+
+    addItem(game.enchantSlot.name, 1, game.enchantSlot.enchantLevel || 0);
+    game.enchantSlot = null;
+    renderEnchantSlot();
+    
+    // Save immediately so the item is back in inventory safely
+    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+// --- NEW: Particle Animation Helper ---
+function runEnchantParticles(durationMs) {
+    const slot = document.getElementById('enchantSlot');
+    if (!slot) return;
+    
+    const rect = slot.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    const particles = [];
+    const particleCount = 30;
+    
+    // Create particles
+    for(let i=0; i<particleCount; i++) {
+        const p = document.createElement('div');
+        p.className = 'magic-particle';
+        document.body.appendChild(p);
+        particles.push({
+            el: p,
+            angle: (Math.PI * 2 * i) / particleCount,
+            radius: 60,
+            speed: 0.1 + Math.random() * 0.05,
+            exploding: false
+        });
+    }
+
+    const startTime = Date.now();
+    let animFrame;
+
+    function animate() {
+        const now = Date.now();
+        const elapsed = now - startTime;
+
+        // Phase 1: Spinning (Before duration ends)
+        if (elapsed < durationMs) {
+            particles.forEach(p => {
+                p.angle += p.speed;
+                // Spiral in slightly
+                p.radius = 60 + Math.sin(now * 0.005) * 10; 
+                
+                const x = centerX + Math.cos(p.angle) * p.radius;
+                const y = centerY + Math.sin(p.angle) * p.radius;
+                
+                p.el.style.left = (x - 3) + 'px';
+                p.el.style.top = (y - 3) + 'px';
+            });
+            animFrame = requestAnimationFrame(animate);
+        } 
+        // Phase 2: Explosion (After duration)
+        else {
+            let stillAnimating = false;
+            particles.forEach(p => {
+                if (!p.exploding) {
+                    p.exploding = true;
+                    p.vx = Math.cos(p.angle) * 15; // Fast outward velocity
+                    p.vy = Math.sin(p.angle) * 15;
+                    p.opacity = 1;
+                }
+                
+                // Move outward
+                const currentLeft = parseFloat(p.el.style.left);
+                const currentTop = parseFloat(p.el.style.top);
+                p.el.style.left = (currentLeft + p.vx) + 'px';
+                p.el.style.top = (currentTop + p.vy) + 'px';
+                
+                // Fade out
+                p.opacity -= 0.03;
+                p.el.style.opacity = p.opacity;
+                
+                if (p.opacity > 0) stillAnimating = true;
+                else p.el.style.display = 'none';
+            });
+
+            if (stillAnimating) {
+                animFrame = requestAnimationFrame(animate);
+            } else {
+                // Cleanup
+                particles.forEach(p => p.el.remove());
+            }
+        }
+    }
+    
+    animate();
+}
+
+async function attemptEnchant() {
+    if (!game.enchantSlot || !game.isSessionActive) return;
+    
+    // Check cost first
+    const cost = calculateEnchantCost(game.enchantSlot);
+    if (game.gold < cost) {
+        showGameAlert("Not Enough Gold", "You need more gold to perform this enchantment.");
+        return;
+    }
+
+    hideTooltip();
+
+    // 1. Setup Visuals
+    const overlay = document.getElementById('enchantOverlay');
+    const container = document.querySelector('.container'); // Main game container
+    const btn = document.getElementById('enchantBtn');
+    
+    // Disable button to prevent double clicks
+    if(btn) btn.disabled = true;
+
+    // Start Riser Audio
+    playGlobalSound('sounds/soundeffects/riser.mp3');
+
+    // Apply Effects
+    if (overlay) overlay.classList.add('active'); // Darken screen
+    if (container) container.classList.add('enchant-shake'); // Shake screen
+    
+    // Start Particle System
+    runEnchantParticles(3000); // Spin for 3 seconds
+
+    // 2. Wait 3 seconds for the "Build Up"
+    setTimeout(async () => {
+        // Remove Shake and Darkness
+        if (container) container.classList.remove('enchant-shake');
+        if (overlay) overlay.classList.remove('active');
+        if (btn) btn.disabled = false;
+
+        // Play Success Sound
+        playGlobalSound('sounds/soundeffects/successenchant.mp3');
+
+        // Apply Logic
+        addGold(-cost);
+        game.enchantSlot.enchantLevel = (game.enchantSlot.enchantLevel || 0) + 1;
+        
+        renderEnchantSlot();
+        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+
+        // Show Success Popup (Slight delay to let explosion start)
+        setTimeout(() => {
+            showGameAlert("Success!", `Your ${game.enchantSlot.name} is now +${game.enchantSlot.enchantLevel}!`);
+        }, 200);
+
+    }, 3000);
 }
 
 </script>
@@ -20315,29 +20698,21 @@ async function attemptSteal(instanceId) {
   window.savePlayerData = async function() {
     try {
       const user = auth.currentUser;
-      if (!user) return;
+      if (!user || !game.isSessionActive) return;
       
-      // +++ NEW: Only the active session can save data +++
-      if (!game.isSessionActive) return;
-      
-      const nameToSave = game.name || "";
       const inventoryToSave = [];
-      // --- THIS IS THE FIX ---
-      // This code was missing. It adds your inventory to the save file.
       game.inventory.forEach((item, index) => {
           if (item) {
               inventoryToSave.push({
                   slot: index,
                   name: item.name,
-                  qty: item.qty
+                  qty: item.qty,
+                  enchantLevel: item.enchantLevel || 0 
               });
           }
       });
       
-      // +++ NEW: Convert bank TABS to save format (OBJECT MAP) +++
-      // Firestore does not support nested arrays, so we use an object map: { "0": [], "1": [] }
       const bankTabsToSave = {}; 
-      
       game.bankTabs.forEach((tabArray, i) => {
           const tabData = [];
           tabArray.forEach((item, index) => {
@@ -20345,164 +20720,61 @@ async function attemptSteal(instanceId) {
                   tabData.push({
                       slot: index,
                       name: item.name,
-                      qty: item.qty
+                      qty: item.qty,
+                      enchantLevel: item.enchantLevel || 0 // Added this line
                   });
               }
           });
-          bankTabsToSave[i.toString()] = tabData; // Use index string as key
+          bankTabsToSave[i.toString()] = tabData;
       });
       
       const payload = {
-        name: nameToSave,
-        name_lowercase: nameToSave.toLowerCase(),
+        name: game.name || "",
+        name_lowercase: (game.name || "").toLowerCase(),
         hp: game.hp,
         maxHP: game.maxHP,
-        inventory: inventoryToSave, 
+        inventory: inventoryToSave,
+        enchantSlot: game.enchantSlot || null, //Persist item on table
         gold: game.gold,
-        // +++ NEW +++
-        bankTabs: bankTabsToSave, // Saving tabs now
+        bankTabs: bankTabsToSave,
         bankGold: game.bankGold,
-        // +++ END NEW +++
-        equipment: game.equipment, // <-- ADD THIS
-        mining: {
-          level: game.mining.level,
-          xp: game.mining.xp,
-          totalXP: game.mining.totalXP 
-        },
-        blacksmith: {
-          level: game.blacksmith.level,
-          xp: game.blacksmith.xp,
-          totalXP: game.blacksmith.totalXP
-        },
-        // +++ NEW ATTACK SAVE LOGIC +++
-        attack: {
-          level: game.attack.level,
-          xp: game.attack.xp,
-          totalXP: game.attack.totalXP
-        },
-        // +++ NEW STRENGTH AND DEFENCE SAVE LOGIC +++
-        strength: {
-          level: game.strength.level,
-          xp: game.strength.xp,
-          totalXP: game.strength.totalXP
-        },
-        defence: {
-          level: game.defence.level,
-          xp: game.defence.xp,
-          totalXP: game.defence.totalXP
-        },
-        // +++ NEW VITALITY SAVE LOGIC +++
-        vitality: {
-          level: game.vitality.level,
-          xp: game.vitality.xp,
-          totalXP: game.vitality.totalXP
-        },
-        // +++ END NEW VITALITY SAVE LOGIC +++
-        // +++ NEW COOKING SAVE LOGIC +++
-        cooking: {
-          level: game.cooking.level,
-          xp: game.cooking.xp,
-          totalXP: game.cooking.totalXP
-        },
-        // +++ NEW WOODCUTTING SAVE LOGIC +++
-        woodcutting: {
-          level: game.woodcutting.level,
-          xp: game.woodcutting.xp,
-          totalXP: game.woodcutting.totalXP
-        },
-        // +++ END NEW WOODCUTTING SAVE LOGIC +++
-        // +++ NEW FLETCHING SAVE LOGIC +++
-        fletching: {
-          level: game.fletching.level,
-          xp: game.fletching.xp,
-          totalXP: game.fletching.totalXP
-        },
-        // +++ END NEW FLETCHING SAVE LOGIC +++
-        
-        // +++ NEW CRAFTING/RANGED SAVE LOGIC +++
-        crafting: {
-          level: game.crafting.level,
-          xp: game.crafting.xp,
-          totalXP: game.crafting.totalXP
-        },
-        ranged: {
-          level: game.ranged.level,
-          xp: game.ranged.xp,
-          totalXP: game.ranged.totalXP
-        },
-        // +++ NEW MAGIC SAVE LOGIC +++
-        magic: {
-          level: game.magic.level,
-          xp: game.magic.xp,
-          totalXP: game.magic.totalXP
-        },
-        // +++ NEW FISHING SAVE LOGIC +++
-        fishing: {
-          level: game.fishing.level,
-          xp: game.fishing.xp,
-          totalXP: game.fishing.totalXP
-        },
-        stoneforging: {
-          level: game.stoneforging.level,
-          xp: game.stoneforging.xp,
-          totalXP: game.stoneforging.totalXP
-        },
-        // +++ NEW BOUNTY SAVE +++
-        bountyhunting: {
-          level: game.bountyhunting.level,
-          xp: game.bountyhunting.xp,
-          totalXP: game.bountyhunting.totalXP
-        },
-        farming: {
-          level: game.farming.level,
-          xp: game.farming.xp,
-          totalXP: game.farming.totalXP
-        },
-        alchemy: {
-          level: game.alchemy.level,
-          xp: game.alchemy.xp,
-          totalXP: game.alchemy.totalXP
-        },
-        tailoring: {
-          level: game.tailoring.level,
-          xp: game.tailoring.xp,
-          totalXP: game.tailoring.totalXP
-        },
-        thieving: {
-          level: game.thieving.level,
-          xp: game.thieving.xp,
-          totalXP: game.thieving.totalXP
-        },
-        petmastery: {
-          level: game.petmastery.level,
-          xp: game.petmastery.xp,
-          totalXP: game.petmastery.totalXP
-        },
+        equipment: game.equipment,
+        mining: game.mining,
+        blacksmith: game.blacksmith,
+        attack: game.attack,
+        strength: game.strength,
+        defence: game.defence,
+        vitality: game.vitality,
+        cooking: game.cooking,
+        woodcutting: game.woodcutting,
+        fletching: game.fletching,
+        crafting: game.crafting,
+        ranged: game.ranged,
+        magic: game.magic,
+        fishing: game.fishing,
+        stoneforging: game.stoneforging,
+        bountyhunting: game.bountyhunting,
+        farming: game.farming,
+        alchemy: game.alchemy,
+        tailoring: game.tailoring,
+        thieving: game.thieving,
+        petmastery: game.petmastery,
         pets: game.pets,
         incubator: game.incubator,
         activeBounty: game.activeBounty || null,
-        
-        farm: game.farm, // +++ NEW: Save Farm Data +++
-        
-        questLines: game.questLines, // +++ NEW: Save Quest Line Data +++
-        // +++ END NEW SAVE LOGIC +++
-        
+        farm: game.farm,
+        questLines: game.questLines,
         playerAttackStyle: game.playerAttackStyle, 
-        autocastSpell: game.autocastSpell || null, // +++ NEW: Save the active spell +++
+        autocastSpell: game.autocastSpell || null,
         updatedAt: new Date().toISOString()
-        // We don't save activeSession here, that's handled by the lock functions
       };
       await setDoc(doc(db, "players", user.uid), payload, { merge: true });
-      
-      // *** MODIFIED LINE ***
-      if (typeof window.showSaveIndicator === 'function') {
-        window.showSaveIndicator();
-      }
-
+      if (typeof window.showSaveIndicator === 'function') window.showSaveIndicator();
     } catch (e) {
       console.error("Save failed:", e);
     }
-  }
+
+};
 
   // =================================================================
   // --- NEW: PLAYER INSPECT LOGIC (Module Script) ---
@@ -20515,114 +20787,99 @@ async function attemptSteal(instanceId) {
    */
 window.inspectPlayer = async function(playerName) {
     if (!auth.currentUser) return;
-
-    if (typeof window.playGlobalSound === 'function') {
-        window.playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');
-    }
+    if (typeof window.playGlobalSound === 'function') window.playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');
     
-    // +++ FIX: CLEAR PREVIOUS DATA IMMEDIATELY +++
-    // This prevents seeing the previous player's items while the new ones load
     const frame = document.getElementById('inspectEquipmentFrame');
     const statsPanel = document.getElementById('inspectStatsPanel');
     const modalName = document.getElementById('inspectPlayerName');
-    const inspectOverlay = document.getElementById('playerInspectOverlay'); // Get this early to show spinner
+    const inspectOverlay = document.getElementById('playerInspectOverlay');
     
-    if (frame) frame.innerHTML = ''; // Wipe old items
+    if (frame) frame.innerHTML = ''; 
     if (statsPanel) statsPanel.innerHTML = '<div style="color:#ccc; text-align:center; padding:20px;">Loading Stats...</div>'; 
     if (modalName) modalName.textContent = 'Loading...';
-    
-    // Show the modal immediately in a "Loading" state
     if (inspectOverlay) inspectOverlay.style.display = 'flex';
-    // +++ END FIX +++
 
-    // 1. Fetch data for the player
     try {
       const nameLower = playerName.toLowerCase();
       const q = query(collection(db, "players"), where("name_lowercase", "==", nameLower), limit(1));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        await window.showGameAlert("Player Not Found", "Could not find player data for " + playerName);
-        if (inspectOverlay) inspectOverlay.style.display = 'none'; // Hide if failed
+        await window.showGameAlert("Player Not Found", "Could not find player data.");
+        if (inspectOverlay) inspectOverlay.style.display = 'none';
         return;
       }
 
       const playerData = querySnapshot.docs[0].data();
       const playerEquipment = playerData.equipment || {};
 
-      if (!frame || !inspectOverlay) return;
-
-      // Update Name
       modalName.textContent = playerData.name || 'Player';
-      
-      // Render Equipment
-      if (typeof window.renderInspectEquipment === 'function') {
-        window.renderInspectEquipment(playerEquipment, frame);
-      }
+      renderInspectEquipment(playerEquipment, frame);
 
-      // --- CALCULATE EQUIPMENT STATS ONLY ---
-      let eqDamage = 0; 
-      let eqArmor = 0;
-      let eqSpeed = 0;
-      let isMagicWeapon = false;
+      // --- Sync Calculation logic with local Player Stats ---
+      let meleeStr = 0, rangedStr = 0, magicDmg = 0;
+      let meleeDef = 0, rangedDef = 0, magicDef = 0;
 
-      if (window.ITEM_STATS) {
-        Object.values(playerEquipment).forEach(item => {
-            if (item && item.name) {
-                const stats = window.ITEM_STATS[item.name];
-                if (stats) {
-                    eqDamage += stats.damage || 0;
-                    eqArmor += stats.armor || 0;
-                    let itemSpeed = stats.speed || 0;
-                    const weaponType = playerEquipment.weapon ? (window.ITEM_STATS[playerEquipment.weapon.name]?.weaponType || 'melee') : 'melee';
-                    const armorType = stats.armorType;
+      Object.values(playerEquipment).forEach(item => {
+          if (item && item.name) {
+              const def = window.ITEM_STATS[item.name];
+              if (def) {
+                  const eLvl = item.enchantLevel || 0;
+                  const stdB = eLvl;
+                  const penB = Math.floor(eLvl / 2);
 
-                    if (weaponType === 'melee' && armorType === 'ranged') itemSpeed = -3;
-                    else if (weaponType === 'ranged' && armorType === 'fighter') itemSpeed = -7.5;
-                    
-                    eqSpeed += itemSpeed;
-                    if (stats.weaponType === 'magic') isMagicWeapon = true;
-                }
-            }
-        });
-      }
+                  // Offense
+                  meleeStr += (def.meleeStr || 0) + (def.meleeStr ? stdB : 0);
+                  rangedStr += (def.rangedStr || 0) + (def.rangedStr ? stdB : 0);
+                  magicDmg += (def.magicDmg || 0) + (def.magicDmg ? stdB : 0);
+                  
+                  // Defense Scaling based on gear type
+                  if (def.armorType === 'melee') {
+                      meleeDef += (def.meleeDef || 0) + stdB;
+                      rangedDef += (def.rangedDef || 0) + stdB;
+                      magicDef += (def.magicDef || 0) + penB;
+                  } else if (def.armorType === 'ranged' || def.armorType === 'magic') {
+                      meleeDef += (def.meleeDef || 0) + penB;
+                      rangedDef += (def.rangedDef || 0) + stdB;
+                      magicDef += (def.magicDef || 0) + stdB;
+                  } else {
+                      meleeDef += (def.meleeDef || 0) + stdB;
+                      rangedDef += (def.rangedDef || 0) + stdB;
+                      magicDef += (def.magicDef || 0) + stdB;
+                  }
+              }
+          }
+      });
 
-      const damageLabel = isMagicWeapon ? "Magic Damage" : "Physical Damage";
-      const damageSign = eqDamage >= 0 ? "+" : "";
-      const speedSign = eqSpeed >= 0 ? "+" : "";
-
+      // Update HTML to 2-column layout (Matches Player Stats Tab exactly)
       statsPanel.innerHTML = `
-          <div class="stat-row">
-            <span class="stat-label">${damageLabel}</span>
-            <span class="stat-value" style="color:#ff4d4d;">${damageSign}${eqDamage}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Armor</span>
-            <span class="stat-value" style="color:#aaffaa;">+${eqArmor}</span>
+          <div style="display: flex; gap: 12px;">
+            <!-- Left Column: Offense -->
+            <div class="stats-column" style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+              <div class="stat-row"><span class="stat-label">Melee Strength</span><span class="stat-value" style="color:#ff4d4d;">+${meleeStr}</span></div>
+              <div class="stat-row"><span class="stat-label">Ranged Strength</span><span class="stat-value" style="color:#44aa44;">+${rangedStr}</span></div>
+              <div class="stat-row"><span class="stat-label">Magic Damage</span><span class="stat-value" style="color:#4da6ff;">+${magicDmg}</span></div>
+            </div>
+            
+            <!-- Right Column: Defense -->
+            <div class="stats-column" style="flex: 1; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(109, 69, 45, 0.5); padding-left: 10px;">
+              <div class="stat-row"><span class="stat-label">Melee Defense</span><span class="stat-value" style="color:#e38a42;">+${meleeDef}</span></div>
+              <div class="stat-row"><span class="stat-label">Ranged Defense</span><span class="stat-value" style="color:#aaffaa;">+${rangedDef}</span></div>
+              <div class="stat-row"><span class="stat-label">Magic Defense</span><span class="stat-value" style="color:#6dafff;">+${magicDef}</span></div>
+            </div>
           </div>
       `;
 
-      // Modal is already shown, no need to set display:flex again
-      
-      // Set the close button handler
       document.getElementById('closeInspectBtn').onclick = () => {
           inspectOverlay.style.display = 'none';
-          if (frame) frame.innerHTML = ''; // Clear on close too
           window.hideTooltip(); 
       };
 
     } catch (e) {
-      console.error("INSPECTION FAILED. Specific Error:", e);
-      if (e.message && e.message.includes("Player doc not found")) {
-        // Already handled above
-      } else {
-        await window.showGameAlert("Error", "Failed to load player data. Check console for details.");
-      }
-      // Ensure modal closes if error
-      const inspectOverlay = document.getElementById('playerInspectOverlay');
-      if(inspectOverlay) inspectOverlay.style.display = 'none';
+      console.error("Inspect error:", e);
+      if (inspectOverlay) inspectOverlay.style.display = 'none';
     }
-  };
+};
   
   // --- HEAVILY MODIFIED: loadPlayerDataAndStart (now handles session lock) ---
   async function loadPlayerDataAndStart(user) {
@@ -20734,7 +20991,11 @@ window.inspectPlayer = async function(playerName) {
             if (loadedInventoryData.length > 0 && typeof loadedInventoryData[0].slot === 'number') {
                 loadedInventoryData.forEach(item => {
                     if (item && typeof item.slot === 'number' && item.slot < game.inventoryCapacity) {
-                        game.inventory[item.slot] = { name: item.name, qty: item.qty };
+                        game.inventory[item.slot] = { 
+                            name: item.name, 
+                            qty: item.qty, 
+                            enchantLevel: item.enchantLevel || 0 
+                        };
                     }
                 });
             } else if (loadedInventoryData.length > 0) {
@@ -20754,10 +21015,20 @@ window.inspectPlayer = async function(playerName) {
         }
         
         game.gold = (typeof data.gold === 'number') ? data.gold : 0; 
-        
-        // +++ NEW: Load Bank Data +++
         game.bankGold = (typeof data.bankGold === 'number') ? data.bankGold : 0;
         game.questLines = data.questLines || {}; 
+
+        // NEW: Automatically return item to inventory if it was left on the table in the DB
+        if (data.enchantSlot) {
+            const itemToRecover = data.enchantSlot;
+            // addItem is smart enough to stack it if it exists
+            addItem(itemToRecover.name, 1, itemToRecover.enchantLevel || 0);
+            game.enchantSlot = null;
+            // Save immediately so the table is cleared in the database too
+            savePlayerData();
+        } else {
+            game.enchantSlot = null;
+        } 
         
         // --- NEW: Bank Tabs Loading & Migration ---
         game.activeBankTabIndex = 0;
@@ -20774,7 +21045,12 @@ window.inspectPlayer = async function(playerName) {
                 if (Array.isArray(tabData)) {
                     tabData.forEach(item => {
                         if (item && typeof item.slot === 'number' && item.slot < game.bankCapacity) {
-                            newTab[item.slot] = { name: item.name, qty: item.qty };
+                            // Updated to include enchantLevel
+                            newTab[item.slot] = { 
+                                name: item.name, 
+                                qty: item.qty, 
+                                enchantLevel: item.enchantLevel || 0 
+                            };
                         }
                     });
                 }
@@ -20960,6 +21236,14 @@ window.inspectPlayer = async function(playerName) {
           game.thieving.totalXP = data.thieving.totalXP || getTotalXPForLevel(data.thieving.level - 1) + data.thieving.xp || 0; 
         } else {
           game.thieving = { level: 1, xp: 0, totalXP: 0 }; 
+        }
+
+        if (data.tailoring) {
+          game.tailoring.level = data.tailoring.level || 1;
+          game.tailoring.xp = data.tailoring.xp || 0;
+          game.tailoring.totalXP = data.tailoring.totalXP || getTotalXPForLevel(data.tailoring.level - 1) + data.tailoring.xp || 0;
+        } else {
+          game.tailoring = { level: 1, xp: 0, totalXP: 0 };
         }
 
          // +++ NEW PET LOAD +++
@@ -21957,7 +22241,26 @@ window.inspectPlayer = async function(playerName) {
         const magicXp = data.magic?.totalXP || 0; 
         const stoneforgingXp = data.stoneforging?.totalXP || 0; // +++ NEW +++
 
-        const totalXp = miningXp + blacksmithXp + attackXp + strengthXp + defenceXp + vitalityXp + cookingXp + woodcuttingXp + fletchingXp + craftingXp + rangedXp + fishingXp + magicXp + stoneforgingXp;
+        const totalXp = (data.mining?.totalXP || 0) + 
+                        (data.blacksmith?.totalXP || 0) + 
+                        (data.attack?.totalXP || 0) + 
+                        (data.strength?.totalXP || 0) + 
+                        (data.defence?.totalXP || 0) + 
+                        (data.vitality?.totalXP || 0) + 
+                        (data.cooking?.totalXP || 0) + 
+                        (data.woodcutting?.totalXP || 0) + 
+                        (data.fletching?.totalXP || 0) + 
+                        (data.crafting?.totalXP || 0) + 
+                        (data.ranged?.totalXP || 0) + 
+                        (data.magic?.totalXP || 0) + 
+                        (data.fishing?.totalXP || 0) + 
+                        (data.stoneforging?.totalXP || 0) +
+                        (data.bountyhunting?.totalXP || 0) +
+                        (data.farming?.totalXP || 0) +
+                        (data.petmastery?.totalXP || 0) +
+                        (data.alchemy?.totalXP || 0) +
+                        (data.tailoring?.totalXP || 0) +
+                        (data.thieving?.totalXP || 0);
         // --- END OF FIX ---
 
         players.push({
@@ -22081,15 +22384,15 @@ window.inspectPlayer = async function(playerName) {
   // --- MODIFIED: Releases session lock on tab close ---
   window.addEventListener('beforeunload', (e) => {
     try {
-      // If we are the active session, release the lock
       if (game.isSessionActive) {
+        // NEW: Return item to inventory before tab closes
+        if (typeof window.returnEnchantItem === 'function' && game.enchantSlot) {
+          window.returnEnchantItem();
+        }
         if (typeof window.releaseSessionLock === 'function') {
-          // Fire-and-forget, we can't wait for the update
           window.releaseSessionLock(false); 
         }
       }
-      
-      // Try one last save
       const user = auth.currentUser;
       if (user && game.isSessionActive) {
         window.savePlayerData();
@@ -22100,6 +22403,10 @@ window.inspectPlayer = async function(playerName) {
   // --- MODIFIED: Releases session lock on logout ---
   window.firebaseLogout = async function() {
   try {
+    // NEW: Return item from table to inventory before logging out
+    if (typeof window.returnEnchantItem === 'function' && game.enchantSlot) {
+      window.returnEnchantItem();
+    }
     // 1. Stop all local game actions
     if (game.inCombat) runFromCombat(false);
     if (game.miningActive) stopMining();
