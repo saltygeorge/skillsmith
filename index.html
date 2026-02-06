@@ -764,10 +764,45 @@ button.primary:hover { background: var(--accent-hover); }
   flex-direction: column;
 }
 
-#combat-styles {
+#combat-styles-container {
   display: flex;
   gap: 10px;
   margin-bottom: 15px;
+  align-items: center;
+}
+
+#combat-styles {
+  display: flex;
+  gap: 5px;
+  flex-grow: 1;
+}
+
+#auto-eat-slot-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.auto-eat-slot {
+  width: 50px;
+  height: 50px;
+  background: rgba(0,0,0,0.3);
+  border: 2px dashed #555;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.auto-eat-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 #combat-styles button {
@@ -3114,9 +3149,12 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubLottery" class="hub-screen">
             <h2 style="text-align: center; color: var(--gold); text-shadow: 0 0 10px rgba(181, 166, 66, 0.5);">Skillsmith Lottery</h2>
             <div style="margin-top:8px; color:#efe3cf; text-align: center;">
-                Pay 10,000 Gold for a chance to win the legendary <strong>Elegant Black Cape</strong>!
+                Pay 10,000 Gold for a chance to win the legendary <strong id="lotteryJackpotName">...</strong>!
                 <br><span style="font-size: 12px; color: #aaa;">(Chance: 1 in 1,000)</span>
-                <br><span style="font-size: 11px; color: #888; font-style: italic;">** The cape provides +2 Armor.</span>
+                <br><span id="lotteryJackpotDesc" style="font-size: 11px; color: #888; font-style: italic;">...</span>
+                <div style="margin-top: 8px; font-size: 13px; color: var(--gold); border-top: 1px solid rgba(255,215,0,0.2); padding-top: 8px; display: inline-block;">
+                    Item changes in: <span id="lotteryTimer" style="font-family: monospace; font-weight: bold; color: #fff;">00h 00m 00s</span>
+                </div>
             </div>
             
             <div style="margin-top: 30px; margin-bottom: 30px;">
@@ -3464,8 +3502,15 @@ const game = {
   
   // +++ NEW MAGIC STATE +++
   autocastSpell: null, 
-  lastAttackTime: 0, // <--- NEW: Tracks the exact time of the last attack
+  lastAttackTime: 0, 
   // +++ END NEW MAGIC STATE +++
+
+  // +++ NEW AUTO EAT STATE +++
+  autoEatSlot: null, 
+  autoEatUnlocked: false,
+  autoEatThreshold: 20,
+  lastAutoHealTime: 0, // Track the last time a potion was used
+  // +++ END NEW STATE +++
   
   // +++ NEW SESSION LOCK +++
   // This is a unique ID for this specific tab
@@ -3479,13 +3524,12 @@ const game = {
   // Return the persistent ID for this tab
   return id;
 })(),
-// +++ END MODIFICATION +++
-
-lockHeartbeat: null,    // This will hold the setInterval ID for the heartbeat
-isSessionActive: false, // Is this tab the "master" tab?
-isDragging: false,      // Are we currently dragging an item?
-  enchantSlot: null,      // Holds the item currently on the table
-  enchantingActive: false
+lockHeartbeat: null,    
+isSessionActive: false, 
+isDragging: false,      
+  enchantSlot: null,      
+  enchantingActive: false,
+  isDirty: false
 };
 
 const MATERIAL_TIERS = {
@@ -4061,6 +4105,11 @@ const COPPER_ARROW_TIP_XP = 20;
 const COPPER_ARROW_TIP_TIME_MS = 3000;
 
 // +++ NEW: Crafting Skill Constants +++
+const CRAFTING_BUCKET_LVL = 1;
+const BUCKET_OAK_COST = 5;
+const BUCKET_XP = 15;
+const BUCKET_TIME_MS = 2000;
+
 const CRAFTING_BOW_STRING_LVL = 1;
 const BOW_STRING_SILK_COST = 2;
 const BOW_STRING_YIELD = 1;
@@ -4280,9 +4329,9 @@ SHOP_INVENTORY[0] = { name: 'Bronze Pickaxe', price: 10 };
 SHOP_INVENTORY[1] = { name: 'Bronze Axe', price: 10 };
 SHOP_INVENTORY[2] = { name: 'Fishing Pole', price: 2500 };
 SHOP_INVENTORY[3] = { name: 'Fishing Bait', price: 10 };
-SHOP_INVENTORY[4] = { name: 'Empty Bucket', price: 50 };
-SHOP_INVENTORY[5] = { name: 'Grass Seed', price: 15 }; // Added
-SHOP_INVENTORY[6] = { name: 'Corn Seed', price: 30 };  // Added
+// Empty Bucket removed from shop
+SHOP_INVENTORY[4] = { name: 'Grass Seed', price: 15 };
+SHOP_INVENTORY[5] = { name: 'Corn Seed', price: 30 };
 
 // --- NEW: Item Sell Prices ---
 const ITEM_SELL_PRICES = {
@@ -4915,6 +4964,7 @@ function updateGoldUI() {
 
 function addGold(amount) {
   game.gold = Math.max(0, game.gold + amount);
+  game.isDirty = true;
   updateGoldUI();
 }
 
@@ -4981,6 +5031,165 @@ function showQuestSubTab(subTab) {
     missionsBtn.classList.remove('active');
   }
 }
+
+// +++ NEW AUTO EAT FUNCTIONS +++
+
+function renderAutoEatSlot() {
+    const slotEl = document.getElementById('autoEatSlot');
+    if (!slotEl) return;
+    
+    slotEl.innerHTML = '';
+    
+    // Check if locked
+    if (!game.autoEatUnlocked) {
+        slotEl.innerHTML = `<div style="font-size: 20px; color: #777; pointer-events:none;">🔒</div>`;
+        slotEl.style.border = "2px solid #553322";
+        slotEl.style.background = "rgba(0,0,0,0.5)";
+        
+        slotEl.onclick = (e) => {
+            e.stopPropagation();
+            buyAutoEat();
+        };
+
+        slotEl.onmouseenter = (e) => showTooltip(e, `<div style='color:var(--gold); font-weight:bold;'>Unlock Auto-Heal Slot</div>Cost: 200,000 Gold<br><span style='font-size:11px; color:#ccc;'>Automatically consumes Vitality Potions when HP is low.</span><br><br><span style='color:#aaffaa;'>Click to Purchase</span>`);
+        slotEl.onmouseleave = hideTooltip;
+        return;
+    }
+
+    // Normal logic for unlocked slot
+    slotEl.onclick = unequipAutoEat;
+
+    if (game.autoEatSlot) {
+        let imgName = 'vitalitypotion'; // Since you only allow potions
+        slotEl.innerHTML = `
+            <img src="images/${imgName}.png">
+            <div class="inv-amount">${game.autoEatSlot.qty}</div>
+        `;
+        slotEl.style.border = "2px solid var(--gold)";
+        slotEl.onmouseenter = (e) => showTooltip(e, `<div style='color:var(--gold); font-weight:bold;'>${game.autoEatSlot.name}</div><div style='font-size:11px'>Auto-eats when HP < 20%</div><div style='color:#ffaaaa; font-size:10px;'>Click to Unequip</div>`);
+    } else {
+        slotEl.style.border = "2px dashed #555";
+        slotEl.onmouseenter = (e) => showTooltip(e, "Auto Heal Slot<br><span style='color:#aaa; font-size:11px'>Equip potions via Inventory</span>");
+    }
+    slotEl.onmouseleave = hideTooltip;
+}
+
+function equipToAutoEat(itemName) {
+    hideItemContextMenu();
+
+    if (!game.autoEatUnlocked) {
+        showWarningPopup("You must unlock the Auto-Heal slot first!");
+        return;
+    }
+    
+    // Only allow potions in the Auto-Heal slot
+    if (itemName !== 'Vitality Potion') {
+        showWarningPopup("Only potions can be placed in the Auto-Heal slot!");
+        return;
+    }
+    
+    // Check if item exists in inventory
+    const invIndex = game.inventory.findIndex(i => i && i.name === itemName);
+    if (invIndex === -1) return;
+    const invItem = game.inventory[invIndex];
+
+    // If slot is occupied, unequip first
+    if (game.autoEatSlot) {
+        // If same item, just stack it
+        if (game.autoEatSlot.name === itemName) {
+            game.autoEatSlot.qty += invItem.qty;
+            game.inventory[invIndex] = null;
+            renderInventoryGrid();
+            renderAutoEatSlot();
+            if (typeof window.savePlayerData === 'function') window.savePlayerData();
+            return;
+        } else {
+            // Swap: Return current to inv
+            addItem(game.autoEatSlot.name, game.autoEatSlot.qty);
+            game.autoEatSlot = null;
+        }
+    }
+
+    // Move to slot
+    game.autoEatSlot = { name: invItem.name, qty: invItem.qty };
+    game.inventory[invIndex] = null;
+    
+    renderInventoryGrid();
+    renderAutoEatSlot();
+    playGlobalSound('sounds/soundeffects/itemequipsoundeffect.mp3');
+    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+async function buyAutoEat() {
+    const cost = 200000;
+    const confirmed = await showGameConfirm("Unlock Auto-Heal", `Would you like to unlock the Auto-Potion slot for ${cost.toLocaleString()} Gold?`);
+
+    if (confirmed) {
+        if (game.gold >= cost) {
+            addGold(-cost);
+            game.autoEatUnlocked = true;
+            playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+            renderAutoEatSlot();
+            if (typeof window.savePlayerData === 'function') window.savePlayerData();
+            await showGameAlert("Unlocked!", "The Auto-Heal slot is now available. Equip Vitality Potions from your inventory to use it.");
+        } else {
+            await showGameAlert("Insufficient Gold", `You need ${cost.toLocaleString()} Gold to unlock this slot.`);
+        }
+    }
+}
+
+function unequipAutoEat() {
+    if (!game.autoEatSlot) return;
+    
+    // Check if we can receive the item BEFORE adding it
+    if (canReceiveItem(game.autoEatSlot.name)) {
+        // 1. Add to inventory
+        addItem(game.autoEatSlot.name, game.autoEatSlot.qty);
+        
+        // 2. Clear the slot (This was being skipped before!)
+        game.autoEatSlot = null;
+        
+        // 3. Update UI & Save
+        renderAutoEatSlot();
+        renderInventoryGrid();
+        hideTooltip();
+        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    } else {
+        showGameAlert("Inventory Full", "No space to unequip food.");
+    }
+}
+
+function triggerAutoEat() {
+    if (!game.autoEatSlot || game.hp <= 0) return false;
+
+    // Check for 1 second (1000ms) cooldown
+    const now = Date.now();
+    if (now - (game.lastAutoHealTime || 0) < 1000) {
+        return false; 
+    }
+
+    // Only handle Vitality Potions
+    if (game.autoEatSlot.name === 'Vitality Potion') {
+        const heal = 10;
+        game.hp = Math.min(game.maxHP, game.hp + heal);
+        
+        game.autoEatSlot.qty--;
+        addItem('Empty Vial', 1); // Return the bottle
+
+        if (game.autoEatSlot.qty <= 0) {
+            game.autoEatSlot = null;
+        }
+
+        game.lastAutoHealTime = now; // Update the cooldown timer
+        updateHPUI();
+        renderAutoEatSlot();
+        playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');
+        return true; 
+    }
+    
+    return false; 
+}
+
 
 function renderInventoryGrid(){
   const grid = document.getElementById('inventoryGrid');
@@ -5158,6 +5367,8 @@ function renderInventoryGrid(){
         if (stats.magicDef !== undefined) itemStats += `<div style="color:#6dafff;">+${stats.magicDef + magBonus} Magic Def</div>`;
 
         if (stats.maxHPBonus) itemStats += `<div style="color:#ffaaaa;">+${stats.maxHPBonus + stdB} Max HP</div>`;
+        // --- ADDED SPEED DISPLAY ---
+        if (stats.speed) itemStats += `<div style="color:var(--gold);">Speed: ${(stats.speed / 1000).toFixed(1)}s</div>`;
         
         clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Click to equip</div>';
       } else if (itemName.includes('Cooked')) {
@@ -5177,7 +5388,7 @@ function renderInventoryGrid(){
       }
 
       const tooltipContent = `
-        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${itemName}</div>
+        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${itemName} ${item.enchantLevel > 0 ? '+' + item.enchantLevel : ''}</div>
         <div style="color:#fff; font-size:12px;">Amount: ${item.qty.toLocaleString()}</div>
         ${itemStats}
         ${clickAction}
@@ -5205,6 +5416,7 @@ function renderInventoryGrid(){
 // =================================================================
 
 function addItem(name, qty = 1, enchantLevel = 0) {
+  game.isDirty = true;
   let amountToAdd = qty;
 
   // 1. Try to stack in existing slots first 
@@ -5237,6 +5449,7 @@ function addItem(name, qty = 1, enchantLevel = 0) {
 }
 
 function removeItem(name, qty = 1, enchantLevel = 0) {
+  game.isDirty = true;
   let amountToRemove = qty;
   let totalAvailable = 0;
 
@@ -5400,6 +5613,7 @@ function showItemContextMenu(event, itemName) {
     menuContent += `<button class="context-menu-btn" onclick="eatCookedSalmon()">Eat</button>`;
   } else if (itemName === 'Vitality Potion') {
     menuContent += `<button class="context-menu-btn" onclick="drinkVitalityPotion()">Drink</button>`;
+    menuContent += `<button class="context-menu-btn" onclick="equipToAutoEat('Vitality Potion')">Equip Auto-Heal</button>`;
   }
   
   // We can add other options here later (e.g., "Drop")
@@ -6224,6 +6438,7 @@ function addXP(skill, amount, delay = 0) {
     console.warn(`Skill "${skill}" does not exist.`);
     return;
   }
+  game.isDirty = true;
   game[skill].totalXP += amount;
   game[skill].xp += amount;
 
@@ -9812,6 +10027,7 @@ function renderCraftingItems() {
     }
   };
   
+  const bucketLocked = craftLvl < CRAFTING_BUCKET_LVL;
   const bowStringLocked = craftLvl < CRAFTING_BOW_STRING_LVL;
   const emptyVialLocked = craftLvl < CRAFTING_EMPTY_VIAL_LVL;
   const magicStaffLocked = craftLvl < CRAFTING_MAGIC_STAFF_LVL;
@@ -9819,6 +10035,9 @@ function renderCraftingItems() {
   const gemLocked = craftLvl < CRAFTING_GEM_LVL;
 
   container.innerHTML = `
+    <button id="craftBucketBtn" class="primary ${bucketLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/emptybucket.png" alt="Empty Bucket" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
     <button id="craftBowStringBtn" class="primary ${bowStringLocked ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
       <img src="images/bowstring.png" alt="Bow String" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
     </button>
@@ -9866,14 +10085,8 @@ function renderCraftingItems() {
     </button>
   `;
   
+  setupCraftButton('craftBucketBtn', bucketLocked, openCraftBucket, CRAFTING_BUCKET_LVL, `Requires: ${BUCKET_OAK_COST} Oak`, `Empty Bucket`);
   setupCraftButton('craftBowStringBtn', bowStringLocked, openCraftBowString, CRAFTING_BOW_STRING_LVL, `Requires: ${BOW_STRING_SILK_COST} Silk`, `Bow String`);
-  // ... (keep existing setupCraftButtons)
-  setupCraftButton('craftGoldRingBtn', goldRingLocked, openCraftGoldRing, CRAFTING_GOLD_RING_LVL, `Requires: ${GOLD_RING_BAR_COST} Gold Bars`, 'Gold Ring');
-  setupCraftButton('craftDiamondRingBtn', craftLvl < 40, () => openCraftGemRing('Diamond'), 40, `Requires: 1 Gold Ring, 1 Diamond`, 'Diamond Ring');
-  setupCraftButton('craftEmeraldRingBtn', craftLvl < 40, () => openCraftGemRing('Emerald'), 40, `Requires: 1 Gold Ring, 1 Emerald`, 'Emerald Ring');
-  setupCraftButton('craftRubyRingBtn', craftLvl < 40, () => openCraftGemRing('Ruby'), 40, `Requires: 1 Gold Ring, 1 Ruby`, 'Ruby Ring');
-  setupCraftButton('craftSapphireRingBtn', craftLvl < 40, () => openCraftGemRing('Sapphire'), 40, `Requires: 1 Gold Ring, 1 Sapphire`, 'Sapphire Ring');
-  setupCraftButton('craftTopazRingBtn', craftLvl < 40, () => openCraftGemRing('Topaz'), 40, `Requires: 1 Gold Ring, 1 Topaz`, 'Topaz Ring');
   setupCraftButton('craftEmptyVialBtn', emptyVialLocked, openCraftEmptyVial, CRAFTING_EMPTY_VIAL_LVL, `Requires: ${EMPTY_VIAL_SAND_COST} Sand, ${EMPTY_VIAL_COAL_COST} Coal Ore`, `Empty Vial`);
   setupCraftButton('craftMagicStaffBtn', magicStaffLocked, openCraftMagicStaff, CRAFTING_MAGIC_STAFF_LVL, `Requires: 10 Oak, 10 Earth/Air/Water Crystals`, 'Magic Staff');
   setupCraftButton('craftTopazBtn', gemLocked, () => openCraftGem('Topaz'), CRAFTING_GEM_LVL, `Requires: 1 Uncut Topaz`, 'Topaz');
@@ -9883,6 +10096,11 @@ function renderCraftingItems() {
   setupCraftButton('craftRubyBtn', gemLocked, () => openCraftGem('Ruby'), CRAFTING_GEM_LVL, `Requires: 1 Uncut Ruby`, 'Ruby');
   setupCraftButton('craftSapphireBtn', gemLocked, () => openCraftGem('Sapphire'), CRAFTING_GEM_LVL, `Requires: 1 Uncut Sapphire`, 'Sapphire');
   setupCraftButton('craftGoldRingBtn', goldRingLocked, openCraftGoldRing, CRAFTING_GOLD_RING_LVL, `Requires: ${GOLD_RING_BAR_COST} Gold Bars`, 'Gold Ring');
+  setupCraftButton('craftDiamondRingBtn', craftLvl < 40, () => openCraftGemRing('Diamond'), 40, `Requires: 1 Gold Ring, 1 Diamond`, 'Diamond Ring');
+  setupCraftButton('craftEmeraldRingBtn', craftLvl < 40, () => openCraftGemRing('Emerald'), 40, `Requires: 1 Gold Ring, 1 Emerald`, 'Emerald Ring');
+  setupCraftButton('craftRubyRingBtn', craftLvl < 40, () => openCraftGemRing('Ruby'), 40, `Requires: 1 Gold Ring, 1 Ruby`, 'Ruby Ring');
+  setupCraftButton('craftSapphireRingBtn', craftLvl < 40, () => openCraftGemRing('Sapphire'), 40, `Requires: 1 Gold Ring, 1 Sapphire`, 'Sapphire Ring');
+  setupCraftButton('craftTopazRingBtn', craftLvl < 40, () => openCraftGemRing('Topaz'), 40, `Requires: 1 Gold Ring, 1 Topaz`, 'Topaz Ring');
 }
 
 // =================================================================
@@ -10109,6 +10327,107 @@ async function craftingEmptyVialLoop(timestamp, startTime) {
     const progress = (elapsed / EMPTY_VIAL_TIME_MS) * 100;
     document.getElementById('craftProgress').style.width = progress + '%';
     game.progressFrame = setTimeout(() => craftingEmptyVialLoop(Date.now(), startTime), 16);
+  }
+}
+
+// --- Empty Bucket UI & Logic ---
+function openCraftBucket(){
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching(); 
+  
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - Empty Bucket</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: ${BUCKET_OAK_COST} Oak.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = startCraftingBucket;
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString; // Reuse generic stop
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingBucket() {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "Session not active.");
+    return;
+  }
+  
+  if (!canReceiveItem('Empty Bucket')) {
+    await showGameAlert("Inventory Full", "Inventory full.");
+    return;
+  }
+  
+  if (game.craftingActive) return;
+
+  let totalOak = 0;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Oak') totalOak += slot.qty;
+  }
+
+  if (totalOak < BUCKET_OAK_COST) {
+      await showGameAlert("Not Enough Materials", `You need at least ${BUCKET_OAK_COST} Oak.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => craftingBucketLoop(Date.now(), Date.now()), 16);
+}
+
+async function craftingBucketLoop(timestamp, startTime) {
+  if (!game.craftingActive) return; 
+  const elapsed = Date.now() - startTime;
+
+  if (elapsed >= BUCKET_TIME_MS) {
+    let totalOak = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Oak') totalOak += slot.qty;
+    }
+    if (totalOak < BUCKET_OAK_COST) {
+        await showGameAlert("Out of Materials", "You've run out of materials.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Oak', BUCKET_OAK_COST);
+    addItem('Empty Bucket', 1);
+    addXP('crafting', BUCKET_XP);
+    showItemPopup(`+${BUCKET_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 Empty Bucket`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    
+    const overdueTime = elapsed - BUCKET_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
+    let totalOakAfter = 0;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Oak') totalOakAfter += slot.qty;
+    }
+    if (totalOakAfter < BUCKET_OAK_COST) {
+        await showGameAlert("Not Enough Materials", "You don't have enough materials to make more.");
+        stopCraftingBowString();
+        return;
+    }
+    
+    return craftingBucketLoop(Date.now(), newStartTime);
+
+  } else {
+    const progress = (elapsed / BUCKET_TIME_MS) * 100;
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => craftingBucketLoop(Date.now(), startTime), 16);
   }
 }
 
@@ -16545,6 +16864,51 @@ function openCombatInterface(enemyName) {
       imgEl.src = game.currentEnemy.img;
       imgEl.style.height = ''; 
   }
+
+  // +++ AUTO EAT UI INJECTION +++
+  const combatPanel = document.getElementById('combat-action-panel');
+  // We inject a new structure to hold styles AND the auto-eat slot side-by-side
+  const styleContainerHtml = `
+    <p style="margin: 0 0 5px 0; font-weight: bold;">Combat Style & Auto-Eat:</p>
+    <div id="combat-styles-container">
+        <div id="combat-styles">
+            <button id="style-attack" class="primary" onclick="setAttackStyle('attack')">Accurate</button>
+            <button id="style-strength" class="primary" onclick="setAttackStyle('strength')">Aggressive</button>
+            <button id="style-defence" class="primary" onclick="setAttackStyle('defence')">Defensive</button>
+        </div>
+        <div id="auto-eat-slot-wrapper">
+            <div id="autoEatSlot" class="auto-eat-slot" onclick="unequipAutoEat()">
+                <!-- Icon injected via JS -->
+            </div>
+            <div style="font-size:10px; color:#aaa; margin-top:2px;">Auto Heal</div>
+            <input type="range" id="autoHealSlider" min="1" max="99" value="${game.autoEatThreshold || 20}" style="width: 50px; margin-top: 4px; height: 10px;">
+            <div id="autoHealPercentDisplay" style="font-size: 10px; color: var(--gold);">${game.autoEatThreshold || 20}%</div>
+        </div>
+    </div>
+    <div id="combat-main-actions">
+        <button id="combat-fight-btn" class="primary" style="background:#900;" onclick="beginCombat()">Fight</button>
+        <button id="combat-run-btn" class="primary" style="background:#080; display:none;" onclick="runFromCombat()">Run</button>
+        <button id="combat-return-btn" class="primary" style="background:#555;" onclick="returnToCombatArea()">Return</button>
+    </div>
+  `;
+  
+  // Replace the innerHTML of the panel to include our new layout
+  combatPanel.innerHTML = styleContainerHtml;
+
+  // Add Slider Listener
+  const healSlider = document.getElementById('autoHealSlider');
+  const healDisplay = document.getElementById('autoHealPercentDisplay');
+  if (healSlider && healDisplay) {
+      healSlider.oninput = function() {
+          game.autoEatThreshold = parseInt(this.value);
+          healDisplay.innerText = this.value + '%';
+          game.isDirty = true;
+      };
+  }
+  
+  // Render the slot content
+  renderAutoEatSlot();
+  // +++ END AUTO EAT UI +++
   
   document.getElementById('combat-fight-btn').style.display = 'block';
   document.getElementById('combat-fight-btn').disabled = false;
@@ -16833,16 +17197,17 @@ function showDamageSplat(target, amount, type) {
     splat.classList.add('splat-special');
     splat.innerHTML = `💥 ${amount}!`; 
   } else if (type === 'damage' && amount > 0) {
-    // If it's normal damage and higher than 0
     splat.classList.add('splat-damage');
     splat.textContent = amount;
-  } else { 
-    // This handles both type === 'block' AND any damage that resulted in 0
+  } else if (type === 'block' || (type === 'damage' && amount === 0)) { 
+    // Only show "Miss" if explicitly blocked or damage is 0
     splat.classList.add('splat-block');
-    splat.textContent = 'Miss'; // Replaced '0' with 'Miss'
+    splat.textContent = 'Miss'; 
+  } else {
+    // If it's any other type (like a custom heal type), don't show "Miss"
+    return;
   }
   
-  // Randomize horizontal position slightly
   splat.style.right = (Math.floor(Math.random() * 20) - 40) + 'px';
   
   anchorElement.appendChild(splat);
@@ -17018,15 +17383,35 @@ function enemyAttackTurn() {
   const playerStats = getPlayerCombatStats();
   const enemy = game.currentEnemy;
 
+  // Madmax Special Attack Logic
   if (enemy.name === 'Madmax') {
       const now = Date.now();
       if (now - enemy.lastSpecialTime >= 20000) {
           let specDmg = Math.floor(Math.random() * 40) + 10;
           game.hp -= specDmg;
-          updateHPUI();
+          
+          updateHPUI(); // Show damage immediately
           showDamageSplat('player', specDmg, 'special');
           enemy.lastSpecialTime = now;
-          if (game.hp <= 0) { game.hp = 0; updateHPUI(); runFromCombat(true); handlePlayerDeath(); }
+          
+          // --- DELAYED AUTO EAT (0.2s) ---
+          setTimeout(() => {
+              const threshold = (game.autoEatThreshold || 20) / 100;
+              // Changed while to if to allow cooldown check in triggerAutoEat
+              if (game.hp > 0 && (game.hp / game.maxHP) <= threshold && game.autoEatSlot) {
+                  triggerAutoEat();
+              }
+
+              if (game.hp <= 0) { 
+                  game.hp = 0; 
+                  updateHPUI(); 
+                  runFromCombat(true); 
+                  handlePlayerDeath(); 
+              } else {
+                  updateHPUI(); // Update UI if healed
+              }
+          }, 200);
+          
           return;
       }
   }
@@ -17058,14 +17443,25 @@ function enemyAttackTurn() {
   }
 
   game.hp -= damage;
-  updateHPUI();
+  updateHPUI(); // Show damage immediately
 
-  if (game.hp <= 0) {
-      game.hp = 0; 
-      updateHPUI();
-      runFromCombat(true); 
-      handlePlayerDeath();
-  }
+  // --- DELAYED AUTO EAT (0.2s) ---
+  setTimeout(() => {
+      const threshold = (game.autoEatThreshold || 20) / 100;
+      // Changed while to if to allow cooldown check in triggerAutoEat
+      if (game.hp > 0 && (game.hp / game.maxHP) <= threshold && game.autoEatSlot) {
+          triggerAutoEat();
+      }
+
+      if (game.hp <= 0) {
+          game.hp = 0; 
+          updateHPUI();
+          runFromCombat(true); 
+          handlePlayerDeath();
+      } else {
+          updateHPUI(); // Update UI if healed
+      }
+  }, 200);
 }
 
 function handleEnemyDeath() {
@@ -17155,60 +17551,49 @@ const SLOT_WIDTH = 80;
 const WINNER_INDEX = 40; 
 const TOTAL_SLOTS = 50; 
 
+// --- NEW: Rotating Jackpot Pool ---
+const JACKPOT_POOL = [
+    { name: 'Elegant Black Cape', desc: '** The cape provides +2 Armor.' },
+    { name: 'Gold Crown', desc: '** The crown provides +5 Defense and +2 Attack stats.' }
+];
+
+function getCurrentJackpot() {
+    const dayIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24)) % JACKPOT_POOL.length;
+    return JACKPOT_POOL[dayIndex];
+}
+
 // =================================================================
 // +++ NEW: WEIGHTED LOTTERY SYSTEM +++
 // =================================================================
 
-// --- Loot Table with Weights ---
-// weight: 100 = Common, 60 = Uncommon, 30 = Rare, 5 = Legendary
 const LOTTERY_LOOT = [
-    // --- COMMON (Weight: 100) ---
-    { name: 'Sand', qty: 1000, weight: 100 }, // +++ NEW +++
+    { name: 'Sand', qty: 1000, weight: 100 },
     { name: 'Coal Ore', qty: 1000, weight: 100 },
     { name: 'Copper Ore', qty: 1000, weight: 100 },
     { name: 'Softwood', qty: 1000, weight: 100 },
     { name: 'Feather', qty: 1000, weight: 100 },
     { name: 'Raw Chicken', qty: 1000, weight: 100 },
-    
-    // --- UNCOMMON (Weight: 60) ---
     { name: 'Fishing Bait', qty: 1000, weight: 60 },
     { name: 'Iron Ore', qty: 1000, weight: 60 },
     { name: 'Gold', qty: 5000, weight: 40 },
-    
-    // --- RARE (Weight: 30) ---
     { name: 'Iron Bar', qty: 750, weight: 30 },
-    { name: 'Gold Ore', qty: 1000, weight: 30 }, // +++ NEW +++
+    { name: 'Gold Ore', qty: 1000, weight: 30 },
     { name: 'Oak', qty: 1000, weight: 30 },
     { name: 'Cooked Salmon', qty: 750, weight: 30 },
     { name: 'Gold', qty: 25000, weight: 10 },
-
-    // --- LEGENDARY (Weight: 5) ---
     { name: 'Waterstone', qty: 2000, weight: 20 },     
     { name: 'Airstone', qty: 2000, weight: 20 } 
-  ];
+];
 
-// --- Helper to get a weighted random item ---
 function getRandomLotteryFiller() {
-    // 1. Calculate total weight of all items
     let totalWeight = 0;
-    for (const item of LOTTERY_LOOT) {
-        // If you forget to add a weight, it defaults to 10
-        totalWeight += (item.weight || 10);
-    }
-
-    // 2. Pick a random number between 0 and Total Weight
+    for (const item of LOTTERY_LOOT) totalWeight += (item.weight || 10);
     let random = Math.floor(Math.random() * totalWeight);
-
-    // 3. Find which item corresponds to that random number
     for (const item of LOTTERY_LOOT) {
         const weight = item.weight || 10;
-        if (random < weight) {
-            return item;
-        }
+        if (random < weight) return item;
         random -= weight;
     }
-    
-    // Fallback (should never happen if math is right)
     return LOTTERY_LOOT[0];
 }
 
@@ -17219,7 +17604,14 @@ function openLotteryHub() {
     const buyBtn = document.getElementById('buyTicketBtn');
     const returnBtn = document.getElementById('hubLottery_ReturnBtn');
     
-    // +++ CHECK FOR TICKETS +++
+    // Set text based on rotation
+    const jackpot = getCurrentJackpot();
+    document.getElementById('lotteryJackpotName').innerText = jackpot.name;
+    document.getElementById('lotteryJackpotDesc').innerText = jackpot.desc;
+
+    // Trigger immediate timer update
+    updateLotteryTimer();
+
     let ticketCount = 0;
     for(const slot of game.inventory) {
         if(slot && slot.name === 'Lottery Ticket') ticketCount += slot.qty;
@@ -17227,14 +17619,13 @@ function openLotteryHub() {
     
     if (ticketCount > 0) {
         buyBtn.textContent = `Use Ticket (${ticketCount})`;
-        buyBtn.style.background = '#b300ff'; // Purple for ticket usage
+        buyBtn.style.background = '#b300ff';
         buyBtn.style.color = '#fff';
     } else {
         buyBtn.textContent = "Buy Ticket (10k Gold)";
         buyBtn.style.background = 'var(--gold)';
         buyBtn.style.color = '#000';
     }
-    // +++ END CHECK +++
 
     reel.style.transition = 'none';
     reel.style.transform = 'translateX(0px)';
@@ -17243,34 +17634,49 @@ function openLotteryHub() {
     buyBtn.disabled = false;
     returnBtn.disabled = false;
 
+    // Teasers
     for(let i=0; i<10; i++) {
-        let item;
-        
-        // +++ TEASER LOGIC +++
-        if (Math.random() < 0.10) {
-            item = { name: 'Elegant Black Cape', qty: 1 };
-        } else {
-            item = getRandomLotteryFiller();
-        }
-        
+        let item = (Math.random() < 0.10) ? { name: jackpot.name, qty: 1 } : getRandomLotteryFiller();
         const slot = document.createElement('div');
         slot.className = 'lottery-slot';
-        
         let imgName = item.name.toLowerCase().replace(/\s+/g, '');
-        
-        // FIX: Image Mapping
         if (item.name === 'Copper Ore') imgName = 'copper_ore';
-        if (item.name === 'Gold') imgName = 'goldpouch'; // <--- Map Gold to the pouch image
+        if (item.name === 'Gold') imgName = 'goldpouch';
         if (item.name === 'Elegant Black Cape') imgName = 'elegantblackcape';
         if (item.name === 'Gold Crown') imgName = 'goldcrown';
         
         slot.innerHTML = `<img src="images/${imgName}.png"><span class="qty-badge">${formatAmount(item.qty)}</span>`;
-        
-        if (item.name === "Elegant Black Cape") {
+        if (item.name === jackpot.name) {
             slot.style.background = "radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(0,0,0,0) 70%)";
         }
-
         reel.appendChild(slot);
+    }
+}
+
+// NEW: Live Timer Calculation
+function updateLotteryTimer() {
+    const timerEl = document.getElementById('lotteryTimer');
+    const hub = document.getElementById('hubLottery');
+    if (!timerEl || !hub || !hub.classList.contains('active')) return;
+
+    const now = new Date();
+    // Calculate time until next UTC Midnight (When the rotation index changes)
+    const nextMidnight = new Date();
+    nextMidnight.setUTCHours(24, 0, 0, 0); 
+    
+    const diff = nextMidnight - now;
+
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+
+    timerEl.innerText = `${h}h ${m}m ${s}s`;
+
+    // If timer reaches zero while player is watching, update the item info
+    if (h === 0 && m === 0 && s === 0) {
+        const jackpot = getCurrentJackpot();
+        document.getElementById('lotteryJackpotName').innerText = jackpot.name;
+        document.getElementById('lotteryJackpotDesc').innerText = jackpot.desc;
     }
 }
 
@@ -17280,40 +17686,33 @@ async function buyLotteryTicket() {
         return;
     }
 
-    // +++ TICKET LOGIC +++
+    const jackpot = getCurrentJackpot();
+
+    // 1. Check for Tickets or Gold
     let ticketCount = 0;
     for(const slot of game.inventory) {
         if(slot && slot.name === 'Lottery Ticket') ticketCount += slot.qty;
     }
 
-    let usingTicket = false;
-
-    if (ticketCount > 0) {
-        usingTicket = true;
-    } else {
-        // No tickets, check gold
-        if (game.gold < LOTTERY_COST) {
-            await showGameAlert("Too Poor", "You need 10,000 Gold to buy a ticket.");
-            return;
-        }
+    let usingTicket = ticketCount > 0;
+    if (!usingTicket && game.gold < LOTTERY_COST) {
+        await showGameAlert("Too Poor", "You need 10,000 Gold to buy a ticket.");
+        return;
     }
-    // +++ END TICKET LOGIC +++
-    
-    // Check inventory space generally.
+
     const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
     if (emptySlotIndex === -1) {
          await showGameAlert("Inventory Full", "Please make space in your inventory before playing.");
          return;
     }
 
-    // 1. Determine Winner (Internal Math Only)
+    // 2. Determine Outcome IMMEDIATELY
     let wonItemName = "";
     let wonItemQty = 1;
-    
     const jackpotRoll = Math.floor(Math.random() * 1000) + 1;
     
     if (jackpotRoll === 1) {
-        wonItemName = "Elegant Black Cape";
+        wonItemName = jackpot.name;
         wonItemQty = 1;
     } else {
         const item = getRandomLotteryFiller();
@@ -17321,42 +17720,27 @@ async function buyLotteryTicket() {
         wonItemQty = item.qty;
     }
 
-    // 2. Transaction: Consume Cost
-    if (usingTicket) {
-        removeItem('Lottery Ticket', 1);
-    } else {
-        addGold(-LOTTERY_COST);
-    }
+    // 3. Payment
+    if (usingTicket) removeItem('Lottery Ticket', 1);
+    else addGold(-LOTTERY_COST);
 
-    // 3. SAVE IMMEDIATELY 
-    if (typeof window.savePlayerData === 'function') {
-        window.savePlayerData(); 
-    }
+    if (typeof window.savePlayerData === 'function') window.savePlayerData(); 
 
-    // 4. Build the Visual Reel
+    // 4. Visual Reel Setup
     const reel = document.getElementById('lotteryReel');
     reel.innerHTML = '';
     
     for(let i=0; i<TOTAL_SLOTS; i++) {
         let itemDisplay;
-        
         if (i === WINNER_INDEX) {
             itemDisplay = { name: wonItemName, qty: wonItemQty };
         } else {
-            // Filler logic
-            if (Math.random() < 0.05) {
-                itemDisplay = { name: 'Elegant Black Cape', qty: 1 };
-            } else {
-                itemDisplay = getRandomLotteryFiller();
-            }
+            itemDisplay = (Math.random() < 0.05) ? { name: jackpot.name, qty: 1 } : getRandomLotteryFiller();
         }
         
         const slot = document.createElement('div');
         slot.className = 'lottery-slot';
-        
         let imgName = itemDisplay.name.toLowerCase().replace(/\s+/g, '');
-
-        // Fix specific image names
         if (itemDisplay.name === 'Copper Ore') imgName = 'copper_ore';
         if (itemDisplay.name === 'Gold Crown') imgName = 'goldcrown';
         if (itemDisplay.name === 'Elegant Black Cape') imgName = 'elegantblackcape';
@@ -17365,20 +17749,18 @@ async function buyLotteryTicket() {
         const scaleStyle = (itemDisplay.name === 'Diamond' || itemDisplay.name === 'Uncut Diamond') ? 'style="transform: scale(0.93);"' : '';
         slot.innerHTML = `<img src="images/${imgName}.png" ${scaleStyle}><span class="qty-badge">${formatAmount(itemDisplay.qty)}</span>`;
         
-        if (itemDisplay.name === "Elegant Black Cape") {
+        if (itemDisplay.name === jackpot.name) {
             slot.style.background = "radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(0,0,0,0) 70%)";
         }
         reel.appendChild(slot);
     }
 
-    // 5. Lock Buttons & Animate
     const buyBtn = document.getElementById('buyTicketBtn');
     const returnBtn = document.getElementById('hubLottery_ReturnBtn');
     buyBtn.disabled = true;
     returnBtn.disabled = true;
     document.getElementById('lotteryResultMsg').innerHTML = '';
 
-    const randomOffset = 0; 
     const containerCenter = document.querySelector('.lottery-window').offsetWidth / 2;
     const winnerCenter = (WINNER_INDEX * SLOT_WIDTH) + (SLOT_WIDTH / 2);
     const scrollPos = -(winnerCenter - containerCenter);
@@ -17389,31 +17771,22 @@ async function buyLotteryTicket() {
     reel.style.transition = 'transform 4s cubic-bezier(0.1, 0.1, 0.1, 1)'; 
     reel.style.transform = `translateX(${scrollPos}px)`;
 
-    // 6. End Event (After Animation Finishes)
     setTimeout(() => {
-        // --- AWARD PRIZE HERE ---
-        if (wonItemName === 'Gold') {
-            addGold(wonItemQty); 
-        } else {
-            addItem(wonItemName, wonItemQty); 
-        }
+        if (wonItemName === 'Gold') addGold(wonItemQty); 
+        else addItem(wonItemName, wonItemQty, 0); 
 
-        // Show Result
         const resultMsg = document.getElementById('lotteryResultMsg');
-        if (wonItemName === "Elegant Black Cape") {
-            resultMsg.innerHTML = `<span style="color: #ff4d4d; font-size: 22px;">JACKPOT! YOU WON THE ELEGANT BLACK CAPE!</span>`;
+        if (wonItemName === jackpot.name) {
+            resultMsg.innerHTML = `<span style="color: #ff4d4d; font-size: 22px;">JACKPOT! YOU WON THE ${wonItemName.toUpperCase()}!</span>`;
             playGlobalSound('sounds/soundeffects/levelupsound.mp3');
         } else {
             resultMsg.innerHTML = `Won: ${wonItemQty.toLocaleString()} ${wonItemName}`;
             playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         }
         
-        // Unlock buttons
         buyBtn.disabled = false;
         returnBtn.disabled = false;
         
-        // +++ UPDATE BUTTON TEXT +++
-        // Re-scan inventory to see if we have more tickets
         let remainingTickets = 0;
         for(const slot of game.inventory) {
             if(slot && slot.name === 'Lottery Ticket') remainingTickets += slot.qty;
@@ -17428,13 +17801,8 @@ async function buyLotteryTicket() {
             buyBtn.style.background = 'var(--gold)';
             buyBtn.style.color = '#000';
         }
-        // +++ END UPDATE +++
         
-        // --- SAVE AGAIN ---
-        if (typeof window.savePlayerData === 'function') {
-            window.savePlayerData(); 
-        }
-        
+        if (typeof window.savePlayerData === 'function') window.savePlayerData(); 
     }, 4100);
 }
 
@@ -17958,22 +18326,40 @@ function renderBankGrid() {
       amt.innerText = formatAmount(item.qty); 
       slot.appendChild(amt);
       
-      // --- NEW: Generate Stat Tooltip ---
+      // --- UPDATED: Generate Correct Stat Tooltip ---
+      const itemName = item.name;
+      const stats = ITEM_STATS[itemName];
       let itemStats = '';
-      const stats = ITEM_STATS[item.name];
+
       if (stats) {
-        if (stats.damage) itemStats += `<div style="color:#aaffaa;">+${stats.damage} Physical Damage</div>`;
-        if (stats.styleBonus) itemStats += `<div style="color:#aaffaa;">+${stats.styleBonus} Physical Damage (if accurate)</div>`;
-        if (stats.armor) itemStats += `<div style="color:#aaffaa;">+${stats.armor} Armor</div>`;
-        if (stats.speed) itemStats += `<div style="color:#aaffaa;">+${stats.speed} Speed</div>`;
+        const enchantLvl = item.enchantLevel || 0;
+        const stdB = enchantLvl;
+        const penB = Math.floor(enchantLvl / 2);
+
+        if (stats.meleeStr) itemStats += `<div style="color:#ff4d4d;">+${stats.meleeStr + stdB} Melee Strength</div>`;
+        if (stats.rangedStr) itemStats += `<div style="color:#44aa44;">+${stats.rangedStr + stdB} Ranged Strength</div>`;
+        if (stats.magicDmg) itemStats += `<div style="color:#4da6ff;">+${stats.magicDmg + stdB} Magic Damage</div>`;
+        
+        // Match Defense scaling logic
+        let mBonus = stdB, rBonus = stdB, magBonus = stdB;
+        if (stats.armorType === 'melee') magBonus = penB;
+        else if (stats.armorType === 'ranged' || stats.armorType === 'magic') mBonus = penB;
+
+        if (stats.meleeDef !== undefined) itemStats += `<div style="color:#e38a42;">+${stats.meleeDef + mBonus} Melee Def</div>`;
+        if (stats.rangedDef !== undefined) itemStats += `<div style="color:#aaffaa;">+${stats.rangedDef + rBonus} Ranged Def</div>`;
+        if (stats.magicDef !== undefined) itemStats += `<div style="color:#6dafff;">+${stats.magicDef + magBonus} Magic Def</div>`;
+
+        if (stats.maxHPBonus) itemStats += `<div style="color:#ffaaaa;">+${stats.maxHPBonus + stdB} Max HP</div>`;
+        
+        // --- ADDED SPEED DISPLAY ---
+        if (stats.speed) itemStats += `<div style="color:var(--gold);">Speed: ${(stats.speed / 1000).toFixed(1)}s</div>`;
       }
-      // --- END NEW ---
 
       const tooltipContent = `
-        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
-        <div>Amount: ${item.qty.toLocaleString()}</div>
+        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${itemName} ${item.enchantLevel > 0 ? '+' + item.enchantLevel : ''}</div>
+        <div style="font-size:12px;">Amount: ${item.qty.toLocaleString()}</div>
         ${itemStats}
-        <div style="color:#ffaaaa; margin-top: 5px;">Click or Drag to withdraw...</div>
+        <div style="color:#ffaaaa; margin-top: 5px; font-size:11px;">Click or Drag to withdraw...</div>
       `;
       slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
       slot.onmouseleave = hideTooltip;
@@ -18031,6 +18417,7 @@ function handleBankDragOver(e) {
 
 async function handleBankDrop(e) {
   e.preventDefault();
+  game.isDragging = false; // FIX: Immediately unlock tooltips on drop
 
   // +++ FIX: Stop auto-scrolling immediately when item is dropped in bank +++
   if (inventoryScrollInterval) {
@@ -18077,7 +18464,7 @@ async function handleBankDrop(e) {
       // --- MODIFIED: Handle Shift-Click to move specific amount ---
       if (e.shiftKey && dragItemBeforePrompt) { 
         
-        if (dropItem && dropItem.name !== dragItemBeforePrompt.name) {
+        if (dropItem && (dropItem.name !== dragItemBeforePrompt.name || (dropItem.enchantLevel || 0) !== (dragItemBeforePrompt.enchantLevel || 0))) {
           await showGameAlert("Invalid Slot", "You can only move onto an empty slot or a stack of the same item.");
         } else {
           const input = await showGamePrompt(
@@ -18086,56 +18473,45 @@ async function handleBankDrop(e) {
             "" 
           );
 
-          // --- THIS IS THE FIX ---
-          // After the prompt (await) is done, we re-check the bank
-            
           if (input === null) {
-            // User cancelled
             const originalSlotEl = document.querySelector(`#bankGrid .inv-slot[data-slot-index="${fromIndex}"]`);
             if (originalSlotEl) {
               originalSlotEl.classList.remove('dragging');
             }
           } else {
-            // --- EXPLOIT FIX: Re-validate the item *after* the prompt ---
-            const itemAfterPrompt = currentTab[fromIndex]; // <-- Use currentTab
+            const itemAfterPrompt = currentTab[fromIndex];
             
-            // Check if the item was consumed or changed
             if (!itemAfterPrompt || itemAfterPrompt.name !== dragItemBeforePrompt.name) {
-              // The item was consumed! Abort.
               draggedBankItem = null;
               game.isDragging = false;
-              return; // Safely exit
+              return;
             }
-            // --- END EXPLOIT FIX ---
             
             const splitAmount = parseInt(input);
 
             if (isNaN(splitAmount) || splitAmount <= 0) { /* Invalid */ }
             
-            // Use the most up-to-date quantity
             else if (splitAmount > itemAfterPrompt.qty) { 
               await showGameAlert("Invalid Amount", "You don't have that many.");
             } 
             
             else if (splitAmount === itemAfterPrompt.qty) { 
-              // Full stack move
-              if (itemAfterPrompt && dropItem && itemAfterPrompt.name === dropItem.name) {
+              if (itemAfterPrompt && dropItem && itemAfterPrompt.name === dropItem.name && (itemAfterPrompt.enchantLevel || 0) === (dropItem.enchantLevel || 0)) {
                 dropItem.qty += itemAfterPrompt.qty;
-                currentTab[fromIndex] = null; // <-- Use currentTab
+                currentTab[fromIndex] = null;
               } else {
-                currentTab[fromIndex] = dropItem; // <-- Use currentTab
-                currentTab[toIndex] = itemAfterPrompt; // <-- Use currentTab
+                currentTab[fromIndex] = dropItem;
+                currentTab[toIndex] = itemAfterPrompt;
               }
               renderBankGrid();
               if (typeof window.savePlayerData === 'function') savePlayerData();
             }
             
             else {
-              // This is a valid SPLIT
               if (dropItem) { 
                 dropItem.qty += splitAmount;
               } else { 
-                currentTab[toIndex] = { name: itemAfterPrompt.name, qty: splitAmount }; // <-- Use currentTab
+                currentTab[toIndex] = { ...itemAfterPrompt, qty: splitAmount };
               }
               itemAfterPrompt.qty -= splitAmount; 
 
@@ -18145,15 +18521,13 @@ async function handleBankDrop(e) {
           }
         }
       } else {
-        // --- BANK SWAP/STACK (No Shift) ---
-        // We must re-get the dragItem in case it was consumed
-        const dragItem = currentTab[fromIndex]; // <-- Use currentTab
-        if (dragItem && dropItem && dragItem.name === dropItem.name) {
+        const dragItem = currentTab[fromIndex];
+        if (dragItem && dropItem && dragItem.name === dropItem.name && (dragItem.enchantLevel || 0) === (dropItem.enchantLevel || 0)) {
           dropItem.qty += dragItem.qty;
-          currentTab[fromIndex] = null; // <-- Use currentTab
+          currentTab[fromIndex] = null;
         } else {
-          currentTab[fromIndex] = dropItem; // <-- Use currentTab
-          currentTab[toIndex] = dragItem; // <-- Use currentTab
+          currentTab[fromIndex] = dropItem;
+          currentTab[toIndex] = dragItem;
         }
         renderBankGrid();
         if (typeof window.savePlayerData === 'function') savePlayerData();
@@ -18161,11 +18535,12 @@ async function handleBankDrop(e) {
     }
 
   } else {
-    // === INVENTORY -> BANK deposit (Original Logic) ===
-    const depositSuccess = await depositItem(draggedBankItem.item, fromIndex, toIndex);
+    // === INVENTORY -> BANK deposit ===
+    // Check for Ctrl (Windows) or Cmd (Mac) to skip prompt
+    const skipPrompt = e.ctrlKey || e.metaKey; 
+    const depositSuccess = await depositItem(draggedBankItem.item, fromIndex, toIndex, skipPrompt);
     
     if (!depositSuccess) {
-      // User cancelled deposit, remove 'dragging' class from INVENTORY slot
       const originalSlotEl = document.querySelector(`#inventoryGrid .inv-slot[data-slot-index="${fromIndex}"]`);
       if (originalSlotEl) {
         originalSlotEl.classList.remove('dragging');
@@ -18174,6 +18549,7 @@ async function handleBankDrop(e) {
   }
   
   draggedBankItem = null;
+  game.isDragging = false; // Final safety unlock
 }
 
 // --- Bank Core Logic ---
@@ -18190,7 +18566,7 @@ function handleBankWithdrawDragStart(e, item, fromBankIndex) {
 }
 
 
-async function depositItem(item, fromInventoryIndex, toBankIndex) {
+async function depositItem(item, fromInventoryIndex, toBankIndex, skipPrompt = false) {
   if (!item) return;
   const currentTab = game.bankTabs[game.activeBankTabIndex];
   const bankSlot = currentTab[toBankIndex];
@@ -18210,7 +18586,8 @@ async function depositItem(item, fromInventoryIndex, toBankIndex) {
 
   // 2. Quantity Logic
   let qtyToDeposit = item.qty;
-  if (item.qty > 1) {
+  // Only ask if quantity > 1 AND the player didn't hold Ctrl
+  if (item.qty > 1 && !skipPrompt) {
     const input = await showGamePrompt(`Deposit ${item.name}`, `How many to deposit? (You have: ${item.qty})`, item.qty);
     if (input === null) return false;
     qtyToDeposit = parseInt(input);
@@ -18348,7 +18725,7 @@ async function withdrawAllGold() {
 }
 // +++ END NEW +++
 
-async function dragWithdrawItem(fromBankIndex, toInventoryIndex) {
+async function dragWithdrawItem(fromBankIndex, toInventoryIndex, skipPrompt = false) {
   const currentTab = game.bankTabs[game.activeBankTabIndex];
   const bankItem = currentTab[fromBankIndex];
   const inventorySlotItem = game.inventory[toInventoryIndex];
@@ -18369,7 +18746,8 @@ async function dragWithdrawItem(fromBankIndex, toInventoryIndex) {
   }
 
   let qtyToWithdraw = bankItem.qty;
-  if (bankItem.qty > 1) {
+  // Only ask if quantity > 1 AND the player didn't hold Ctrl
+  if (bankItem.qty > 1 && !skipPrompt) {
     const input = await showGamePrompt(`Withdraw ${bankItem.name}`, `How many to withdraw? (Bank has: ${bankItem.qty})`, bankItem.qty);
     if (input === null) return; 
     qtyToWithdraw = parseInt(input);
@@ -18477,56 +18855,49 @@ function resetGameState() {
   // CLEANUP ENCHANTING
   game.enchantSlot = null;
   game.enchantingActive = false;
-  // +++ END NEW +++
+
+  // CLEANUP AUTO EAT
+  game.autoEatSlot = null; // <--- ADD THIS LINE
 
   game.name = '';
   game.hp = 10;
   game.maxHP = 10;
   game.inventory = new Array(game.inventoryCapacity).fill(null);
   game.gold = 100; 
-  // +++ NEW +++
   game.bank = new Array(game.bankCapacity).fill(null);
 
-  // +++ FIX: WIPE BANK TABS ON LOGOUT +++
-  // This ensures the next player starts with exactly 1 empty tab
   game.bankTabs = [new Array(game.bankCapacity).fill(null)];
   game.activeBankTabIndex = 0;
-  // +++ END FIX +++
 
   game.bankGold = 0;
   game.equipment = { 
     necklace: null, helmet: null, cape: null, 
     weapon: null, chest: null, shield: null, 
     ring1: null, legs: null, ring2: null, 
-    arrows: null, boots: null 
+    arrows: null, boots: null, pet: null 
   };
-  // +++ END NEW +++
+
   game.mining = { level: 1, xp: 0, totalXP: 0 };
   game.blacksmith = { level: 1, xp: 0, totalXP: 0 };
   game.cooking = { level: 1, xp: 0, totalXP: 0 };
   game.woodcutting = { level: 1, xp: 0, totalXP: 0 };
-  game.fletching = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
-  game.fishing = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
+  game.fletching = { level: 1, xp: 0, totalXP: 0 }; 
+  game.fishing = { level: 1, xp: 0, totalXP: 0 }; 
   
-  // +++ NEW SKILLS +++
   game.crafting = { level: 1, xp: 0, totalXP: 0 };
   game.ranged = { level: 1, xp: 0, totalXP: 0 };
   game.magic = { level: 1, xp: 0, totalXP: 0 };
-  game.stoneforging = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
+  game.stoneforging = { level: 1, xp: 0, totalXP: 0 }; 
   
-  // +++ ADD THESE 4 MISSING LINES +++
   game.attack = { level: 1, xp: 0, totalXP: 0 };
   game.strength = { level: 1, xp: 0, totalXP: 0 };
   game.defence = { level: 1, xp: 0, totalXP: 0 };
   game.vitality = { level: 1, xp: 0, totalXP: 0 };
-  // +++ END OF FIX +++
 
-  // +++ NEW RESET BOUNTY +++
   game.bountyhunting = { level: 1, xp: 0, totalXP: 0 };
-  game.farming = { level: 1, xp: 0, totalXP: 0 }; // +++ NEW +++
+  game.farming = { level: 1, xp: 0, totalXP: 0 }; 
   game.activeBounty = null;
 
-  // Reset Farm
   game.farm = {
     chickens: [],
     cows: [],
@@ -18535,7 +18906,9 @@ function resetGameState() {
     buildings: { coop: false, barn: false, well: false, garden: false, cellar: false }
   };
 
-  game.questLines = {}; // +++ FIX: RESET QUESTS +++
+  game.questLines = {}; 
+  game.autoEatUnlocked = false;
+  game.lastAutoHealTime = 0;
 
   game.miningActive = false;
   game.blacksmithingActive = false;
@@ -18557,7 +18930,6 @@ function resetGameState() {
   game.shopOpen = false;
   game.isAdmin = false;
   
-  // +++ NEW: Reset session state +++
   game.isSessionActive = false;
   game.isDragging = false;
   if (typeof window.stopSessionHeartbeat === 'function') {
@@ -18573,7 +18945,7 @@ function resetGameState() {
   renderInventoryGrid();
   updateSkillUI();
   updateGoldUI(); 
-  renderEquipment(); // <-- ADD THIS
+  renderEquipment(); 
   if (typeof backToActions === 'function') {
     backToActions();
   }
@@ -19716,6 +20088,7 @@ inventoryGrid.addEventListener('dragend', (e) => {
 
   inventoryGrid.addEventListener('drop', async (e) => {
     e.preventDefault();
+    game.isDragging = false; // FIX: Immediately unlock tooltips on drop
 
     // +++ FIX: Stop auto-scrolling immediately when item is dropped +++
     if (inventoryScrollInterval) {
@@ -19735,7 +20108,7 @@ inventoryGrid.addEventListener('dragend', (e) => {
       currentDragOverSlot.classList.remove('drag-over');
       currentDragOverSlot = null;
     }
-    const draggingEl = document.querySelector('.inv-slot.dragging'); // <-- FIX: Check ALL dragging
+    const draggingEl = document.querySelector('.inv-slot.dragging');
     if (draggingEl) {
       draggingEl.classList.remove('dragging');
     }
@@ -19743,39 +20116,29 @@ inventoryGrid.addEventListener('dragend', (e) => {
     if (!dropSlot) {
       draggedItemIndex = null;
       draggedBankItem = null;
-      draggedShopItem = null; // <-- ADD
+      draggedShopItem = null;
       game.isDragging = false;
       return;
     }
     
     const dropIndex = parseInt(dropSlot.dataset.slotIndex);
 
-    // +++ NEW: Check for Shop Drag +++
     if (draggedShopItem) {
-      // This is a BUY action
       await buyShopItem(draggedShopItem.name, draggedShopItem.price);
-
     } else if (draggedBankItem && draggedBankItem.source === 'bank') {
-    // +++ END NEW +++
-
-      // --- BANK -> INVENTORY (Withdrawal) ---
-      await dragWithdrawItem(draggedBankItem.fromIndex, dropIndex);
-
+      // Check for Ctrl (Windows) or Cmd (Mac) to skip prompt
+      const skipPrompt = e.ctrlKey || e.metaKey;
+      await dragWithdrawItem(draggedBankItem.fromIndex, dropIndex, skipPrompt);
     } else if (draggedItemIndex !== null) {
-      // --- INVENTORY -> INVENTORY (Internal Move) ---
       const fromIndex = draggedItemIndex;
       const toIndex = dropIndex;
       
       if (fromIndex !== toIndex) { 
-        
-        // --- Get the item data *before* the prompt ---
         const dragItemBeforePrompt = game.inventory[fromIndex];
         const dropItem = game.inventory[toIndex];
 
-        // --- MODIFIED: Handle Shift-Click to move specific amount ---
         if (e.shiftKey && dragItemBeforePrompt) { 
-          
-          if (dropItem && dropItem.name !== dragItemBeforePrompt.name) {
+          if (dropItem && (dropItem.name !== dragItemBeforePrompt.name || (dropItem.enchantLevel || 0) !== (dragItemBeforePrompt.enchantLevel || 0))) {
             await showGameAlert("Invalid Slot", "You can only move onto an empty slot or a stack of the same item.");
           } else {
             const input = await showGamePrompt(
@@ -19784,40 +20147,25 @@ inventoryGrid.addEventListener('dragend', (e) => {
               ""
             );
             
-            // --- THIS IS THE FIX ---
-            // After the prompt (await) is done, we re-check the inventory
-            
             if (input === null) { 
-              // User cancelled
               const originalSlotEl = document.querySelector(`#inventoryGrid .inv-slot[data-slot-index="${fromIndex}"]`);
               if (originalSlotEl) originalSlotEl.classList.remove('dragging');
-              
             } else {
-              // --- EXPLOIT FIX: Re-validate the item *after* the prompt ---
               const itemAfterPrompt = game.inventory[fromIndex];
-              
-              // Check if the item was consumed or changed
               if (!itemAfterPrompt || itemAfterPrompt.name !== dragItemBeforePrompt.name) {
-                // The item was consumed! Abort the action.
                 draggedItemIndex = null;
                 draggedBankItem = null;
                 game.isDragging = false;
-                return; // Safely exit
+                return;
               }
-              // --- END EXPLOIT FIX ---
             
               const splitAmount = parseInt(input);
-              
-              if (isNaN(splitAmount) || splitAmount <= 0) { /* Invalid number */ }
-              
-              // Use the most up-to-date quantity
+              if (isNaN(splitAmount) || splitAmount <= 0) { /* Invalid */ }
               else if (splitAmount > itemAfterPrompt.qty) { 
                 await showGameAlert("Invalid Amount", "You don't have that many.");
               } 
-              
               else if (splitAmount === itemAfterPrompt.qty) { 
-                // Full stack move
-                if (itemAfterPrompt && dropItem && itemAfterPrompt.name === dropItem.name) {
+                if (itemAfterPrompt && dropItem && itemAfterPrompt.name === dropItem.name && (itemAfterPrompt.enchantLevel || 0) === (dropItem.enchantLevel || 0)) {
                     dropItem.qty += itemAfterPrompt.qty;
                     game.inventory[fromIndex] = null;
                 } else {
@@ -19827,26 +20175,21 @@ inventoryGrid.addEventListener('dragend', (e) => {
                 renderInventoryGrid();
                 if (typeof window.savePlayerData === 'function') savePlayerData();
               }
-              
               else {
-                // This is a valid SPLIT
                 if (dropItem) { 
                   dropItem.qty += splitAmount;
                 } else { 
-                  game.inventory[toIndex] = { name: itemAfterPrompt.name, qty: splitAmount };
+                  game.inventory[toIndex] = { ...itemAfterPrompt, qty: splitAmount };
                 }
-                itemAfterPrompt.qty -= splitAmount; // Use the validated item
-                
+                itemAfterPrompt.qty -= splitAmount;
                 renderInventoryGrid();
                 if (typeof window.savePlayerData === 'function') savePlayerData();
               }
             }
           }
         } else {
-          // --- This is the ORIGINAL Swap/Stack logic ---
-          // We must re-get the dragItem in case it was consumed
           const dragItem = game.inventory[fromIndex]; 
-          if (dragItem && dropItem && dragItem.name === dropItem.name) {
+          if (dragItem && dropItem && dragItem.name === dropItem.name && (dragItem.enchantLevel || 0) === (dropItem.enchantLevel || 0)) {
               dropItem.qty += dragItem.qty;
               game.inventory[fromIndex] = null;
           } else {
@@ -19859,11 +20202,10 @@ inventoryGrid.addEventListener('dragend', (e) => {
       }
     }
     
-    // Final cleanup
     draggedItemIndex = null;
     draggedBankItem = null;
-    draggedShopItem = null; // <-- ADD
-    game.isDragging = false;
+    draggedShopItem = null;
+    game.isDragging = false; // Final safety unlock
   });
   
   // --- NEW: Settings Modal Listeners ---
@@ -20184,6 +20526,13 @@ async function attemptSteal(instanceId) {
     if (roll < target.failRate) {
         // FAIL
         game.hp = Math.max(0, game.hp - target.dmg);
+        
+        // --- INSTANT AUTO EAT CHECK FOR THIEVING ---
+        const threshold = (game.autoEatThreshold || 20) / 100;
+        if (game.hp > 0 && (game.hp / game.maxHP) <= threshold && game.autoEatSlot) {
+            triggerAutoEat();
+        }
+
         updateHPUI();
         showDamageSplat('player', target.dmg, 'damage');
         showWarningPopup(`Caught! You took ${target.dmg} damage.`);
@@ -20193,7 +20542,6 @@ async function attemptSteal(instanceId) {
         // SUCCESS
         addXP('thieving', target.xp);
         let popupDelay = 0; 
-
         showItemPopup(`+${target.xp} Thieving XP`, null, popupDelay);
         popupDelay += 450; 
 
@@ -20564,7 +20912,7 @@ async function attemptEnchant() {
 
   // +++ --- NEW SESSION LOCK CONSTANTS & FUNCTIONS --- +++
   const LOCK_STALE_TIME_MS = 10000; // 10 seconds
-  const LOCK_HEARTBEAT_MS = 999999999;  
+  const LOCK_HEARTBEAT_MS = 999999999;
   /**
    * (Helper) Gets the player doc ref.
    */
@@ -20698,7 +21046,7 @@ async function attemptEnchant() {
   window.savePlayerData = async function() {
     try {
       const user = auth.currentUser;
-      if (!user || !game.isSessionActive) return;
+      if (!user || !game.isSessionActive || !game.isDirty) return;
       
       const inventoryToSave = [];
       game.inventory.forEach((item, index) => {
@@ -20721,7 +21069,7 @@ async function attemptEnchant() {
                       slot: index,
                       name: item.name,
                       qty: item.qty,
-                      enchantLevel: item.enchantLevel || 0 // Added this line
+                      enchantLevel: item.enchantLevel || 0 
                   });
               }
           });
@@ -20734,7 +21082,7 @@ async function attemptEnchant() {
         hp: game.hp,
         maxHP: game.maxHP,
         inventory: inventoryToSave,
-        enchantSlot: game.enchantSlot || null, //Persist item on table
+        enchantSlot: game.enchantSlot || null, 
         gold: game.gold,
         bankTabs: bankTabsToSave,
         bankGold: game.bankGold,
@@ -20762,18 +21110,22 @@ async function attemptEnchant() {
         pets: game.pets,
         incubator: game.incubator,
         activeBounty: game.activeBounty || null,
+        autoEatSlot: game.autoEatSlot || null,
         farm: game.farm,
         questLines: game.questLines,
         playerAttackStyle: game.playerAttackStyle, 
         autocastSpell: game.autocastSpell || null,
+        autoEatUnlocked: game.autoEatUnlocked, 
+        autoEatThreshold: game.autoEatThreshold || 20,
+        lastAutoHealTime: game.lastAutoHealTime || 0,
         updatedAt: new Date().toISOString()
       };
       await setDoc(doc(db, "players", user.uid), payload, { merge: true });
+      game.isDirty = false;
       if (typeof window.showSaveIndicator === 'function') window.showSaveIndicator();
     } catch (e) {
       console.error("Save failed:", e);
     }
-
 };
 
   // =================================================================
@@ -21266,6 +21618,9 @@ window.inspectPlayer = async function(playerName) {
           game.farming = { level: 1, xp: 0, totalXP: 0 }; 
         }
         game.activeBounty = data.activeBounty || null;
+        game.autoEatSlot = data.autoEatSlot || null;
+        game.autoEatUnlocked = data.autoEatUnlocked || false; 
+        game.autoEatThreshold = data.autoEatThreshold || 20; // Load the slider value
         
         // +++ NEW FARM LOADING & OFFLINE CALC (MULTI-CHICKEN & COWS) +++
         game.farm = data.farm || { chickens: [], cows: [], garden: new Array(16).fill(null), cellar: new Array(16).fill(null) };
@@ -22347,8 +22702,11 @@ window.inspectPlayer = async function(playerName) {
 
   // --- Game Loop (Runs every 1s) ---
   setInterval(() => {
-      if (game.isSessionActive && typeof processFarmLogic === 'function') {
-          processFarmLogic();
+      if (game.isSessionActive) {
+          if (typeof processFarmLogic === 'function') processFarmLogic();
+          
+          // NEW: Updates the Lottery timer clock every second
+          if (typeof updateLotteryTimer === 'function') updateLotteryTimer();
       }
        // +++ REFRESH THIEVING TARGETS IF TAB IS ACTIVE +++
       const thievingHub = document.getElementById('hubThieving');
@@ -22357,47 +22715,50 @@ window.inspectPlayer = async function(playerName) {
       }
   }, 1000);
 
-  // --- Autosave runs every 30s, but only performs writes if the tab is visible ---
+  // --- Autosave: Keep Session Lock Heartbeat Fast ---
   setInterval(async () => {
     const user = auth.currentUser;
-
-    // Check if user is logged in, is the active session, AND THE TAB IS VISIBLE.
     if (user && game.isSessionActive && !document.hidden) {
-        
-      // 1. Refresh Lock Heartbeat (WRITE)
-      // This update maintains the lock and prevents other tabs from stealing control.
       const playerRef = getPlayerRef();
       if (playerRef) {
           try {
               await updateDoc(playerRef, { "activeSession.timestamp": Date.now() }); 
-          } catch (e) {
-              console.error("Autosave Heartbeat failed:", e);
-          }
+          } catch (e) {}
       }
-      
-      // 2. Perform Full Save (WRITE)
+    }
+  }, 5000);
+
+  // --- Autosave: Heavy Data Save Every 60 Seconds ---
+  setInterval(async () => {
+    const user = auth.currentUser;
+    if (user && game.isSessionActive && !document.hidden && game.isDirty) {
       window.savePlayerData();
     }
-    // If document.hidden is true, the timer function exits immediately with no writes.
-  }, 9000);
+  }, 60000);
 
-  // --- MODIFIED: Releases session lock on tab close ---
+  // --- Emergency Save on Refresh/Close/Minimize ---
+  const handleFinalSave = () => {
+    if (game.isSessionActive && game.isDirty) {
+       window.savePlayerData();
+    }
+  };
+
   window.addEventListener('beforeunload', (e) => {
-    try {
-      if (game.isSessionActive) {
-        // NEW: Return item to inventory before tab closes
+      try {
         if (typeof window.returnEnchantItem === 'function' && game.enchantSlot) {
           window.returnEnchantItem();
         }
-        if (typeof window.releaseSessionLock === 'function') {
+        handleFinalSave();
+        if (typeof window.releaseSessionLock === 'function' && game.isSessionActive) {
           window.releaseSessionLock(false); 
         }
-      }
-      const user = auth.currentUser;
-      if (user && game.isSessionActive) {
-        window.savePlayerData();
-      }
-    } catch (err) { /* ignore */ }
+      } catch (err) {}
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      handleFinalSave();
+    }
   });
 
   // --- MODIFIED: Releases session lock on logout ---
