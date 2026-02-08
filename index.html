@@ -17536,8 +17536,12 @@ function handleEnemyDeath() {
           showItemPopup(`+1 Magic Staff`, null, dropDelay + 450);
       }
     } else if (name === 'Madmax') {
-      addItem('Lottery Ticket', 3);
-      showItemPopup('+3 Lottery Ticket', null, dropDelay);
+      // 1/8 Chance for Lottery Tickets (12.5% drop rate)
+      if (Math.floor(Math.random() * 8) === 0) {
+          addItem('Lottery Ticket', 2);
+          showItemPopup('+2 Lottery Ticket', null, dropDelay);
+          dropDelay += 450; // Add delay so rare drop doesn't overlap if it hits
+      }
       
       // 1/100 Rare Drop
       if (Math.floor(Math.random() * 100) === 0) {
@@ -17549,9 +17553,7 @@ function handleEnemyDeath() {
       }
     }
     
-    // --- FIX: Force UI Update and Save so drops appear ---
-    renderInventoryGrid();
-    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  
 
     // Reset Enemy
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
@@ -20930,7 +20932,7 @@ async function attemptEnchant() {
   const refreshLeaderboardBtn = document.getElementById('refreshLeaderboardBtn'); 
 
   // +++ --- NEW SESSION LOCK CONSTANTS & FUNCTIONS --- +++
-  const LOCK_STALE_TIME_MS = 10000; // 10 seconds
+  const LOCK_STALE_TIME_MS = 120000; // 2 minutes (Gives us room to slow down writes)
   const LOCK_HEARTBEAT_MS = 999999999;
   /**
    * (Helper) Gets the player doc ref.
@@ -21019,7 +21021,7 @@ async function attemptEnchant() {
    * Tries to acquire the session lock using a transaction.
    * This is called when a lock is free or stale, or when user clicks "Take Control".
    */
-  window.acquireSessionLock = async function() {
+  window.acquireSessionLock = async function(force = false) {
     const playerRef = getPlayerRef();
     if (!playerRef) return;
     
@@ -21032,31 +21034,21 @@ async function attemptEnchant() {
         const lock = data.activeSession;
         const now = Date.now();
         
-        // Check if a fresh lock is held by another session
-        if (lock && lock.id !== game.sessionLockId && (now - lock.timestamp) < LOCK_STALE_TIME_MS) {
+        // Only block the takeover if we AREN'T forcing it and the lock is fresh
+        if (!force && lock && lock.id !== game.sessionLockId && (now - lock.timestamp) < LOCK_STALE_TIME_MS) {
           throw new Error("Lock is still fresh and held by another session.");
         }
         
-        // Lock is free, stale, or ours. Take it.
+        // Take the lock
         const newLock = { id: game.sessionLockId, timestamp: now };
         transaction.update(playerRef, { activeSession: newLock });
       });
       
-      // Success! We are now the active session.
       game.isSessionActive = true;
-      
-      // *** CRITICAL FIX ***: We no longer call startSessionHeartbeat() 
-      // here to prevent the original 3s interval logic from running.
-      // We rely purely on the 30s autosave for lock refresh.
-      
-      // startSessionHeartbeat(); <-- DELETE THIS LINE
-      
       hideSessionLockOverlay();
       
     } catch (e) {
       console.error("Failed to acquire lock:", e.message);
-      // We failed to get the lock, another tab must have beat us.
-      // The onSnapshot listener will handle showing the overlay.
     }
   }
   // +++ --- END NEW SESSION LOCK FUNCTIONS --- +++
@@ -22711,7 +22703,8 @@ window.inspectPlayer = async function(playerName) {
     if (takeControlBtn) {
       takeControlBtn.onclick = () => {
         if (typeof window.acquireSessionLock === 'function') {
-          window.acquireSessionLock();
+          // Pass true to force the takeover
+          window.acquireSessionLock(true);
         }
       };
     }
@@ -22732,18 +22725,20 @@ window.inspectPlayer = async function(playerName) {
       }
   }, 1000);
 
-  // --- Autosave: Keep Session Lock Heartbeat Fast ---
+  // --- Autosave: Keep Session Lock Heartbeat ---
+  // Now runs every 60 seconds instead of 5.
   setInterval(async () => {
     const user = auth.currentUser;
     if (user && game.isSessionActive && !document.hidden) {
       const playerRef = getPlayerRef();
       if (playerRef) {
           try {
+              // We update the timestamp so other tabs know this one is still alive
               await updateDoc(playerRef, { "activeSession.timestamp": Date.now() }); 
           } catch (e) {}
       }
     }
-  }, 5000);
+  }, 60000);
 
   // --- Autosave: Heavy Data Save Every 60 Seconds ---
   setInterval(async () => {
