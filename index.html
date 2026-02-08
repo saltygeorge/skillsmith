@@ -5106,7 +5106,7 @@ function equipToAutoEat(itemName) {
             game.inventory[invIndex] = null;
             renderInventoryGrid();
             renderAutoEatSlot();
-            if (typeof window.savePlayerData === 'function') window.savePlayerData();
+            game.isDirty = true;
             return;
         } else {
             // Swap: Return current to inv
@@ -5122,7 +5122,7 @@ function equipToAutoEat(itemName) {
     renderInventoryGrid();
     renderAutoEatSlot();
     playGlobalSound('sounds/soundeffects/itemequipsoundeffect.mp3');
-    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    game.isDirty = true;
 }
 
 async function buyAutoEat() {
@@ -5135,7 +5135,7 @@ async function buyAutoEat() {
             game.autoEatUnlocked = true;
             playGlobalSound('sounds/soundeffects/levelupsound.mp3');
             renderAutoEatSlot();
-            if (typeof window.savePlayerData === 'function') window.savePlayerData();
+            game.isDirty = true;
             await showGameAlert("Unlocked!", "The Auto-Heal slot is now available. Equip Vitality Potions from your inventory to use it.");
         } else {
             await showGameAlert("Insufficient Gold", `You need ${cost.toLocaleString()} Gold to unlock this slot.`);
@@ -5158,7 +5158,7 @@ function unequipAutoEat() {
         renderAutoEatSlot();
         renderInventoryGrid();
         hideTooltip();
-        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        game.isDirty = true;
     } else {
         showGameAlert("Inventory Full", "No space to unequip food.");
     }
@@ -5565,7 +5565,7 @@ async function handleSellItemClick(slotIndex) {
         if (document.getElementById('hubBank').classList.contains('active')) renderBankGrid();
         
         await showGameAlert("Sale Complete", `You received ${totalGold.toLocaleString()} Gold.`);
-        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        game.isDirty = true;
     } else {
         await showGameAlert("Error", "Something went wrong, the sale did not complete.");
     }
@@ -5863,7 +5863,7 @@ async function equipItem(slotType, fromInvIndex) {
   renderInventoryGrid();
   hideTooltip();
   playGlobalSound('sounds/soundeffects/itemequipsoundeffect.mp3');
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 /**
@@ -5903,7 +5903,7 @@ async function unequipItem(slotType) {
   renderInventoryGrid();
   hideTooltip();
   playGlobalSound('sounds/soundeffects/itemequipsoundeffect.mp3');
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
   
   return true;
 }
@@ -6636,7 +6636,7 @@ function stopMining(){
   if(startBtn) startBtn.style.display = 'inline-block';
   const stopBtn = document.getElementById('stopMineBtn');
   if(stopBtn) stopBtn.style.display = 'none';
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 // +++ NEW CRAFTING FUNCTION BLOCK TO INSERT +++
@@ -7609,7 +7609,7 @@ function stopBlacksmithing(progressId = 'smithProgress', startBtnId = 'startSmit
   if(startBtn) startBtn.style.display = 'inline-block';
   const stopBtn = document.getElementById(stopBtnId);
   if(stopBtn) stopBtn.style.display = 'none';
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 const COOK_CHICKEN_TIME_MS = 3000;
@@ -7759,7 +7759,7 @@ function stopCookingChicken(){
   if(startBtn) startBtn.style.display = 'inline-block';
   const stopBtn = document.getElementById('stopCookBtn');
   if(stopBtn) stopBtn.style.display = 'none';
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 // +++ NEW: BEEF COOKING UI +++
@@ -9588,7 +9588,7 @@ function stopFletching(progressId = 'fletchProgress', startBtnId = 'startFletchB
   if(startBtn) startBtn.style.display = 'inline-block';
   const stopBtn = document.getElementById(stopBtnId);
   if(stopBtn) stopBtn.style.display = 'none';
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 function renderFletchingItems() {
@@ -9999,7 +9999,7 @@ window.stopCraftingBowString = function(){
   if(startBtn) startBtn.style.display = 'inline-block';
   const stopBtn = document.getElementById('stopCraftBtn');
   if(stopBtn) stopBtn.style.display = 'none';
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 
@@ -11937,7 +11937,7 @@ function stopTailoring() {
   if(startBtn) startBtn.style.display = 'inline-block';
   const stopBtn = document.getElementById('stopCraftBtn');
   if(stopBtn) stopBtn.style.display = 'none';
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 function renderTailoringItems() {
@@ -12065,7 +12065,7 @@ function stopStoneForging() {
   if(startBtn) startBtn.style.display = 'inline-block';
   const stopBtn = document.getElementById('stopForgeBtn');
   if(stopBtn) stopBtn.style.display = 'none';
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 // =================================================================
@@ -12266,7 +12266,7 @@ function startIncubation(eggItemName) {
             game.incubator.startTime = Date.now();
             game.incubator.eggType = petType;
             renderPetYard('hatchery');
-            if (typeof window.savePlayerData === 'function') window.savePlayerData();
+            game.isDirty = true;
         } else {
             showGameAlert("Requirement", `You need a ${eggItemName}.`);
         }
@@ -12304,7 +12304,7 @@ function hatchEgg() {
     showGameAlert("Hatched!", `You hatched a level 1 ${newPet.type}!`);
     
     renderPetYard('pets'); // Switch to pets tab
-    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    game.isDirty = true;
 }
 
 function feedPet(petId) {
@@ -12324,7 +12324,7 @@ function feedPet(petId) {
         addXP('petmastery', PET_FEED_XP);
         playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         renderPetYard('pets');
-        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        game.isDirty = true;
     } else {
         showGameAlert("No Food", `This pet eats ${food}.`);
     }
@@ -12344,7 +12344,7 @@ function equipPetFromYard(petId) {
     
     renderPetYard('pets');
     renderEquipment(); // Update sidebar slot
-    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    game.isDirty = true;
 }
 
 async function sellPet(petId) {
@@ -12372,7 +12372,7 @@ async function sellPet(petId) {
         addGold(sellPrice);
         
         // 4. Save & Update
-        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        game.isDirty = true;
         renderPetYard('pets');
         await showGameAlert("Pet Sold", `You sold your pet for ${sellPrice} Gold.`);
     }
@@ -12403,7 +12403,7 @@ async function handleCellarClick() {
            if (game.gold >= CELLAR_BUILDING_COST) {
                addGold(-CELLAR_BUILDING_COST);
                game.farm.buildings.cellar = true;
-               if (typeof window.savePlayerData === 'function') window.savePlayerData();
+               game.isDirty = true;
                await showGameAlert("Success", "You now have access to the Cellar!");
                
                // Open after purchase
@@ -12454,7 +12454,7 @@ async function handleChickenCoopClick() {
            if (game.gold >= COOP_COST) {
                addGold(-COOP_COST);
                game.farm.buildings.coop = true;
-               if (typeof window.savePlayerData === 'function') window.savePlayerData();
+               game.isDirty = true;
                await showGameAlert("Success", "You purchased the Chicken Coop!");
                
                // Open after purchase
@@ -12498,7 +12498,7 @@ function buyChicken() {
         storedEggs: 0
     });
     
-    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    game.isDirty = true;
     updateCoopUI();
 }
 
@@ -12519,7 +12519,7 @@ function feedChicken(index) {
         // Visual feedback
         playGlobalSound('sounds/soundeffects/inventorysound.mp3'); // Using generic eat sound
         updateCoopUI();
-        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        game.isDirty = true;
     } else {
         showGameAlert("No Food", "You need 3 Corn to feed the chicken.");
     }
@@ -12572,7 +12572,7 @@ function collectEggs() {
     
     playGlobalSound('sounds/soundeffects/inventorysound.mp3');
     updateCoopUI();
-    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    game.isDirty = true;
 }
 
 function updateCoopUI() {
@@ -12655,7 +12655,7 @@ async function handleBarnClick() {
            if (game.gold >= BARN_COST) {
                addGold(-BARN_COST);
                game.farm.buildings.barn = true;
-               if (typeof window.savePlayerData === 'function') window.savePlayerData();
+               game.isDirty = true;
                await showGameAlert("Success", "You purchased the Barn!");
                
                // Open after purchase
@@ -12696,7 +12696,7 @@ function buyCow() {
         hasMilk: false // Cows don't stack milk, they just "have it" or not
     });
     
-    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    game.isDirty = true;
     updateBarnUI();
 }
 
@@ -12715,7 +12715,7 @@ function feedCow(index) {
         c.hp = Math.min(COW_MAX_HP, c.hp + 2); // Heals 2 HP because it's bigger
         playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         updateBarnUI();
-        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        game.isDirty = true;
     } else {
         showGameAlert("No Food", "You need 5 Grass to feed the cow.");
     }
@@ -12771,7 +12771,7 @@ function collectMilk() {
 
         playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         updateBarnUI();
-        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        game.isDirty = true;
         
         if (amountToGather < milkReadyCount) {
              showGameAlert("Partial Collection", `You collected ${amountToGather} milk, but ran out of buckets for the rest.`);
@@ -13041,7 +13041,7 @@ function plantMushroom(index, name) {
 
   playGlobalSound('sounds/soundeffects/inventorysound.mp3');
   renderCellar();
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 function harvestMushroom(index) {
@@ -13063,7 +13063,7 @@ function harvestMushroom(index) {
   game.farm.cellar[index] = null;
   playGlobalSound('sounds/soundeffects/inventorysound.mp3');
   renderCellar();
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 function showShroomTooltip(e, index) {
@@ -13212,7 +13212,7 @@ function plantSeed(index, cropName, seedItemName, cost) {
 
   playGlobalSound('sounds/soundeffects/inventorysound.mp3');
   renderGarden();
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 function waterCrop(e, index) {
@@ -13234,7 +13234,7 @@ function waterCrop(e, index) {
   // +++ NEW: Instantly switch tooltip to the timer +++
   showCropTooltip(e, index);
 
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 function harvestCrop(index) {
@@ -13278,7 +13278,7 @@ function harvestCrop(index) {
 
   playGlobalSound('sounds/soundeffects/inventorysound.mp3');
   renderGarden();
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 function processGardenGrowth(now) {
@@ -13596,7 +13596,7 @@ function processFarmLogic() {
                 needsUpdate = true;
                 if (c.hp <= 0) {
                     game.farm.chickens.splice(i, 1);
-                    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+                    game.isDirty = true;
                     showGameAlert("Chicken Died", "One of your chickens starved to death.");
                     continue; 
                 }
@@ -13632,7 +13632,7 @@ function processFarmLogic() {
                 cowUpdate = true;
                 if (c.hp <= 0) {
                     game.farm.cows.splice(i, 1);
-                    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+                    game.isDirty = true;
                     showGameAlert("Cow Died", "One of your cows starved to death.");
                     continue; 
                 }
@@ -13692,7 +13692,7 @@ async function handleWellClick() {
            if (game.gold >= WELL_COST) {
                addGold(-WELL_COST);
                game.farm.buildings.well = true;
-               if (typeof window.savePlayerData === 'function') window.savePlayerData();
+               game.isDirty = true;
                await showGameAlert("Success", "You restored the Well!");
                
                // Open after purchase
@@ -13725,7 +13725,7 @@ async function handleGardenClick() {
            if (game.gold >= GARDEN_COST) {
                addGold(-GARDEN_COST);
                game.farm.buildings.garden = true;
-               if (typeof window.savePlayerData === 'function') window.savePlayerData();
+               game.isDirty = true;
                await showGameAlert("Success", "You purchased the Garden!");
                
                // Open after purchase
@@ -13876,7 +13876,7 @@ function stopGatheringWater() {
   const stopBtn = document.getElementById('stopWaterBtn');
   if(stopBtn) stopBtn.style.display = 'none';
   
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 function openHuntingBoard() {
@@ -13978,7 +13978,7 @@ async function assignBounty(tier) {
       renderBountyDetails();
   }
 
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
   renderBountyInterface();
 }
 
@@ -13997,7 +13997,7 @@ async function claimBountyReward() {
   }
   // --- END NEW ---
   
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
   
   renderBountyInterface(); // This is the main hub render function
   await showGameAlert("Bounty Claimed", `You received ${BOUNTY_REWARD_GOLD} Gold.`);
@@ -14016,9 +14016,8 @@ function updateBountyProgress(enemyName, delay = 0) {
       if (typeof window.renderBountyDetails === 'function') {
           window.renderBountyDetails();
       }
-      // --- END NEW ---
       
-      if (typeof window.savePlayerData === 'function') window.savePlayerData();
+      game.isDirty = true;
     }
   }
 }
@@ -14295,7 +14294,7 @@ function stopFishing(progressId = 'fishProgress', startBtnId = 'startFishBtn', s
   if(startBtn) startBtn.style.display = 'inline-block';
   const stopBtn = document.getElementById(stopBtnId);
   if(stopBtn) stopBtn.style.display = 'none';
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 // --- Herring (Ocean) UI & Logic ---
@@ -15120,7 +15119,7 @@ async function completeQuest(lineId) {
     }
     // --- END NEW ---
     
-    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    game.isDirty = true;
     
     // Refresh the main quest line hub screen (if the player is on it)
     openQuestLine(lineId);
@@ -15144,12 +15143,10 @@ function updateQuestKillCount(enemyName) {
     }
     
     if (updated) {
-        // --- NEW: Real-time update for the sidebar tab ---
         if (typeof window.renderActiveQuestDetails === 'function') {
             window.renderActiveQuestDetails();
         }
-        // --- END NEW ---
-        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        game.isDirty = true;
     }
 }
 
@@ -16655,7 +16652,7 @@ function stopWoodcutting(){
   if(startBtn) startBtn.style.display = 'inline-block';
   const stopBtn = document.getElementById('stopChopBtn');
   if(stopBtn) stopBtn.style.display = 'none';
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 // --- NEW: Woodcutting Cooldown Loop ---
@@ -17372,7 +17369,7 @@ function playerAttackTurn(spellOverride = null) {
             pet.level++;
             showItemPopup(`Pet Lvl Up: ${pet.level}!`, null, 600);
             playGlobalSound('sounds/soundeffects/levelupsound.mp3');
-            if (typeof window.savePlayerData === 'function') window.savePlayerData();
+            game.isDirty = true;
           }
         }
       }
@@ -17742,7 +17739,7 @@ async function buyLotteryTicket() {
     if (usingTicket) removeItem('Lottery Ticket', 1);
     else addGold(-LOTTERY_COST);
 
-    if (typeof window.savePlayerData === 'function') window.savePlayerData(); 
+    game.isDirty = true; 
 
     // 4. Visual Reel Setup
     const reel = document.getElementById('lotteryReel');
@@ -17820,7 +17817,7 @@ async function buyLotteryTicket() {
             buyBtn.style.color = '#000';
         }
         
-        if (typeof window.savePlayerData === 'function') window.savePlayerData(); 
+        game.isDirty = true; 
     }, 4100);
 }
 
@@ -18102,7 +18099,7 @@ async function buyBankTab() {
           
           renderBankTabs();
           renderBankGrid();
-          if (typeof window.savePlayerData === 'function') window.savePlayerData();
+          game.isDirty = true;
       }
   }
 }
@@ -18599,7 +18596,7 @@ async function depositItem(item, fromInventoryIndex, toBankIndex, skipPrompt = f
       renderBankGrid();
       renderInventoryGrid();
       hideTooltip();
-      if (typeof window.savePlayerData === 'function') window.savePlayerData();
+      game.isDirty = true;
       return true;
   }
 
@@ -18628,7 +18625,7 @@ async function depositItem(item, fromInventoryIndex, toBankIndex, skipPrompt = f
   renderBankGrid();
   renderInventoryGrid();
   hideTooltip();
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
   return true;
 }
 
@@ -18655,7 +18652,7 @@ async function withdrawItem(fromBankIndex) {
   renderBankGrid();
   renderInventoryGrid(); 
   hideTooltip();
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 async function depositGold() { // <-- ADD 'async'
@@ -18678,7 +18675,7 @@ async function depositGold() { // <-- ADD 'async'
   inputEl.value = '';
   updateBankGoldUI();
   updateGoldUI(); // Update main UI
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 async function withdrawGold() { 
@@ -18701,7 +18698,7 @@ async function withdrawGold() {
   inputEl.value = '';
   updateBankGoldUI();
   updateGoldUI(); 
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 // +++ NEW: Deposit/Withdraw ALL Gold Functions +++
@@ -18721,7 +18718,7 @@ async function depositAllGold() {
 
   updateBankGoldUI();
   updateGoldUI();
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 async function withdrawAllGold() {
@@ -18740,7 +18737,7 @@ async function withdrawAllGold() {
 
   updateBankGoldUI();
   updateGoldUI();
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 // +++ END NEW +++
 
@@ -18760,7 +18757,7 @@ async function dragWithdrawItem(fromBankIndex, toInventoryIndex, skipPrompt = fa
       renderBankGrid();
       renderInventoryGrid();
       hideTooltip();
-      if (typeof window.savePlayerData === 'function') window.savePlayerData();
+      game.isDirty = true;
       return;
   }
 
@@ -18792,7 +18789,7 @@ async function dragWithdrawItem(fromBankIndex, toInventoryIndex, skipPrompt = fa
   renderBankGrid();
   renderInventoryGrid();
   hideTooltip();
-  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  game.isDirty = true;
 }
 
 
@@ -20589,7 +20586,7 @@ async function attemptSteal(instanceId) {
         game.thievingTargets.splice(targetIndex, 1);
         refreshThievingTargets();
     }
-    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    game.isDirty = true;
 }
 
 // --- ENCHANTING LOGIC ---
@@ -20721,7 +20718,7 @@ function handleEnchantItemClick(item, index) {
     renderEnchantSlot();
     
     // Save immediately so the item doesn't disappear on refresh
-    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    game.isDirty = true;
     return true;
 }
 
@@ -20736,7 +20733,7 @@ function returnEnchantItem() {
     renderEnchantSlot();
     
     // Save immediately so the item is back in inventory safely
-    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    game.isDirty = true;
 }
 
 // --- NEW: Particle Animation Helper ---
@@ -20869,7 +20866,7 @@ async function attemptEnchant() {
         game.enchantSlot.enchantLevel = (game.enchantSlot.enchantLevel || 0) + 1;
         
         renderEnchantSlot();
-        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        game.isDirty = true;
 
         // Show Success Popup (Slight delay to let explosion start)
         setTimeout(() => {
@@ -21384,11 +21381,9 @@ window.inspectPlayer = async function(playerName) {
         // NEW: Automatically return item to inventory if it was left on the table in the DB
         if (data.enchantSlot) {
             const itemToRecover = data.enchantSlot;
-            // addItem is smart enough to stack it if it exists
             addItem(itemToRecover.name, 1, itemToRecover.enchantLevel || 0);
             game.enchantSlot = null;
-            // Save immediately so the table is cleared in the database too
-            savePlayerData();
+            game.isDirty = true; // Mark for next auto-save instead of immediate write
         } else {
             game.enchantSlot = null;
         } 
@@ -22744,7 +22739,8 @@ window.inspectPlayer = async function(playerName) {
   setInterval(async () => {
     const user = auth.currentUser;
     if (user && game.isSessionActive && !document.hidden && game.isDirty) {
-      window.savePlayerData();
+      console.log("Batched save triggered...");
+      await window.savePlayerData();
     }
   }, 60000);
 
