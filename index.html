@@ -3820,7 +3820,8 @@ const VALID_ITEMS = [
   'Emerald Ring',
   'Ruby Ring',
   'Sapphire Ring',
-  'Topaz Ring'
+  'Topaz Ring',
+  'Silver Fangs of the Fallen Monarch'
 ];
 
 const XP_TABLE = [
@@ -4291,6 +4292,7 @@ const ITEM_STATS = {
   'Iron Platelegs': { meleeDef: 8, rangedDef: 9, magicDef: 1, magicAtk: -10, rangedAtk: -6, armorType: 'melee' },
   'Iron Boots': { meleeDef: 3, rangedDef: 3, magicDef: 1, magicAtk: -3, rangedAtk: -1, armorType: 'melee' },
   'Iron Shortsword': { meleeStr: 7, meleeAtk: 9, weaponType: 'melee', speed: 2000 },
+  'Silver Fangs of the Fallen Monarch': { meleeStr: 9, meleeAtk: 15, weaponType: 'melee', speed: 1500 },
 
   // --- RANGED GEAR (High Magic Def, Positive Range Atk) ---
   'Leather Hood': { meleeDef: 1, rangedDef: 2, magicDef: 4, rangedAtk: 2, magicAtk: -1, armorType: 'ranged' },
@@ -4444,7 +4446,8 @@ const ITEM_SELL_PRICES = {
   'Emerald Ring': 1200,
   'Ruby Ring': 1200,
   'Sapphire Ring': 1200,
-  'Topaz Ring': 1200
+  'Topaz Ring': 1200,
+  'Silver Fangs of the Fallen Monarch': 25000
 };
 
 const CRAFTING_GEM_RING_LVL = 40;
@@ -4687,6 +4690,7 @@ function createCharacter(){
   const name = document.getElementById('playerName').value.trim();
   if(!name) return; 
   game.name = name;
+  game.isDirty = true; // Flag for save
   document.getElementById('charName').innerText = name;
   document.getElementById('startScreen').style.display = 'none';
   document.getElementById('gameScreen').style.display = 'block';
@@ -4694,7 +4698,7 @@ function createCharacter(){
   renderInventoryGrid();
   updateSkillUI();
   updateGoldUI();
-  renderEquipment(); // <-- ADD THIS
+  renderEquipment(); 
   backToActions(); 
 }
 
@@ -4853,7 +4857,8 @@ function renderEquipment() {
     'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 'Leather Boots': 'leatherboots',
     'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff',
     'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider',
-    'Gold Ring': 'goldring', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring'
+    'Gold Ring': 'goldring', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
+    'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch'
   };
 
   slots.forEach(slotType => {
@@ -5314,6 +5319,7 @@ function renderInventoryGrid(){
               else if (item.name === 'Ruby Ring') imgName = 'rubyring';
               else if (item.name === 'Sapphire Ring') imgName = 'sapphirering';
               else if (item.name === 'Topaz Ring') imgName = 'topazring';
+              else if (item.name === 'Silver Fangs of the Fallen Monarch') imgName = 'silverfangsofthefallenmonarch';
 
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
@@ -5582,7 +5588,8 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Leather Boots': 'boots', 'Wizard Hat': 'helmet', 'Wizard Robe': 'chest', 'Wizard Trousers': 'legs',
     'Wizard Boots': 'boots', 'Magic Staff': 'weapon', 'Gold Crown': 'helmet', 'Elegant Black Cape': 'cape',
     '1tapper': 'weapon', 'Gold Ring': 'ring_choice', 'Diamond Ring': 'ring_choice', 'Emerald Ring': 'ring_choice',
-    'Ruby Ring': 'ring_choice', 'Sapphire Ring': 'ring_choice', 'Topaz Ring': 'ring_choice'
+    'Ruby Ring': 'ring_choice', 'Sapphire Ring': 'ring_choice', 'Topaz Ring': 'ring_choice',
+    'Silver Fangs of the Fallen Monarch': 'weapon'
   };
   const itemSlotType = equipableItems[itemName];
 
@@ -17531,6 +17538,15 @@ function handleEnemyDeath() {
     } else if (name === 'Madmax') {
       addItem('Lottery Ticket', 3);
       showItemPopup('+3 Lottery Ticket', null, dropDelay);
+      
+      // 1/100 Rare Drop
+      if (Math.floor(Math.random() * 100) === 0) {
+          addItem('Silver Fangs of the Fallen Monarch', 1);
+          showItemPopup('<span style="color:var(--gold); font-size:16px;">RARE DROP!</span>', null, dropDelay + 450);
+          if (typeof addLocalChatMessage === 'function') {
+              addLocalChatMessage("You have obtained the Silver Fangs of the Fallen Monarch!", "trade");
+          }
+      }
     }
     
     // --- FIX: Force UI Update and Save so drops appear ---
@@ -18293,6 +18309,7 @@ function renderBankGrid() {
               else if (item.name === 'Ruby Ring') imgName = 'rubyring';
               else if (item.name === 'Sapphire Ring') imgName = 'sapphirering';
               else if (item.name === 'Topaz Ring') imgName = 'topazring';
+              else if (item.name === 'Silver Fangs of the Fallen Monarch') imgName = 'silverfangsofthefallenmonarch';
 
               // --- END OF FIX ---
               img.src = `images/${imgName}.png`;
@@ -20350,7 +20367,8 @@ function renderInspectEquipment(equipment, frame) {
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
         'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Spider Egg': 'petegg1',
         'Empty Bucket': 'emptybucket', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
-        'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring'
+        'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
+        'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch'
     };
 
     slots.forEach(slotType => {
@@ -20606,6 +20624,7 @@ function renderEnchantSlot() {
     if (item.name === "Leather Body") imgName = "leatherarmor";
     if (item.name === "Leather Chaps") imgName = "leatherpants";
     if (item.name.includes("Ring") && item.name !== "Gold Ring") imgName = item.name.toLowerCase().replace(" ", "");
+    if (item.name === "Silver Fangs of the Fallen Monarch") imgName = "silverfangsofthefallenmonarch";
 
     img.src = `images/${imgName}.png`;
     img.style.width = "100%";
@@ -21910,34 +21929,32 @@ window.inspectPlayer = async function(playerName) {
           const q = query(collection(db, "players"), where("name_lowercase", "==", nameLower));
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
-            { await showGameAlert("Name Taken", "That name is already taken. Please choose another."); return; }
+             await showGameAlert("Name Taken", "That name is already taken. Please choose another."); return;
           }
         } catch (e) {
           console.error("Name check failed:", e);
-          { await showGameAlert("Error", "An error occurred while checking the name. Please try again."); return; }
+           await showGameAlert("Error", "An error occurred while checking the name. Please try again."); return;
         }
         
         originalCreate(); // Sets game.name locally
         
         const user = auth.currentUser;
         if (user) {
-          // --- THIS IS THE FIX ---
-          // We MUST acquire the session lock *before* trying to save,
-          // otherwise savePlayerData() will exit early because
-          // game.isSessionActive is false.
+          // Acquire the session lock so we are authorized to save
           if (typeof window.acquireSessionLock === 'function') {
             await window.acquireSessionLock();
           }
 
           game.isSessionActive = true;
-         
+          game.isDirty = true; // Ensure savePlayerData doesn't exit early
 
-          await window.savePlayerData(); // This will now succeed
+          await window.savePlayerData(); // This saves the name to Firestore
           window.renderLeaderboards();
+          
+          // Initialize listeners that were skipped during the initial "no-name" load
           initChatListener(); 
-          // Trade listeners removed
           initUpdatesListener(); 
-          // The onSnapshot listener will fire and update the UI
+          initBroadcastListener(); 
         }
       };
     }
@@ -23073,7 +23090,8 @@ window.inspectPlayer = async function(playerName) {
       'images/emerald.png',
       'images/jade.png',
       'images/ruby.png',
-      'images/sapphire.png'
+      'images/sapphire.png',
+      'images/silverfangsofthefallenmonarch.png'
     ];
 
    /**
