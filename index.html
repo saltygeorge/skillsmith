@@ -272,7 +272,31 @@ body {
   display: flex; align-items: center; justify-content: center; overflow: hidden;
   cursor: pointer;
 }
-.inv-slot img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+/* Base item image style */
+.inv-slot img, .equipment-slot img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: contain; 
+  display: block; 
+  pointer-events: none; 
+  transition: transform 0.1s; /* Smooths it out */
+}
+
+/* Specific scaling and vertical offset for necklaces */
+.inv-slot img[src*="necklace"], 
+.equipment-slot img[src*="necklace"],
+#craftingItemsContainer button img[src*="necklace"],
+#hubDynamic img[src*="necklace"] {
+  /* scale(1.4) makes it bigger, translateY(-5px) moves it UP by 5 pixels */
+  transform: scale(1.4) translateY(-3px) !important;
+}
+
+/* Optional: If the rings also look too small, you can add them here too */
+.inv-slot img[src*="ring"], 
+.equipment-slot img[src*="ring"] {
+  transform: scale(1.2) !important;
+}
+
 .inv-amount {
   position: absolute;
   right: 4px; bottom: 4px;
@@ -341,12 +365,10 @@ body {
 #mainContentWrapper {
   flex-grow: 1;
   overflow-y: auto;
+  overflow-x: hidden; /* This prevents the horizontal scrollbar */
   min-height: 0;
-  
-  /* +++ FIX: Add these two lines to enable height:100% on children +++ */
   display: flex;
   flex-direction: column; 
-  
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--panel-bg);
 }
@@ -2675,7 +2697,7 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubCrafting" class="hub-screen">
             <h2>Crafting Bench</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose an item to craft.</div>
-            <div id="craftingItemsContainer" class="action-buttons" style="margin-top: 14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+            <div id="craftingItemsContainer" class="action-buttons" style="margin-top: 14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px; width: 100%; box-sizing: border-box;">
               </div>
             <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubCrafting_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
@@ -2744,12 +2766,12 @@ button.primary:hover { background: var(--accent-hover); }
             <h2>Blacksmithing</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose an item to smith.</div>
             <div class="tabs" style="margin-top: 14px; margin-bottom: 14px; width: 100%;">
-    <button id="smithCopperTab" class="active">Copper</button>
-    <button id="smithIronTab">Iron</button>
-    <button id="smithSilverTab">Silver</button>
-    <button id="smithGoldTab">Gold</button>
-</div>
-            <div id="smithingItemsContainer" class="action-buttons" style="margin-top: 0; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+                <button id="smithCopperTab" class="active">Copper</button>
+                <button id="smithIronTab">Iron</button>
+                <button id="smithSilverTab">Silver</button>
+                <button id="smithGoldTab">Gold</button>
+            </div>
+            <div id="smithingItemsContainer" class="action-buttons" style="margin-top: 0; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px; width: 100%; box-sizing: border-box;">
               </div>
             <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubBlacksmith_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
@@ -3387,12 +3409,12 @@ const game = {
   settings: { 
     sfxVolume: 0.5, 
     isSfxMuted: false, 
-    musicVolume: 0.15,  // <--- Changed this from 0.3
+    musicVolume: 0.15,  
     isMusicMuted: false 
   },
   inventory: [], 
-  inventoryCapacity: 40, // <--- Changed 39 to 40
-  gold: 0,
+  inventoryCapacity: 40, 
+  gold: 100,
   // --- NEW BANK PROPERTIES ---
   bank: [], // Kept for backward compatibility during migration
   bankTabs: [], // Array of Arrays (The actual storage now)
@@ -3821,6 +3843,11 @@ const VALID_ITEMS = [
   'Ruby Ring',
   'Sapphire Ring',
   'Topaz Ring',
+  'Diamond Necklace',
+  'Emerald Necklace',
+  'Ruby Necklace',
+  'Sapphire Necklace',
+  'Topaz Necklace',
   'Silver Fangs of the Fallen Monarch'
 ];
 
@@ -4322,7 +4349,12 @@ const ITEM_STATS = {
   'Emerald Ring': { rangedStr: 2, armorType: 'jewelry' },
   'Ruby Ring': { meleeStr: 2, armorType: 'jewelry' },
   'Sapphire Ring': { magicDmg: 2, armorType: 'jewelry' },
-  'Topaz Ring': { maxHPBonus: 2, armorType: 'jewelry' }
+  'Topaz Ring': { maxHPBonus: 2, armorType: 'jewelry' },
+  'Diamond Necklace': { meleeDef: 2, armorType: 'jewelry' },
+  'Emerald Necklace': { rangedStr: 2, armorType: 'jewelry' },
+  'Ruby Necklace': { meleeStr: 2, armorType: 'jewelry' },
+  'Sapphire Necklace': { magicDmg: 2, armorType: 'jewelry' },
+  'Topaz Necklace': { maxHPBonus: 2, armorType: 'jewelry' }
 };
 window.ITEM_STATS = ITEM_STATS;
 
@@ -4337,98 +4369,117 @@ SHOP_INVENTORY[5] = { name: 'Corn Seed', price: 30 };
 
 // --- NEW: Item Sell Prices ---
 const ITEM_SELL_PRICES = {
+  // Materials & Ores
   'Silk': 2,
   'Cloth': 12,
-  'Wizard Hat': 30,
-  'Wizard Robe': 70,
-  'Wizard Trousers': 45,
-  'Wizard Boots': 30,
   'Copper Ore': 1,
   'Coal Ore': 2,
   'Iron Ore': 4,
   'Silver Ore': 7,
   'Gold Ore': 12,
+  'Sand': 1,
+  'Earth Crystal Shard': 5,
+  'Air Crystal Shard': 8,
+  'Water Crystal Shard': 12,
   'Softwood': 1,
   'Oak': 3,
+  'Birch': 5,
+  'Maple': 8,
+  'Mahogany': 12,
   'Copper Bar': 3,
   'Iron Bar': 10,
+  'Silver Bar': 50,
+  'Gold Bar': 250,
+  'Feather': 1,
+  'Arrow Shaft': 1,
+  'Copper Arrow Tip': 2,
+  'Unbound Arrow': 3,
+  'Bow String': 3,
+  'Earthstone': 10,
+  'Airstone': 15,
+  'Waterstone': 20,
+
+  // Tools & Weapons
+  'Bronze Pickaxe': 4,
+  'Bronze Axe': 4,
+  'Copper Pickaxe': 15,
+  'Copper Axe': 15,
+  'Iron Pickaxe': 50,
+  'Iron Axe': 50,
+  'Silver Pickaxe': 150,
+  'Silver Axe': 150,
+  'Copper Shortsword': 20,
+  'Iron Shortsword': 65,
+  'Magic Staff': 50,
+  'Fishing Pole': 1000,
+  '1tapper': 0,
+  'Silver Fangs of the Fallen Monarch': 25000,
+
+  // Armor
+  'Copper Helmet': 20,
+  'Copper Chestplate': 40,
+  'Copper Platelegs': 25,
+  'Copper Boots': 15,
+  'Iron Helmet': 60,
+  'Iron Chestplate': 120,
+  'Iron Platelegs': 75,
+  'Iron Boots': 55,
+  'Leather Hood': 10,
+  'Leather Body': 25,
+  'Leather Chaps': 15,
+  'Leather Boots': 8,
+  'Wizard Hat': 30,
+  'Wizard Robe': 70,
+  'Wizard Trousers': 45,
+  'Wizard Boots': 30,
+  'Gold Crown': 50000,
+  'Elegant Black Cape': 50000,
+
+  // Arrows & Bows
+  'Copper Arrow': 5,
+  'Unstrung Softwood Bow': 5,
+  'Unstrung Oak Bow': 10,
+  'Softwood Bow': 10,
+  'Oak Bow': 20,
+
+  // Food & Consumables
   'Raw Chicken': 1,
   'Cooked Chicken': 2,
   'Burnt Chicken': 1,
   'Beef': 2,
   'Cooked Beef': 3,
   'Burnt Beef': 1,
-  'Bronze Pickaxe': 4,
-  'Bronze Axe': 4,
-  'Copper Pickaxe': 15,
-  'Copper Axe': 15,
-  'Copper Helmet': 20,
-  'Copper Chestplate': 40,
-  'Copper Platelegs': 25,
-  'Copper Boots': 15,
-  'Copper Shortsword': 20,
-  'Iron Pickaxe': 50,
-  'Iron Axe': 50,
-  'Iron Helmet': 60,
-  'Iron Chestplate': 120,
-  'Iron Platelegs': 75,
-  'Iron Boots': 55,
-  'Iron Shortsword': 65,
-  'Silver Pickaxe': 150,
-  'Silver Axe': 150,
-  'Feather': 1,
-  'Arrow Shaft': 1,
-  'Copper Arrow Tip': 2,
-  'Unbound Arrow': 3,
-  'Copper Arrow': 5,
-  'Earth Crystal Shard': 5,
-  'Air Crystal Shard': 8,
-  'Water Crystal Shard': 12,
-  'Bow String': 3,
-  'Unstrung Softwood Bow': 5,
-  'Unstrung Oak Bow': 10,
-  'Softwood Bow': 10,
-  'Oak Bow': 20,
-  'Cow Hide': 4,
-  'Leather': 6,
-  'Leather Hood': 10,
-  'Leather Body': 25,
-  'Leather Chaps': 15,
-  'Leather Boots': 8,
   'Herring': 2,
-  'Trout': 4,
-  'Salmon': 8,
   'Cooked Herring': 3,
   'Burnt Herring': 1,
+  'Trout': 4,
   'Cooked Trout': 6,
   'Burnt Trout': 2,
+  'Salmon': 8,
   'Cooked Salmon': 10,
   'Burnt Salmon': 4,
-  'Fishing Pole': 1000,
-  'Fishing Bait': 4,
-  'Magic Staff': 50,
-  'Earthstone': 10,
-  'Airstone': 15,
-  'Waterstone': 20,
-  'Gold Crown': 50000,
-  'Elegant Black Cape': 50000,
-  'Gold Bar': 250,
-  'Diamond': 2500,
-  '1tapper': 0,
+  'Vitality Potion': 150,
+
+  // Monster Drops & Misc
   'Rat Tail': 3,
-  'Sand': 1,
-  'Empty Vial': 5,
   'Venom': 15,
+  'Empty Vial': 5,
   'Lottery Ticket': 100,
   'Empty Bucket': 2,
-  'Bucket of Milk': 250,
+  'Bucket of Milk': 15,
   'Bucket of Water': 5,
   'Grass Seed': 2,
-  'Grass': 150,
+  'Grass': 5,
   'Corn Seed': 5,
-  'Corn': 80,
+  'Corn': 12,
+  'Dirt Shroom': 5,
   'Wild Herb': 25,
-  'Vitality Potion': 150,
+  'Pet Spider Egg': 5000,
+  'Cow Hide': 4,
+  'Leather': 6,
+  'Fishing Bait': 4,
+
+  // Gems (Uncut & Cut)
   'Uncut Topaz': 25,
   'Uncut Diamond': 25,
   'Uncut Emerald': 25,
@@ -4441,13 +4492,19 @@ const ITEM_SELL_PRICES = {
   'Jade': 100,
   'Ruby': 100,
   'Sapphire': 100,
+
+  // Jewelry
   'Gold Ring': 500,
   'Diamond Ring': 1200,
   'Emerald Ring': 1200,
   'Ruby Ring': 1200,
   'Sapphire Ring': 1200,
   'Topaz Ring': 1200,
-  'Silver Fangs of the Fallen Monarch': 25000
+  'Diamond Necklace': 2000,
+  'Emerald Necklace': 2000,
+  'Ruby Necklace': 2000,
+  'Sapphire Necklace': 2000,
+  'Topaz Necklace': 2000
 };
 
 const CRAFTING_GEM_RING_LVL = 40;
@@ -4761,17 +4818,17 @@ function getPlayerCombatStats() {
       if (def.armorType === 'melee') {
           stats.meleeDef += (def.meleeDef || 0) + standardBonus;
           stats.rangedDef += (def.rangedDef || 0) + standardBonus;
-          stats.magicDef += (def.magicDef || 0) + penalizedBonus; // Penalized
+          stats.magicDef += (def.magicDef || 0) + penalizedBonus; 
       } else if (def.armorType === 'ranged') {
-          stats.meleeDef += (def.meleeDef || 0) + penalizedBonus; // Penalized
+          stats.meleeDef += (def.meleeDef || 0) + penalizedBonus; 
           stats.rangedDef += (def.rangedDef || 0) + standardBonus;
           stats.magicDef += (def.magicDef || 0) + standardBonus;
       } else if (def.armorType === 'magic') {
-          stats.meleeDef += (def.meleeDef || 0) + penalizedBonus; // Penalized
+          stats.meleeDef += (def.meleeDef || 0) + penalizedBonus; 
           stats.rangedDef += (def.rangedDef || 0) + standardBonus;
           stats.magicDef += (def.magicDef || 0) + standardBonus;
-      } else {
-          // Jewelry or hybrid gear uses standard for all
+      } else if (def.armorType === 'hybrid') {
+          // Only hybrid gear (Gold Crown) gets added to the actual combat totals
           stats.meleeDef += (def.meleeDef || 0) + standardBonus;
           stats.rangedDef += (def.rangedDef || 0) + standardBonus;
           stats.magicDef += (def.magicDef || 0) + standardBonus;
@@ -4858,6 +4915,7 @@ function renderEquipment() {
     'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff',
     'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider',
     'Gold Ring': 'goldring', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
+    'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace',
     'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch'
   };
 
@@ -4869,7 +4927,8 @@ function renderEquipment() {
     mainSlotEl.className = 'equipment-slot'; 
     mainSlotEl.innerHTML = '';
     
-    let imgName = item ? (itemImageMap[item.name] || 'helmet') : slotType; 
+    // This tells the game: Use the map name, otherwise use the slot background icon
+    let imgName = item ? (itemImageMap[item.name] || slotType) : slotType; 
     if (!item) {
         if (slotType === 'chest') imgName = 'chestplate';
         if (slotType === 'ring1' || slotType === 'ring2') imgName = 'ring';
@@ -5319,6 +5378,11 @@ function renderInventoryGrid(){
               else if (item.name === 'Ruby Ring') imgName = 'rubyring';
               else if (item.name === 'Sapphire Ring') imgName = 'sapphirering';
               else if (item.name === 'Topaz Ring') imgName = 'topazring';
+              else if (item.name === 'Diamond Necklace') imgName = 'diamondnecklace';
+              else if (item.name === 'Emerald Necklace') imgName = 'emeraldnecklace';
+              else if (item.name === 'Ruby Necklace') imgName = 'rubynecklace';
+              else if (item.name === 'Sapphire Necklace') imgName = 'sapphirenecklace';
+              else if (item.name === 'Topaz Necklace') imgName = 'topaznecklace';
               else if (item.name === 'Silver Fangs of the Fallen Monarch') imgName = 'silverfangsofthefallenmonarch';
 
       img.src = `images/${imgName}.png`;
@@ -5520,10 +5584,16 @@ async function handleSellItemClick(slotIndex) {
   const itemName = item.name;
   const enchant = item.enchantLevel || 0;
   
-  let baseSellPrice = ITEM_SELL_PRICES[itemName] || 0;
+  // Look up price, default to 1 gold if missing so NOTHING is ever unsellable again
+  let baseSellPrice = ITEM_SELL_PRICES[itemName];
+  
+  if (baseSellPrice === undefined) {
+      baseSellPrice = 1; 
+  }
 
-  if (baseSellPrice <= 0) {
-    await showGameAlert("Cannot Sell", "This shop doesn't buy that item.");
+  // Prevent selling items with 0 value (like the admin weapon) unless you are an admin
+  if (baseSellPrice <= 0 && !game.isAdmin) {
+    await showGameAlert("Cannot Sell", "This item has no market value.");
     return;
   }
 
@@ -5589,6 +5659,8 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Wizard Boots': 'boots', 'Magic Staff': 'weapon', 'Gold Crown': 'helmet', 'Elegant Black Cape': 'cape',
     '1tapper': 'weapon', 'Gold Ring': 'ring_choice', 'Diamond Ring': 'ring_choice', 'Emerald Ring': 'ring_choice',
     'Ruby Ring': 'ring_choice', 'Sapphire Ring': 'ring_choice', 'Topaz Ring': 'ring_choice',
+    'Diamond Necklace': 'necklace', 'Emerald Necklace': 'necklace', 'Ruby Necklace': 'necklace',
+    'Sapphire Necklace': 'necklace', 'Topaz Necklace': 'necklace',
     'Silver Fangs of the Fallen Monarch': 'weapon'
   };
   const itemSlotType = equipableItems[itemName];
@@ -10090,6 +10162,21 @@ function renderCraftingItems() {
     <button id="craftTopazRingBtn" class="primary ${craftLvl < 40 ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
       <img src="images/topazring.png" alt="Topaz Ring" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
     </button>
+    <button id="craftDiamondNecklaceBtn" class="primary ${craftLvl < 50 ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/diamondnecklace.png" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftEmeraldNecklaceBtn" class="primary ${craftLvl < 50 ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/emeraldnecklace.png" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftRubyNecklaceBtn" class="primary ${craftLvl < 50 ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/rubynecklace.png" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftSapphireNecklaceBtn" class="primary ${craftLvl < 50 ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/sapphirenecklace.png" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
+    <button id="craftTopazNecklaceBtn" class="primary ${craftLvl < 50 ? 'locked-item' : ''}" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+      <img src="images/topaznecklace.png" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
+    </button>
   `;
   
   setupCraftButton('craftBucketBtn', bucketLocked, openCraftBucket, CRAFTING_BUCKET_LVL, `Requires: ${BUCKET_OAK_COST} Oak`, `Empty Bucket`);
@@ -10108,6 +10195,11 @@ function renderCraftingItems() {
   setupCraftButton('craftRubyRingBtn', craftLvl < 40, () => openCraftGemRing('Ruby'), 40, `Requires: 1 Gold Ring, 1 Ruby`, 'Ruby Ring');
   setupCraftButton('craftSapphireRingBtn', craftLvl < 40, () => openCraftGemRing('Sapphire'), 40, `Requires: 1 Gold Ring, 1 Sapphire`, 'Sapphire Ring');
   setupCraftButton('craftTopazRingBtn', craftLvl < 40, () => openCraftGemRing('Topaz'), 40, `Requires: 1 Gold Ring, 1 Topaz`, 'Topaz Ring');
+  setupCraftButton('craftDiamondNecklaceBtn', craftLvl < 50, () => openCraftNecklace('Diamond'), 50, `Requires: 1 Gold Bar, 1 Diamond`, 'Diamond Necklace');
+  setupCraftButton('craftEmeraldNecklaceBtn', craftLvl < 50, () => openCraftNecklace('Emerald'), 50, `Requires: 1 Gold Bar, 1 Emerald`, 'Emerald Necklace');
+  setupCraftButton('craftRubyNecklaceBtn', craftLvl < 50, () => openCraftNecklace('Ruby'), 50, `Requires: 1 Gold Bar, 1 Ruby`, 'Ruby Necklace');
+  setupCraftButton('craftSapphireNecklaceBtn', craftLvl < 50, () => openCraftNecklace('Sapphire'), 50, `Requires: 1 Gold Bar, 1 Sapphire`, 'Sapphire Necklace');
+  setupCraftButton('craftTopazNecklaceBtn', craftLvl < 50, () => openCraftNecklace('Topaz'), 50, `Requires: 1 Gold Bar, 1 Topaz`, 'Topaz Necklace');
 }
 
 // =================================================================
@@ -11723,6 +11815,101 @@ async function craftingGemRingLoop(timestamp, startTime, gemType) {
   }
 }
 
+
+function openCraftNecklace(gemType) {
+  game.shopOpen = false; 
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  
+  const neckName = `${gemType} Necklace`;
+  const wrapper = document.getElementById('hubDynamic');
+  wrapper.innerHTML = `
+    <h2>Crafting - ${neckName}</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Requires: 1 Gold Bar and 1 ${gemType}.</div>
+    <div style="margin-top:16px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="craftProgress"></div>
+      </div>
+    </div>
+    <div class="action-buttons" style="margin-top:14px;">
+      <button id="startCraftBtn" class="primary">Start Crafting</button>
+      <button id="stopCraftBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
+      <button onclick="openCraftingHub()" class="primary" style="background:#666;">Return</button> </div>
+  `;
+  document.getElementById('startCraftBtn').onclick = () => startCraftingNecklace(gemType);
+  document.getElementById('stopCraftBtn').onclick = window.stopCraftingBowString;
+  showMainScreen('hubDynamic');
+}
+
+async function startCraftingNecklace(gemType) {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Not Active", "This game session is not active.");
+    return;
+  }
+  const neckName = `${gemType} Necklace`;
+  if (!canReceiveItem(neckName)) {
+    await showGameAlert("Inventory Full", "You have no room to craft this.");
+    return;
+  }
+  if (game.craftingActive) return;
+
+  let hasGoldBar = false;
+  let hasGem = false;
+  for (const slot of game.inventory) {
+      if (slot && slot.name === 'Gold Bar') hasGoldBar = true;
+      if (slot && slot.name === gemType) hasGem = true;
+  }
+
+  if (!hasGoldBar || !hasGem) {
+      await showGameAlert("Not Enough Materials", `You need 1 Gold Bar and 1 ${gemType}.`);
+      return;
+  }
+  
+  game.craftingActive = true;
+  document.getElementById('startCraftBtn').style.display = 'none';
+  document.getElementById('stopCraftBtn').style.display = 'inline-block';
+  game.progressFrame = setTimeout(() => craftingNecklaceLoop(Date.now(), Date.now(), gemType), 16);
+}
+
+async function craftingNecklaceLoop(timestamp, startTime, gemType) {
+  if (!game.craftingActive) return; 
+  const elapsed = Date.now() - startTime;
+  const neckName = `${gemType} Necklace`;
+
+  if (elapsed >= GEM_RING_CRAFT_TIME_MS) { // Reuse ring time
+    let hasGoldBar = false;
+    let hasGem = false;
+    for (const slot of game.inventory) {
+        if (slot && slot.name === 'Gold Bar') hasGoldBar = true;
+        if (slot && slot.name === gemType) hasGem = true;
+    }
+
+    if (!hasGoldBar || !hasGem) {
+        await showGameAlert("Out of Materials", "You've run out of materials.");
+        window.stopCraftingBowString();
+        return;
+    }
+    
+    removeItem('Gold Bar', 1);
+    removeItem(gemType, 1);
+    addItem(neckName, 1);
+    addXP('crafting', GEM_RING_CRAFT_XP); // Reuse ring XP
+    showItemPopup(`+${GEM_RING_CRAFT_XP} Crafting XP`, 'craftProgress', 0);
+    showItemPopup(`+1 ${neckName}`, 'craftProgress', 450);
+    
+    document.getElementById('craftProgress').style.width = '0%';
+    const overdueTime = elapsed - GEM_RING_CRAFT_TIME_MS;
+    const newStartTime = Date.now() - overdueTime;
+    
+    return craftingNecklaceLoop(Date.now(), newStartTime, gemType);
+  } else {
+    const progress = (elapsed / GEM_RING_CRAFT_TIME_MS) * 100;
+    document.getElementById('craftProgress').style.width = progress + '%';
+    game.progressFrame = setTimeout(() => craftingNecklaceLoop(Date.now(), startTime, gemType), 16);
+  }
+}
 
 function openCraftGoldRing() {
   game.shopOpen = false; 
@@ -18308,6 +18495,11 @@ function renderBankGrid() {
               else if (item.name === 'Ruby Ring') imgName = 'rubyring';
               else if (item.name === 'Sapphire Ring') imgName = 'sapphirering';
               else if (item.name === 'Topaz Ring') imgName = 'topazring';
+              else if (item.name === 'Diamond Necklace') imgName = 'diamondnecklace';
+              else if (item.name === 'Emerald Necklace') imgName = 'emeraldnecklace';
+              else if (item.name === 'Ruby Necklace') imgName = 'rubynecklace';
+              else if (item.name === 'Sapphire Necklace') imgName = 'sapphirenecklace';
+              else if (item.name === 'Topaz Necklace') imgName = 'topaznecklace';
               else if (item.name === 'Silver Fangs of the Fallen Monarch') imgName = 'silverfangsofthefallenmonarch';
 
               // --- END OF FIX ---
@@ -19210,6 +19402,7 @@ function showMainScreen(screenIdToShow) {
   // Special case: if we're showing the shop
   if (screenIdToShow === 'hubShop') {
     game.shopOpen = true;
+    renderShopGrid();
   }
   
   // Special case: if we're showing the bank
@@ -20367,6 +20560,7 @@ function renderInspectEquipment(equipment, frame) {
         'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Spider Egg': 'petegg1',
         'Empty Bucket': 'emptybucket', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
         'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
+        'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace',
         'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch'
     };
 
@@ -20425,8 +20619,8 @@ function renderInspectEquipment(equipment, frame) {
             for (let [mat, val] of Object.entries(MATERIAL_TIERS)) { if (item.name.includes(mat)) { tier = val; break; } }
             
             let bonus = 0;
-            if (item.name.includes("Ring") || item.name.includes("Wizard")) {
-                bonus = enchantLvl; // +1 per level for Wizard and Rings
+            if (item.name.includes("Ring") || item.name.includes("Necklace") || item.name.includes("Wizard")) {
+                bonus = enchantLvl; // +1 per level for Wizard, Rings, and Necklaces
             } else {
                 bonus = Math.floor(enchantLvl * (tier * 0.5)); // Tier scaling for others
             }
@@ -21202,7 +21396,8 @@ window.inspectPlayer = async function(playerName) {
                       meleeDef += (def.meleeDef || 0) + penB;
                       rangedDef += (def.rangedDef || 0) + stdB;
                       magicDef += (def.magicDef || 0) + stdB;
-                  } else {
+                  } else if (def.armorType === 'hybrid') {
+                      // Only hybrid gear stats show up in the Total display
                       meleeDef += (def.meleeDef || 0) + stdB;
                       rangedDef += (def.rangedDef || 0) + stdB;
                       magicDef += (def.magicDef || 0) + stdB;
@@ -23023,6 +23218,11 @@ window.inspectPlayer = async function(playerName) {
       'images/rubyring.png',
       'images/sapphirering.png',
       'images/topazring.png',
+      'images/diamondnecklace.png',
+      'images/emeraldnecklace.png',
+      'images/rubynecklace.png',
+      'images/sapphirenecklace.png',
+      'images/topaznecklace.png',
       'images/alchemyicon.jpeg',
       'images/alchemyskillicon.jpeg',
       'images/vitalitypotion.png',
