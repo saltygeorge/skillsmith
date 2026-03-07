@@ -3743,7 +3743,6 @@ const VALID_ITEMS = [
   'Iron Chestplate',
   'Iron Boots',
   'Iron Shortsword',
-  'Iron Battleaxe', // +++ NEW +++
   'Silver Ore',
   'Gold Ore',
   'Silver Bar', // +++ NEW +++
@@ -4066,7 +4065,6 @@ const IRON_PLATELEGS_LVL = 17; // +++ NEW +++
 const IRON_CHEST_LVL = 18;
 const SILVER_BAR_LVL = 21;
 const GOLD_BAR_LVL = 31;
-const IRON_BATTLEAXE_LVL = 40
 
 const SILVER_BAR_ORE_COST = 1;
 const SILVER_BAR_COAL_COST = 2;
@@ -4255,10 +4253,6 @@ const IRON_SHORTSWORD_BAR_COST = 5;
 const IRON_SHORTSWORD_XP = 150;
 const IRON_SHORTSWORD_TIME_MS = 7000;
 
-const IRON_BATTLEAXE_BAR_COST = 10;
-const IRON_BATTLEAXE_XP = 200;
-const IRON_BATTLEAXE_TIME_MS = 8000; 
-
 // --- NEW: Woodcutting Level Requirements ---
 const SOFTWOOD_TREE_LVL = 1;
 const OAK_TREE_LVL = 10;
@@ -4325,7 +4319,6 @@ const ITEM_STATS = {
   'Iron Platelegs': { meleeDef: 8, rangedDef: 9, magicDef: 1, magicAtk: -10, rangedAtk: -6, armorType: 'melee' },
   'Iron Boots': { meleeDef: 3, rangedDef: 3, magicDef: 1, magicAtk: -3, rangedAtk: -1, armorType: 'melee' },
   'Iron Shortsword': { meleeStr: 7, meleeAtk: 9, weaponType: 'melee', speed: 2000 },
-  'Iron Battleaxe': { meleeStr: 12, meleeAtk: 10, weaponType: 'melee', speed: 2500 },
   'Silver Fangs of the Fallen Monarch': { meleeStr: 9, meleeAtk: 15, weaponType: 'melee', speed: 1500 },
 
   // --- RANGED GEAR (High Magic Def, Positive Range Atk) ---
@@ -4418,7 +4411,6 @@ const ITEM_SELL_PRICES = {
   'Silver Axe': 150,
   'Copper Shortsword': 20,
   'Iron Shortsword': 65,
-  'Iron Battleaxe': 100,
   'Magic Staff': 500,
   'Fishing Pole': 1000,
   '1tapper': 0,
@@ -4917,7 +4909,7 @@ function renderEquipment() {
   
   const itemImageMap = {
     'Copper Helmet': 'copperhelmet', 'Copper Chestplate': 'copperchestplate', 'Copper Shortsword': 'coppershortsword', 'Copper Boots': 'copperboots',
-    'Iron Helmet': 'ironhelmet', 'Iron Chestplate': 'ironchestplate', 'Iron Shortsword': 'ironshortsword', 'Iron Boots': 'ironboots', 'Iron Battleaxe': 'ironbattleaxe',
+    'Iron Helmet': 'ironhelmet', 'Iron Chestplate': 'ironchestplate', 'Iron Shortsword': 'ironshortsword', 'Iron Boots': 'ironboots',
     'Copper Platelegs': 'copperplatelegs', 'Iron Platelegs': 'ironplatelegs', 
     'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 'Copper Arrow': 'copperarrow',
     'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 'Leather Boots': 'leatherboots',
@@ -5310,7 +5302,6 @@ function renderInventoryGrid(){
               else if (item.name === 'Iron Chestplate') imgName = 'ironchestplate';
               else if (item.name === 'Iron Boots') imgName = 'ironboots';
               else if (item.name === 'Iron Shortsword') imgName = 'ironshortsword';
-              else if (item.name === 'Iron Battleaxe') imgName = 'ironbattleaxe';
               else if (item.name === 'Copper Platelegs') imgName = 'copperplatelegs';
               else if (item.name === 'Iron Platelegs') imgName = 'ironplatelegs';
               else if (item.name === 'Softwood') imgName = 'softwood';
@@ -5662,7 +5653,7 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
 
   const equipableItems = {
     'Copper Helmet': 'helmet', 'Copper Chestplate': 'chest', 'Copper Shortsword': 'weapon', 'Copper Boots': 'boots',
-    'Iron Helmet': 'helmet', 'Iron Chestplate': 'chest', 'Iron Shortsword': 'weapon', 'Iron Boots': 'boots', 'Iron Battleaxe': 'weapon',
+    'Iron Helmet': 'helmet', 'Iron Chestplate': 'chest', 'Iron Shortsword': 'weapon', 'Iron Boots': 'boots',
     'Copper Platelegs': 'legs', 'Iron Platelegs': 'legs', 'Softwood Bow': 'weapon', 'Oak Bow': 'weapon',
     'Copper Arrow': 'arrows', 'Leather Hood': 'helmet', 'Leather Body': 'chest', 'Leather Chaps': 'legs',
     'Leather Boots': 'boots', 'Wizard Hat': 'helmet', 'Wizard Robe': 'chest', 'Wizard Trousers': 'legs',
@@ -17779,7 +17770,7 @@ const TOTAL_SLOTS = 50;
 // --- NEW: Rotating Jackpot Pool ---
 const JACKPOT_POOL = [
     { name: 'Elegant Black Cape', desc: '** The cape provides +2 Armor.' },
-    { name: 'Gold Crown', desc: '** The crown provides +8 Defense and +2 Attack stats.' }
+    { name: 'Gold Crown', desc: '** The crown provides +5 Defense and +2 Attack stats.' }
 ];
 
 function getCurrentJackpot() {
@@ -18208,7 +18199,7 @@ function renderBankTabs() {
                 'silver_ore': 'silverore', 'gold_ore': 'goldore',
                 'softwood': 'softwood', 'oak': 'oak', 'bronze_pickaxe': 'bronzepickaxe', 'bronze_axe': 'bronzeaxe',
                 'copper_pickaxe': 'copperpickaxe', 'copper_axe': 'copperaxe', 'iron_pickaxe': 'ironpickaxe',
-                'iron_axe': 'ironaxe', 'silver_pickaxe': 'silverpickaxe', 'silver_axe': 'silveraxe', 'feather': 'feather', 'arrow_shaft': 'arrowshaft', 'iron_battleaxe': 'ironbattleaxe',
+                'iron_axe': 'ironaxe', 'silver_pickaxe': 'silverpickaxe', 'silver_axe': 'silveraxe', 'feather': 'feather', 'arrow_shaft': 'arrowshaft',
                 'copper_arrow_tip': 'copperarrowtip', 'unbound_arrow': 'unboundarrow', 'copper_arrow': 'copperarrow',
                 'silk': 'silk', 'cloth': 'cloth', 'wizard_hat': 'wizardhat', 'wizard_robe': 'wizardrobe',
                 'wizard_trousers': 'wizardtrousers', 'wizard_boots': 'wizardboots', 'magic_staff': 'magicstaff',
@@ -18396,7 +18387,6 @@ function renderBankGrid() {
               else if (item.name === 'Iron Chestplate') imgName = 'ironchestplate';
               else if (item.name === 'Iron Boots') imgName = 'ironboots';
               else if (item.name === 'Iron Shortsword') imgName = 'ironshortsword';
-              else if (item.name === 'Iron Battleaxe') imgName = 'ironbattleaxe; // +++ NEW +++
               else if (item.name === 'Copper Platelegs') imgName = 'copperplatelegs'; // +++ NEW +++
               else if (item.name === 'Iron Platelegs') imgName = 'ironplatelegs'; // +++ NEW +++
               else if (item.name === 'Softwood') imgName = 'softwood';
@@ -20577,7 +20567,7 @@ function renderInspectEquipment(equipment, frame) {
 
     const itemImageMap = {
         'Copper Helmet': 'copperhelmet', 'Copper Chestplate': 'copperchestplate', 'Copper Shortsword': 'coppershortsword', 'Copper Boots': 'copperboots', 
-        'Iron Helmet': 'ironhelmet', 'Iron Chestplate': 'ironchestplate', 'Iron Shortsword': 'ironshortsword', 'Iron Boots': 'ironboots', 'Iron Battleaxe': 'ironbattleaxe',
+        'Iron Helmet': 'ironhelmet', 'Iron Chestplate': 'ironchestplate', 'Iron Shortsword': 'ironshortsword', 'Iron Boots': 'ironboots', 
         'Copper Platelegs': 'copperplatelegs', 'Iron Platelegs': 'ironplatelegs', 
         'Silver Pickaxe': 'silverpickaxe', 'Silver Axe': 'silveraxe',
         'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 
@@ -23173,8 +23163,6 @@ window.inspectPlayer = async function(playerName) {
       'images/ironaxe.png',
       'images/silverpickaxe.png',
       'images/silveraxe.png',
-      'images/ironbattleaxe.png',
-     
 
       // --- Items: Bronze Tools ---
       'images/bronzepickaxe.png',
@@ -23437,8 +23425,6 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
-
-
 
 
 
