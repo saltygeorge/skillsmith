@@ -4438,6 +4438,7 @@ const ITEM_SELL_PRICES = {
   'Wizard Boots': 30,
   'Gold Crown': 50000,
   'Elegant Black Cape': 50000,
+  'Iron Battleaxe': 5000,
 
   // Arrows & Bows
   'Copper Arrow': 5,
@@ -23430,6 +23431,7 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
+
 
 
 
