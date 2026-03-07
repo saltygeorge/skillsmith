@@ -4366,6 +4366,7 @@ SHOP_INVENTORY[3] = { name: 'Fishing Bait', price: 10 };
 SHOP_INVENTORY[4] = { name: 'Empty Bucket', price: 10 };
 SHOP_INVENTORY[5] = { name: 'Grass Seed', price: 15 };
 SHOP_INVENTORY[6] = { name: 'Corn Seed', price: 30 };
+SHOP_INVENTORY[7] = { name: 'Empty Vial', price: 50 };
 
 // --- NEW: Item Sell Prices ---
 const ITEM_SELL_PRICES = {
@@ -4463,7 +4464,7 @@ const ITEM_SELL_PRICES = {
   // Monster Drops & Misc
   'Rat Tail': 3,
   'Venom': 15,
-  'Empty Vial': 5,
+  'Empty Vial': 10,
   'Lottery Ticket': 10000,
   'Empty Bucket': 2,
   'Bucket of Milk': 15,
@@ -19469,6 +19470,7 @@ function renderShopGrid() {
       else if (item.name === 'Fishing Pole') imgName = 'fishingpole';
       else if (item.name === 'Fishing Bait') imgName = 'fishingbait';
       else if (item.name === 'Empty Bucket') imgName = 'emptybucket';
+       else if (item.name === 'Empty Vial') imgName = 'emptyvial';
       // +++ NEW SEED FIX +++
       else if (item.name === 'Grass Seed') imgName = 'grassseed';
       else if (item.name === 'Corn Seed') imgName = 'cornseed';
@@ -23422,6 +23424,7 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
+
 
 
 
