@@ -7783,7 +7783,7 @@ async function cookingChickenLoop(timestamp, startTime) {
     removeItem('Raw Chicken', 1);
     addXP('cooking', COOK_CHICKEN_XP);
     
-    const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (50/9)));
+    const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (30/9)));
     
     if (Math.random() * 100 < successRate) {
       addItem('Cooked Chicken', 1);
@@ -7913,7 +7913,7 @@ async function cookingBeefLoop(timestamp, startTime) {
     addXP('cooking', COOK_BEEF_XP);
     
     // Burning Formula: Starts at 50% success, reaches 100% at Level 10 (same as Chicken roughly)
-    const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (50/9)));
+    const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (25/9)));
     
     if (Math.random() * 100 < successRate) {
       addItem(COOK_BEEF_ITEM_COOKED, 1);
@@ -8115,7 +8115,7 @@ async function cookingHerringLoop(timestamp, startTime) {
     removeItem(COOK_HERRING_ITEM_RAW, 1);
     addXP('cooking', COOK_HERRING_XP);
     
-    const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (50/9)));
+    const successRate = Math.min(100, 50 + ((game.cooking.level - 1) * (20/9)));
     
     if (Math.random() * 100 < successRate) {
       addItem(COOK_HERRING_ITEM_COOKED, 1);
@@ -8217,7 +8217,7 @@ async function cookingTroutLoop(timestamp, startTime) {
     removeItem(COOK_TROUT_ITEM_RAW, 1);
     addXP('cooking', COOK_TROUT_XP);
     
-    const successRate = Math.min(100, 50 + ((game.cooking.level - 5) * (50/9)));
+    const successRate = Math.min(100, 50 + ((game.cooking.level - 5) * (18/9)));
     
     if (Math.random() * 100 < successRate || game.cooking.level < COOK_TROUT_LVL) {
       addItem(COOK_TROUT_ITEM_COOKED, 1);
@@ -8319,7 +8319,7 @@ async function cookingSalmonLoop(timestamp, startTime) {
     removeItem(COOK_SALMON_ITEM_RAW, 1);
     addXP('cooking', COOK_SALMON_XP);
     
-    const successRate = Math.min(100, 50 + ((game.cooking.level - 10) * (50/9)));
+    const successRate = Math.min(100, 50 + ((game.cooking.level - 10) * (15/9)));
     
     if (Math.random() * 100 < successRate || game.cooking.level < COOK_SALMON_LVL) {
       addItem(COOK_SALMON_ITEM_COOKED, 1);
@@ -23425,6 +23425,7 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
+
 
 
 
