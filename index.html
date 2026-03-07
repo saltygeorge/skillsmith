@@ -17712,7 +17712,7 @@ function handleEnemyDeath() {
       
       if (Math.random() < 0.5) {
           addItem('Wild Herb', 1);
-          showItemPopup(`+1 Wild Herb`, null, dropDelay + 450);
+          showItemPopup(`+1 Wild Herb`, null, dropDelay + 450)
           dropDelay += 450;
       }
       if (Math.floor(Math.random() * 30) === 0) {
@@ -17720,13 +17720,9 @@ function handleEnemyDeath() {
           showItemPopup(`+1 Magic Staff`, null, dropDelay + 450);
       }
     } else if (name === 'Madmax') {
-      // 1/8 Chance for Lottery Tickets (12.5% drop rate)
-      if (Math.floor(Math.random() * 8) === 0) {
           addItem('Lottery Ticket', 2);
           showItemPopup('+2 Lottery Ticket', null, dropDelay);
           dropDelay += 450; // Add delay so rare drop doesn't overlap if it hits
-      }
-      
       // 1/100 Rare Drop
       if (Math.floor(Math.random() * 100) === 0) {
           addItem('Silver Fangs of the Fallen Monarch', 1);
@@ -23407,4 +23403,5 @@ window.inspectPlayer = async function(playerName) {
   
 </script>
 </body>
+
 </html>
