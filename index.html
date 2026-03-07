@@ -4410,7 +4410,7 @@ const ITEM_SELL_PRICES = {
   'Silver Axe': 150,
   'Copper Shortsword': 20,
   'Iron Shortsword': 65,
-  'Magic Staff': 50,
+  'Magic Staff': 500,
   'Fishing Pole': 1000,
   '1tapper': 0,
   'Silver Fangs of the Fallen Monarch': 25000,
@@ -17444,18 +17444,35 @@ function playerAttackTurn(spellOverride = null) {
     return;
   }
 
-  if (activeSpell) {
-    let requiredStone = activeSpell.name.split(' ')[0] + 'stone';
-    let stoneCount = 0;
-    for (const slot of game.inventory) if (slot && slot.name === requiredStone) stoneCount += slot.qty;
-    if (stoneCount < 3) { showWarningPopup(`Need 3 ${requiredStone}!`); return; }
-    removeItem(requiredStone, 3);
-    playGlobalSound('sounds/soundeffects/earthblastsoundeffect.mp3');
-  } else if (weaponType === 'ranged') {
-    playGlobalSound('sounds/soundeffects/arrowsoundeffect.mp3');
-  } else {
-    playGlobalSound('sounds/soundeffects/swordsoundeffect.mp3');
+if (activeSpell) {
+  let requiredStone = activeSpell.name.split(' ')[0] + 'stone';
+  let stoneCount = 0;
+
+  // Determine stone cost based on magic level
+  let stonesNeeded = 3;
+  if (game.magicLevel >= 80) {
+    stonesNeeded = 1;
+  } else if (game.magicLevel >= 40) {
+    stonesNeeded = 2;
   }
+
+  for (const slot of game.inventory) {
+    if (slot && slot.name === requiredStone) stoneCount += slot.qty;
+  }
+
+  if (stoneCount < stonesNeeded) {
+    showWarningPopup(`Need ${stonesNeeded} ${requiredStone}!`);
+    return;
+  }
+
+  removeItem(requiredStone, stonesNeeded);
+  playGlobalSound('sounds/soundeffects/earthblastsoundeffect.mp3');
+
+} else if (weaponType === 'ranged') {
+  playGlobalSound('sounds/soundeffects/arrowsoundeffect.mp3');
+} else {
+  playGlobalSound('sounds/soundeffects/swordsoundeffect.mp3');
+}
 
   // --- AGGRESSIVE DAMAGE FORMULAS ---
   let maxHit = 0;
@@ -23405,5 +23422,6 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
+
 
 
