@@ -14115,14 +14115,14 @@ function renderBountyInterface() {
       <div onclick="assignBounty(1)" class="quest-line-card" style="text-align: left; margin-bottom: 12px;">
         <div style="font-size: 18px; font-weight: bold; color: var(--gold);">Level 1 Bounties</div>
         <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Rats, Spiders, Chickens, Goblins, etc.</div>
-        <div style="margin-top: 8px; color: #aaffaa;">Reward: 500 Gold</div>
+        <div style="margin-top: 8px; color: #aaffaa;">Reward: 2500 Gold</div>
       </div>
 
       <div onclick="assignBounty(2)" class="quest-line-card ${isLvl2Locked ? 'locked-item' : ''}" style="text-align: left;">
         <div style="font-size: 18px; font-weight: bold; color: ${isLvl2Locked ? '#888' : '#ff4d4d'};">Level 2 Bounties</div>
         <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Elite targets like Crazy Owls and The Witch.</div>
         <div style="margin-top: 8px; color: ${isLvl2Locked ? '#ff8888' : '#aaffaa'};">
-            ${isLvl2Locked ? 'Requires Bounty Hunting Lvl 10' : 'Reward: 1,000 - 1,500 Gold'}
+            ${isLvl2Locked ? 'Requires Bounty Hunting Lvl 10' : 'Reward: 10,000 - 15,000 Gold'}
         </div>
       </div>
     `;
@@ -14146,9 +14146,9 @@ async function assignBounty(tier) {
   const randomTarget = targets[Math.floor(Math.random() * targets.length)];
   
   // Determine reward based on monster name
-  let reward = 500; 
-  if (randomTarget === 'Crazy Owl') reward = 1000;
-  if (randomTarget === 'The Witch') reward = 1500;
+  let reward = 2500; 
+  if (randomTarget === 'Crazy Owl') reward = 10000;
+  if (randomTarget === 'The Witch') reward = 15000;
 
   game.activeBounty = {
     target: randomTarget,
@@ -14172,7 +14172,7 @@ async function assignBounty(tier) {
 async function claimBountyReward() {
   if (!game.activeBounty || game.activeBounty.kills < game.activeBounty.req) return;
   
-  const rewardAmount = game.activeBounty.reward || 500;
+  const rewardAmount = game.activeBounty.reward || 2500;
   addGold(rewardAmount);
   playGlobalSound('sounds/soundeffects/levelupsound.mp3');
   
@@ -23422,6 +23422,7 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
+
 
 
 
