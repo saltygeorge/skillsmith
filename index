@@ -3849,6 +3849,7 @@ const VALID_ITEMS = [
   'Sapphire Necklace',
   'Topaz Necklace',
   'Silver Fangs of the Fallen Monarch'
+  'Iron Battleaxe',
 ];
 
 const XP_TABLE = [
@@ -4368,6 +4369,7 @@ SHOP_INVENTORY[4] = { name: 'Empty Bucket', price: 10 };
 SHOP_INVENTORY[5] = { name: 'Grass Seed', price: 15 };
 SHOP_INVENTORY[6] = { name: 'Corn Seed', price: 30 };
 SHOP_INVENTORY[7] = { name: 'Empty Vial', price: 50 };
+SHOP_INVENTORY[8] = { name: 'Iron Battleaxe', price: 5000 };
 
 // --- NEW: Item Sell Prices ---
 const ITEM_SELL_PRICES = {
@@ -4436,6 +4438,7 @@ const ITEM_SELL_PRICES = {
   'Wizard Boots': 30,
   'Gold Crown': 50000,
   'Elegant Black Cape': 50000,
+  'Iron Battleaxe': 5000,
 
   // Arrows & Bows
   'Copper Arrow': 5,
@@ -23069,6 +23072,7 @@ window.inspectPlayer = async function(playerName) {
       'images/goldcrown.png',       // Rare Item
       'images/elegantblackcape.png', // New Jackpot
       'images/1tapper.png',         // Admin Item
+      'images/ironbattleaxe.png', // New weapon
 
       // --- Hub Icons ---
       'images/mines.png',
@@ -23428,6 +23432,7 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
+
 
 
 
