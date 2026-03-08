@@ -4321,8 +4321,8 @@ const ITEM_STATS = {
   'Iron Platelegs': { meleeDef: 8, rangedDef: 9, magicDef: 1, magicAtk: -10, rangedAtk: -6, armorType: 'melee' },
   'Iron Boots': { meleeDef: 3, rangedDef: 3, magicDef: 1, magicAtk: -3, rangedAtk: -1, armorType: 'melee' },
   'Iron Shortsword': { meleeStr: 7, meleeAtk: 9, weaponType: 'melee', speed: 2000 },
-  'Silver Fangs of the Fallen Monarch': { meleeStr: 9, meleeAtk: 15, weaponType: 'melee', speed: 1500 },
-  'Iron Battleaxe': { meleeStr: 12, meleeAtk: 10, weaponType: 'melee', speed: 2500 },
+  'Silver Fangs of the Fallen Monarch': { meleeStr: 9, meleeAtk: 15, weaponType: 'melee', twoHanded: true, speed: 1500 },
+  'Iron Battleaxe': { meleeStr: 12, meleeAtk: 10, weaponType: 'melee', twoHanded: true, speed: 2500 },
   'Iron Shield': { meleeDef: 5, rangedDef: 5, armorType: 'hybrid' },
 
   // --- RANGED GEAR (High Magic Def, Positive Range Atk) ---
@@ -4346,7 +4346,7 @@ const ITEM_STATS = {
   // --- COSMETICS / SPECIALS ---
   'Gold Crown': { meleeDef: 8, rangedDef: 8, magicDef: 8, magicAtk: 2, rangedAtk: 2, meleeAtk: 2, armorType: 'hybrid' },
   'Elegant Black Cape': { meleeDef: 2, armorType: 'melee' },
-  '1tapper': { meleeStr: 999, meleeAtk: 999, weaponType: 'melee', speed: 500 },
+  '1tapper': { meleeStr: 999, meleeAtk: 999, weaponType: 'melee', twoHanded: true, speed: 500 },
   'Pet Spider': { type: 'pet' },
   'Gold Ring': { armorType: 'jewelry' },
   'Diamond Ring': { meleeDef: 2, armorType: 'jewelry' },
@@ -23442,6 +23442,7 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
+
 
 
 
