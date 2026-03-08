@@ -5276,7 +5276,7 @@ function renderInventoryGrid(){
       slot.draggable = true;
       const item = slotData;
       const img = document.createElement('img');
-              let imgName = item.name.toLowerCase().replace(/\s+/g,'');
+              let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
               if (item.name === 'Copper Bar') imgName = 'copperbar';
               else if (item.name === 'Copper Chestplate') imgName = 'copperchestplate';
               else if (item.name === 'Silver Ore') imgName = 'silverore';
@@ -5389,8 +5389,8 @@ function renderInventoryGrid(){
               else if (item.name === 'Ruby Necklace') imgName = 'rubynecklace';
               else if (item.name === 'Sapphire Necklace') imgName = 'sapphirenecklace';
               else if (item.name === 'Topaz Necklace') imgName = 'topaznecklace';
-              else if (item.name === 'Silver Fangs of the Fallen Monarch') imgName = 'silverfangsofthefallenmonarch';
               else if (item.name === 'Iron Battleaxe') imgName = 'ironbattleaxe';
+              else if (item.name === 'Silver Fangs of the Fallen Monarch') imgName = 'silverfangsofthefallenmonarch';
 
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
@@ -23434,6 +23434,7 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
+
 
 
 
