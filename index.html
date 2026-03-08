@@ -3850,6 +3850,7 @@ const VALID_ITEMS = [
   'Topaz Necklace',
   'Silver Fangs of the Fallen Monarch',
   'Iron Battleaxe',
+  'Iron Shield',
 ];
 
 const XP_TABLE = [
@@ -4322,6 +4323,7 @@ const ITEM_STATS = {
   'Iron Shortsword': { meleeStr: 7, meleeAtk: 9, weaponType: 'melee', speed: 2000 },
   'Silver Fangs of the Fallen Monarch': { meleeStr: 9, meleeAtk: 15, weaponType: 'melee', speed: 1500 },
   'Iron Battleaxe': { meleeStr: 12, meleeAtk: 10, weaponType: 'melee', speed: 2500 },
+  'Iron Shield': { meleeDef: 5, rangedDef: 5, armorType: 'hybrid' },
 
   // --- RANGED GEAR (High Magic Def, Positive Range Atk) ---
   'Leather Hood': { meleeDef: 1, rangedDef: 2, magicDef: 4, rangedAtk: 2, magicAtk: -1, armorType: 'ranged' },
@@ -4370,6 +4372,7 @@ SHOP_INVENTORY[5] = { name: 'Grass Seed', price: 15 };
 SHOP_INVENTORY[6] = { name: 'Corn Seed', price: 30 };
 SHOP_INVENTORY[7] = { name: 'Empty Vial', price: 50 };
 SHOP_INVENTORY[8] = { name: 'Iron Battleaxe', price: 5000 };
+ SHOP_INVENTORY[8] = { name: 'Iron Shield', price: 5000 };
 
 // --- NEW: Item Sell Prices ---
 const ITEM_SELL_PRICES = {
@@ -4419,6 +4422,7 @@ const ITEM_SELL_PRICES = {
   '1tapper': 0,
   'Silver Fangs of the Fallen Monarch': 25000,
   'Iron Battleaxe': 5000,
+  'Iron Shield': 5000,
 
   // Armor
   'Copper Helmet': 20,
@@ -4922,7 +4926,8 @@ function renderEquipment() {
   'Gold Ring': 'goldring', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
   'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace',
   'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch',
-  'Iron Battleaxe': 'ironbattleaxe'
+  'Iron Battleaxe': 'ironbattleaxe',
+  'Iron Shield': 'ironshield'
 };
 
   slots.forEach(slotType => {
@@ -5390,6 +5395,7 @@ function renderInventoryGrid(){
               else if (item.name === 'Sapphire Necklace') imgName = 'sapphirenecklace';
               else if (item.name === 'Topaz Necklace') imgName = 'topaznecklace';
               else if (item.name === 'Iron Battleaxe') imgName = 'ironbattleaxe';
+              else if (item.name === 'Iron Shield') imgName = 'ironshield';
               else if (item.name === 'Silver Fangs of the Fallen Monarch') imgName = 'silverfangsofthefallenmonarch';
 
       img.src = `images/${imgName}.png`;
@@ -5668,7 +5674,7 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Ruby Ring': 'ring_choice', 'Sapphire Ring': 'ring_choice', 'Topaz Ring': 'ring_choice',
     'Diamond Necklace': 'necklace', 'Emerald Necklace': 'necklace', 'Ruby Necklace': 'necklace',
     'Sapphire Necklace': 'necklace', 'Topaz Necklace': 'necklace',
-    'Silver Fangs of the Fallen Monarch': 'weapon', 'Iron Battleaxe': 'weapon',
+    'Silver Fangs of the Fallen Monarch': 'weapon', 'Iron Battleaxe': 'weapon', 'Iron Shield': 'shield',
   };
   const itemSlotType = equipableItems[itemName];
 
@@ -18385,6 +18391,7 @@ function renderBankGrid() {
               else if (item.name === 'Elegant Black Cape') imgName = 'elegantblackcape';
 
               else if (item.name === 'Iron Battleaxe') imgName = 'ironbattleaxe';
+              else if (item.name === 'Iron Shield') imgName = 'ironshield';
        
               else if (item.name === 'Coal Ore') imgName = 'coalore';
               else if (item.name === 'Iron Ore') imgName = 'ironore';
@@ -20585,7 +20592,7 @@ function renderInspectEquipment(equipment, frame) {
         'Empty Bucket': 'emptybucket', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
         'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
         'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace',
-        'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch', 'Iron Battleaxe': 'ironbattleaxe'
+        'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch', 'Iron Battleaxe': 'ironbattleaxe', 'Iron Shield': 'ironshield'
     };
 
     slots.forEach(slotType => {
@@ -23075,6 +23082,7 @@ window.inspectPlayer = async function(playerName) {
       'images/elegantblackcape.png', // New Jackpot
       'images/1tapper.png',         // Admin Item
       'images/ironbattleaxe.png',
+      'images/ironshield.png',
 
       // --- Hub Icons ---
       'images/mines.png',
@@ -23434,6 +23442,7 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
+
 
 
 
