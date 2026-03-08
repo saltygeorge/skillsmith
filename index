@@ -23072,7 +23072,6 @@ window.inspectPlayer = async function(playerName) {
       'images/goldcrown.png',       // Rare Item
       'images/elegantblackcape.png', // New Jackpot
       'images/1tapper.png',         // Admin Item
-      'images/ironbattleaxe.png',  // Admin Item
 
       // --- Hub Icons ---
       'images/mines.png',
@@ -23432,9 +23431,6 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
-
-
-
 
 
 
