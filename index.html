@@ -4912,17 +4912,18 @@ function renderEquipment() {
   const slots = ['necklace', 'helmet', 'cape', 'weapon', 'chest', 'shield', 'ring1', 'legs', 'ring2', 'arrows', 'boots', 'pet'];
   
   const itemImageMap = {
-    'Copper Helmet': 'copperhelmet', 'Copper Chestplate': 'copperchestplate', 'Copper Shortsword': 'coppershortsword', 'Copper Boots': 'copperboots',
-    'Iron Helmet': 'ironhelmet', 'Iron Chestplate': 'ironchestplate', 'Iron Shortsword': 'ironshortsword', 'Iron Boots': 'ironboots',
-    'Copper Platelegs': 'copperplatelegs', 'Iron Platelegs': 'ironplatelegs', 
-    'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 'Copper Arrow': 'copperarrow',
-    'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 'Leather Boots': 'leatherboots',
-    'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff',
-    'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider',
-    'Gold Ring': 'goldring', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
-    'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace',
-    'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch', 'Iron Battleaxe': 'ironbattleaxe'
-  };
+  'Copper Helmet': 'copperhelmet', 'Copper Chestplate': 'copperchestplate', 'Copper Shortsword': 'coppershortsword', 'Copper Boots': 'copperboots',
+  'Iron Helmet': 'ironhelmet', 'Iron Chestplate': 'ironchestplate', 'Iron Shortsword': 'ironshortsword', 'Iron Boots': 'ironboots',
+  'Copper Platelegs': 'copperplatelegs', 'Iron Platelegs': 'ironplatelegs',
+  'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 'Copper Arrow': 'copperarrow',
+  'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 'Leather Boots': 'leatherboots',
+  'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff',
+  'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider',
+  'Gold Ring': 'goldring', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
+  'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace',
+  'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch',
+  'Iron Battleaxe': 'ironbattleaxe'
+};
 
   slots.forEach(slotType => {
     const item = game.equipment[slotType];
@@ -5667,7 +5668,7 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Ruby Ring': 'ring_choice', 'Sapphire Ring': 'ring_choice', 'Topaz Ring': 'ring_choice',
     'Diamond Necklace': 'necklace', 'Emerald Necklace': 'necklace', 'Ruby Necklace': 'necklace',
     'Sapphire Necklace': 'necklace', 'Topaz Necklace': 'necklace',
-    'Silver Fangs of the Fallen Monarch': 'weapon'
+    'Silver Fangs of the Fallen Monarch': 'weapon', 'Iron Battleaxe': 'weapon',
   };
   const itemSlotType = equipableItems[itemName];
 
@@ -23433,6 +23434,7 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
+
 
 
 
