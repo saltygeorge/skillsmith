@@ -4323,7 +4323,7 @@ const ITEM_STATS = {
   'Iron Shortsword': { meleeStr: 7, meleeAtk: 9, weaponType: 'melee', speed: 2000 },
   'Silver Fangs of the Fallen Monarch': { meleeStr: 9, meleeAtk: 15, weaponType: 'melee', twoHanded: true, speed: 1500 },
   'Iron Battleaxe': { meleeStr: 12, meleeAtk: 10, weaponType: 'melee', twoHanded: true, speed: 2500 },
-  'Iron Shield': { meleeDef: 5, rangedDef: 5, armorType: 'hybrid' },
+  'Iron Shield': { meleeDef: 5, rangedDef: 5, magicDef: 0, armorType: 'hybrid' },
 
   // --- RANGED GEAR (High Magic Def, Positive Range Atk) ---
   'Leather Hood': { meleeDef: 1, rangedDef: 2, magicDef: 4, rangedAtk: 2, magicAtk: -1, armorType: 'ranged' },
@@ -23442,6 +23442,7 @@ window.inspectPlayer = async function(playerName) {
 </body>
 
 </html>
+
 
 
 
