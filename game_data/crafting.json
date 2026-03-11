@@ -1,4 +1,4 @@
-{
+﻿{
     "recipes":  [
                     {
                         "id":  "craft_bucket",
@@ -978,7 +978,7 @@
                         "section":  "cooking",
                         "skill":  "cooking",
                         "slot":  5,
-                        "level":  12,
+                        "level":   50,
                         "displayName":  "Cake",
                         "image":  "images/cake.png",
                         "time":  4500,

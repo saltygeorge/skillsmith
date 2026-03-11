@@ -834,6 +834,7 @@
                                "name":  "Cake",
                                "img":  "images/cake.png",
                                "sellPrice":  45,
+                               "unlockLevel":  50,
                                "effects":  {
                                                "heal":  12
                                            }
@@ -846,3 +847,5 @@
                                  }
               }
 }
+
+
