@@ -2258,7 +2258,7 @@ button.primary:hover { background: var(--accent-hover); }
             <div style="margin-top:8px; color:#efe3cf;">Select a category to view your current task.</div>
             <div id="questLinesContainer" style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
                 </div>
-            <div class="action-buttons" style="margin-top: 20px;">
+            <div class="action-buttons" style="margin-top: 10px;">
               <button id="hubQuests_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -2267,10 +2267,10 @@ button.primary:hover { background: var(--accent-hover); }
             <h2>Hunting Board</h2>
             <div style="margin-top:8px; color:#efe3cf;">Accept bounties to earn gold and experience.</div>
             
-            <div id="bountyContent" style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
+            <div id="bountyContent" style="margin-top: 4px; display: flex; flex-direction: column; gap: 6px; align-items: center;">
                 </div>
 
-            <div class="action-buttons" style="margin-top: 20px;">
+            <div class="action-buttons" style="margin-top: 10px;">
               <button id="hubHuntingBoard_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -2638,7 +2638,7 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubWell" class="hub-screen">
             <h2>The Well</h2>
             <div style="margin-top:8px; color:#efe3cf;">The water is cool and crystal clear.</div>
-            <div class="action-buttons" style="margin-top: 20px;">
+            <div class="action-buttons" style="margin-top: 10px;">
               <button id="hubWell_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -2683,7 +2683,7 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubWindmill" class="hub-screen">
             <h2>The Windmill</h2>
             <div style="margin-top:8px; color:#efe3cf;">The massive blades spin slowly in the breeze.</div>
-            <div class="action-buttons" style="margin-top: 20px;">
+            <div class="action-buttons" style="margin-top: 10px;">
               <button id="hubWindmill_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -3025,7 +3025,7 @@ button.primary:hover { background: var(--accent-hover); }
                 <button id="enchantBtn" class="primary" style="display: none; margin: 0 auto;" onclick="attemptEnchant()">Enchant</button>
             </div>
 
-            <div class="action-buttons" style="margin-top: 20px;">
+            <div class="action-buttons" style="margin-top: 10px;">
               <button onclick="backToActions()" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -4395,11 +4395,11 @@ SHOP_INVENTORY[1] = { name: 'Bronze Axe', price: 10 };
 SHOP_INVENTORY[2] = { name: 'Fishing Pole', price: 2500 };
 SHOP_INVENTORY[3] = { name: 'Fishing Bait', price: 10 };
 SHOP_INVENTORY[4] = { name: 'Empty Bucket', price: 10 };
-SHOP_INVENTORY[7] = { name: 'Grass Seed', price: 15 };
-SHOP_INVENTORY[6] = { name: 'Corn Seed', price: 30 };
 SHOP_INVENTORY[5] = { name: 'Empty Vial', price: 50 };
+SHOP_INVENTORY[6] = { name: 'Corn Seed', price: 30 };
+SHOP_INVENTORY[7] = { name: 'Grass Seed', price: 15 };
 SHOP_INVENTORY[8] = { name: 'Wheat Seed', price: 45 };
-//SHOP_INVENTORY[9] = { name: 'Wheat', price: 20 };
+// SHOP_INVENTORY[9] = { name: 'Wheat', price: 20 }; // Disabled from shop
 //SHOP_INVENTORY[10] = { name: 'Iron Battleaxe', price: 5000 };
 //SHOP_INVENTORY[11] = { name: 'Iron Shield', price: 5000 };
 
@@ -6399,6 +6399,7 @@ function updateSkillUI(){
       transition: all 0.15s ease;
     `;
     
+
     // --- Create the tooltip content ---
     let progressPercent = 0;
     let xpText = "";
@@ -6437,6 +6438,11 @@ function updateSkillUI(){
     img.alt = skillName;
     img.style.cssText = 'width: 40px; height: 40px; object-fit: contain; margin-bottom: 2px; pointer-events: none;';
     img.onerror = function(){ this.style.opacity='0.1'; this.style.filter='grayscale(100%)'; }; // Fallback
+    if (data.level >= 100) {
+      img.classList.add('legendary-glow');
+      img.style.borderRadius = '8px';
+      img.style.padding = '2px';
+    }
     iconWrapper.appendChild(img);
 
     // Append level text
@@ -6444,7 +6450,7 @@ function updateSkillUI(){
     levelText.innerText = data.level; // <-- FIX: Removed "Lvl "
     levelText.style.fontWeight = 'bold';
     levelText.style.pointerEvents = 'none';
-    levelText.style.color = '#fff'; // <-- THIS IS THE FIX
+    levelText.style.color = (data.level >= 100) ? 'var(--gold)' : '#fff';
     iconWrapper.appendChild(levelText);
 
     container.appendChild(iconWrapper);
@@ -12282,8 +12288,38 @@ function ensureFarmState() {
 // +++ NEW BOUNTY HUNTING CONSTANTS +++
 const BOUNTY_TIER_1_TARGETS = ['Rat', 'Spider', 'Chicken', 'Cow', 'Centipede', 'Goblin', 'Crazy Platypus'];
 const BOUNTY_TIER_2_TARGETS = ['Crazy Owl', 'The Witch']; 
+const BOUNTY_TIER_1_ITEM_REQUESTS = [
+  { name: 'Venom', qty: 100, reward: 5000 },
+  { name: 'Cooked Herring', qty: 100, reward: 5000 }
+];
+const BOUNTY_TIER_2_ITEM_REQUESTS = [
+  { name: 'Cake', qty: 25, reward: 20000 },
+  { name: 'Vitality Potion+', qty: 25, reward: 25000 }
+];
 const BOUNTY_KILL_XP = 8; 
 const BOUNTY_REQ_COUNT = 100;
+
+function getInventoryQtyByName(itemName) {
+  let total = 0;
+  for (const slot of (game.inventory || [])) {
+    if (slot && slot.name === itemName) total += Number(slot.qty || 0);
+  }
+  return total;
+}
+
+function getActiveBountyProgress(bounty) {
+  if (!bounty) return { current: 0, required: 1, isComplete: false };
+
+  if (bounty.mode === 'item') {
+    const current = getInventoryQtyByName(bounty.itemName);
+    const required = Math.max(1, Number(bounty.reqQty || 0));
+    return { current, required, isComplete: current >= required };
+  }
+
+  const current = Math.max(0, Number(bounty.kills || 0));
+  const required = Math.max(1, Number(bounty.req || 0));
+  return { current, required, isComplete: current >= required };
+}
 
 function openTailoringHub() {
   showMainScreen('hubTailoring');
@@ -14449,7 +14485,7 @@ function openWellHub() {
       </div>
     </div>
 
-    <div class="action-buttons" style="margin-top: 20px;">
+    <div class="action-buttons" style="margin-top: 10px;">
       <button id="startWaterBtn" class="primary">Gather Water</button>
       <button id="stopWaterBtn" class="primary" style="background:#555; display:none;">Stop</button>
       <button id="hubWell_ReturnBtn" class="primary" style="background:#666;">Return</button>
@@ -14573,90 +14609,117 @@ function renderBountyInterface() {
   container.innerHTML = '';
 
   if (game.activeBounty) {
-    // --- ACTIVE MISSION VIEW ---
     const b = game.activeBounty;
-    const isComplete = b.kills >= b.req;
+    const progress = getActiveBountyProgress(b);
+    const isComplete = progress.isComplete;
     const statusColor = isComplete ? '#44aa44' : '#efe3cf';
     const statusText = isComplete ? 'MISSION COMPLETE' : 'IN PROGRESS';
-    
+    const missionTitle = (b.mode === 'item')
+      ? `Current Request: Deliver ${b.reqQty} ${b.itemName}`
+      : `Current Bounty: Kill ${b.target}s`;
+
     const bountyHtml = `
-      <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 2px solid ${isComplete ? '#44aa44' : 'var(--accent)'};">
-        <h3 style="color: var(--gold); margin-top: 0;">Current Bounty: Kill ${b.target}s</h3>
+      <div style="width:100%; max-width:420px; background: rgba(0,0,0,0.2); padding: 14px 15px; border-radius: 8px; border: 2px solid ${isComplete ? '#44aa44' : 'var(--accent)'};">
+        <h3 style="color: var(--gold); margin-top: 0;">${missionTitle}</h3>
         <div style="color: ${statusColor}; font-weight: bold; margin-bottom: 10px;">${statusText}</div>
-        
         <div style="margin-bottom: 10px;">
-           Progress: <span style="color: #fff;">${b.kills} / ${b.req}</span>
+           Progress: <span style="color: #fff;">${progress.current} / ${progress.required}</span>
         </div>
         <div style="width: 100%; height: 10px; background: #333; border-radius: 5px; overflow: hidden;">
-           <div style="width: ${Math.min(100, (b.kills / b.req) * 100)}%; height: 100%; background: var(--gold);"></div>
+           <div style="width: ${Math.min(100, (progress.current / progress.required) * 100)}%; height: 100%; background: var(--gold);"></div>
         </div>
         <div style="margin-top: 15px; font-size: 14px; color: #ccc;">
            Reward: ${b.reward} Gold
         </div>
-        
         ${isComplete ? 
           `<button onclick="claimBountyReward()" class="primary" style="margin-top: 15px; background: #44aa44; width: 100%;">Claim Reward</button>` : 
           `<div style="margin-top: 15px; font-style: italic; color: #888;">Return here when the job is done.</div>`
         }
+        <button onclick="cancelActiveBounty()" class="primary" style="margin-top: 8px; background:#7a2d2d; width: 100%;">Cancel Bounty</button>
       </div>
     `;
     container.innerHTML = bountyHtml;
 
   } else {
-    // --- SELECT MISSION VIEW ---
     const bhLvl = game.bountyhunting.level;
     const isLvl2Locked = bhLvl < 10;
 
     container.innerHTML = `
-      <div onclick="assignBounty(1)" class="quest-line-card" style="text-align: left; margin-bottom: 12px;">
+      <div onclick="assignBounty(1, 'kill')" class="quest-line-card" style="text-align: left; width:100%; max-width:420px; padding: 14px 15px;">
         <div style="font-size: 18px; font-weight: bold; color: var(--gold);">Level 1 Bounties</div>
         <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Rats, Spiders, Chickens, Goblins, etc.</div>
         <div style="margin-top: 8px; color: #aaffaa;">Reward: 2500 Gold</div>
       </div>
 
-      <div onclick="assignBounty(2)" class="quest-line-card ${isLvl2Locked ? 'locked-item' : ''}" style="text-align: left;">
+      <div onclick="assignBounty(1, 'item')" class="quest-line-card" style="text-align: left; width:100%; max-width:420px; padding: 14px 15px;">
+        <div style="font-size: 18px; font-weight: bold; color: var(--gold);">Level 1 Item Request</div>
+        <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Deliver 100 Venom or 100 Cooked Herring.</div>
+        <div style="margin-top: 8px; color: #aaffaa;">Reward: 5000 Gold</div>
+      </div>
+
+      <div onclick="assignBounty(2, 'kill')" class="quest-line-card ${isLvl2Locked ? 'locked-item' : ''}" style="text-align: left; width:100%; max-width:420px; padding: 14px 15px;">
         <div style="font-size: 18px; font-weight: bold; color: ${isLvl2Locked ? '#888' : '#ff4d4d'};">Level 2 Bounties</div>
         <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Elite targets like Crazy Owls and The Witch.</div>
         <div style="margin-top: 8px; color: ${isLvl2Locked ? '#ff8888' : '#aaffaa'};">
             ${isLvl2Locked ? 'Requires Bounty Hunting Lvl 10' : 'Reward: 10,000 - 15,000 Gold'}
         </div>
       </div>
+
+      <div onclick="assignBounty(2, 'item')" class="quest-line-card ${isLvl2Locked ? 'locked-item' : ''}" style="text-align: left; width:100%; max-width:420px; padding: 14px 15px;">
+        <div style="font-size: 18px; font-weight: bold; color: ${isLvl2Locked ? '#888' : '#ff4d4d'};">Level 2 Item Request</div>
+        <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Deliver 25 Cake or 25 Vitality Potion+.</div>
+        <div style="margin-top: 8px; color: ${isLvl2Locked ? '#ff8888' : '#aaffaa'};">
+            ${isLvl2Locked ? 'Requires Bounty Hunting Lvl 10' : 'Reward: 20,000 - 25,000 Gold'}
+        </div>
+      </div>
     `;
   }
 }
 
-async function assignBounty(tier) {
+async function assignBounty(tier, mode = 'kill') {
   if (!game.isSessionActive) {
     await showGameAlert("Session Error", "Session not active.");
     return;
   }
 
-  // --- FIX: Level 10 requirement for Tier 2 ---
   if (tier === 2 && game.bountyhunting.level < 10) {
     await showGameAlert("Level Required", "You need Bounty Hunting Level 10 to take on elite contracts.");
     return;
   }
-  
-  // Pick random target based on tier
-  const targets = (tier === 2) ? BOUNTY_TIER_2_TARGETS : BOUNTY_TIER_1_TARGETS;
-  const randomTarget = targets[Math.floor(Math.random() * targets.length)];
-  
-  // Determine reward based on monster name
-  let reward = 2500; 
-  if (randomTarget === 'Crazy Owl') reward = 10000;
-  if (randomTarget === 'The Witch') reward = 15000;
 
-  game.activeBounty = {
-    target: randomTarget,
-    req: BOUNTY_REQ_COUNT,
-    kills: 0,
-    tier: tier,
-    reward: reward
-  };
-  
-  await showGameAlert("Bounty Accepted", `Your mission: Kill ${BOUNTY_REQ_COUNT} ${randomTarget}s.`);
-  
-  // --- FIX: Update Sidebar Mission Tab in real-time ---
+  if (mode === 'item') {
+    const requests = (tier === 2) ? BOUNTY_TIER_2_ITEM_REQUESTS : BOUNTY_TIER_1_ITEM_REQUESTS;
+    const request = requests[Math.floor(Math.random() * requests.length)];
+
+    game.activeBounty = {
+      mode: 'item',
+      tier: tier,
+      itemName: request.name,
+      reqQty: request.qty,
+      reward: request.reward
+    };
+
+    await showGameAlert("Request Accepted", `Your mission: Deliver ${request.qty} ${request.name}.`);
+  } else {
+    const targets = (tier === 2) ? BOUNTY_TIER_2_TARGETS : BOUNTY_TIER_1_TARGETS;
+    const randomTarget = targets[Math.floor(Math.random() * targets.length)];
+
+    let reward = 2500;
+    if (randomTarget === 'Crazy Owl') reward = 10000;
+    if (randomTarget === 'The Witch') reward = 15000;
+
+    game.activeBounty = {
+      mode: 'kill',
+      target: randomTarget,
+      req: BOUNTY_REQ_COUNT,
+      kills: 0,
+      tier: tier,
+      reward: reward
+    };
+
+    await showGameAlert("Bounty Accepted", `Your mission: Kill ${BOUNTY_REQ_COUNT} ${randomTarget}s.`);
+  }
+
   if (typeof renderBountyDetails === 'function') {
       renderBountyDetails();
   }
@@ -14666,45 +14729,66 @@ async function assignBounty(tier) {
 }
 
 async function claimBountyReward() {
-  if (!game.activeBounty || game.activeBounty.kills < game.activeBounty.req) return;
-  
-  const rewardAmount = game.activeBounty.reward || 2500;
+  const b = game.activeBounty;
+  if (!b) return;
+
+  const progress = getActiveBountyProgress(b);
+  if (!progress.isComplete) return;
+
+  if (b.mode === 'item') {
+    if (!removeItem(b.itemName, Number(b.reqQty || 0))) {
+      await showGameAlert("Missing Items", `You no longer have enough ${b.itemName}.`);
+      return;
+    }
+  }
+
+  const rewardAmount = b.reward || 2500;
   addGold(rewardAmount);
   playGlobalSound('sounds/soundeffects/levelupsound.mp3');
-  
-  game.activeBounty = null; // Clear mission
-  
-  // --- NEW: Real-time update for the sidebar tab ---
+
+  game.activeBounty = null;
+
   if (typeof window.renderBountyDetails === 'function') {
       window.renderBountyDetails();
   }
-  // --- END NEW ---
-  
+
   game.isDirty = true;
-  
-  renderBountyInterface(); // This is the main hub render function
-  await showGameAlert("Bounty Claimed", `You received ${BOUNTY_REWARD_GOLD} Gold.`);
+  renderBountyInterface();
+  await showGameAlert("Bounty Claimed", `You received ${formatAmount(rewardAmount)} Gold.`);
+}
+
+
+async function cancelActiveBounty() {
+  if (!game.activeBounty) return;
+
+  const confirmed = await showGameConfirm('Cancel Bounty', 'Do you want to cancel your current bounty? Progress will be lost.');
+  if (!confirmed) return;
+
+  game.activeBounty = null;
+  game.isDirty = true;
+
+  if (typeof window.renderBountyDetails === 'function') {
+    window.renderBountyDetails();
+  }
+  renderBountyInterface();
 }
 
 function updateBountyProgress(enemyName, delay = 0) {
-  if (game.activeBounty && game.activeBounty.target === enemyName) {
+  if (!game.activeBounty || game.activeBounty.mode === 'item') return;
+
+  if (game.activeBounty.target === enemyName) {
     if (game.activeBounty.kills < game.activeBounty.req) {
       game.activeBounty.kills++;
-      
-      // Award XP per kill with delay
-      // We ensure delay is treated as a number
       addXP('bountyhunting', BOUNTY_KILL_XP, parseInt(delay));
 
-      // --- NEW: Real-time update for the sidebar tab ---
       if (typeof window.renderBountyDetails === 'function') {
           window.renderBountyDetails();
       }
-      
+
       game.isDirty = true;
     }
   }
 }
-
 function openForgeStone(type) {
   game.shopOpen = false; 
   hideTooltip();
@@ -15551,15 +15635,18 @@ function renderBountyDetails() {
         return;
     }
 
-    const isComplete = b.kills >= b.req;
+    const progress = getActiveBountyProgress(b);
+    const isComplete = progress.isComplete;
     const statusColor = isComplete ? '#44aa44' : 'var(--gold)';
     const statusText = isComplete ? 'MISSION COMPLETE' : 'IN PROGRESS';
-    
-    // RENDER ACTIVE BOUNTY DETAILS
+    const missionTitle = (b.mode === 'item')
+      ? `Active Request: Deliver ${b.reqQty} ${b.itemName}`
+      : `Active Bounty: Kill ${b.target}s`;
+
     container.innerHTML = `
         <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px;">
             <div style="font-weight: bold; color: var(--gold); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                Active Bounty: Kill ${b.target}s
+                ${missionTitle}
             </div>
             
             <div style="font-weight: bold; color: ${statusColor}; margin-bottom: 10px;">
@@ -15567,10 +15654,10 @@ function renderBountyDetails() {
             </div>
             
             <div style="margin-bottom: 10px;">
-               Progress: <span style="color: #fff; font-weight: bold;">${b.kills} / ${b.req}</span>
+               Progress: <span style="color: #fff; font-weight: bold;">${progress.current} / ${progress.required}</span>
             </div>
             <div style="width: 100%; height: 10px; background: #333; border-radius: 5px; overflow: hidden; margin-bottom: 10px;">
-               <div style="width: ${Math.min(100, (b.kills / b.req) * 100)}%; height: 100%; background: var(--gold);"></div>
+               <div style="width: ${Math.min(100, (progress.current / progress.required) * 100)}%; height: 100%; background: var(--gold);"></div>
             </div>
             <div style="font-size: 14px; color: #aaffaa;">
                Reward: ${b.reward} Gold
@@ -15578,7 +15665,6 @@ function renderBountyDetails() {
         </div>
     `;
 }
-
 
 function renderQuestLinesList() {
   const container = document.getElementById('questLinesContainer');
@@ -25131,6 +25217,21 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
