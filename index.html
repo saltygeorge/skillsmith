@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -433,6 +433,7 @@ body {
 }
 
 .progress-fill { height: 100%; background: var(--gold); width: 0%; transition: width 0.08s; }
+@keyframes millProgressLinear { from { width: 0%; } to { width: 100%; } }
 .action-buttons { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
 button.primary {
   background: var(--accent); color: #fff; border: 0; padding: 10px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;
@@ -1285,6 +1286,20 @@ button.primary:hover { background: var(--accent-hover); }
 }
 .hub-screen.active {
   display: flex; /* Show the active one */
+}
+
+/* Center craft-style hubs like Shop/Bank */
+#hubCrafting,
+#hubFletching,
+#hubBlacksmith,
+#hubAlchemy,
+#hubKitchen {
+  align-items: center;
+}
+#hubBlacksmith .tabs {
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
 }
 /* --- END NEW --- */
 
@@ -4384,7 +4399,7 @@ SHOP_INVENTORY[5] = { name: 'Grass Seed', price: 15 };
 SHOP_INVENTORY[6] = { name: 'Corn Seed', price: 30 };
 SHOP_INVENTORY[7] = { name: 'Empty Vial', price: 50 };
 SHOP_INVENTORY[8] = { name: 'Wheat Seed', price: 45 };
-//SHOP_INVENTORY[9] = { name: 'Wheat', price: 20 };
+SHOP_INVENTORY[9] = { name: 'Wheat', price: 20 };
 //SHOP_INVENTORY[10] = { name: 'Iron Battleaxe', price: 5000 };
 //SHOP_INVENTORY[11] = { name: 'Iron Shield', price: 5000 };
 
@@ -4626,8 +4641,8 @@ const CROPS = {
     productName: 'Wheat',
     levelReq: 5,
     stages: 3,
-    images: ['cornfirststage.png', 'cornsecondstage.png', 'cornthirdstage.png'],
-    seedImage: 'cornseed.png',
+    images: ['wheatfirststage.png', 'wheatsecondstage.png', 'wheatthirdstage.png'],
+    seedImage: 'wheatseed.png',
     stageOffsets: [
       { x: 0, y: 0 },
       { x: 0, y: -10 },
@@ -14135,7 +14150,7 @@ function openMillHub() {
 
     <div style="margin-top:14px; width:100%; max-width:520px;">
       <div class="progress-container">
-        <div class="progress-fill" id="millProgress"></div>
+        <div class="progress-fill" id="millProgress" style="transition:none;"></div>
         <div class="progress-text" id="millProgressText"></div>
       </div>
     </div>
@@ -14213,8 +14228,10 @@ function handleMillInDrop(e) {
   const wasEmpty = (Math.floor(game.farm.mill.inputWheat || 0) <= 0);
   game.farm.mill.inputWheat += amount;
   if (wasEmpty) {
+    const now = Date.now();
     game.farm.mill.processAccMs = 0;
-    game.farm.mill.lastCalcTime = Date.now();
+    game.farm.mill.lastCalcTime = now;
+    window.__millVisualStartAt = now;
   }
   game.isDirty = true;
 
@@ -14277,8 +14294,6 @@ function updateMillUI() {
   const input = Math.floor(mill.inputWheat || 0);
   const output = Math.floor(mill.outputFlour || 0);
   const acc = Math.max(0, mill.processAccMs || 0);
-  const sinceLastCalc = Math.max(0, Date.now() - (mill.lastCalcTime || Date.now()));
-  const visualAcc = input > 0 ? (acc + sinceLastCalc) : 0;
 
   const inBody = document.getElementById('millInBody');
   const outBody = document.getElementById('millOutBody');
@@ -14314,16 +14329,32 @@ function updateMillUI() {
   }
 
   if (input < 1) {
-    if (progressEl) progressEl.style.width = '0%';
+    window.__millVisualStartAt = null;
+    if (progressEl) {
+      progressEl.style.animation = 'none';
+      progressEl.style.width = '0%';
+      progressEl.dataset.millAnimating = '0';
+    }
     if (progressTextEl) progressTextEl.textContent = 'Idle (Drop Wheat in input)';
     return;
   }
 
-  const cycleAcc = visualAcc % MILL_PROCESS_TIME_MS;
-  const pct = Math.min(100, (cycleAcc / MILL_PROCESS_TIME_MS) * 100);
+  const now = Date.now();
+  if (typeof window.__millVisualStartAt !== 'number' || !Number.isFinite(window.__millVisualStartAt)) {
+    const seed = Math.max(0, Math.min(MILL_PROCESS_TIME_MS - 1, acc % MILL_PROCESS_TIME_MS));
+    window.__millVisualStartAt = now - seed;
+  }
+
+  const elapsedVisual = Math.max(0, now - window.__millVisualStartAt);
+  const cycleAcc = elapsedVisual % MILL_PROCESS_TIME_MS;
   const remaining = Math.max(0, MILL_PROCESS_TIME_MS - cycleAcc);
 
-  if (progressEl) progressEl.style.width = `${pct}%`;
+  if (progressEl && progressEl.dataset.millAnimating !== '1') {
+    progressEl.style.animation = `millProgressLinear ${MILL_PROCESS_TIME_MS}ms linear infinite`;
+    progressEl.style.animationDelay = `-${Math.floor(cycleAcc)}ms`;
+    progressEl.style.width = '100%';
+    progressEl.dataset.millAnimating = '1';
+  }
   if (progressTextEl) progressTextEl.textContent = `Converting... ${formatTimer(remaining)}`;
 }
 
@@ -23726,6 +23757,9 @@ window.inspectPlayer = async function(playerName) {
       'images/cornsecondstage.png',
       'images/cornthirdstage.png',
       'images/corn.png',
+      'images/wheatfirststage.png',
+      'images/wheatsecondstage.png',
+      'images/wheatthirdstage.png',
       'images/wheat.png',
 'images/flour.png',
 
@@ -24690,6 +24724,9 @@ window.getCraftJsonDebugSnapshot = function(){
         display:grid !important;
         gap:10px;
         align-items:start;
+        width: fit-content !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
       }
       .json-recipe-grid.grid-24 { grid-template-columns:repeat(6, var(--slot-size)); min-height: calc(var(--slot-size) * 4 + 30px); }
       .json-recipe-grid.grid-12 { grid-template-columns:repeat(6, var(--slot-size)); min-height: calc(var(--slot-size) * 2 + 10px); }
@@ -25094,6 +25131,66 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
