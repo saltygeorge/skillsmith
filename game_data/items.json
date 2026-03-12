@@ -829,7 +829,13 @@
                                 "name":  "Flour",
                                 "img":  "images/flour.png",
                                 "sellPrice":  12
-                            },"cake":  {
+                            },
+                  "salt":  {
+                                     "id":  "salt",
+                                     "name":  "Salt",
+                                     "img":  "images/salt.png",
+                                     "sellPrice":  5
+                                 },"cake":  {
                                "id":  "cake",
                                "name":  "Cake",
                                "img":  "images/cake.png",
@@ -847,5 +853,7 @@
                                  }
               }
 }
+
+
 
 

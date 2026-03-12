@@ -1,4 +1,4 @@
-{
+﻿{
   "monsters": {
     "chicken": {
       "id": "chicken",
@@ -66,6 +66,17 @@
       "defenceLvl": 4,
       "img": "images/platypusmonster.jpeg"
     },
+    "stupid_koala": {
+      "id": "stupid_koala",
+      "name": "Stupid Koala",
+      "level": 9,
+      "maxHp": 28,
+      "style": "melee",
+      "maxHit": 4,
+      "attackLvl": 9,
+      "defenceLvl": 7,
+      "img": "images/koalamonster.png"
+    },
     "crazy_owl": {
       "id": "crazy_owl",
       "name": "Crazy Owl",
@@ -112,3 +123,4 @@
     }
   }
 }
+
