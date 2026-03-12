@@ -2753,7 +2753,7 @@ button.primary:hover { background: var(--accent-hover); }
                 <img src="images/goldvein.jpeg" alt="Gold Vein" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
             </div>
-            <div class="action-buttons" style="margin-top: 14px;">
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubMine_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
@@ -2772,7 +2772,7 @@ button.primary:hover { background: var(--accent-hover); }
                 <img src="images/watercrystalvein.png" alt="Water Crystal" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
             </div>
-            <div class="action-buttons" style="margin-top: 14px;">
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubCrystalMine_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
@@ -2829,7 +2829,7 @@ button.primary:hover { background: var(--accent-hover); }
       </button>
     </div>
 
-    <div class="action-buttons" style="margin-top: 14px;">
+    <div class="action-buttons" style="margin-top: 14px; width: 100%;">
       <button id="hubForest_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
     </div>
 </div>
@@ -2861,7 +2861,7 @@ button.primary:hover { background: var(--accent-hover); }
               </button>
 
             </div>
-            <div class="action-buttons" style="margin-top: 14px;">
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubKitchen_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
@@ -2940,7 +2940,7 @@ button.primary:hover { background: var(--accent-hover); }
             
             </div>
             
-            <div class="action-buttons" style="margin-top: 14px;">
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubCave_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -2959,7 +2959,7 @@ button.primary:hover { background: var(--accent-hover); }
             
             </div>
             
-            <div class="action-buttons" style="margin-top: 14px;">
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubMadmaxCastle_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -2976,10 +2976,16 @@ button.primary:hover { background: var(--accent-hover); }
                    onmouseleave="hideTooltip()">
                 <img src="images/platypusmonster.jpeg" alt="Crazy Platypus" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
+
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Stupid Koala')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Stupid Koala (Lvl 9)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/koalamonster.png" alt="Stupid Koala" style="height: 100px; object-fit: cover; object-position: center;">
+              </div>
             
             </div>
             
-            <div class="action-buttons" style="margin-top: 14px;">
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubNormalForest_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -3118,7 +3124,7 @@ button.primary:hover { background: var(--accent-hover); }
             
             </div>
             
-            <div class="action-buttons" style="margin-top: 14px;">
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubFarm_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -3155,7 +3161,7 @@ button.primary:hover { background: var(--accent-hover); }
             
             </div>
             
-            <div class="action-buttons" style="margin-top: 14px;">
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubOcean_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -3178,7 +3184,7 @@ button.primary:hover { background: var(--accent-hover); }
             
             </div>
             
-            <div class="action-buttons" style="margin-top: 14px;">
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubRiver_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -3835,6 +3841,7 @@ const VALID_ITEMS = [
   'Sand', // +++ NEW +++
   'Empty Vial', // +++ NEW +++
   'Venom', // +++ NEW +++
+  'Salt', // +++ NEW +++
   'Lottery Ticket', // +++ NEW +++
   'Empty Bucket', // +++ NEW +++
   'Bucket of Milk', // +++ NEW +++
@@ -4503,6 +4510,7 @@ const ITEM_SELL_PRICES = {
   // Monster Drops & Misc
   'Rat Tail': 3,
   'Venom': 15,
+  'Salt': 5,
   'Empty Vial': 10,
   'Lottery Ticket': 10000,
   'Empty Bucket': 2,
@@ -5395,6 +5403,7 @@ function renderInventoryGrid(){
               else if (item.name === 'Sand') imgName = 'sand';
               else if (item.name === 'Empty Vial') imgName = 'emptyvial';
               else if (item.name === 'Venom') imgName = 'venom';
+              else if (item.name === 'Salt') imgName = 'salt';
               else if (item.name === 'Lottery Ticket') imgName = 'lotteryticket';
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
               else if (item.name === 'Air Crystal Shard') imgName = 'aircrystalshard';
@@ -17621,6 +17630,7 @@ function openCombatInterface(enemyName) {
     'Cow': { name: 'Cow', level: 2, maxHp: 15, style: 'melee', maxHit: 2, attackLvl: 3, defenceLvl: 3, img: 'images/cowmonster.png' },
     'Goblin': { name: 'Goblin', level: 8, maxHp: 25, style: 'melee', maxHit: 3, attackLvl: 8, defenceLvl: 5, img: 'images/goblinmonster.jpeg' },
     'Crazy Platypus': { name: 'Crazy Platypus', level: 5, maxHp: 20, style: 'ranged', maxHit: 3, attackLvl: 6, defenceLvl: 4, img: 'images/platypusmonster.jpeg' },
+    'Stupid Koala': { name: 'Stupid Koala', level: 9, maxHp: 28, style: 'melee', maxHit: 4, attackLvl: 9, defenceLvl: 7, img: 'images/koalamonster.png' },
     'Crazy Owl': { name: 'Crazy Owl', level: 10, maxHp: 45, style: 'ranged', maxHit: 5, attackLvl: 12, defenceLvl: 8, img: 'images/crazyowlmonster.jpeg' },
     'The Witch': { name: 'The Witch', level: 15, maxHp: 60, style: 'magic', maxHit: 8, attackLvl: 15, defenceLvl: 5, img: 'images/witchmonster.jpeg' },
     'Madmax': { name: 'Madmax', level: 69, maxHp: 500, style: 'melee', maxHit: 15, attackLvl: 60, defenceLvl: 50, img: 'images/madmaxmonster.jpeg', lastSpecialTime: Date.now() },
@@ -18307,6 +18317,9 @@ function handleEnemyDeath() {
     } else if (name === 'Crazy Platypus') {
       addItem('Fishing Bait', 2);
       showItemPopup(`+2 Fishing Bait`, null, dropDelay);
+    } else if (name === 'Stupid Koala') {
+      addItem('Salt', 1);
+      showItemPopup(`+1 Salt`, null, dropDelay);
     } else if (name === 'Crazy Owl') {
       addItem('Feather', 10);
       showItemPopup(`+10 Feather`, null, dropDelay);
@@ -19007,7 +19020,8 @@ function renderBankGrid() {
               else if (item.name === 'Rat Tail') imgName = 'rattail'; // +++ NEW ITEM +++
               else if (item.name === 'Sand') imgName = 'sand'; // +++ NEW +++
               else if (item.name === 'Empty Vial') imgName = 'emptyvial'; // +++ NEW +++
-              else if (item.name === 'Venom') imgName = 'venom'; // +++ NEW +++
+              else if (item.name === 'Venom') imgName = 'venom';
+              else if (item.name === 'Salt') imgName = 'salt'; // +++ NEW +++
               else if (item.name === 'Lottery Ticket') imgName = 'lotteryticket'; // +++ NEW +++
               
               
@@ -21773,7 +21787,7 @@ async function attemptEnchant() {
     
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  const ADMIN_UID = "qHclRuNSFTTrE19xYd7ilqIPFVe2";
+  const ADMIN_UID = "4HaiQgCEFjOapbcsFKmEAxqoLQk1";
 
   // +++ NEW: Stub function for resetGameState +++
   // The real function is defined in the non-module script
@@ -23822,6 +23836,7 @@ window.inspectPlayer = async function(playerName) {
       'images/witchmonster.jpeg',
       'images/goblinmonster.jpeg',
       'images/platypusmonster.jpeg',
+      'images/salt.png',
       // +++ NEW FARM ASSETS +++
       'images/farmicon.jpeg',
       'images/petyardicon.jpeg',
@@ -25217,6 +25232,11 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
 
 
 
