@@ -2324,7 +2324,7 @@ button.primary:hover { background: var(--accent-hover); }
             
           </div>
           
-          <div id="skillsTab" style="display:none;">
+          <div id="skillsTab" style="display:none; flex-direction: column; flex-grow: 1; overflow: hidden;">
             </div>
           
           <div id="questsTab" style="display:none; flex-direction: column; flex-grow: 1;">
@@ -5382,7 +5382,8 @@ function showTab(tab){
       showQuestSubTab(isMissionActive ? 'missions' : 'quests');
   }
   
-  document.getElementById(tab + 'Tab').style.display = 'block';
+  const activeTab = document.getElementById(tab + 'Tab');
+  activeTab.style.display = (tab === 'skills' || tab === 'quests') ? 'flex' : 'block';
 }
 
 /**
@@ -6704,8 +6705,10 @@ function updateSkillUI(){
   
   // Clear the tab and set up the header/container
   skillsTab.innerHTML = `
-    <div id="skillIconsContainer" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; justify-content: center; margin-top: 12px;">
+    <div style="width:100%; margin-top: 6px;">
+      <div id="skillIconsContainer" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:7px; justify-content:center; justify-items:center; width:100%; box-sizing:border-box;">
       </div>
+    </div>
   `;
 
   const container = document.getElementById('skillIconsContainer');
@@ -6724,7 +6727,7 @@ function updateSkillUI(){
       display: flex; 
       flex-direction: column; 
       align-items: center; 
-      gap: 5px; 
+      gap: 3px; 
       /* padding: 8px 10px; -- REMOVED */
       /* height: 80px; -- REMOVED */
       /* width: 80px; -- REMOVED */
@@ -6778,7 +6781,7 @@ function updateSkillUI(){
     const img = document.createElement('img');
     img.src = `images/${iconFileName}`;
     img.alt = skillName;
-    img.style.cssText = 'width: 40px; height: 40px; object-fit: contain; margin-bottom: 2px; pointer-events: none;';
+    img.style.cssText = 'width: 40px; height: 40px; object-fit: contain; margin-bottom: 1px; pointer-events: none;';
     img.onerror = function(){ this.style.opacity='0.1'; this.style.filter='grayscale(100%)'; }; // Fallback
     if (data.level >= 100) {
       img.classList.add('legendary-glow');
@@ -6793,6 +6796,8 @@ function updateSkillUI(){
     levelText.style.fontWeight = 'bold';
     levelText.style.pointerEvents = 'none';
     levelText.style.color = (data.level >= 100) ? 'var(--gold)' : '#fff';
+    levelText.style.lineHeight = '1';
+    levelText.style.fontSize = '13px';
     iconWrapper.appendChild(levelText);
 
     container.appendChild(iconWrapper);
