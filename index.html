@@ -918,6 +918,9 @@ button.primary:hover { background: var(--accent-hover); }
   cursor: pointer;
   font-weight: 700;
 }
+.context-menu-btn + .context-menu-btn {
+  margin-top: 6px;
+}
 .context-menu-btn:hover {
   background: var(--accent-hover);
 }
@@ -1800,6 +1803,104 @@ button.primary:hover { background: var(--accent-hover); }
   filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
 }
 
+.garden-tomb-overlay {
+  position: absolute;
+  left: 25%;
+  top: 30%;
+  width: 52px;
+  height: 52px;
+  margin-left: -26px;
+  margin-top: -26px;
+  z-index: 15;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.garden-tomb-overlay:hover img {
+  filter: brightness(1.12) drop-shadow(0 0 12px var(--gold)) drop-shadow(0 0 4px var(--gold));
+}
+
+.garden-tomb-overlay img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: filter 0.2s ease;
+}
+
+.garden-tomb-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 28px);
+  max-width: 360px;
+  padding: 14px;
+  border: 2px solid #6c5130;
+  border-radius: 12px;
+  background: rgba(36, 22, 12, 0.96);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+  z-index: 18;
+}
+
+.garden-tomb-panel h3 {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 22px;
+}
+
+.garden-tomb-panel p {
+  margin: 0;
+  color: #efe3cf;
+  line-height: 1.45;
+}
+
+.garden-tomb-offer-row {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+}
+
+.garden-tomb-offer-slot {
+  width: 60px;
+  height: 60px;
+  border: 2px dashed #b89a63;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.garden-tomb-offer-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.garden-tomb-offer-hint {
+  margin-top: 10px;
+  color: #d8c39b;
+  font-size: 13px;
+  text-align: center;
+}
+
+.garden-tomb-panel-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.garden-tomb-qty {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  color: #fff;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px #000;
+  font-size: 14px;
+  pointer-events: none;
+}
+
 .farm-stray-cat img {
   width: 100%;
   height: 100%;
@@ -2597,6 +2698,8 @@ button.primary:hover { background: var(--accent-hover); }
                                style="display:none;"></image>       
 
                     </svg>
+                    <div id="gardenTombOverlay"></div>
+                    <div id="gardenTombPanel"></div>
                 </div>
 
                 <div style="width: 100%; max-width: 420px; display: flex; justify-content: flex-start; margin-top: 10px;">
@@ -3567,6 +3670,7 @@ const game = {
     cellar: new Array(16).fill(null), // 16 Mushroom Tiles
     mill: createDefaultMillState(),
     strayCat: createDefaultStrayCatState(),
+    gardenTomb: createDefaultGardenTombState(),
     buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false }
   },
   
@@ -3858,6 +3962,12 @@ const VALID_ITEMS = [
   'Beef',
   'Cooked Beef',
   'Burnt Beef',
+  'Bread',
+  'Burnt Bread',
+  'Cheese',
+  'Salt Herring',
+  'Salt Trout',
+  'Salt Salmon',
   'Burnt Cake',
   'Magic Staff',
   'Gold Crown',
@@ -3914,6 +4024,11 @@ const VALID_ITEMS = [
   'Silver Fangs of the Fallen Monarch',
   'Iron Battleaxe',
   'Iron Shield',
+  'Gold Helmet',
+  'Gold Chestplate',
+  'Gold Platelegs',
+  'Gold Boots',
+  'Gold Shield',
 ];
 
 const XP_TABLE = [
@@ -4387,6 +4502,11 @@ const ITEM_STATS = {
   'Silver Fangs of the Fallen Monarch': { meleeStr: 9, meleeAtk: 15, weaponType: 'melee', twoHanded: true, speed: 1500 },
   'Iron Battleaxe': { meleeStr: 12, meleeAtk: 10, weaponType: 'melee', twoHanded: true, speed: 2500 },
   'Iron Shield': { meleeDef: 5, rangedDef: 5, magicDef: 0, armorType: 'hybrid' },
+  'Gold Helmet': { meleeDef: 5, rangedDef: 6, magicDef: 1, magicAtk: -4, rangedAtk: -2, armorType: 'melee' },
+  'Gold Chestplate': { meleeDef: 12, rangedDef: 13, magicDef: 2, magicAtk: -15, rangedAtk: -10, armorType: 'melee' },
+  'Gold Platelegs': { meleeDef: 8, rangedDef: 9, magicDef: 1, magicAtk: -10, rangedAtk: -6, armorType: 'melee' },
+  'Gold Boots': { meleeDef: 3, rangedDef: 3, magicDef: 1, magicAtk: -3, rangedAtk: -1, armorType: 'melee' },
+  'Gold Shield': { meleeDef: 5, rangedDef: 5, magicDef: 0, armorType: 'hybrid' },
 
   // --- RANGED GEAR (High Magic Def, Positive Range Atk) ---
   'Leather Hood': { meleeDef: 1, rangedDef: 2, magicDef: 4, rangedAtk: 2, magicAtk: -1, armorType: 'ranged' },
@@ -4489,6 +4609,7 @@ const ITEM_SELL_PRICES = {
   'Silver Fangs of the Fallen Monarch': 25000,
   'Iron Battleaxe': 5000,
   'Iron Shield': 5000,
+  'Gold Shield': 50000,
 
   // Armor
   'Copper Helmet': 20,
@@ -4499,6 +4620,10 @@ const ITEM_SELL_PRICES = {
   'Iron Chestplate': 120,
   'Iron Platelegs': 75,
   'Iron Boots': 55,
+  'Gold Helmet': 600,
+  'Gold Chestplate': 1200,
+  'Gold Platelegs': 750,
+  'Gold Boots': 550,
   'Leather Hood': 10,
   'Leather Body': 25,
   'Leather Chaps': 15,
@@ -4534,6 +4659,12 @@ const ITEM_SELL_PRICES = {
   'Salmon': 8,
   'Cooked Salmon': 10,
   'Burnt Salmon': 4,
+  'Bread': 18,
+  'Burnt Bread': 1,
+  'Cheese': 24,
+  'Salt Herring': 8,
+  'Salt Trout': 12,
+  'Salt Salmon': 16,
   'Vitality Potion': 150,
   'Vitality Potion+': 450,
 
@@ -4644,9 +4775,10 @@ const PET_DATA = {
         foodItem: 'Rat Tail',
         img: 'petspider', // Requires images/petspider.png
         bonus: (level) => {
-            let dmg = 0;
-            if (level >= 20) dmg += 1;
-            if (level >= 40) dmg += 1;
+            let dmg = 1;
+            if (level >= 20) dmg = 2;
+            if (level >= 40) dmg = 3;
+            if (level >= 50) dmg = 4;
             return { physicalDamage: dmg };
         }
     },
@@ -4655,7 +4787,9 @@ const PET_DATA = {
         foodItem: 'Raw Chicken',
         img: 'petowl', // Requires images/petowl.png
         bonus: (level) => {
-            const arrowRecoveryChance = 0.5;
+            let arrowRecoveryChance = 0.1;
+            if (level >= 25) arrowRecoveryChance = 0.25;
+            if (level >= 50) arrowRecoveryChance = 0.5;
             return { arrowRecoveryChance };
         }
     },
@@ -4664,13 +4798,40 @@ const PET_DATA = {
         foodItem: 'Herring',
         img: 'petcat', // Requires images/petcat.png
         bonus: (level) => {
-            let dmg = 0;
-            if (level >= 20) dmg += 1;
-            if (level >= 40) dmg += 1;
-            return { physicalDamage: dmg };
+            const scratchChance = level >= 50 ? 1 : level >= 25 ? 0.5 : 0.25;
+            const scratchDamage = level >= 50 ? 2 : 1;
+            return { scratchChance, scratchDamage };
         }
     }
 };
+
+function formatPetBonusText(petType, bonusData) {
+    if (!bonusData) return 'No bonus';
+    if (petType === 'Owl' && bonusData.arrowRecoveryChance) {
+        return Math.round(bonusData.arrowRecoveryChance * 100) + '% Arrow Recovery';
+    }
+    if (petType === 'Cat' && bonusData.scratchChance) {
+        return Math.round(bonusData.scratchChance * 100) + '% ' + bonusData.scratchDamage + ' Hit Chance';
+    }
+    if (bonusData.physicalDamage) return '+' + bonusData.physicalDamage + ' Phys Dmg';
+    return 'No bonus';
+}
+
+function getCatScratchDamage() {
+    if (!game.equipment.pet) return 0;
+    const petData = game.pets.find(p => p.id === game.equipment.pet.id);
+    if (!petData || petData.hp <= 0 || petData.type !== 'Cat') return 0;
+    const bonusData = PET_DATA.Cat && PET_DATA.Cat.bonus ? PET_DATA.Cat.bonus(petData.level) : null;
+    if (!bonusData || !bonusData.scratchChance || !bonusData.scratchDamage) return 0;
+    return Math.random() < Number(bonusData.scratchChance) ? Number(bonusData.scratchDamage) : 0;
+}
+
+function triggerCatScratchPopup(damage) {
+    setTimeout(() => {
+        showItemPopup('Scratch Attack!', null, 0);
+        showDamageSplat('enemy', damage, 'special');
+    }, 250);
+}
 
 const CROPS = {
   'Grass': {
@@ -5060,6 +5221,7 @@ function renderEquipment() {
   'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch',
   'Iron Battleaxe': 'ironbattleaxe',
   'Iron Shield': 'ironshield',
+  'Gold Helmet': 'goldhelmet', 'Gold Chestplate': 'goldchestplate', 'Gold Platelegs': 'goldplatelegs', 'Gold Boots': 'goldboots', 'Gold Shield': 'goldshield',
   'Vitality Potion+': 'vitalitypotionplus'
 };
 
@@ -5443,6 +5605,9 @@ function renderInventoryGrid(){
               else if (item.name === 'Burnt Trout') imgName = 'burnttrout';
               else if (item.name === 'Cooked Salmon') imgName = 'cookedsalmon';
               else if (item.name === 'Burnt Salmon') imgName = 'burntsalmon';
+              else if (item.name === 'Salt Herring') imgName = 'saltherring';
+              else if (item.name === 'Salt Trout') imgName = 'salttrout';
+              else if (item.name === 'Salt Salmon') imgName = 'saltsalmon';
               else if (item.name === 'Beef') imgName = 'beef';
               else if (item.name === 'Cooked Beef') imgName = 'cookedbeef';
               else if (item.name === 'Burnt Beef') imgName = 'burntbeef';
@@ -5550,6 +5715,11 @@ function renderInventoryGrid(){
               else if (item.name === 'Topaz Necklace') imgName = 'topaznecklace';
               else if (item.name === 'Iron Battleaxe') imgName = 'ironbattleaxe';
               else if (item.name === 'Iron Shield') imgName = 'ironshield';
+              else if (item.name === 'Gold Helmet') imgName = 'goldhelmet';
+              else if (item.name === 'Gold Chestplate') imgName = 'goldchestplate';
+              else if (item.name === 'Gold Platelegs') imgName = 'goldplatelegs';
+              else if (item.name === 'Gold Boots') imgName = 'goldboots';
+              else if (item.name === 'Gold Shield') imgName = 'goldshield';
               else if (item.name === 'Silver Fangs of the Fallen Monarch') imgName = 'silverfangsofthefallenmonarch';
 
       img.src = `images/${imgName}.png`;
@@ -5608,15 +5778,10 @@ function renderInventoryGrid(){
         if (stats.speed) itemStats += `<div style="color:var(--gold);">Speed: ${(stats.speed / 1000).toFixed(1)}s</div>`;
         
         clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Click to equip</div>';
-      } else if (itemName.includes('Cooked') || itemName === 'Cake') {
+      } else if (getFoodHealAmount(itemName) > 0) {
         // Consumables logic
-        let healAmt = 0;
-        if (itemName === 'Cooked Chicken') healAmt = COOK_CHICKEN_HEAL;
-        else if (itemName === 'Cooked Beef') healAmt = COOK_BEEF_HEAL;
-        else if (itemName === 'Cooked Herring') healAmt = COOK_HERRING_HEAL;
-        else if (itemName === 'Cooked Trout') healAmt = COOK_TROUT_HEAL;
-        else if (itemName === 'Cooked Salmon') healAmt = COOK_SALMON_HEAL;
-        else if (itemName === 'Cake') healAmt = 12;
+        const healAmt = getFoodHealAmount(itemName);
+        
         
         itemStats = `<div style="color:#aaffaa;">+${healAmt} HP</div>`;
         clickAction = '<div style="color:#aaffaa; margin-top: 5px; font-size:11px;">Click to eat</div>';
@@ -5836,6 +6001,7 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Diamond Necklace': 'necklace', 'Emerald Necklace': 'necklace', 'Ruby Necklace': 'necklace',
     'Sapphire Necklace': 'necklace', 'Topaz Necklace': 'necklace',
     'Silver Fangs of the Fallen Monarch': 'weapon', 'Iron Battleaxe': 'weapon', 'Iron Shield': 'shield',
+    'Gold Helmet': 'helmet', 'Gold Chestplate': 'chest', 'Gold Platelegs': 'legs', 'Gold Boots': 'boots', 'Gold Shield': 'shield',
   };
   const itemSlotType = equipableItems[itemName];
 
@@ -5844,7 +6010,7 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     handleSellItemClick(slotIndex);
   } else if (itemSlotType) {
     equipItem(itemSlotType, slotIndex);
-  } else if (itemName.includes('Cooked') || itemName === 'Cake' || itemName === 'Vitality Potion' || itemName === 'Vitality Potion+' || itemName === 'Venom') {
+  } else if (getFoodHealAmount(itemName) > 0 || itemName === 'Vitality Potion' || itemName === 'Vitality Potion+' || itemName === 'Venom') {
     showItemContextMenu(event, itemName);
   }
 }
@@ -5854,18 +6020,10 @@ function showItemContextMenu(event, itemName) {
   const menu = document.getElementById('itemContextMenu');
   let menuContent = '';
 
-  if (itemName === 'Cooked Chicken') {
-    menuContent += `<button class="context-menu-btn" onclick="eatCookedChicken()">Eat</button>`;
-  } else if (itemName === 'Cooked Beef') {
-    menuContent += `<button class="context-menu-btn" onclick="eatCookedBeef()">Eat</button>`;
-  } else if (itemName === 'Cooked Herring') {
-    menuContent += `<button class="context-menu-btn" onclick="eatCookedHerring()">Eat</button>`;
-  } else if (itemName === 'Cooked Trout') {
-    menuContent += `<button class="context-menu-btn" onclick="eatCookedTrout()">Eat</button>`;
-  } else if (itemName === 'Cooked Salmon') {
-    menuContent += `<button class="context-menu-btn" onclick="eatCookedSalmon()">Eat</button>`;
-  } else if (itemName === 'Cake') {
-    menuContent += `<button class="context-menu-btn" onclick="eatCake()">Eat</button>`;
+  const foodHealAmt = getFoodHealAmount(itemName);
+  if (foodHealAmt > 0) {
+    const safeItemName = itemName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    menuContent += `<button class="context-menu-btn" onclick="eatFoodItem('${safeItemName}')">Eat</button>`;
   } else if (itemName === 'Vitality Potion') {
     menuContent += `<button class="context-menu-btn" onclick="drinkVitalityPotion()">Drink</button>`;
     menuContent += `<button class="context-menu-btn" onclick="equipToAutoEat('Vitality Potion')">Equip Auto-Heal</button>`;
@@ -6257,6 +6415,33 @@ function moveTooltip(evt) {
   
   tooltip.style.left = x + 'px';
   tooltip.style.top = y + 'px';
+}
+
+function getFoodHealAmount(itemName) {
+  if (itemName === 'Cooked Chicken') return COOK_CHICKEN_HEAL;
+  if (itemName === 'Cooked Beef') return COOK_BEEF_HEAL;
+  if (itemName === 'Cooked Herring') return COOK_HERRING_HEAL;
+  if (itemName === 'Cooked Trout') return COOK_TROUT_HEAL;
+  if (itemName === 'Cooked Salmon') return COOK_SALMON_HEAL;
+  if (itemName === 'Cake') return 12;
+  if (itemName === 'Bread') return 5;
+  if (itemName === 'Cheese') return 8;
+  if (itemName === 'Salt Herring') return 4;
+  if (itemName === 'Salt Trout') return 5;
+  if (itemName === 'Salt Salmon') return 6;
+  return 0;
+}
+
+async function eatFoodItem(itemName) {
+  const healAmt = getFoodHealAmount(itemName);
+  if (healAmt <= 0) return;
+  if (removeItem(itemName, 1)) {
+    game.hp = Math.min(game.maxHP, game.hp + healAmt);
+    updateHPUI();
+    hideItemContextMenu();
+    renderInventoryGrid();
+    game.isDirty = true;
+  }
 }
 
 function getNextXP(level){
@@ -12387,15 +12572,29 @@ const GARDEN_COST = 75000;
 const MILL_COST = 250000;
 const MILL_PROCESS_TIME_MS = 30000; // 30 seconds per Flour
 const FARM_STRAY_CAT_CHANCE_DENOM = 100; // 1 in 100 chance per farm-entry check
-const FARM_STRAY_CAT_COOLDOWN_MS = 300000; // 5 minutes between farm-entry cat checks
+const FARM_STRAY_CAT_COOLDOWN_MS = 10000; // 10 seconds between farm-entry checks for testing
+const GARDEN_TOMB_CHANCE_DENOM = 25; // 1 in 25 chance per garden-entry check
 
 function createDefaultStrayCatState() {
   return {
     visible: false,
-    lastCheckTime: 0
+    lastCheckTime: 0,
+    panelOpen: false,
+    offeringItem: null,
+    lastGiftDay: ''
   };
 }
 
+
+function createDefaultGardenTombState() {
+  return {
+    visible: false,
+    lastCheckTime: 0,
+    panelOpen: false,
+    offeringItem: null,
+    lastGiftDay: ''
+  };
+}
 
 function createDefaultMillState() {
   return {
@@ -12424,6 +12623,10 @@ function ensureFarmState() {
   if (!game.farm.cellar) game.farm.cellar = new Array(16).fill(null);
   if (!game.farm.mill) game.farm.mill = createDefaultMillState();
   if (!game.farm.strayCat) game.farm.strayCat = createDefaultStrayCatState();
+  if (!game.farm.gardenTomb) game.farm.gardenTomb = createDefaultGardenTombState();
+  if (typeof game.farm.gardenTomb.panelOpen !== 'boolean') game.farm.gardenTomb.panelOpen = false;
+  if (!game.farm.gardenTomb.offeringItem) game.farm.gardenTomb.offeringItem = null;
+  if (typeof game.farm.gardenTomb.lastGiftDay !== 'string') game.farm.gardenTomb.lastGiftDay = '';
 
   if (!game.farm.buildings) {
     game.farm.buildings = { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false };
@@ -12654,6 +12857,213 @@ function dismissFarmCat() {
   renderFarmCatOverlay();
 }
 
+function maybeSpawnGardenTomb() {
+  ensureFarmState();
+  const tomb = game.farm.gardenTomb;
+  const now = Date.now();
+
+  if (tomb.visible) return;
+  if ((now - (tomb.lastCheckTime || 0)) < FARM_STRAY_CAT_COOLDOWN_MS) return;
+
+  tomb.lastCheckTime = now;
+  if (Math.floor(Math.random() * GARDEN_TOMB_CHANCE_DENOM) === 0) {
+    tomb.visible = true;
+  }
+}
+
+function dismissGardenTomb() {
+  ensureFarmState();
+  if (!game.farm.gardenTomb) return;
+  closeGardenTombOffering(true);
+  game.farm.gardenTomb.visible = false;
+  renderGardenTombOverlay();
+}
+
+function getGardenSpiritDayKey() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
+function getGardenTombOfferImageName(itemName) {
+  if (itemName === 'Copper Arrow Poisoned') return 'copperarrowpoisonned';
+  return itemName.toLowerCase().replace(/\s+/g, '');
+}
+
+function openGardenTombOffering() {
+  hideTooltip();
+  ensureFarmState();
+  const tomb = game.farm.gardenTomb;
+  if (!tomb || !tomb.visible) return;
+
+  if (tomb.lastGiftDay === getGardenSpiritDayKey()) {
+    showGameAlert('A Quiet Grave', 'The spirit has already received a gift today. Return when another dawn arrives.');
+    return;
+  }
+
+  tomb.panelOpen = true;
+  renderGardenTombOfferingPanel();
+}
+
+function closeGardenTombOffering(shouldReturnItem = true) {
+  ensureFarmState();
+  const tomb = game.farm.gardenTomb;
+  if (!tomb) return;
+
+  if (shouldReturnItem && tomb.offeringItem) {
+    addItem(tomb.offeringItem.name, 1, tomb.offeringItem.enchantLevel || 0);
+  }
+
+  tomb.offeringItem = null;
+  tomb.panelOpen = false;
+  renderGardenTombOfferingPanel();
+}
+
+function returnGardenTombOffering() {
+  closeGardenTombOffering(true);
+}
+
+function renderGardenTombOfferingPanel() {
+  const panel = document.getElementById('gardenTombPanel');
+  if (!panel) return;
+
+  ensureFarmState();
+  const tomb = game.farm.gardenTomb;
+  if (!tomb || !tomb.visible || !tomb.panelOpen) {
+    panel.style.display = 'none';
+    panel.innerHTML = '';
+    return;
+  }
+
+  const offering = tomb.offeringItem;
+  const offerMarkup = offering
+    ? `<img src="images/${getGardenTombOfferImageName(offering.name)}.png" alt="${offering.name}"><div class="garden-tomb-qty">1</div>`
+    : '<div style="color:#cdb388; font-size:12px; text-align:center; line-height:1.25; padding:7px;">Drop 1 item</div>';
+
+  panel.style.display = 'block';
+  panel.className = 'garden-tomb-panel';
+  panel.innerHTML = `
+    <h3>Whispering Grave</h3>
+    <p>A hush clings to the soil. The spirit beneath the roots longs for a single offering.</p>
+    <div class="garden-tomb-offer-row">
+      <div id="gardenTombOfferSlot" class="inv-slot garden-tomb-offer-slot">${offerMarkup}</div>
+    </div>
+    <div class="garden-tomb-offer-hint">Drag exactly 1 item here. Click the slot to take your gift back.</div>
+    <div class="garden-tomb-panel-actions">
+      <button class="primary" id="gardenTombOfferBtn" ${offering ? '' : 'disabled'}>Offer Gift</button>
+      <button class="primary" id="gardenTombCloseBtn" style="background:#666;">Close</button>
+    </div>
+  `;
+
+  const slot = document.getElementById('gardenTombOfferSlot');
+  if (slot) {
+    slot.onclick = () => { if (tomb.offeringItem) returnGardenTombOffering(); };
+    slot.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      slot.classList.add('drag-over');
+    });
+    slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+    slot.addEventListener('drop', handleGardenTombDrop);
+  }
+
+  const offerBtn = document.getElementById('gardenTombOfferBtn');
+  if (offerBtn) offerBtn.onclick = offerGardenTombGift;
+  const closeBtn = document.getElementById('gardenTombCloseBtn');
+  if (closeBtn) closeBtn.onclick = () => closeGardenTombOffering(true);
+}
+
+function handleGardenTombDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const slot = document.getElementById('gardenTombOfferSlot');
+  if (slot) slot.classList.remove('drag-over');
+
+  ensureFarmState();
+  const tomb = game.farm.gardenTomb;
+  if (!tomb || !tomb.panelOpen) return;
+
+  if (tomb.lastGiftDay === getGardenSpiritDayKey()) {
+    showGameAlert('A Quiet Grave', 'The spirit has already received a gift today. Return when another dawn arrives.');
+    return;
+  }
+
+  if (tomb.offeringItem) {
+    showGameAlert('Offering Slot Full', 'Only one item may rest before the spirit at a time.');
+    return;
+  }
+
+  const dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+  if (dragIndex === null || dragIndex < 0) return;
+
+  const src = game.inventory[dragIndex];
+  if (!src || src.qty < 1) return;
+
+  tomb.offeringItem = { name: src.name, qty: 1, enchantLevel: src.enchantLevel || 0 };
+  if (!removeItem(src.name, 1, src.enchantLevel || 0)) {
+    tomb.offeringItem = null;
+    return;
+  }
+
+  const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
+  if (draggingEl) draggingEl.classList.remove('dragging');
+  window.__draggedInventoryIndex = null;
+  window.__millDraggedWheatQty = 0;
+  window.__millDraggedFlourQty = 0;
+  game.isDragging = false;
+  game.isDirty = true;
+
+  renderInventoryGrid();
+  renderGardenTombOfferingPanel();
+}
+
+async function offerGardenTombGift() {
+  ensureFarmState();
+  const tomb = game.farm.gardenTomb;
+  if (!tomb || !tomb.offeringItem) return;
+
+  if (tomb.lastGiftDay === getGardenSpiritDayKey()) {
+    await showGameAlert('A Quiet Grave', 'The spirit has already received a gift today. Return when another dawn arrives.');
+    return;
+  }
+
+  const gift = tomb.offeringItem;
+  tomb.offeringItem = null;
+  tomb.panelOpen = false;
+  tomb.lastGiftDay = getGardenSpiritDayKey();
+  tomb.visible = false;
+  game.isDirty = true;
+
+  renderGardenTombOfferingPanel();
+  renderGardenTombOverlay();
+
+  if (gift.name === 'Jade') {
+    addItem('Lottery Ticket', 3);
+    showItemPopup('+3 Lottery Ticket', null, 0);
+    await showGameAlert('The Spirit Is Happy', 'The spirit accepts your jade with quiet joy and leaves 3 Lottery Tickets behind.');
+  } else {
+    await showGameAlert('The Spirit Does Not Like Your Gift', 'The spirit turns away from your offering.');
+  }
+}
+
+function renderGardenTombOverlay() {
+  const overlay = document.getElementById("gardenTombOverlay");
+  if (!overlay) return;
+
+  ensureFarmState();
+  const tomb = game.farm.gardenTomb;
+  if (!tomb || !tomb.visible) {
+    overlay.innerHTML = "";
+    overlay.style.display = "none";
+    return;
+  }
+
+  overlay.style.display = "block";
+  overlay.className = "garden-tomb-overlay";
+  overlay.innerHTML = `<img src="images/tomb.png" alt="Tomb" onclick="event.stopPropagation(); openGardenTombOffering();" onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Whispering Grave</div>A spirit stirs beneath the earth, asking softly for a single offering.')" onmouseleave="hideTooltip()">`;
+}
+
 function renderFarmCatOverlay() {
   const overlay = document.getElementById('farmCatOverlay');
   if (!overlay) return;
@@ -12777,8 +13187,7 @@ function renderPetYard(tab) {
                 const petBonusDef = PET_DATA[pet.type];
                 if (petBonusDef && petBonusDef.bonus) {
                     const bonusData = petBonusDef.bonus(pet.level);
-                    if (pet.type === 'Owl' && bonusData.arrowRecoveryChance) bonusText = bonusData.arrowRecoveryChance === 0.5 ? '1/2 Arrow Recovery' : `${Math.round(bonusData.arrowRecoveryChance * 10)}/10 Arrow Recovery`;
-                    else if (bonusData.physicalDamage) bonusText = `+${bonusData.physicalDamage} Phys Dmg`;
+                    bonusText = formatPetBonusText(pet.type, bonusData);
                 }
                 html += `
                 <div 
@@ -12996,7 +13405,8 @@ async function sellPet(petId) {
     const pet = game.pets[petIndex];
     
     // Formula: 100 Gold per Level (e.g. Lvl 1 = 100g, Lvl 50 = 5000g)
-    const sellPrice = pet.level * 100;
+const basePrice = 100 + ((pet.level - 1) * 100);
+const sellPrice = pet.level >= 50 ? basePrice * 5 : pet.level >= 25 ? basePrice * 2 : basePrice;
     
     const confirmed = await showGameConfirm("Sell Pet", `Are you sure you want to sell your Lvl ${pet.level} ${pet.type} for ${sellPrice} Gold?`);
     
@@ -13031,6 +13441,7 @@ function stopCombat() {
 
 async function handleCellarClick() {
    dismissFarmCat();
+   dismissGardenTomb();
    // Initialize if missing (backward compatibility)
    if (!game.farm.buildings) game.farm.buildings = { coop: false, barn: false, well: false, garden: false, cellar: false };
 
@@ -13495,6 +13906,8 @@ function updateBarnUI() {
 
 function renderGarden() {
   if (!game.farm.garden) game.farm.garden = new Array(16).fill(null);
+  renderGardenTombOverlay();
+  renderGardenTombOfferingPanel();
 
   game.farm.garden.forEach((slotData, index) => {
     const poly = document.getElementById(`garden-poly-${index}`);
@@ -13989,8 +14402,7 @@ function showPetTooltip(e, petId) {
         const petDef = PET_DATA[pet.type];
         if (petDef && petDef.bonus) {
             const b = petDef.bonus(pet.level);
-            if (pet.type === 'Owl' && b.arrowRecoveryChance) bonusStr = b.arrowRecoveryChance === 0.5 ? '1/2 Arrow Recovery' : `${Math.round(b.arrowRecoveryChance * 10)}/10 Arrow Recovery`;
-            else if (b.physicalDamage) bonusStr = `+${b.physicalDamage} Phys Dmg`;
+            bonusStr = formatPetBonusText(pet.type, b);
         }
         
         // Override bonus text if sick
@@ -14699,6 +15111,9 @@ async function handleGardenClick() {
                
                // Open after purchase
                showMainScreen('hubGarden');
+               maybeSpawnGardenTomb();
+               renderGarden();
+               renderGardenTombOverlay();
            } else {
                await showGameAlert("Not Enough Gold", `You need ${formatAmount(GARDEN_COST)} Gold.`);
            }
@@ -14707,6 +15122,9 @@ async function handleGardenClick() {
    }
 
    showMainScreen('hubGarden');
+   maybeSpawnGardenTomb();
+   renderGarden();
+   renderGardenTombOverlay();
 }
 
 function openWellHub() {
@@ -18355,6 +18773,7 @@ if (activeSpell) {
   // --- OVERKILL CAP FIX ---
   // If the damage is higher than the enemy's remaining health, cap it.
   let effectiveDamage = Math.min(damage, enemy.currentHp);
+  let catScratchDamage = Math.min(getCatScratchDamage(), Math.max(0, enemy.currentHp - effectiveDamage));
 
   if (effectiveDamage > 0) {
     showDamageSplat('enemy', effectiveDamage, 'damage');
@@ -18363,6 +18782,11 @@ if (activeSpell) {
     showDamageSplat('enemy', 0, 'block');
   }
 
+  if (catScratchDamage > 0) {
+    triggerCatScratchPopup(catScratchDamage);
+  }
+
+  effectiveDamage += catScratchDamage;
   game.currentEnemy.currentHp -= effectiveDamage;
   updateEnemyCombatUI();
 
@@ -19058,7 +19482,7 @@ function renderBankTabs() {
                 'cooked_chicken': 'cookedchicken', 'burnt_chicken': 'burntchicken', 'cooked_herring': 'cookedherring',
                 'burnt_herring': 'burntherring', 'cooked_trout': 'cookedtrout', 'burnt_trout': 'burnttrout',
                 'cooked_salmon': 'cookedsalmon', 'burnt_salmon': 'burntsalmon', 'beef': 'beef',
-                'cooked_beef': 'cookedbeef', 'burnt_beef': 'burntbeef', 'wheat_seed': 'wheatseed', 'wheat': 'wheat', 'flour': 'flour', 'cake': 'cake', 'burnt_cake': 'burntcake', 'gold_crown': 'goldcrown', 'elegant_black_cape': 'elegantblackcape',
+                'cooked_beef': 'cookedbeef', 'burnt_beef': 'burntbeef', 'bread': 'bread', 'burnt_bread': 'burntbread', 'cheese': 'cheese', 'salt_herring': 'saltherring', 'salt_trout': 'salttrout', 'salt_salmon': 'saltsalmon', 'wheat_seed': 'wheatseed', 'wheat': 'wheat', 'flour': 'flour', 'cake': 'cake', 'burnt_cake': 'burntcake', 'gold_crown': 'goldcrown', 'elegant_black_cape': 'elegantblackcape',
                 'coal_ore': 'coalore', 'iron_ore': 'ironore', 'iron_bar': 'ironbar',
                 'iron_helmet': 'ironhelmet', 'iron_chestplate': 'ironchestplate', 'iron_boots': 'ironboots',
                 'iron_shortsword': 'ironshortsword', 'copper_platelegs': 'copperplatelegs', 'iron_platelegs': 'ironplatelegs',
@@ -19235,6 +19659,9 @@ function renderBankGrid() {
               else if (item.name === 'Burnt Trout') imgName = 'burnttrout';
               else if (item.name === 'Cooked Salmon') imgName = 'cookedsalmon';
               else if (item.name === 'Burnt Salmon') imgName = 'burntsalmon';
+              else if (item.name === 'Salt Herring') imgName = 'saltherring';
+              else if (item.name === 'Salt Trout') imgName = 'salttrout';
+              else if (item.name === 'Salt Salmon') imgName = 'saltsalmon';
               
               
               else if (item.name === 'Beef') imgName = 'beef';
@@ -19247,6 +19674,11 @@ function renderBankGrid() {
 
               else if (item.name === 'Iron Battleaxe') imgName = 'ironbattleaxe';
               else if (item.name === 'Iron Shield') imgName = 'ironshield';
+              else if (item.name === 'Gold Helmet') imgName = 'goldhelmet';
+              else if (item.name === 'Gold Chestplate') imgName = 'goldchestplate';
+              else if (item.name === 'Gold Platelegs') imgName = 'goldplatelegs';
+              else if (item.name === 'Gold Boots') imgName = 'goldboots';
+              else if (item.name === 'Gold Shield') imgName = 'goldshield';
        
               else if (item.name === 'Coal Ore') imgName = 'coalore';
               else if (item.name === 'Iron Ore') imgName = 'ironore';
@@ -20789,10 +21221,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('goToGardenBtn').onclick = handleGardenClick;
   const backToFarmBtn = document.getElementById('backToFarmFromGardenBtn');
   if (backToFarmBtn) {
-      backToFarmBtn.onclick = openPersonalFarmHub;
+      backToFarmBtn.onclick = () => { dismissGardenTomb(); openPersonalFarmHub(); };
       backToFarmBtn.style.transform = "rotate(180deg)"; // Flip the arrow to point left
   }
-  document.getElementById('hubGarden_ReturnBtn').onclick = backToActions;
+  document.getElementById('hubGarden_ReturnBtn').onclick = () => { dismissGardenTomb(); backToActions(); };
 
   // --- Hub Lottery Listeners ---
   document.getElementById('lotteryActionIcon').onclick = openLotteryHub;
@@ -21511,7 +21943,7 @@ function renderInspectEquipment(equipment, frame) {
         'Copper Arrow': 'copperarrow', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
         'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Spider Egg': 'petegg1', 'Pet Owl Egg': 'petegg2',
-        'Empty Bucket': 'emptybucket', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Wheat Seed': 'wheatseed', 'Wheat': 'wheat', 'flour': 'flour', 'Cake': 'cake', 'Burnt Cake': 'burntcake', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
+        'Empty Bucket': 'emptybucket', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Wheat Seed': 'wheatseed', 'Wheat': 'wheat', 'flour': 'flour', 'Bread': 'bread', 'Burnt Bread': 'burntbread', 'Cheese': 'cheese', 'Salt Herring': 'saltherring', 'Salt Trout': 'salttrout', 'Salt Salmon': 'saltsalmon', 'Cake': 'cake', 'Burnt Cake': 'burntcake', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
         'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
         'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace',
         'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch', 'Iron Battleaxe': 'ironbattleaxe', 'Iron Shield': 'ironshield'
@@ -22869,6 +23301,7 @@ window.inspectPlayer = async function(playerName) {
             cellar: new Array(16).fill(null),
             mill: createDefaultMillState(),
             strayCat: createDefaultStrayCatState(),
+            gardenTomb: createDefaultGardenTombState(),
             buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false }
         };
         ensureFarmState();
@@ -24471,6 +24904,7 @@ window.inspectPlayer = async function(playerName) {
       'images/petowl.png',
       'images/petcat.png',
       'images/cat.png',
+      'images/tomb.png',
       'images/incubator_empty.png',
       'images/incubator_active.png',
       'images/personalfarm.webp',
@@ -24555,6 +24989,12 @@ window.inspectPlayer = async function(playerName) {
       'images/rawchicken.png',
       'images/cookedchicken.png',
       'images/burntchicken.png',
+      'images/bread.png',
+      'images/burntbread.png',
+      'images/cheese.png',
+      'images/saltherring.png',
+      'images/salttrout.png',
+      'images/saltsalmon.png',
       'images/beef.png',
       'images/cookedbeef.png',
       'images/burntbeef.png',
@@ -25607,6 +26047,14 @@ window.getCraftJsonDebugSnapshot = function(){
     reqs.forEach(req => removeItem(req.name, Number(req.qty || 1)));
   }
 
+  function refundRecipeItems(recipe){
+    const refunds = Array.isArray(recipe.refundItems) ? recipe.refundItems : [];
+    refunds.forEach(refund => {
+      const qty = Number(refund.qty || 1);
+      if (qty > 0) addItem(refund.name, qty);
+    });
+  }
+
   function stopJsonRecipe(){
     const ctx = game.currentJsonRecipeContext;
     if (ctx && ctx.flag) game[ctx.flag] = false;
@@ -25703,6 +26151,7 @@ window.getCraftJsonDebugSnapshot = function(){
       }
 
       removeMaterials(recipe);
+      refundRecipeItems(recipe);
       const craftedSuccess = !canBurn || (Math.random() * 100 < successRate);
       if (craftedSuccess) {
         addItem(output.name, output.qty);
@@ -25861,6 +26310,7 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
 
 
 
