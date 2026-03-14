@@ -1,1641 +1,1675 @@
-{
-  "recipes": [
-    {
-      "id": "alchemy_vitality_potion",
-      "section": "alchemy",
-      "skill": "alchemy",
-      "level": 1,
-      "displayName": "Vitality Potion",
-      "image": "images/vitalitypotion.png",
-      "requirements": [
-        {
-          "name": "Dirt Shroom",
-          "qty": 10
-        },
-        {
-          "name": "Wild Herb",
-          "qty": 6
-        },
-        {
-          "name": "Empty Vial",
-          "qty": 1
-        }
-      ],
-      "time": 5000,
-      "xp": 60,
-      "outputName": "Vitality Potion",
-      "outputQty": 1,
-      "slot": 0,
-      "description": "Restores 10 HP."
-    },
-    {
-      "id": "alchemy_vitality_potion_plus",
-      "section": "alchemy",
-      "skill": "alchemy",
-      "level": 30,
-      "displayName": "Vitality Potion+",
-      "image": "images/vitalitypotionplus.png",
-      "requirements": [
-        {
-          "name": "Dirt Shroom",
-          "qty": 30
-        },
-        {
-          "name": "Wild Herb",
-          "qty": 10
-        },
-        {
-          "name": "Vitality Potion",
-          "qty": 1
-        }
-      ],
-      "time": 6000,
-      "xp": 120,
-      "outputName": "Vitality Potion+",
-      "outputQty": 1,
-      "slot": 1,
-      "description": "Restores 20 HP."
-    },
-    {
-      "id": "smith_copper_bar",
-      "section": "blacksmithing",
-      "metalType": "copper",
-      "skill": "blacksmith",
-      "level": 1,
-      "displayName": "Copper Bar",
-      "image": "images/copperbar.png",
-      "requirements": [
-        {
-          "name": "Copper Ore",
-          "qty": 2
-        }
-      ],
-      "time": 3000,
-      "xp": 25,
-      "outputName": "Copper Bar",
-      "outputQty": 1,
-      "slot": 0
-    },
-    {
-      "id": "smith_iron_bar",
-      "section": "blacksmithing",
-      "metalType": "iron",
-      "skill": "blacksmith",
-      "level": 11,
-      "displayName": "Iron Bar",
-      "image": "images/ironbar.png",
-      "requirements": [
-        {
-          "name": "Iron Ore",
-          "qty": 1
-        },
-        {
-          "name": "Coal Ore",
-          "qty": 2
-        }
-      ],
-      "time": 3500,
-      "xp": 35,
-      "outputName": "Iron Bar",
-      "outputQty": 1,
-      "slot": 0
-    },
-    {
-      "id": "smith_silver_bar",
-      "section": "blacksmithing",
-      "metalType": "silver",
-      "skill": "blacksmith",
-      "level": 21,
-      "displayName": "Silver Bar",
-      "image": "images/silverbar.png",
-      "requirements": [
-        {
-          "name": "Silver Ore",
-          "qty": 1
-        },
-        {
-          "name": "Coal Ore",
-          "qty": 2
-        }
-      ],
-      "time": 4000,
-      "xp": 45,
-      "outputName": "Silver Bar",
-      "outputQty": 1,
-      "slot": 0
-    },
-    {
-      "id": "smith_gold_bar",
-      "section": "blacksmithing",
-      "metalType": "gold",
-      "skill": "blacksmith",
-      "level": 31,
-      "displayName": "Gold Bar",
-      "image": "images/goldbar.png",
-      "requirements": [
-        {
-          "name": "Gold Ore",
-          "qty": 1
-        },
-        {
-          "name": "Coal Ore",
-          "qty": 2
-        }
-      ],
-      "time": 4500,
-      "xp": 60,
-      "outputName": "Gold Bar",
-      "outputQty": 1,
-      "slot": 0
-    },
-    {
-      "id": "smith_copper_pickaxe",
-      "section": "blacksmithing",
-      "metalType": "copper",
-      "skill": "blacksmith",
-      "level": 2,
-      "displayName": "Copper Pickaxe",
-      "image": "images/copperpickaxe.png",
-      "requirements": [
-        {
-          "name": "Copper Bar",
-          "qty": 4
-        },
-        {
-          "name": "Softwood",
-          "qty": 2
-        }
-      ],
-      "time": 4000,
-      "xp": 40,
-      "outputName": "Copper Pickaxe",
-      "outputQty": 1,
-      "slot": 1
-    },
-    {
-      "id": "smith_iron_pickaxe",
-      "section": "blacksmithing",
-      "metalType": "iron",
-      "skill": "blacksmith",
-      "level": 12,
-      "displayName": "Iron Pickaxe",
-      "image": "images/ironpickaxe.png",
-      "requirements": [
-        {
-          "name": "Iron Bar",
-          "qty": 4
-        },
-        {
-          "name": "Oak",
-          "qty": 2
-        }
-      ],
-      "time": 4500,
-      "xp": 60,
-      "outputName": "Iron Pickaxe",
-      "outputQty": 1,
-      "slot": 1
-    },
-    {
-      "id": "smith_silver_pickaxe",
-      "section": "blacksmithing",
-      "metalType": "silver",
-      "skill": "blacksmith",
-      "level": 22,
-      "displayName": "Silver Pickaxe",
-      "image": "images/silverpickaxe.png",
-      "requirements": [
-        {
-          "name": "Silver Bar",
-          "qty": 4
-        },
-        {
-          "name": "Birch",
-          "qty": 2
-        }
-      ],
-      "time": 5000,
-      "xp": 80,
-      "outputName": "Silver Pickaxe",
-      "outputQty": 1,
-      "slot": 1
-    },
-    {
-      "id": "smith_copper_axe",
-      "section": "blacksmithing",
-      "metalType": "copper",
-      "skill": "blacksmith",
-      "level": 2,
-      "displayName": "Copper Axe",
-      "image": "images/copperaxe.png",
-      "requirements": [
-        {
-          "name": "Copper Bar",
-          "qty": 3
-        },
-        {
-          "name": "Softwood",
-          "qty": 2
-        }
-      ],
-      "time": 4000,
-      "xp": 40,
-      "outputName": "Copper Axe",
-      "outputQty": 1,
-      "slot": 2
-    },
-    {
-      "id": "smith_iron_axe",
-      "section": "blacksmithing",
-      "metalType": "iron",
-      "skill": "blacksmith",
-      "level": 12,
-      "displayName": "Iron Axe",
-      "image": "images/ironaxe.png",
-      "requirements": [
-        {
-          "name": "Iron Bar",
-          "qty": 3
-        },
-        {
-          "name": "Oak",
-          "qty": 2
-        }
-      ],
-      "time": 4500,
-      "xp": 60,
-      "outputName": "Iron Axe",
-      "outputQty": 1,
-      "slot": 2
-    },
-    {
-      "id": "smith_silver_axe",
-      "section": "blacksmithing",
-      "metalType": "silver",
-      "skill": "blacksmith",
-      "level": 22,
-      "displayName": "Silver Axe",
-      "image": "images/silveraxe.png",
-      "requirements": [
-        {
-          "name": "Silver Bar",
-          "qty": 3
-        },
-        {
-          "name": "Birch",
-          "qty": 2
-        }
-      ],
-      "time": 5000,
-      "xp": 80,
-      "outputName": "Silver Axe",
-      "outputQty": 1,
-      "slot": 2
-    },
-    {
-      "id": "smith_copper_shortsword",
-      "section": "blacksmithing",
-      "metalType": "copper",
-      "skill": "blacksmith",
-      "level": 3,
-      "displayName": "Copper Shortsword",
-      "image": "images/coppershortsword.png",
-      "requirements": [
-        {
-          "name": "Copper Bar",
-          "qty": 5
-        }
-      ],
-      "time": 4500,
-      "xp": 50,
-      "outputName": "Copper Shortsword",
-      "outputQty": 1,
-      "slot": 3
-    },
-    {
-      "id": "smith_iron_battleaxe",
-      "section": "blacksmithing",
-      "metalType": "iron",
-      "skill": "blacksmith",
-      "level": 50,
-      "displayName": "Iron Battleaxe",
-      "image": "images/ironbattleaxe.png",
-      "requirements": [
-        {
-          "name": "Iron Bar",
-          "qty": 6
-        },
-        {
-          "name": "Oak",
-          "qty": 2
-        }
-      ],
-      "time": 8000,
-      "xp": 180,
-      "outputName": "Iron Battleaxe",
-      "outputQty": 1,
-      "slot": 3
-    },
-    {
-      "id": "smith_copper_arrow_tips",
-      "section": "blacksmithing",
-      "metalType": "copper",
-      "skill": "blacksmith",
-      "level": 4,
-      "displayName": "Copper Arrow Tip x10",
-      "image": "images/copperarrowtip.png",
-      "requirements": [
-        {
-          "name": "Copper Bar",
-          "qty": 4
-        }
-      ],
-      "time": 2500,
-      "xp": 20,
-      "outputName": "Copper Arrow Tip",
-      "outputQty": 10,
-      "slot": 4
-    },
-    {
-      "id": "smith_iron_shield",
-      "section": "blacksmithing",
-      "metalType": "iron",
-      "skill": "blacksmith",
-      "level": 60,
-      "displayName": "Iron Shield",
-      "image": "images/ironshield.png",
-      "requirements": [
-        {
-          "name": "Iron Bar",
-          "qty": 10
-        }
-      ],
-      "time": 10000,
-      "xp": 250,
-      "outputName": "Iron Shield",
-      "outputQty": 1,
-      "slot": 4
-    },
-    {
-      "id": "smith_copper_boots",
-      "section": "blacksmithing",
-      "metalType": "copper",
-      "skill": "blacksmith",
-      "level": 5,
-      "displayName": "Copper Boots",
-      "image": "images/copperboots.png",
-      "requirements": [
-        {
-          "name": "Copper Bar",
-          "qty": 4
-        }
-      ],
-      "time": 4000,
-      "xp": 45,
-      "outputName": "Copper Boots",
-      "outputQty": 1,
-      "slot": 5
-    },
-    {
-      "id": "smith_iron_shortsword",
-      "section": "blacksmithing",
-      "metalType": "iron",
-      "skill": "blacksmith",
-      "level": 13,
-      "displayName": "Iron Shortsword",
-      "image": "images/ironshortsword.png",
-      "requirements": [
-        {
-          "name": "Iron Bar",
-          "qty": 5
-        }
-      ],
-      "time": 5000,
-      "xp": 70,
-      "outputName": "Iron Shortsword",
-      "outputQty": 1,
-      "slot": 5
-    },
-    {
-      "id": "smith_copper_helmet",
-      "section": "blacksmithing",
-      "metalType": "copper",
-      "skill": "blacksmith",
-      "level": 6,
-      "displayName": "Copper Helmet",
-      "image": "images/copperhelmet.png",
-      "requirements": [
-        {
-          "name": "Copper Bar",
-          "qty": 5
-        }
-      ],
-      "time": 4500,
-      "xp": 50,
-      "outputName": "Copper Helmet",
-      "outputQty": 1,
-      "slot": 6
-    },
-    {
-      "id": "smith_iron_boots",
-      "section": "blacksmithing",
-      "metalType": "iron",
-      "skill": "blacksmith",
-      "level": 15,
-      "displayName": "Iron Boots",
-      "image": "images/ironboots.png",
-      "requirements": [
-        {
-          "name": "Iron Bar",
-          "qty": 4
-        }
-      ],
-      "time": 4500,
-      "xp": 65,
-      "outputName": "Iron Boots",
-      "outputQty": 1,
-      "slot": 6
-    },
-    {
-      "id": "smith_copper_platelegs",
-      "section": "blacksmithing",
-      "metalType": "copper",
-      "skill": "blacksmith",
-      "level": 7,
-      "displayName": "Copper Platelegs",
-      "image": "images/copperplatelegs.png",
-      "requirements": [
-        {
-          "name": "Copper Bar",
-          "qty": 6
-        }
-      ],
-      "time": 5000,
-      "xp": 60,
-      "outputName": "Copper Platelegs",
-      "outputQty": 1,
-      "slot": 7
-    },
-    {
-      "id": "smith_iron_helmet",
-      "section": "blacksmithing",
-      "metalType": "iron",
-      "skill": "blacksmith",
-      "level": 16,
-      "displayName": "Iron Helmet",
-      "image": "images/ironhelmet.png",
-      "requirements": [
-        {
-          "name": "Iron Bar",
-          "qty": 5
-        }
-      ],
-      "time": 5000,
-      "xp": 75,
-      "outputName": "Iron Helmet",
-      "outputQty": 1,
-      "slot": 7
-    },
-    {
-      "id": "smith_copper_chestplate",
-      "section": "blacksmithing",
-      "metalType": "copper",
-      "skill": "blacksmith",
-      "level": 8,
-      "displayName": "Copper Chestplate",
-      "image": "images/copperchestplate.png",
-      "requirements": [
-        {
-          "name": "Copper Bar",
-          "qty": 10
-        }
-      ],
-      "time": 6000,
-      "xp": 70,
-      "outputName": "Copper Chestplate",
-      "outputQty": 1,
-      "slot": 8
-    },
-    {
-      "id": "smith_iron_platelegs",
-      "section": "blacksmithing",
-      "metalType": "iron",
-      "skill": "blacksmith",
-      "level": 17,
-      "displayName": "Iron Platelegs",
-      "image": "images/ironplatelegs.png",
-      "requirements": [
-        {
-          "name": "Iron Bar",
-          "qty": 6
-        }
-      ],
-      "time": 5500,
-      "xp": 85,
-      "outputName": "Iron Platelegs",
-      "outputQty": 1,
-      "slot": 8
-    },
-    {
-      "id": "smith_iron_chestplate",
-      "section": "blacksmithing",
-      "metalType": "iron",
-      "skill": "blacksmith",
-      "level": 18,
-      "displayName": "Iron Chestplate",
-      "image": "images/ironchestplate.png",
-      "requirements": [
-        {
-          "name": "Iron Bar",
-          "qty": 10
-        }
-      ],
-      "time": 6500,
-      "xp": 95,
-      "outputName": "Iron Chestplate",
-      "outputQty": 1,
-      "slot": 9
-    },
-    {
-      "id": "cook_chicken",
-      "section": "cooking",
-      "skill": "cooking",
-      "slot": 0,
-      "level": 1,
-      "displayName": "Cooked Chicken",
-      "image": "images/cookedchicken.png",
-      "time": 3000,
-      "xp": 30,
-      "outputName": "Cooked Chicken",
-      "outputQty": 1,
-      "requirements": [
-        {
-          "name": "Raw Chicken",
-          "qty": 1
-        }
-      ],
-      "description": "Heals 3 HP."
-    },
-    {
-      "id": "cook_beef",
-      "section": "cooking",
-      "skill": "cooking",
-      "slot": 1,
-      "level": 1,
-      "displayName": "Cooked Beef",
-      "image": "images/cookedbeef.png",
-      "time": 3000,
-      "xp": 35,
-      "outputName": "Cooked Beef",
-      "outputQty": 1,
-      "requirements": [
-        {
-          "name": "Beef",
-          "qty": 1
-        }
-      ],
-      "description": "Heals 4 HP."
-    },
-    {
-      "id": "cook_herring",
-      "section": "cooking",
-      "skill": "cooking",
-      "slot": 2,
-      "level": 1,
-      "displayName": "Cooked Herring",
-      "image": "images/cookedherring.png",
-      "time": 3000,
-      "xp": 30,
-      "outputName": "Cooked Herring",
-      "outputQty": 1,
-      "requirements": [
-        {
-          "name": "Herring",
-          "qty": 1
-        }
-      ],
-      "description": "Heals 3 HP."
-    },
-    {
-      "id": "cook_trout",
-      "section": "cooking",
-      "skill": "cooking",
-      "slot": 3,
-      "level": 5,
-      "displayName": "Cooked Trout",
-      "image": "images/cookedtrout.png",
-      "time": 3500,
-      "xp": 40,
-      "outputName": "Cooked Trout",
-      "outputQty": 1,
-      "requirements": [
-        {
-          "name": "Trout",
-          "qty": 1
-        }
-      ],
-      "description": "Heals 4 HP."
-    },
-    {
-      "id": "cook_salmon",
-      "section": "cooking",
-      "skill": "cooking",
-      "slot": 4,
-      "level": 10,
-      "displayName": "Cooked Salmon",
-      "image": "images/cookedsalmon.png",
-      "time": 3500,
-      "xp": 45,
-      "outputName": "Cooked Salmon",
-      "outputQty": 1,
-      "requirements": [
-        {
-          "name": "Salmon",
-          "qty": 1
-        }
-      ],
-      "description": "Heals 4 HP."
-    },
-    {
-      "id": "cook_cake",
-      "section": "cooking",
-      "skill": "cooking",
-      "slot": 5,
-      "level": 50,
-      "displayName": "Cake",
-      "image": "images/cake.png",
-      "time": 4500,
-      "xp": 65,
-      "outputName": "Cake",
-      "outputQty": 1,
-      "description": "Heals 12 HP.",
-      "requirements": [
-        {
-          "name": "Egg",
-          "qty": 3
-        },
-        {
-          "name": "Bucket of Milk",
-          "qty": 3
-        },
-        {
-          "name": "Flour",
-          "qty": 3
-        }
-      ],
-      "burnOutputName": "Burnt Cake",
-      "refundItems": [
-        {
-          "name": "Empty Bucket",
-          "qty": 3
-        }
-      ]
-    },
-    {
-      "id": "cook_bread",
-      "section": "cooking",
-      "skill": "cooking",
-      "slot": 6,
-      "level": 15,
-      "displayName": "Bread",
-      "image": "images/bread.png",
-      "time": 3500,
-      "xp": 45,
-      "outputName": "Bread",
-      "outputQty": 1,
-      "requirements": [
-        {
-          "name": "Flour",
-          "qty": 5
-        },
-        {
-          "name": "Bucket of Water",
-          "qty": 1
-        }
-      ],
-      "description": "Heals 5 HP.",
-      "burnOutputName": "Burnt Bread",
-      "refundItems": [
-        {
-          "name": "Empty Bucket",
-          "qty": 1
-        }
-      ]
-    },
-    {
-      "id": "cook_cheese",
-      "section": "cooking",
-      "skill": "cooking",
-      "slot": 7,
-      "level": 20,
-      "displayName": "Cheese",
-      "image": "images/cheese.png",
-      "time": 3500,
-      "xp": 55,
-      "outputName": "Cheese",
-      "outputQty": 1,
-      "requirements": [
-        {
-          "name": "Bucket of Milk",
-          "qty": 3
-        }
-      ],
-      "description": "Heals 8 HP.",
-      "refundItems": [
-        {
-          "name": "Empty Bucket",
-          "qty": 3
-        }
-      ]
-    },
-    {
-      "id": "cook_salt_herring",
-      "section": "cooking",
-      "skill": "cooking",
-      "slot": 8,
-      "level": 15,
-      "displayName": "Salt Herring",
-      "image": "images/saltherring.png",
-      "time": 3000,
-      "xp": 40,
-      "outputName": "Salt Herring",
-      "outputQty": 1,
-      "requirements": [
-        {
-          "name": "Herring",
-          "qty": 1
-        },
-        {
-          "name": "Salt",
-          "qty": 5
-        }
-      ],
-      "description": "Heals 4 HP."
-    },
-    {
-      "id": "cook_salt_trout",
-      "section": "cooking",
-      "skill": "cooking",
-      "slot": 9,
-      "level": 20,
-      "displayName": "Salt Trout",
-      "image": "images/salttrout.png",
-      "time": 3500,
-      "xp": 50,
-      "outputName": "Salt Trout",
-      "outputQty": 1,
-      "requirements": [
-        {
-          "name": "Trout",
-          "qty": 1
-        },
-        {
-          "name": "Salt",
-          "qty": 5
-        }
-      ],
-      "description": "Heals 5 HP."
-    },
-    {
-      "id": "cook_salt_salmon",
-      "section": "cooking",
-      "skill": "cooking",
-      "slot": 10,
-      "level": 25,
-      "displayName": "Salt Salmon",
-      "image": "images/saltsalmon.png",
-      "time": 3500,
-      "xp": 60,
-      "outputName": "Salt Salmon",
-      "outputQty": 1,
-      "requirements": [
-        {
-          "name": "Salmon",
-          "qty": 1
-        },
-        {
-          "name": "Salt",
-          "qty": 5
-        }
-      ],
-      "description": "Heals 6 HP."
-    },
-    {
-      "id": "craft_bucket",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 1,
-      "displayName": "Empty Bucket",
-      "image": "images/emptybucket.png",
-      "requirements": [
-        {
-          "name": "Oak",
-          "qty": 3
-        }
-      ],
-      "time": 3000,
-      "xp": 25,
-      "outputName": "Empty Bucket",
-      "outputQty": 1,
-      "slot": 0
-    },
-    {
-      "id": "craft_bow_string",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 1,
-      "displayName": "Bow String",
-      "image": "images/bowstring.png",
-      "requirements": [
-        {
-          "name": "Silk",
-          "qty": 1
-        }
-      ],
-      "time": 2000,
-      "xp": 20,
-      "outputName": "Bow String",
-      "outputQty": 1,
-      "slot": 1
-    },
-    {
-      "id": "craft_empty_vial",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 5,
-      "displayName": "Empty Vial",
-      "image": "images/emptyvial.png",
-      "requirements": [
-        {
-          "name": "Sand",
-          "qty": 5
-        },
-        {
-          "name": "Coal Ore",
-          "qty": 1
-        }
-      ],
-      "time": 3500,
-      "xp": 35,
-      "outputName": "Empty Vial",
-      "outputQty": 1,
-      "slot": 2
-    },
-    {
-      "id": "craft_magic_staff",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 1,
-      "displayName": "Magic Staff",
-      "image": "images/magicstaff.png",
-      "requirements": [
-        {
-          "name": "Oak",
-          "qty": 10
-        },
-        {
-          "name": "Earth Crystal Shard",
-          "qty": 10
-        },
-        {
-          "name": "Air Crystal Shard",
-          "qty": 10
-        },
-        {
-          "name": "Water Crystal Shard",
-          "qty": 10
-        }
-      ],
-      "time": 5000,
-      "xp": 120,
-      "outputName": "Magic Staff",
-      "outputQty": 1,
-      "slot": 3
-    },
-    {
-      "id": "cut_topaz",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 30,
-      "displayName": "Topaz",
-      "image": "images/topaz.png",
-      "requirements": [
-        {
-          "name": "Uncut Topaz",
-          "qty": 1
-        }
-      ],
-      "time": 3000,
-      "xp": 150,
-      "outputName": "Topaz",
-      "outputQty": 1,
-      "slot": 4
-    },
-    {
-      "id": "cut_diamond",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 30,
-      "displayName": "Diamond",
-      "image": "images/diamond.png",
-      "requirements": [
-        {
-          "name": "Uncut Diamond",
-          "qty": 1
-        }
-      ],
-      "time": 3000,
-      "xp": 150,
-      "outputName": "Diamond",
-      "outputQty": 1,
-      "slot": 5
-    },
-    {
-      "id": "cut_emerald",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 30,
-      "displayName": "Emerald",
-      "image": "images/emerald.png",
-      "requirements": [
-        {
-          "name": "Uncut Emerald",
-          "qty": 1
-        }
-      ],
-      "time": 3000,
-      "xp": 150,
-      "outputName": "Emerald",
-      "outputQty": 1,
-      "slot": 6
-    },
-    {
-      "id": "cut_jade",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 30,
-      "displayName": "Jade",
-      "image": "images/jade.png",
-      "requirements": [
-        {
-          "name": "Uncut Jade",
-          "qty": 1
-        }
-      ],
-      "time": 3000,
-      "xp": 150,
-      "outputName": "Jade",
-      "outputQty": 1,
-      "slot": 7
-    },
-    {
-      "id": "cut_ruby",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 30,
-      "displayName": "Ruby",
-      "image": "images/ruby.png",
-      "requirements": [
-        {
-          "name": "Uncut Ruby",
-          "qty": 1
-        }
-      ],
-      "time": 3000,
-      "xp": 150,
-      "outputName": "Ruby",
-      "outputQty": 1,
-      "slot": 8
-    },
-    {
-      "id": "cut_sapphire",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 30,
-      "displayName": "Sapphire",
-      "image": "images/sapphire.png",
-      "requirements": [
-        {
-          "name": "Uncut Sapphire",
-          "qty": 1
-        }
-      ],
-      "time": 3000,
-      "xp": 150,
-      "outputName": "Sapphire",
-      "outputQty": 1,
-      "slot": 9
-    },
-    {
-      "id": "craft_gold_ring",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 38,
-      "displayName": "Gold Ring",
-      "image": "images/goldring.png",
-      "requirements": [
-        {
-          "name": "Gold Bar",
-          "qty": 2
-        }
-      ],
-      "time": 4000,
-      "xp": 100,
-      "outputName": "Gold Ring",
-      "outputQty": 1,
-      "slot": 10
-    },
-    {
-      "id": "craft_diamond_ring",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 40,
-      "displayName": "Diamond Ring",
-      "image": "images/diamondring.png",
-      "requirements": [
-        {
-          "name": "Gold Ring",
-          "qty": 1
-        },
-        {
-          "name": "Diamond",
-          "qty": 1
-        }
-      ],
-      "time": 4500,
-      "xp": 160,
-      "outputName": "Diamond Ring",
-      "outputQty": 1,
-      "slot": 11
-    },
-    {
-      "id": "craft_emerald_ring",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 40,
-      "displayName": "Emerald Ring",
-      "image": "images/emeraldring.png",
-      "requirements": [
-        {
-          "name": "Gold Ring",
-          "qty": 1
-        },
-        {
-          "name": "Emerald",
-          "qty": 1
-        }
-      ],
-      "time": 4500,
-      "xp": 150,
-      "outputName": "Emerald Ring",
-      "outputQty": 1,
-      "slot": 12
-    },
-    {
-      "id": "craft_ruby_ring",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 40,
-      "displayName": "Ruby Ring",
-      "image": "images/rubyring.png",
-      "requirements": [
-        {
-          "name": "Gold Ring",
-          "qty": 1
-        },
-        {
-          "name": "Ruby",
-          "qty": 1
-        }
-      ],
-      "time": 4500,
-      "xp": 150,
-      "outputName": "Ruby Ring",
-      "outputQty": 1,
-      "slot": 13
-    },
-    {
-      "id": "craft_sapphire_ring",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 40,
-      "displayName": "Sapphire Ring",
-      "image": "images/sapphirering.png",
-      "requirements": [
-        {
-          "name": "Gold Ring",
-          "qty": 1
-        },
-        {
-          "name": "Sapphire",
-          "qty": 1
-        }
-      ],
-      "time": 4500,
-      "xp": 150,
-      "outputName": "Sapphire Ring",
-      "outputQty": 1,
-      "slot": 14
-    },
-    {
-      "id": "craft_topaz_ring",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 40,
-      "displayName": "Topaz Ring",
-      "image": "images/topazring.png",
-      "requirements": [
-        {
-          "name": "Gold Ring",
-          "qty": 1
-        },
-        {
-          "name": "Topaz",
-          "qty": 1
-        }
-      ],
-      "time": 4500,
-      "xp": 145,
-      "outputName": "Topaz Ring",
-      "outputQty": 1,
-      "slot": 15
-    },
-    {
-      "id": "craft_diamond_necklace",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 50,
-      "displayName": "Diamond Necklace",
-      "image": "images/diamondnecklace.png",
-      "requirements": [
-        {
-          "name": "Gold Bar",
-          "qty": 1
-        },
-        {
-          "name": "Diamond",
-          "qty": 1
-        }
-      ],
-      "time": 5000,
-      "xp": 200,
-      "outputName": "Diamond Necklace",
-      "outputQty": 1,
-      "slot": 16
-    },
-    {
-      "id": "craft_emerald_necklace",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 50,
-      "displayName": "Emerald Necklace",
-      "image": "images/emeraldnecklace.png",
-      "requirements": [
-        {
-          "name": "Gold Bar",
-          "qty": 1
-        },
-        {
-          "name": "Emerald",
-          "qty": 1
-        }
-      ],
-      "time": 5000,
-      "xp": 190,
-      "outputName": "Emerald Necklace",
-      "outputQty": 1,
-      "slot": 17
-    },
-    {
-      "id": "craft_ruby_necklace",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 50,
-      "displayName": "Ruby Necklace",
-      "image": "images/rubynecklace.png",
-      "requirements": [
-        {
-          "name": "Gold Bar",
-          "qty": 1
-        },
-        {
-          "name": "Ruby",
-          "qty": 1
-        }
-      ],
-      "time": 5000,
-      "xp": 190,
-      "outputName": "Ruby Necklace",
-      "outputQty": 1,
-      "slot": 18
-    },
-    {
-      "id": "craft_sapphire_necklace",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 50,
-      "displayName": "Sapphire Necklace",
-      "image": "images/sapphirenecklace.png",
-      "requirements": [
-        {
-          "name": "Gold Bar",
-          "qty": 1
-        },
-        {
-          "name": "Sapphire",
-          "qty": 1
-        }
-      ],
-      "time": 5000,
-      "xp": 190,
-      "outputName": "Sapphire Necklace",
-      "outputQty": 1,
-      "slot": 19
-    },
-    {
-      "id": "craft_topaz_necklace",
-      "section": "crafting",
-      "skill": "crafting",
-      "level": 50,
-      "displayName": "Topaz Necklace",
-      "image": "images/topaznecklace.png",
-      "requirements": [
-        {
-          "name": "Gold Bar",
-          "qty": 1
-        },
-        {
-          "name": "Topaz",
-          "qty": 1
-        }
-      ],
-      "time": 5000,
-      "xp": 180,
-      "outputName": "Topaz Necklace",
-      "outputQty": 1,
-      "slot": 20
-    },
-    {
-      "id": "fletch_arrow_shaft",
-      "section": "fletching",
-      "skill": "fletching",
-      "level": 1,
-      "displayName": "Arrow Shaft x15",
-      "image": "images/arrowshaft.png",
-      "requirements": [
-        {
-          "name": "Softwood",
-          "qty": 1
-        }
-      ],
-      "time": 2500,
-      "xp": 20,
-      "outputName": "Arrow Shaft",
-      "outputQty": 15,
-      "slot": 0
-    },
-    {
-      "id": "fletch_unbound_arrow",
-      "section": "fletching",
-      "skill": "fletching",
-      "level": 1,
-      "displayName": "Unbound Arrow x15",
-      "image": "images/unboundarrow.png",
-      "requirements": [
-        {
-          "name": "Arrow Shaft",
-          "qty": 15
-        },
-        {
-          "name": "Feather",
-          "qty": 15
-        }
-      ],
-      "time": 2500,
-      "xp": 20,
-      "outputName": "Unbound Arrow",
-      "outputQty": 15,
-      "slot": 1
-    },
-    {
-      "id": "fletch_copper_arrow",
-      "section": "fletching",
-      "skill": "fletching",
-      "level": 1,
-      "displayName": "Copper Arrow x15",
-      "image": "images/copperarrow.png",
-      "requirements": [
-        {
-          "name": "Unbound Arrow",
-          "qty": 15
-        },
-        {
-          "name": "Copper Arrow Tip",
-          "qty": 15
-        }
-      ],
-      "time": 2500,
-      "xp": 25,
-      "outputName": "Copper Arrow",
-      "outputQty": 15,
-      "slot": 2
-    },
-    {
-      "id": "fletch_unstrung_softwood_bow",
-      "section": "fletching",
-      "skill": "fletching",
-      "level": 5,
-      "displayName": "Unstrung Softwood Bow",
-      "image": "images/unstrungsoftwoodbow.png",
-      "requirements": [
-        {
-          "name": "Softwood",
-          "qty": 5
-        }
-      ],
-      "time": 3000,
-      "xp": 35,
-      "outputName": "Unstrung Softwood Bow",
-      "outputQty": 1,
-      "slot": 3
-    },
-    {
-      "id": "fletch_softwood_bow",
-      "section": "fletching",
-      "skill": "fletching",
-      "level": 7,
-      "displayName": "Softwood Bow",
-      "image": "images/softwoodbow.png",
-      "requirements": [
-        {
-          "name": "Unstrung Softwood Bow",
-          "qty": 1
-        },
-        {
-          "name": "Bow String",
-          "qty": 1
-        }
-      ],
-      "time": 3000,
-      "xp": 45,
-      "outputName": "Softwood Bow",
-      "outputQty": 1,
-      "slot": 4
-    },
-    {
-      "id": "fletch_unstrung_oak_bow",
-      "section": "fletching",
-      "skill": "fletching",
-      "level": 15,
-      "displayName": "Unstrung Oak Bow",
-      "image": "images/unstrungoakbow.png",
-      "requirements": [
-        {
-          "name": "Oak",
-          "qty": 5
-        }
-      ],
-      "time": 3500,
-      "xp": 50,
-      "outputName": "Unstrung Oak Bow",
-      "outputQty": 1,
-      "slot": 5
-    },
-    {
-      "id": "fletch_oak_bow",
-      "section": "fletching",
-      "skill": "fletching",
-      "level": 17,
-      "displayName": "Oak Bow",
-      "image": "images/oakbow.png",
-      "requirements": [
-        {
-          "name": "Unstrung Oak Bow",
-          "qty": 1
-        },
-        {
-          "name": "Bow String",
-          "qty": 1
-        }
-      ],
-      "time": 3500,
-      "xp": 60,
-      "outputName": "Oak Bow",
-      "outputQty": 1,
-      "slot": 6
-    },
-    {
-      "id": "fletch_copper_arrow_poisoned",
-      "section": "fletching",
-      "skill": "fletching",
-      "level": 1,
-      "displayName": "Copper Arrow Poisoned",
-      "image": "images/copperarrowpoisonned.png",
-      "requirements": [
-        {
-          "name": "Copper Arrow",
-          "qty": 1
-        },
-        {
-          "name": "Venom",
-          "qty": 1
-        }
-      ],
-      "time": 2500,
-      "xp": 90,
-      "outputName": "Copper Arrow Poisoned",
-      "outputQty": 1,
-      "slot": 7
-    },
-    {
-      "id": "tailor_leather",
-      "section": "tailoring",
-      "skill": "tailoring",
-      "level": 1,
-      "displayName": "Leather",
-      "image": "images/leather.png",
-      "requirements": [
-        {
-          "name": "Cow Hide",
-          "qty": 1
-        }
-      ],
-      "time": 2500,
-      "xp": 20,
-      "outputName": "Leather",
-      "outputQty": 1,
-      "slot": 0
-    },
-    {
-      "id": "tailor_cloth",
-      "section": "tailoring",
-      "skill": "tailoring",
-      "level": 1,
-      "displayName": "Cloth",
-      "image": "images/cloth.png",
-      "requirements": [
-        {
-          "name": "Silk",
-          "qty": 5
-        }
-      ],
-      "time": 2500,
-      "xp": 20,
-      "outputName": "Cloth",
-      "outputQty": 1,
-      "slot": 1
-    },
-    {
-      "id": "tailor_leather_boots",
-      "section": "tailoring",
-      "skill": "tailoring",
-      "level": 1,
-      "displayName": "Leather Boots",
-      "image": "images/leatherboots.png",
-      "requirements": [
-        {
-          "name": "Leather",
-          "qty": 5
-        }
-      ],
-      "time": 3500,
-      "xp": 40,
-      "outputName": "Leather Boots",
-      "outputQty": 1,
-      "slot": 2
-    },
-    {
-      "id": "tailor_leather_hood",
-      "section": "tailoring",
-      "skill": "tailoring",
-      "level": 3,
-      "displayName": "Leather Hood",
-      "image": "images/leatherhood.png",
-      "requirements": [
-        {
-          "name": "Leather",
-          "qty": 5
-        }
-      ],
-      "time": 3500,
-      "xp": 45,
-      "outputName": "Leather Hood",
-      "outputQty": 1,
-      "slot": 3
-    },
-    {
-      "id": "tailor_leather_chaps",
-      "section": "tailoring",
-      "skill": "tailoring",
-      "level": 5,
-      "displayName": "Leather Chaps",
-      "image": "images/leatherpants.png",
-      "requirements": [
-        {
-          "name": "Leather",
-          "qty": 10
-        }
-      ],
-      "time": 4000,
-      "xp": 50,
-      "outputName": "Leather Chaps",
-      "outputQty": 1,
-      "slot": 4
-    },
-    {
-      "id": "tailor_leather_body",
-      "section": "tailoring",
-      "skill": "tailoring",
-      "level": 7,
-      "displayName": "Leather Body",
-      "image": "images/leatherarmor.png",
-      "requirements": [
-        {
-          "name": "Leather",
-          "qty": 10
-        }
-      ],
-      "time": 4500,
-      "xp": 60,
-      "outputName": "Leather Body",
-      "outputQty": 1,
-      "slot": 5
-    },
-    {
-      "id": "tailor_wizard_boots",
-      "section": "tailoring",
-      "skill": "tailoring",
-      "level": 2,
-      "displayName": "Wizard Boots",
-      "image": "images/wizardboots.png",
-      "requirements": [
-        {
-          "name": "Cloth",
-          "qty": 5
-        }
-      ],
-      "time": 4000,
-      "xp": 60,
-      "outputName": "Wizard Boots",
-      "outputQty": 1,
-      "slot": 6
-    },
-    {
-      "id": "tailor_wizard_hat",
-      "section": "tailoring",
-      "skill": "tailoring",
-      "level": 4,
-      "displayName": "Wizard Hat",
-      "image": "images/wizardhat.png",
-      "requirements": [
-        {
-          "name": "Cloth",
-          "qty": 5
-        }
-      ],
-      "time": 4500,
-      "xp": 65,
-      "outputName": "Wizard Hat",
-      "outputQty": 1,
-      "slot": 7
-    },
-    {
-      "id": "tailor_wizard_trousers",
-      "section": "tailoring",
-      "skill": "tailoring",
-      "level": 6,
-      "displayName": "Wizard Trousers",
-      "image": "images/wizardtrousers.png",
-      "requirements": [
-        {
-          "name": "Cloth",
-          "qty": 10
-        }
-      ],
-      "time": 5000,
-      "xp": 75,
-      "outputName": "Wizard Trousers",
-      "outputQty": 1,
-      "slot": 8
-    },
-    {
-      "id": "tailor_wizard_robe",
-      "section": "tailoring",
-      "skill": "tailoring",
-      "level": 8,
-      "displayName": "Wizard Robe",
-      "image": "images/wizardrobe.png",
-      "requirements": [
-        {
-          "name": "Cloth",
-          "qty": 10
-        }
-      ],
-      "time": 5500,
-      "xp": 85,
-      "outputName": "Wizard Robe",
-      "outputQty": 1,
-      "slot": 9
-    }
-  ]
+﻿{
+    "recipes":  [
+                    {
+                        "id":  "alchemy_vitality_potion",
+                        "section":  "alchemy",
+                        "skill":  "alchemy",
+                        "level":  1,
+                        "displayName":  "Vitality Potion",
+                        "image":  "images/vitalitypotion.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Dirt Shroom",
+                                                 "qty":  10
+                                             },
+                                             {
+                                                 "name":  "Wild Herb",
+                                                 "qty":  6
+                                             },
+                                             {
+                                                 "name":  "Empty Vial",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  60,
+                        "outputName":  "Vitality Potion",
+                        "outputQty":  1,
+                        "slot":  0,
+                        "description":  "Restores 10 HP."
+                    },
+                    {
+                        "id":  "alchemy_vitality_potion_plus",
+                        "section":  "alchemy",
+                        "skill":  "alchemy",
+                        "level":  30,
+                        "displayName":  "Vitality Potion+",
+                        "image":  "images/vitalitypotionplus.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Dirt Shroom",
+                                                 "qty":  30
+                                             },
+                                             {
+                                                 "name":  "Wild Herb",
+                                                 "qty":  10
+                                             },
+                                             {
+                                                 "name":  "Vitality Potion",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  6000,
+                        "xp":  120,
+                        "outputName":  "Vitality Potion+",
+                        "outputQty":  1,
+                        "slot":  1,
+                        "description":  "Restores 20 HP."
+                    },
+                    {
+                        "id":  "smith_copper_bar",
+                        "section":  "blacksmithing",
+                        "metalType":  "copper",
+                        "skill":  "blacksmith",
+                        "level":  1,
+                        "displayName":  "Copper Bar",
+                        "image":  "images/copperbar.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Copper Ore",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  3000,
+                        "xp":  25,
+                        "outputName":  "Copper Bar",
+                        "outputQty":  1,
+                        "slot":  0
+                    },
+                    {
+                        "id":  "smith_iron_bar",
+                        "section":  "blacksmithing",
+                        "metalType":  "iron",
+                        "skill":  "blacksmith",
+                        "level":  15,
+                        "displayName":  "Iron Bar",
+                        "image":  "images/ironbar.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Iron Ore",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Coal Ore",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  3500,
+                        "xp":  35,
+                        "outputName":  "Iron Bar",
+                        "outputQty":  1,
+                        "slot":  0
+                    },
+                    {
+                        "id":  "smith_silver_bar",
+                        "section":  "blacksmithing",
+                        "metalType":  "silver",
+                        "skill":  "blacksmith",
+                        "level":  30,
+                        "displayName":  "Silver Bar",
+                        "image":  "images/silverbar.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Silver Ore",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Coal Ore",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  4000,
+                        "xp":  45,
+                        "outputName":  "Silver Bar",
+                        "outputQty":  1,
+                        "slot":  0
+                    },
+                    {
+                        "id":  "smith_gold_bar",
+                        "section":  "blacksmithing",
+                        "metalType":  "gold",
+                        "skill":  "blacksmith",
+                        "level":  50,
+                        "displayName":  "Gold Bar",
+                        "image":  "images/goldbar.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Ore",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Coal Ore",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  60,
+                        "outputName":  "Gold Bar",
+                        "outputQty":  1,
+                        "slot":  0
+                    },
+                    {
+                        "id":  "smith_copper_pickaxe",
+                        "section":  "blacksmithing",
+                        "metalType":  "copper",
+                        "skill":  "blacksmith",
+                        "level":  2,
+                        "displayName":  "Copper Pickaxe",
+                        "image":  "images/copperpickaxe.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Copper Bar",
+                                                 "qty":  4
+                                             },
+                                             {
+                                                 "name":  "Softwood",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  4000,
+                        "xp":  40,
+                        "outputName":  "Copper Pickaxe",
+                        "outputQty":  1,
+                        "slot":  1
+                    },
+                    {
+                        "id":  "smith_iron_pickaxe",
+                        "section":  "blacksmithing",
+                        "metalType":  "iron",
+                        "skill":  "blacksmith",
+                        "level":  20,
+                        "displayName":  "Iron Pickaxe",
+                        "image":  "images/ironpickaxe.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Iron Bar",
+                                                 "qty":  4
+                                             },
+                                             {
+                                                 "name":  "Oak",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  60,
+                        "outputName":  "Iron Pickaxe",
+                        "outputQty":  1,
+                        "slot":  1
+                    },
+                    {
+                        "id":  "smith_silver_pickaxe",
+                        "section":  "blacksmithing",
+                        "metalType":  "silver",
+                        "skill":  "blacksmith",
+                        "level":  35,
+                        "displayName":  "Silver Pickaxe",
+                        "image":  "images/silverpickaxe.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Silver Bar",
+                                                 "qty":  4
+                                             },
+                                             {
+                                                 "name":  "Birch",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  80,
+                        "outputName":  "Silver Pickaxe",
+                        "outputQty":  1,
+                        "slot":  1
+                    },
+                    {
+                        "id":  "smith_copper_axe",
+                        "section":  "blacksmithing",
+                        "metalType":  "copper",
+                        "skill":  "blacksmith",
+                        "level":  2,
+                        "displayName":  "Copper Axe",
+                        "image":  "images/copperaxe.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Copper Bar",
+                                                 "qty":  3
+                                             },
+                                             {
+                                                 "name":  "Softwood",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  4000,
+                        "xp":  40,
+                        "outputName":  "Copper Axe",
+                        "outputQty":  1,
+                        "slot":  2
+                    },
+                    {
+                        "id":  "smith_iron_axe",
+                        "section":  "blacksmithing",
+                        "metalType":  "iron",
+                        "skill":  "blacksmith",
+                        "level":  20,
+                        "displayName":  "Iron Axe",
+                        "image":  "images/ironaxe.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Iron Bar",
+                                                 "qty":  3
+                                             },
+                                             {
+                                                 "name":  "Oak",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  60,
+                        "outputName":  "Iron Axe",
+                        "outputQty":  1,
+                        "slot":  2
+                    },
+                    {
+                        "id":  "smith_silver_axe",
+                        "section":  "blacksmithing",
+                        "metalType":  "silver",
+                        "skill":  "blacksmith",
+                        "level":  35,
+                        "displayName":  "Silver Axe",
+                        "image":  "images/silveraxe.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Silver Bar",
+                                                 "qty":  3
+                                             },
+                                             {
+                                                 "name":  "Birch",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  80,
+                        "outputName":  "Silver Axe",
+                        "outputQty":  1,
+                        "slot":  2
+                    },
+                    {
+                        "id":  "smith_copper_shortsword",
+                        "section":  "blacksmithing",
+                        "metalType":  "copper",
+                        "skill":  "blacksmith",
+                        "level":  3,
+                        "displayName":  "Copper Shortsword",
+                        "image":  "images/coppershortsword.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Copper Bar",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  50,
+                        "outputName":  "Copper Shortsword",
+                        "outputQty":  1,
+                        "slot":  3
+                    },
+                    {
+                        "id":  "smith_iron_battleaxe",
+                        "section":  "blacksmithing",
+                        "metalType":  "iron",
+                        "skill":  "blacksmith",
+                        "level":  50,
+                        "displayName":  "Iron Battleaxe",
+                        "image":  "images/ironbattleaxe.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Iron Bar",
+                                                 "qty":  6
+                                             },
+                                             {
+                                                 "name":  "Oak",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  8000,
+                        "xp":  180,
+                        "outputName":  "Iron Battleaxe",
+                        "outputQty":  1,
+                        "slot":  3
+                    },
+                    {
+                        "id":  "smith_copper_arrow_tips",
+                        "section":  "blacksmithing",
+                        "metalType":  "copper",
+                        "skill":  "blacksmith",
+                        "level":  5,
+                        "displayName":  "Copper Arrow Tip x10",
+                        "image":  "images/copperarrowtip.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Copper Bar",
+                                                 "qty":  4
+                                             }
+                                         ],
+                        "time":  2500,
+                        "xp":  20,
+                        "outputName":  "Copper Arrow Tip",
+                        "outputQty":  10,
+                        "slot":  4
+                    },
+                    {
+                        "id":  "smith_iron_shield",
+                        "section":  "blacksmithing",
+                        "metalType":  "iron",
+                        "skill":  "blacksmith",
+                        "level":  60,
+                        "displayName":  "Iron Shield",
+                        "image":  "images/ironshield.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Iron Bar",
+                                                 "qty":  10
+                                             }
+                                         ],
+                        "time":  10000,
+                        "xp":  250,
+                        "outputName":  "Iron Shield",
+                        "outputQty":  1,
+                        "slot":  4
+                    },
+                    {
+                        "id":  "smith_copper_boots",
+                        "section":  "blacksmithing",
+                        "metalType":  "copper",
+                        "skill":  "blacksmith",
+                        "level":  7,
+                        "displayName":  "Copper Boots",
+                        "image":  "images/copperboots.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Copper Bar",
+                                                 "qty":  4
+                                             }
+                                         ],
+                        "time":  4000,
+                        "xp":  45,
+                        "outputName":  "Copper Boots",
+                        "outputQty":  1,
+                        "slot":  5
+                    },
+                    {
+                        "id":  "smith_iron_shortsword",
+                        "section":  "blacksmithing",
+                        "metalType":  "iron",
+                        "skill":  "blacksmith",
+                        "level":  25,
+                        "displayName":  "Iron Shortsword",
+                        "image":  "images/ironshortsword.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Iron Bar",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  70,
+                        "outputName":  "Iron Shortsword",
+                        "outputQty":  1,
+                        "slot":  5
+                    },
+                    {
+                        "id":  "smith_copper_helmet",
+                        "section":  "blacksmithing",
+                        "metalType":  "copper",
+                        "skill":  "blacksmith",
+                        "level":  8,
+                        "displayName":  "Copper Helmet",
+                        "image":  "images/copperhelmet.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Copper Bar",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  50,
+                        "outputName":  "Copper Helmet",
+                        "outputQty":  1,
+                        "slot":  6
+                    },
+                    {
+                        "id":  "smith_iron_boots",
+                        "section":  "blacksmithing",
+                        "metalType":  "iron",
+                        "skill":  "blacksmith",
+                        "level":  26,
+                        "displayName":  "Iron Boots",
+                        "image":  "images/ironboots.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Iron Bar",
+                                                 "qty":  4
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  65,
+                        "outputName":  "Iron Boots",
+                        "outputQty":  1,
+                        "slot":  6
+                    },
+                    {
+                        "id":  "smith_copper_platelegs",
+                        "section":  "blacksmithing",
+                        "metalType":  "copper",
+                        "skill":  "blacksmith",
+                        "level":  9,
+                        "displayName":  "Copper Platelegs",
+                        "image":  "images/copperplatelegs.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Copper Bar",
+                                                 "qty":  6
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  60,
+                        "outputName":  "Copper Platelegs",
+                        "outputQty":  1,
+                        "slot":  7
+                    },
+                    {
+                        "id":  "smith_iron_helmet",
+                        "section":  "blacksmithing",
+                        "metalType":  "iron",
+                        "skill":  "blacksmith",
+                        "level":  27,
+                        "displayName":  "Iron Helmet",
+                        "image":  "images/ironhelmet.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Iron Bar",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  75,
+                        "outputName":  "Iron Helmet",
+                        "outputQty":  1,
+                        "slot":  7
+                    },
+                    {
+                        "id":  "smith_copper_chestplate",
+                        "section":  "blacksmithing",
+                        "metalType":  "copper",
+                        "skill":  "blacksmith",
+                        "level":  10,
+                        "displayName":  "Copper Chestplate",
+                        "image":  "images/copperchestplate.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Copper Bar",
+                                                 "qty":  10
+                                             }
+                                         ],
+                        "time":  6000,
+                        "xp":  70,
+                        "outputName":  "Copper Chestplate",
+                        "outputQty":  1,
+                        "slot":  8
+                    },
+                    {
+                        "id":  "smith_iron_platelegs",
+                        "section":  "blacksmithing",
+                        "metalType":  "iron",
+                        "skill":  "blacksmith",
+                        "level":  28,
+                        "displayName":  "Iron Platelegs",
+                        "image":  "images/ironplatelegs.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Iron Bar",
+                                                 "qty":  6
+                                             }
+                                         ],
+                        "time":  5500,
+                        "xp":  85,
+                        "outputName":  "Iron Platelegs",
+                        "outputQty":  1,
+                        "slot":  8
+                    },
+                    {
+                        "id":  "smith_iron_chestplate",
+                        "section":  "blacksmithing",
+                        "metalType":  "iron",
+                        "skill":  "blacksmith",
+                        "level":  28,
+                        "displayName":  "Iron Chestplate",
+                        "image":  "images/ironchestplate.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Iron Bar",
+                                                 "qty":  10
+                                             }
+                                         ],
+                        "time":  6500,
+                        "xp":  95,
+                        "outputName":  "Iron Chestplate",
+                        "outputQty":  1,
+                        "slot":  9
+                    },
+                    {
+                        "id":  "cook_chicken",
+                        "section":  "cooking",
+                        "skill":  "cooking",
+                        "slot":  0,
+                        "level":  1,
+                        "displayName":  "Cooked Chicken",
+                        "image":  "images/cookedchicken.png",
+                        "time":  3000,
+                        "xp":  30,
+                        "outputName":  "Cooked Chicken",
+                        "outputQty":  1,
+                        "requirements":  [
+                                             {
+                                                 "name":  "Raw Chicken",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "description":  "Heals 3 HP."
+                    },
+                    {
+                        "id":  "cook_beef",
+                        "section":  "cooking",
+                        "skill":  "cooking",
+                        "slot":  1,
+                        "level":  1,
+                        "displayName":  "Cooked Beef",
+                        "image":  "images/cookedbeef.png",
+                        "time":  3000,
+                        "xp":  35,
+                        "outputName":  "Cooked Beef",
+                        "outputQty":  1,
+                        "requirements":  [
+                                             {
+                                                 "name":  "Beef",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "description":  "Heals 4 HP."
+                    },
+                    {
+                        "id":  "cook_herring",
+                        "section":  "cooking",
+                        "skill":  "cooking",
+                        "slot":  2,
+                        "level":  1,
+                        "displayName":  "Cooked Herring",
+                        "image":  "images/cookedherring.png",
+                        "time":  3000,
+                        "xp":  30,
+                        "outputName":  "Cooked Herring",
+                        "outputQty":  1,
+                        "requirements":  [
+                                             {
+                                                 "name":  "Herring",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "description":  "Heals 3 HP."
+                    },
+                    {
+                        "id":  "cook_trout",
+                        "section":  "cooking",
+                        "skill":  "cooking",
+                        "slot":  3,
+                        "level":  5,
+                        "displayName":  "Cooked Trout",
+                        "image":  "images/cookedtrout.png",
+                        "time":  3500,
+                        "xp":  40,
+                        "outputName":  "Cooked Trout",
+                        "outputQty":  1,
+                        "requirements":  [
+                                             {
+                                                 "name":  "Trout",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "description":  "Heals 4 HP."
+                    },
+                    {
+                        "id":  "cook_salmon",
+                        "section":  "cooking",
+                        "skill":  "cooking",
+                        "slot":  4,
+                        "level":  10,
+                        "displayName":  "Cooked Salmon",
+                        "image":  "images/cookedsalmon.png",
+                        "time":  3500,
+                        "xp":  45,
+                        "outputName":  "Cooked Salmon",
+                        "outputQty":  1,
+                        "requirements":  [
+                                             {
+                                                 "name":  "Salmon",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "description":  "Heals 4 HP."
+                    },
+                    {
+                        "id":  "cook_cake",
+                        "section":  "cooking",
+                        "skill":  "cooking",
+                        "slot":  5,
+                        "level":  50,
+                        "displayName":  "Cake",
+                        "image":  "images/cake.png",
+                        "time":  4500,
+                        "xp":  65,
+                        "outputName":  "Cake",
+                        "outputQty":  1,
+                        "description":  "Heals 12 HP.",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Egg",
+                                                 "qty":  3
+                                             },
+                                             {
+                                                 "name":  "Bucket of Milk",
+                                                 "qty":  3
+                                             },
+                                             {
+                                                 "name":  "Flour",
+                                                 "qty":  3
+                                             }
+                                         ],
+                        "burnOutputName":  "Burnt Cake",
+                        "refundItems":  [
+                                            {
+                                                "name":  "Empty Bucket",
+                                                "qty":  3
+                                            }
+                                        ]
+                    },
+                    {
+                        "id":  "cook_bread",
+                        "section":  "cooking",
+                        "skill":  "cooking",
+                        "slot":  6,
+                        "level":  25,
+                        "displayName":  "Bread",
+                        "image":  "images/bread.png",
+                        "time":  3500,
+                        "xp":  45,
+                        "outputName":  "Bread",
+                        "outputQty":  1,
+                        "requirements":  [
+                                             {
+                                                 "name":  "Flour",
+                                                 "qty":  5
+                                             },
+                                             {
+                                                 "name":  "Bucket of Water",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "description":  "Heals 5 HP.",
+                        "burnOutputName":  "Burnt Bread",
+                        "refundItems":  [
+                                            {
+                                                "name":  "Empty Bucket",
+                                                "qty":  1
+                                            }
+                                        ]
+                    },
+                    {
+                        "id":  "cook_cheese",
+                        "section":  "cooking",
+                        "skill":  "cooking",
+                        "slot":  7,
+                        "level":  30,
+                        "displayName":  "Cheese",
+                        "image":  "images/cheese.png",
+                        "time":  3500,
+                        "xp":  55,
+                        "outputName":  "Cheese",
+                        "outputQty":  1,
+                        "requirements":  [
+                                             {
+                                                 "name":  "Bucket of Milk",
+                                                 "qty":  3
+                                             }
+                                         ],
+                        "description":  "Heals 8 HP.",
+                        "refundItems":  [
+                                            {
+                                                "name":  "Empty Bucket",
+                                                "qty":  3
+                                            }
+                                        ]
+                    },
+                    {
+                        "id":  "cook_salt_herring",
+                        "section":  "cooking",
+                        "skill":  "cooking",
+                        "slot":  8,
+                        "level":  35,
+                        "displayName":  "Salt Herring",
+                        "image":  "images/saltherring.png",
+                        "time":  3000,
+                        "xp":  40,
+                        "outputName":  "Salt Herring",
+                        "outputQty":  1,
+                        "requirements":  [
+                                             {
+                                                 "name":  "Herring",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Salt",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "description":  "Heals 4 HP."
+                    },
+                    {
+                        "id":  "cook_salt_trout",
+                        "section":  "cooking",
+                        "skill":  "cooking",
+                        "slot":  9,
+                        "level":  35,
+                        "displayName":  "Salt Trout",
+                        "image":  "images/salttrout.png",
+                        "time":  3500,
+                        "xp":  50,
+                        "outputName":  "Salt Trout",
+                        "outputQty":  1,
+                        "requirements":  [
+                                             {
+                                                 "name":  "Trout",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Salt",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "description":  "Heals 5 HP."
+                    },
+                    {
+                        "id":  "cook_salt_salmon",
+                        "section":  "cooking",
+                        "skill":  "cooking",
+                        "slot":  10,
+                        "level":  35,
+                        "displayName":  "Salt Salmon",
+                        "image":  "images/saltsalmon.png",
+                        "time":  3500,
+                        "xp":  60,
+                        "outputName":  "Salt Salmon",
+                        "outputQty":  1,
+                        "requirements":  [
+                                             {
+                                                 "name":  "Salmon",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Salt",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "description":  "Heals 6 HP."
+                    },
+                    {
+                        "id":  "craft_bucket",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  1,
+                        "displayName":  "Empty Bucket",
+                        "image":  "images/emptybucket.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Oak",
+                                                 "qty":  3
+                                             }
+                                         ],
+                        "time":  3000,
+                        "xp":  25,
+                        "outputName":  "Empty Bucket",
+                        "outputQty":  1,
+                        "slot":  0
+                    },
+                    {
+                        "id":  "craft_bow_string",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  1,
+                        "displayName":  "Bow String",
+                        "image":  "images/bowstring.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Silk",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  2000,
+                        "xp":  20,
+                        "outputName":  "Bow String",
+                        "outputQty":  1,
+                        "slot":  1
+                    },
+                    {
+                        "id":  "craft_empty_vial",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  5,
+                        "displayName":  "Empty Vial",
+                        "image":  "images/emptyvial.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Sand",
+                                                 "qty":  5
+                                             },
+                                             {
+                                                 "name":  "Coal Ore",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  3500,
+                        "xp":  35,
+                        "outputName":  "Empty Vial",
+                        "outputQty":  1,
+                        "slot":  2
+                    },
+                    {
+                        "id":  "craft_magic_staff",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  1,
+                        "displayName":  "Magic Staff",
+                        "image":  "images/magicstaff.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Oak",
+                                                 "qty":  10
+                                             },
+                                             {
+                                                 "name":  "Earth Crystal Shard",
+                                                 "qty":  10
+                                             },
+                                             {
+                                                 "name":  "Air Crystal Shard",
+                                                 "qty":  10
+                                             },
+                                             {
+                                                 "name":  "Water Crystal Shard",
+                                                 "qty":  10
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  120,
+                        "outputName":  "Magic Staff",
+                        "outputQty":  1,
+                        "slot":  3
+                    },
+                    {
+                        "id":  "cut_topaz",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  30,
+                        "displayName":  "Topaz",
+                        "image":  "images/topaz.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Uncut Topaz",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  3000,
+                        "xp":  150,
+                        "outputName":  "Topaz",
+                        "outputQty":  1,
+                        "slot":  4
+                    },
+                    {
+                        "id":  "cut_diamond",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  30,
+                        "displayName":  "Diamond",
+                        "image":  "images/diamond.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Uncut Diamond",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  3000,
+                        "xp":  150,
+                        "outputName":  "Diamond",
+                        "outputQty":  1,
+                        "slot":  5
+                    },
+                    {
+                        "id":  "cut_emerald",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  30,
+                        "displayName":  "Emerald",
+                        "image":  "images/emerald.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Uncut Emerald",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  3000,
+                        "xp":  150,
+                        "outputName":  "Emerald",
+                        "outputQty":  1,
+                        "slot":  6
+                    },
+                    {
+                        "id":  "cut_jade",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  30,
+                        "displayName":  "Jade",
+                        "image":  "images/jade.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Uncut Jade",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  3000,
+                        "xp":  150,
+                        "outputName":  "Jade",
+                        "outputQty":  1,
+                        "slot":  7
+                    },
+                    {
+                        "id":  "cut_ruby",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  30,
+                        "displayName":  "Ruby",
+                        "image":  "images/ruby.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Uncut Ruby",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  3000,
+                        "xp":  150,
+                        "outputName":  "Ruby",
+                        "outputQty":  1,
+                        "slot":  8
+                    },
+                    {
+                        "id":  "cut_sapphire",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  30,
+                        "displayName":  "Sapphire",
+                        "image":  "images/sapphire.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Uncut Sapphire",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  3000,
+                        "xp":  150,
+                        "outputName":  "Sapphire",
+                        "outputQty":  1,
+                        "slot":  9
+                    },
+                    {
+                        "id":  "craft_gold_ring",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  38,
+                        "displayName":  "Gold Ring",
+                        "image":  "images/goldring.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Bar",
+                                                 "qty":  2
+                                             }
+                                         ],
+                        "time":  4000,
+                        "xp":  100,
+                        "outputName":  "Gold Ring",
+                        "outputQty":  1,
+                        "slot":  10
+                    },
+                    {
+                        "id":  "craft_diamond_ring",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  40,
+                        "displayName":  "Diamond Ring",
+                        "image":  "images/diamondring.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Ring",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Diamond",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  160,
+                        "outputName":  "Diamond Ring",
+                        "outputQty":  1,
+                        "slot":  11
+                    },
+                    {
+                        "id":  "craft_emerald_ring",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  40,
+                        "displayName":  "Emerald Ring",
+                        "image":  "images/emeraldring.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Ring",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Emerald",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  150,
+                        "outputName":  "Emerald Ring",
+                        "outputQty":  1,
+                        "slot":  12
+                    },
+                    {
+                        "id":  "craft_ruby_ring",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  40,
+                        "displayName":  "Ruby Ring",
+                        "image":  "images/rubyring.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Ring",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Ruby",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  150,
+                        "outputName":  "Ruby Ring",
+                        "outputQty":  1,
+                        "slot":  13
+                    },
+                    {
+                        "id":  "craft_sapphire_ring",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  40,
+                        "displayName":  "Sapphire Ring",
+                        "image":  "images/sapphirering.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Ring",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Sapphire",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  150,
+                        "outputName":  "Sapphire Ring",
+                        "outputQty":  1,
+                        "slot":  14
+                    },
+                    {
+                        "id":  "craft_topaz_ring",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  40,
+                        "displayName":  "Topaz Ring",
+                        "image":  "images/topazring.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Ring",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Topaz",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  145,
+                        "outputName":  "Topaz Ring",
+                        "outputQty":  1,
+                        "slot":  15
+                    },
+                    {
+                        "id":  "craft_diamond_necklace",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  50,
+                        "displayName":  "Diamond Necklace",
+                        "image":  "images/diamondnecklace.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Bar",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Diamond",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  200,
+                        "outputName":  "Diamond Necklace",
+                        "outputQty":  1,
+                        "slot":  16
+                    },
+                    {
+                        "id":  "craft_emerald_necklace",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  50,
+                        "displayName":  "Emerald Necklace",
+                        "image":  "images/emeraldnecklace.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Bar",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Emerald",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  190,
+                        "outputName":  "Emerald Necklace",
+                        "outputQty":  1,
+                        "slot":  17
+                    },
+                    {
+                        "id":  "craft_ruby_necklace",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  50,
+                        "displayName":  "Ruby Necklace",
+                        "image":  "images/rubynecklace.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Bar",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Ruby",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  190,
+                        "outputName":  "Ruby Necklace",
+                        "outputQty":  1,
+                        "slot":  18
+                    },
+                    {
+                        "id":  "craft_sapphire_necklace",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  50,
+                        "displayName":  "Sapphire Necklace",
+                        "image":  "images/sapphirenecklace.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Bar",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Sapphire",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  190,
+                        "outputName":  "Sapphire Necklace",
+                        "outputQty":  1,
+                        "slot":  19
+                    },
+                    {
+                        "id":  "craft_topaz_necklace",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  50,
+                        "displayName":  "Topaz Necklace",
+                        "image":  "images/topaznecklace.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Gold Bar",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Topaz",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  180,
+                        "outputName":  "Topaz Necklace",
+                        "outputQty":  1,
+                        "slot":  20
+                    },
+                    {
+                        "id":  "fletch_arrow_shaft",
+                        "section":  "fletching",
+                        "skill":  "fletching",
+                        "level":  1,
+                        "displayName":  "Arrow Shaft x15",
+                        "image":  "images/arrowshaft.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Softwood",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  2500,
+                        "xp":  20,
+                        "outputName":  "Arrow Shaft",
+                        "outputQty":  15,
+                        "slot":  0
+                    },
+                    {
+                        "id":  "fletch_unbound_arrow",
+                        "section":  "fletching",
+                        "skill":  "fletching",
+                        "level":  1,
+                        "displayName":  "Unbound Arrow x15",
+                        "image":  "images/unboundarrow.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Arrow Shaft",
+                                                 "qty":  15
+                                             },
+                                             {
+                                                 "name":  "Feather",
+                                                 "qty":  15
+                                             }
+                                         ],
+                        "time":  2500,
+                        "xp":  20,
+                        "outputName":  "Unbound Arrow",
+                        "outputQty":  15,
+                        "slot":  1
+                    },
+                    {
+                        "id":  "fletch_copper_arrow",
+                        "section":  "fletching",
+                        "skill":  "fletching",
+                        "level":  1,
+                        "displayName":  "Copper Arrow x15",
+                        "image":  "images/copperarrow.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Unbound Arrow",
+                                                 "qty":  15
+                                             },
+                                             {
+                                                 "name":  "Copper Arrow Tip",
+                                                 "qty":  15
+                                             }
+                                         ],
+                        "time":  2500,
+                        "xp":  25,
+                        "outputName":  "Copper Arrow",
+                        "outputQty":  15,
+                        "slot":  2
+                    },
+                    {
+                        "id":  "fletch_unstrung_softwood_bow",
+                        "section":  "fletching",
+                        "skill":  "fletching",
+                        "level":  5,
+                        "displayName":  "Unstrung Softwood Bow",
+                        "image":  "images/unstrungsoftwoodbow.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Softwood",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "time":  3000,
+                        "xp":  35,
+                        "outputName":  "Unstrung Softwood Bow",
+                        "outputQty":  1,
+                        "slot":  3
+                    },
+                    {
+                        "id":  "fletch_softwood_bow",
+                        "section":  "fletching",
+                        "skill":  "fletching",
+                        "level":  7,
+                        "displayName":  "Softwood Bow",
+                        "image":  "images/softwoodbow.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Unstrung Softwood Bow",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Bow String",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  3000,
+                        "xp":  45,
+                        "outputName":  "Softwood Bow",
+                        "outputQty":  1,
+                        "slot":  4
+                    },
+                    {
+                        "id":  "fletch_unstrung_oak_bow",
+                        "section":  "fletching",
+                        "skill":  "fletching",
+                        "level":  15,
+                        "displayName":  "Unstrung Oak Bow",
+                        "image":  "images/unstrungoakbow.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Oak",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "time":  3500,
+                        "xp":  50,
+                        "outputName":  "Unstrung Oak Bow",
+                        "outputQty":  1,
+                        "slot":  5
+                    },
+                    {
+                        "id":  "fletch_oak_bow",
+                        "section":  "fletching",
+                        "skill":  "fletching",
+                        "level":  17,
+                        "displayName":  "Oak Bow",
+                        "image":  "images/oakbow.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Unstrung Oak Bow",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Bow String",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  3500,
+                        "xp":  60,
+                        "outputName":  "Oak Bow",
+                        "outputQty":  1,
+                        "slot":  6
+                    },
+                    {
+                        "id":  "fletch_copper_arrow_poisoned",
+                        "section":  "fletching",
+                        "skill":  "fletching",
+                        "level":  1,
+                        "displayName":  "Copper Arrow Poisoned",
+                        "image":  "images/copperarrowpoisonned.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Copper Arrow",
+                                                 "qty":  1
+                                             },
+                                             {
+                                                 "name":  "Venom",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  2500,
+                        "xp":  90,
+                        "outputName":  "Copper Arrow Poisoned",
+                        "outputQty":  1,
+                        "slot":  7
+                    },
+                    {
+                        "id":  "tailor_leather",
+                        "section":  "tailoring",
+                        "skill":  "tailoring",
+                        "level":  1,
+                        "displayName":  "Leather",
+                        "image":  "images/leather.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Cow Hide",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "time":  2500,
+                        "xp":  20,
+                        "outputName":  "Leather",
+                        "outputQty":  1,
+                        "slot":  0
+                    },
+                    {
+                        "id":  "tailor_cloth",
+                        "section":  "tailoring",
+                        "skill":  "tailoring",
+                        "level":  1,
+                        "displayName":  "Cloth",
+                        "image":  "images/cloth.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Silk",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "time":  2500,
+                        "xp":  20,
+                        "outputName":  "Cloth",
+                        "outputQty":  1,
+                        "slot":  1
+                    },
+                    {
+                        "id":  "tailor_leather_boots",
+                        "section":  "tailoring",
+                        "skill":  "tailoring",
+                        "level":  1,
+                        "displayName":  "Leather Boots",
+                        "image":  "images/leatherboots.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Leather",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "time":  3500,
+                        "xp":  40,
+                        "outputName":  "Leather Boots",
+                        "outputQty":  1,
+                        "slot":  2
+                    },
+                    {
+                        "id":  "tailor_leather_hood",
+                        "section":  "tailoring",
+                        "skill":  "tailoring",
+                        "level":  3,
+                        "displayName":  "Leather Hood",
+                        "image":  "images/leatherhood.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Leather",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "time":  3500,
+                        "xp":  45,
+                        "outputName":  "Leather Hood",
+                        "outputQty":  1,
+                        "slot":  3
+                    },
+                    {
+                        "id":  "tailor_leather_chaps",
+                        "section":  "tailoring",
+                        "skill":  "tailoring",
+                        "level":  5,
+                        "displayName":  "Leather Chaps",
+                        "image":  "images/leatherpants.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Leather",
+                                                 "qty":  10
+                                             }
+                                         ],
+                        "time":  4000,
+                        "xp":  50,
+                        "outputName":  "Leather Chaps",
+                        "outputQty":  1,
+                        "slot":  4
+                    },
+                    {
+                        "id":  "tailor_leather_body",
+                        "section":  "tailoring",
+                        "skill":  "tailoring",
+                        "level":  7,
+                        "displayName":  "Leather Body",
+                        "image":  "images/leatherarmor.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Leather",
+                                                 "qty":  10
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  60,
+                        "outputName":  "Leather Body",
+                        "outputQty":  1,
+                        "slot":  5
+                    },
+                    {
+                        "id":  "tailor_wizard_boots",
+                        "section":  "tailoring",
+                        "skill":  "tailoring",
+                        "level":  2,
+                        "displayName":  "Wizard Boots",
+                        "image":  "images/wizardboots.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Cloth",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "time":  4000,
+                        "xp":  60,
+                        "outputName":  "Wizard Boots",
+                        "outputQty":  1,
+                        "slot":  6
+                    },
+                    {
+                        "id":  "tailor_wizard_hat",
+                        "section":  "tailoring",
+                        "skill":  "tailoring",
+                        "level":  4,
+                        "displayName":  "Wizard Hat",
+                        "image":  "images/wizardhat.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Cloth",
+                                                 "qty":  5
+                                             }
+                                         ],
+                        "time":  4500,
+                        "xp":  65,
+                        "outputName":  "Wizard Hat",
+                        "outputQty":  1,
+                        "slot":  7
+                    },
+                    {
+                        "id":  "tailor_wizard_trousers",
+                        "section":  "tailoring",
+                        "skill":  "tailoring",
+                        "level":  6,
+                        "displayName":  "Wizard Trousers",
+                        "image":  "images/wizardtrousers.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Cloth",
+                                                 "qty":  10
+                                             }
+                                         ],
+                        "time":  5000,
+                        "xp":  75,
+                        "outputName":  "Wizard Trousers",
+                        "outputQty":  1,
+                        "slot":  8
+                    },
+                    {
+                        "id":  "tailor_wizard_robe",
+                        "section":  "tailoring",
+                        "skill":  "tailoring",
+                        "level":  8,
+                        "displayName":  "Wizard Robe",
+                        "image":  "images/wizardrobe.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Cloth",
+                                                 "qty":  10
+                                             }
+                                         ],
+                        "time":  5500,
+                        "xp":  85,
+                        "outputName":  "Wizard Robe",
+                        "outputQty":  1,
+                        "slot":  9
+                    },
+                    {
+                        "id":  "craft_mapple_fishing_pole",
+                        "section":  "crafting",
+                        "skill":  "crafting",
+                        "level":  50,
+                        "displayName":  "Mapple Fishing Pole",
+                        "image":  "images/mapplefishingpole.png",
+                        "requirements":  [
+                                             {
+                                                 "name":  "Silk",
+                                                 "qty":  20
+                                             },
+                                             {
+                                                 "name":  "Iron Bar",
+                                                 "qty":  2
+                                             },
+                                             {
+                                                 "name":  "Maple",
+                                                 "qty":  1
+                                             }
+                                         ],
+                        "extraSkillRequirements":  [
+                                                       {
+                                                           "skill":  "fishing",
+                                                           "level":  50
+                                                       }
+                                                   ],
+                        "time":  6000,
+                        "xp":  250,
+                        "outputName":  "Mapple Fishing Pole",
+                        "outputQty":  1,
+                        "slot":  21,
+                        "description":  "A reinforced fishing pole that also requires Fishing level 50 to assemble."
+                    }
+                ]
 }
