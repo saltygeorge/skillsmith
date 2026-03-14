@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -3950,6 +3950,7 @@ const VALID_ITEMS = [
   'Trout',
   'Salmon',
   'Fishing Pole',
+  'Mapple Fishing Pole',
   'Fishing Bait',
 
   // +++ NEW COOKED FISH +++
@@ -4141,6 +4142,25 @@ const SALMON_FISH_LVL = 10;
 
 // --- NEW: Fishing Action Constants ---
 const FISHING_TIME_MS = 20000; // 20 seconds per fish
+function getBestFishingPole() {
+  let fallbackPole = null;
+  for (const slot of (game.inventory || [])) {
+    if (!slot) continue;
+    if (slot.name === 'Mapple Fishing Pole') return slot.name;
+    if (!fallbackPole && slot.name === 'Fishing Pole') fallbackPole = slot.name;
+  }
+  return fallbackPole;
+}
+
+function getFishingSkillSpeedBonusMs() {
+  return getSkillLevel('fishing') >= 80 ? 5000 : 0;
+}
+
+function getFishingDurationMs(poleName) {
+  const poleBonusMs = poleName === 'Mapple Fishing Pole' ? 5000 : 0;
+  const skillBonusMs = getFishingSkillSpeedBonusMs();
+  return Math.max(1000, FISHING_TIME_MS - poleBonusMs - skillBonusMs);
+}
 
 // +++ NEW MAGIC SPELL CONSTANTS +++
 const EARTH_BOLT = { name: 'Earth Bolt', level: 1, damage: 2, xp: 5 };
@@ -4180,8 +4200,8 @@ const COPPER_PLATELEGS_TIME_MS = 6000; // 6 bars (1s/bar)
 // +++ END NEW CONSTANTS +++
 
 // --- NEW: Mining Level Requirements ---
-const COAL_MINE_LVL = 5;
-const IRON_MINE_LVL = 10;
+const COAL_MINE_LVL = 20;
+const IRON_MINE_LVL = 20;
 
 // --- NEW: Coal/Iron Mining Constants ---
 const COAL_MINE_TIME_MS = 2000;
@@ -4192,12 +4212,12 @@ const IRON_MINE_TIME_MS = 3000;
 const IRON_MINE_XP = 35;
 const IRON_MINE_ITEM = 'Iron Ore';
 
-const SILVER_MINE_LVL = 20;
+const SILVER_MINE_LVL = 30;
 const SILVER_MINE_TIME_MS = 4000;
 const SILVER_MINE_XP = 50;
 const SILVER_MINE_ITEM = 'Silver Ore';
 
-const GOLD_MINE_LVL = 30;
+const GOLD_MINE_LVL = 50;
 const GOLD_MINE_TIME_MS = 5000;
 const GOLD_MINE_XP = 75;
 const GOLD_MINE_ITEM = 'Gold Ore';
@@ -4208,12 +4228,12 @@ const EARTH_CRYSTAL_TIME_MS = 4000;
 const EARTH_CRYSTAL_XP = 50;
 const EARTH_CRYSTAL_ITEM = 'Earth Crystal Shard';
 
-const AIR_CRYSTAL_LVL = 30;
+const AIR_CRYSTAL_LVL = 40;
 const AIR_CRYSTAL_TIME_MS = 5000;
 const AIR_CRYSTAL_XP = 65;
 const AIR_CRYSTAL_ITEM = 'Air Crystal Shard';
 
-const WATER_CRYSTAL_LVL = 40;
+const WATER_CRYSTAL_LVL = 60;
 const WATER_CRYSTAL_TIME_MS = 6000;
 const WATER_CRYSTAL_XP = 80;
 const WATER_CRYSTAL_ITEM = 'Water Crystal Shard';
@@ -4229,22 +4249,22 @@ const COPPER_BAR_LVL = 1;
 const COPPER_PICKAXE_LVL = 2;
 const COPPER_AXE_LVL = 2;
 const COPPER_SWORD_LVL = 3;
-const BLACKSMITH_COPPER_TIPS_LVL = 4; // +++ NEW +++
-const COPPER_BOOTS_LVL = 5;
-const COPPER_HELMET_LVL = 6;
-const COPPER_PLATELEGS_LVL = 7; // +++ NEW +++
-const COPPER_CHEST_LVL = 8;
+const BLACKSMITH_COPPER_TIPS_LVL = 5; // +++ NEW +++
+const COPPER_BOOTS_LVL = 7;
+const COPPER_HELMET_LVL = 8;
+const COPPER_PLATELEGS_LVL = 9; // +++ NEW +++
+const COPPER_CHEST_LVL = 10;
 
-const IRON_BAR_LVL = 11;
-const IRON_PICKAXE_LVL = 12;
-const IRON_AXE_LVL = 12;
-const IRON_SWORD_LVL = 13;
-const IRON_BOOTS_LVL = 15;
-const IRON_HELMET_LVL = 16;
-const IRON_PLATELEGS_LVL = 17; // +++ NEW +++
-const IRON_CHEST_LVL = 18;
-const SILVER_BAR_LVL = 21;
-const GOLD_BAR_LVL = 31;
+const IRON_BAR_LVL = 15;
+const IRON_PICKAXE_LVL = 20;
+const IRON_AXE_LVL = 20;
+const IRON_SWORD_LVL = 25;
+const IRON_BOOTS_LVL = 26;
+const IRON_HELMET_LVL = 27;
+const IRON_PLATELEGS_LVL = 28; // +++ NEW +++
+const IRON_CHEST_LVL = 28;
+const SILVER_BAR_LVL = 30;
+const GOLD_BAR_LVL = 50;
 
 const SILVER_BAR_ORE_COST = 1;
 const SILVER_BAR_COAL_COST = 2;
@@ -4605,6 +4625,7 @@ const ITEM_SELL_PRICES = {
   'Iron Shortsword': 65,
   'Magic Staff': 500,
   'Fishing Pole': 1000,
+  'Mapple Fishing Pole': 2500,
   '1tapper': 0,
   'Silver Fangs of the Fallen Monarch': 25000,
   'Iron Battleaxe': 5000,
@@ -5673,6 +5694,7 @@ function renderInventoryGrid(){
               else if (item.name === 'Trout') imgName = 'trout';
               else if (item.name === 'Salmon') imgName = 'salmon';
               else if (item.name === 'Fishing Pole') imgName = 'fishingpole';
+              else if (item.name === 'Mapple Fishing Pole') imgName = 'mapplefishingpole';
               else if (item.name === 'Fishing Bait') imgName = 'fishingbait';
               else if (item.name === 'Empty Bucket') imgName = 'emptybucket';
               else if (item.name === 'Bucket of Milk') imgName = 'bucketofmilk';
@@ -5794,6 +5816,9 @@ function renderInventoryGrid(){
       } else if (itemName === 'Venom') {
         itemStats = `<div style="color:#ff8888;">-5 HP</div>`;
         clickAction = '<div style="color:#ffaaaa; margin-top: 5px; font-size:11px;">Click to drink</div>';
+      } else if (itemName === 'Mapple Fishing Pole') {
+        itemStats = `<div style="color:#7fd3ff;">-5s Fishing Time</div>`;
+        clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Used automatically while fishing</div>';
       }
 
       const tooltipContent = `
@@ -6723,11 +6748,16 @@ function updateSkillUI(){
         xpText = `XP: ${data.xp.toLocaleString()} / ${nextXP.toLocaleString()}`;
     }
     
+    const skillBonusLines = [];
+    if (data.level >= 100) skillBonusLines.push(`<div style="color:#aaffaa; font-weight:bold; margin-top:2px;">Bonus: +5 HP</div>`);
+    if (skillDataKey === 'fishing' && data.level >= 80) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Fast Fishing: -5s Fishing Time</div>`);
+    const skillBonusHtml = skillBonusLines.length ? skillBonusLines.join('') : `<div>(Total XP: ${data.totalXP.toLocaleString()})</div>`;
+
     const tooltipContent = `
       <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${skillName}</div>
       <div style="font-size: 14px; margin-bottom: 6px;">Level: <span style="font-weight: bold;">${data.level}</span></div>
       <div>${xpText}</div>
-      ${data.level >= 100 ? `<div style="color:#aaffaa; font-weight:bold; margin-top:2px;">Bonus: +5 HP</div>` : `<div>(Total XP: ${data.totalXP.toLocaleString()})</div>`}
+      ${skillBonusHtml}
       
       <div style="width: 100%; height: 8px; background: #555; border-radius: 4px; margin-top: 8px; border: 1px solid #333;">
         <div style="height: 100%; width: ${progressPercent}%; background: ${barColor}; border-radius: 4px; transition: width 0.2s;"></div>
@@ -15721,6 +15751,7 @@ function openRiverFishingArea() {
  */
 function stopFishing(progressId = 'fishProgress', startBtnId = 'startFishBtn', stopBtnId = 'stopFishBtn') {
   game.fishingActive = false;
+  game.activeFishingPole = null;
   if(game.progressFrame) clearTimeout(game.progressFrame);
   
   const bar = document.getElementById(progressId);
@@ -15776,18 +15807,11 @@ async function startFishingHerring() {
   if (game.fishingActive) return;
 
   // --- NEW: Check for Fishing Pole ---
-  let hasPole = false;
-  for (const slot of game.inventory) {
-      if (slot && slot.name === 'Fishing Pole') {
-          hasPole = true;
-          break;
-      }
-  }
-  if (!hasPole) {
-      await showGameAlert("Tool Required", "You need a Fishing Pole in your inventory to fish.");
+  const activeFishingPole = getBestFishingPole();
+  if (!activeFishingPole) {
+      await showGameAlert("Tool Required", "You need a Fishing Pole or Mapple Fishing Pole in your inventory to fish.");
       return;
   }
-  // --- END NEW ---
 
   // --- NEW: Check for Fishing Bait ---
   let hasBait = false;
@@ -15804,6 +15828,7 @@ async function startFishingHerring() {
   // --- END NEW ---
   
   game.fishingActive = true;
+  game.activeFishingPole = activeFishingPole;
   document.getElementById('startFishBtn').style.display = 'none';
   document.getElementById('stopFishBtn').style.display = 'inline-block';
   game.progressFrame = setTimeout(() => fishingHerringLoop(Date.now(), Date.now()), 16);
@@ -15812,8 +15837,9 @@ async function startFishingHerring() {
 async function fishingHerringLoop(timestamp, startTime) {
   if (!game.fishingActive) return; 
   const elapsed = Date.now() - startTime;
+  const fishingTimeMs = getFishingDurationMs(game.activeFishingPole);
 
-  if (elapsed >= FISHING_TIME_MS) {
+  if (elapsed >= fishingTimeMs) {
     let hasBait = false;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Fishing Bait') {
@@ -15835,7 +15861,7 @@ async function fishingHerringLoop(timestamp, startTime) {
     
     document.getElementById('fishProgress').style.width = '0%';
     
-    const overdueTime = elapsed - FISHING_TIME_MS;
+    const overdueTime = elapsed - fishingTimeMs;
     const newStartTime = Date.now() - overdueTime;
     
     let hasBaitAfter = false;
@@ -15862,7 +15888,7 @@ async function fishingHerringLoop(timestamp, startTime) {
     return fishingHerringLoop(Date.now(), newStartTime);
 
   } else {
-    const progress = (elapsed / FISHING_TIME_MS) * 100;
+    const progress = (elapsed / fishingTimeMs) * 100;
     document.getElementById('fishProgress').style.width = progress + '%';
     game.progressFrame = setTimeout(() => fishingHerringLoop(Date.now(), startTime), 16);
   }
@@ -15912,18 +15938,11 @@ async function startFishingTrout() {
   if (game.fishingActive) return;
 
   // --- NEW: Check for Fishing Pole ---
-  let hasPole = false;
-  for (const slot of game.inventory) {
-      if (slot && slot.name === 'Fishing Pole') {
-          hasPole = true;
-          break;
-      }
-  }
-  if (!hasPole) {
-      await showGameAlert("Tool Required", "You need a Fishing Pole in your inventory to fish.");
+  const activeFishingPole = getBestFishingPole();
+  if (!activeFishingPole) {
+      await showGameAlert("Tool Required", "You need a Fishing Pole or Mapple Fishing Pole in your inventory to fish.");
       return;
   }
-  // --- END NEW ---
 
   // --- NEW: Check for Fishing Bait ---
   let hasBait = false;
@@ -15940,6 +15959,7 @@ async function startFishingTrout() {
   // --- END NEW ---
   
   game.fishingActive = true;
+  game.activeFishingPole = activeFishingPole;
   document.getElementById('startFishBtn').style.display = 'none';
   document.getElementById('stopFishBtn').style.display = 'inline-block';
   game.progressFrame = setTimeout(() => fishingTroutLoop(Date.now(), Date.now()), 16);
@@ -15948,8 +15968,9 @@ async function startFishingTrout() {
 async function fishingTroutLoop(timestamp, startTime) {
   if (!game.fishingActive) return; 
   const elapsed = Date.now() - startTime;
+  const fishingTimeMs = getFishingDurationMs(game.activeFishingPole);
 
-  if (elapsed >= FISHING_TIME_MS) {
+  if (elapsed >= fishingTimeMs) {
     let hasBait = false;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Fishing Bait') {
@@ -15971,7 +15992,7 @@ async function fishingTroutLoop(timestamp, startTime) {
     
     document.getElementById('fishProgress').style.width = '0%';
     
-    const overdueTime = elapsed - FISHING_TIME_MS;
+    const overdueTime = elapsed - fishingTimeMs;
     const newStartTime = Date.now() - overdueTime;
     
     let hasBaitAfter = false;
@@ -15998,7 +16019,7 @@ async function fishingTroutLoop(timestamp, startTime) {
     return fishingTroutLoop(Date.now(), newStartTime);
 
   } else {
-    const progress = (elapsed / FISHING_TIME_MS) * 100;
+    const progress = (elapsed / fishingTimeMs) * 100;
     document.getElementById('fishProgress').style.width = progress + '%';
     game.progressFrame = setTimeout(() => fishingTroutLoop(Date.now(), startTime), 16);
   }
@@ -16048,18 +16069,11 @@ async function startFishingSalmon() {
   if (game.fishingActive) return;
 
   // --- NEW: Check for Fishing Pole ---
-  let hasPole = false;
-  for (const slot of game.inventory) {
-      if (slot && slot.name === 'Fishing Pole') {
-          hasPole = true;
-          break;
-      }
-  }
-  if (!hasPole) {
-      await showGameAlert("Tool Required", "You need a Fishing Pole in your inventory to fish.");
+  const activeFishingPole = getBestFishingPole();
+  if (!activeFishingPole) {
+      await showGameAlert("Tool Required", "You need a Fishing Pole or Mapple Fishing Pole in your inventory to fish.");
       return;
   }
-  // --- END NEW ---
 
   // --- NEW: Check for Fishing Bait ---
   let hasBait = false;
@@ -16076,6 +16090,7 @@ async function startFishingSalmon() {
   // --- END NEW ---
   
   game.fishingActive = true;
+  game.activeFishingPole = activeFishingPole;
   document.getElementById('startFishBtn').style.display = 'none';
   document.getElementById('stopFishBtn').style.display = 'inline-block';
   game.progressFrame = setTimeout(() => fishingSalmonLoop(Date.now(), Date.now()), 16);
@@ -16084,8 +16099,9 @@ async function startFishingSalmon() {
 async function fishingSalmonLoop(timestamp, startTime) {
   if (!game.fishingActive) return; 
   const elapsed = Date.now() - startTime;
+  const fishingTimeMs = getFishingDurationMs(game.activeFishingPole);
 
-  if (elapsed >= FISHING_TIME_MS) {
+  if (elapsed >= fishingTimeMs) {
     let hasBait = false;
     for (const slot of game.inventory) {
         if (slot && slot.name === 'Fishing Bait') {
@@ -16107,7 +16123,7 @@ async function fishingSalmonLoop(timestamp, startTime) {
     
     document.getElementById('fishProgress').style.width = '0%';
     
-    const overdueTime = elapsed - FISHING_TIME_MS;
+    const overdueTime = elapsed - fishingTimeMs;
     const newStartTime = Date.now() - overdueTime;
     
     let hasBaitAfter = false;
@@ -16134,7 +16150,7 @@ async function fishingSalmonLoop(timestamp, startTime) {
     return fishingSalmonLoop(Date.now(), newStartTime);
 
   } else {
-    const progress = (elapsed / FISHING_TIME_MS) * 100;
+    const progress = (elapsed / fishingTimeMs) * 100;
     document.getElementById('fishProgress').style.width = progress + '%';
     game.progressFrame = setTimeout(() => fishingSalmonLoop(Date.now(), startTime), 16);
   }
@@ -17469,7 +17485,7 @@ function openGoldMine(){
 
 async function startGoldMining() {
   if (getBestTool('pickaxe') < 3) { 
-    await showGameAlert("Tool Required", "You need at least an Iron Pickaxe in your inventory to mine gold.");
+    await showGameAlert("Tool Required", "You need a Silver Pickaxe in your inventory to mine gold.");
     return;
   }
   if (!game.isSessionActive) { await showGameAlert("Session Not Active", "Session not active."); return; }
@@ -17656,13 +17672,13 @@ function openWaterCrystalMine() {
 }
 
 async function startCrystalMining(type) {
-  // Tool Check: Tier 3 (Iron) required
+  // Tool Check: Iron for Earth/Air, Silver for Water
   const bestPickaxe = getBestTool('pickaxe');
-  if (bestPickaxe < 3) { 
-    await showGameAlert("Tool Required", "You need at least an Iron Pickaxe in your inventory to mine crystal veins.");
+  const requiredPickaxeTier = type === 'Water' ? 4 : 3;
+  if (bestPickaxe < requiredPickaxeTier) {
+    await showGameAlert("Tool Required", type === 'Water' ? "You need a Silver Pickaxe in your inventory to mine water crystal veins." : "You need at least an Iron Pickaxe in your inventory to mine crystal veins.");
     return;
   }
-
   if (!game.isSessionActive) {
     await showGameAlert("Session Not Active", "This game session is not active. Please take control to perform actions.");
     return;
@@ -19767,6 +19783,8 @@ function renderBankGrid() {
                   imgName = 'salmon';
               } else if (item.name === 'Fishing Pole') {
                   imgName = 'fishingpole';
+              } else if (item.name === 'Mapple Fishing Pole') {
+                  imgName = 'mapplefishingpole';
               } else if (item.name === 'Fishing Bait') {
                   imgName = 'fishingbait';
               }
@@ -19889,6 +19907,7 @@ function renderBankGrid() {
         
         // --- ADDED SPEED DISPLAY ---
         if (stats.speed) itemStats += `<div style="color:var(--gold);">Speed: ${(stats.speed / 1000).toFixed(1)}s</div>`;
+        if (itemName === 'Mapple Fishing Pole') itemStats += `<div style="color:#7fd3ff;">-5s Fishing Time</div>`;
       }
 
       const tooltipContent = `
@@ -20783,6 +20802,7 @@ function renderShopGrid() {
       if (item.name === 'Bronze Pickaxe') imgName = 'bronzepickaxe';
       else if (item.name === 'Bronze Axe') imgName = 'bronzeaxe';
       else if (item.name === 'Fishing Pole') imgName = 'fishingpole';
+      else if (item.name === 'Mapple Fishing Pole') imgName = 'mapplefishingpole';
       else if (item.name === 'Fishing Bait') imgName = 'fishingbait';
       else if (item.name === 'Empty Bucket') imgName = 'emptybucket';
       else if (item.name === 'Empty Vial') imgName = 'emptyvial';
@@ -21252,7 +21272,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('waterCrystalBtn').onmouseenter = (e) => {
       const isLowLvl = game.mining.level < WATER_CRYSTAL_LVL;
       const textColor = isLowLvl ? '#ff8888' : '#fff';
-      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Water Crystal</div><div style="color:${textColor};">Requires Mining Lvl: ${WATER_CRYSTAL_LVL}</div>Tool: Iron Pickaxe`);
+      showTooltip(e, `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Water Crystal</div><div style="color:${textColor};">Requires Mining Lvl: ${WATER_CRYSTAL_LVL}</div>Tool: Silver Pickaxe`);
   };
   document.getElementById('waterCrystalBtn').onmouseleave = hideTooltip;
 
@@ -21302,7 +21322,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('goldVeinBtn').onmouseenter = (e) => {
     const isLowLvl = game.mining.level < GOLD_MINE_LVL;
     const textColor = isLowLvl ? '#ff8888' : '#fff';
-    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Gold Vein</div><div style="color:${textColor};">Requires Mining Lvl: ${GOLD_MINE_LVL}</div>Tool: Iron Pickaxe`;
+    const tt = `<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">Gold Vein</div><div style="color:${textColor};">Requires Mining Lvl: ${GOLD_MINE_LVL}</div>Tool: Silver Pickaxe`;
     showTooltip(e, tt);
   };
   document.getElementById('goldVeinBtn').onmouseleave = hideTooltip;
@@ -25967,8 +25987,23 @@ window.getCraftJsonDebugSnapshot = function(){
     return 1;
   }
 
+  function getExtraSkillRequirements(recipe){
+    return Array.isArray(recipe.extraSkillRequirements) ? recipe.extraSkillRequirements : [];
+  }
+
+  function getMissingSkillRequirements(recipe){
+    return getExtraSkillRequirements(recipe).filter(req => getSkillLevel(req.skill) < Number(req.level || 1));
+  }
+
+  function formatSkillRequirement(req){
+    const skillName = String(req.skill || 'skill');
+    const label = skillName.charAt(0).toUpperCase() + skillName.slice(1);
+    return `${label} Lvl: ${Number(req.level || 1)}`;
+  }
+
   function reqHtml(recipe){
     const reqs = Array.isArray(recipe.requirements) ? recipe.requirements : [];
+    const extraSkillReqs = getExtraSkillRequirements(recipe);
     const timeText = recipe.time ? `<div style="color:#9fd0ff;">Time: ${(Number(recipe.time)/1000).toFixed(1)}s</div>` : '';
     const xpText = recipe.xp ? `<div style="color:#aaffaa;">XP: ${Number(recipe.xp)}</div>` : '';
     const outputQty = Number(recipe.outputQty || 1);
@@ -25976,7 +26011,12 @@ window.getCraftJsonDebugSnapshot = function(){
     const outputText = `<div style="color:#fff; margin-top:2px;">Output: ${outputQty} ${outputName}</div>`;
     const descText = recipe.description ? `<div style="color:#ffd27f; margin-top:4px;">${recipe.description}</div>` : '';
     const reqText = reqs.length ? '<div style="margin-top:4px;">Requires:</div>' + reqs.map(req => `<div style="color:#ddd;">- ${Number(req.qty || 1)} ${req.name || req.itemId || 'Unknown'}</div>`).join('') : '';
-    return outputText + xpText + timeText + descText + reqText;
+    const extraSkillText = extraSkillReqs.length ? '<div style="margin-top:4px;">Skill Requirements:</div>' + extraSkillReqs.map(req => {
+      const skillLevel = getSkillLevel(req.skill);
+      const meetsReq = skillLevel >= Number(req.level || 1);
+      return `<div style="color:${meetsReq ? '#8f8' : '#ff8888'};">- ${formatSkillRequirement(req)} (You: ${skillLevel})</div>`;
+    }).join('') : '';
+    return outputText + xpText + timeText + descText + reqText + extraSkillText;
   }
 
   function getGridClass(section){
@@ -26001,7 +26041,8 @@ window.getCraftJsonDebugSnapshot = function(){
         html += `<div class="json-recipe-empty"></div>`;
         continue;
       }
-      const locked = currentLevel < Number(recipe.level || 1);
+      const missingSkillReqs = getMissingSkillRequirements(recipe);
+      const locked = currentLevel < Number(recipe.level || 1) || missingSkillReqs.length > 0;
       const title = recipe.displayName || recipe.name || recipe.id;
       html += `
         <button data-recipe-id="${String(recipe.id)}" class="primary json-recipe-btn ${locked ? 'locked-item' : ''}">
@@ -26013,11 +26054,15 @@ window.getCraftJsonDebugSnapshot = function(){
     Array.from(container.querySelectorAll('[data-recipe-id]')).forEach(btn => {
       const recipe = recipes.find(r => String(r.id) === btn.dataset.recipeId);
       if (!recipe) return;
-      const locked = currentLevel < Number(recipe.level || 1);
+      const missingSkillReqs = getMissingSkillRequirements(recipe);
+      const locked = currentLevel < Number(recipe.level || 1) || missingSkillReqs.length > 0;
       const titleHtml = `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${recipe.displayName || recipe.name || recipe.id}</div>`;
       if (locked) {
+        const baseReqText = currentLevel < Number(recipe.level || 1)
+          ? `<div style="color:#ff8888;">Requires ${label} Lvl: ${recipe.level}</div><div style="color:#aaa;">Your level: ${currentLevel}</div>`
+          : `<div style="color:#8f8;">${label} Lvl: ${currentLevel}</div>`;
         btn.onclick = null;
-        btn.onmouseenter = (event) => showTooltip(event, titleHtml + `<div style="color:#ff8888;">Requires ${label} Lvl: ${recipe.level}</div><div style="color:#aaa;">Your level: ${currentLevel}</div>` + reqHtml(recipe));
+        btn.onmouseenter = (event) => showTooltip(event, titleHtml + baseReqText + reqHtml(recipe));
       } else {
         btn.onclick = () => openJsonRecipe(recipe);
         btn.onmouseenter = (event) => showTooltip(event, titleHtml + `<div style="color:#8f8;">Your level: ${currentLevel}</div>` + reqHtml(recipe));
@@ -26096,6 +26141,13 @@ window.getCraftJsonDebugSnapshot = function(){
     const wrapper = document.getElementById('hubDynamic');
     if (!wrapper) return;
     const reqs = (recipe.requirements || []).map(r => `<div>${Number(r.qty || 1)}x ${r.name}</div>`).join('');
+    const extraSkillReqs = getExtraSkillRequirements(recipe);
+    const extraSkillHtml = extraSkillReqs.length
+      ? `<div style="margin-top:10px; color:#efe3cf;">Skill Requirements:</div><div style="margin-top:6px; color:#efe3cf;">${extraSkillReqs.map(req => {
+          const skillLevel = getSkillLevel(req.skill);
+          return `<div style="color:${skillLevel >= Number(req.level || 1) ? '#8f8' : '#ff8888'};">${formatSkillRequirement(req)} (You: ${skillLevel})</div>`;
+        }).join('')}</div>`
+      : '';
     const output = parseOutput(recipe);
     const descHtml = recipe.description ? `<div style="margin-top:6px; color:#ffd27f;">${recipe.description}</div>` : '';
     wrapper.innerHTML = `
@@ -26105,6 +26157,7 @@ window.getCraftJsonDebugSnapshot = function(){
       ${descHtml}
       <div style="margin-top:10px; color:#efe3cf;">Requires:</div>
       <div style="margin-top:6px; color:#efe3cf;">${reqs}</div>
+      ${extraSkillHtml}
       <div style="margin-top:16px;">
         <div class="progress-container"><div class="progress-fill" id="jsonRecipeProgress"></div></div>
       </div>
@@ -26190,6 +26243,11 @@ window.getCraftJsonDebugSnapshot = function(){
     const output = parseOutput(recipe);
     if (!canReceiveItem(output.name)) {
       await showGameAlert('Inventory Full', 'You have no room to craft this.');
+      return;
+    }
+    const missingSkillReqs = getMissingSkillRequirements(recipe);
+    if (missingSkillReqs.length > 0) {
+      await showGameAlert('Level Required', `You need ${missingSkillReqs.map(formatSkillRequirement).join(', ')} to craft this.`);
       return;
     }
     if (game[meta.flag]) return;
