@@ -149,6 +149,13 @@ body {
 .hp-bar { background: #772222; border-radius: 6px; margin-bottom: 12px; position: relative; height: 28px; }
 .hp-fill { height: 100%; background: #d22; width: 100%; transition: width 0.25s; }
 .hp-text { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: bold; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.7); font-size: 13px; }
+.beer-buff-timer { display: none; position: absolute; top: 18px; right: 18px; z-index: 1200; min-width: 132px; flex-direction: column; gap: 4px; align-items: stretch; padding: 6px 8px; border: 1px solid rgba(214, 170, 72, 0.55); border-radius: 8px; background: rgba(69, 42, 18, 0.78); box-shadow: 0 8px 18px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08); pointer-events: auto; }
+.beer-buff-timer-label { font-size: 11px; font-weight: 700; color: #f2d489; text-align: center; letter-spacing: 0.2px; white-space: nowrap; }
+.beer-buff-timer-track { height: 5px; border-radius: 999px; background: rgba(0,0,0,0.28); overflow: hidden; }
+.beer-buff-timer-fill { height: 100%; width: 100%; border-radius: inherit; background: linear-gradient(90deg, #c89f2b 0%, #f0d27a 100%); transition: width 0.2s linear; }
+.beer-buff-timer-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.beer-buff-timer-close { width: 18px; height: 18px; border: 0; border-radius: 999px; background: rgba(255,255,255,0.08); color: #f2d489; cursor: pointer; font-size: 12px; font-weight: 700; line-height: 18px; padding: 0; }
+.beer-buff-timer-close:hover { background: rgba(255,255,255,0.16); }
 
 .tabs { 
   display: flex; 
@@ -2348,6 +2355,15 @@ button.primary:hover { background: var(--accent-hover); }
       </div>
 
       <div class="main" id="mainArea">
+        <div id="beerBuffTimer" class="beer-buff-timer">
+          <div class="beer-buff-timer-header">
+            <div id="beerBuffTimerLabel" class="beer-buff-timer-label">Beer Buff: 60s</div>
+            <button type="button" class="beer-buff-timer-close" onclick="dismissBeerBuffTimer()">x</button>
+          </div>
+          <div class="beer-buff-timer-track">
+            <div id="beerBuffTimerFill" class="beer-buff-timer-fill"></div>
+          </div>
+        </div>
 
         <div id="mainContentWrapper">
         
@@ -2365,11 +2381,11 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="bankActionIcon" src="images/bankbutton.png" alt="Bank" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="craftingActionIcon" src="images/craftingbenchbutton.png" alt="Crafting" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="elementalForgeActionIcon" src="images/elementalforge.jpeg" alt="Elemental Forge" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-              <img id="lotteryActionIcon" src="images/lotteryicon.jpeg" alt="Lottery" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="lotteryActionIcon" src="images/lotteryicon.jpeg" alt="Lottery" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openLotteryHub()">
               <img id="questsActionIcon" src="images/questbuttonicon.jpg" alt="Quests" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="huntingBoardActionIcon" src="images/huntingboard.jpeg" alt="Hunting Board" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-              <img id="personalFarmActionIcon" src="images/farmicon.jpeg" alt="My Farm" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-              <img id="petYardActionIcon" src="images/petyardicon.jpeg" alt="Pet Yard" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="personalFarmActionIcon" src="images/farmicon.jpeg" alt="My Farm" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openPersonalFarmHub()">
+              <img id="petYardActionIcon" src="images/petyardicon.jpeg" alt="Pet Yard" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openPetYardHub()">
               <img id="alchemyActionIcon" src="images/alchemyicon.jpeg" alt="Alchemy Table" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="tailoringActionIcon" src="images/tailoringtable.png" alt="Tailoring Table" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="thievingActionIcon" src="images/thievingicon.jpeg" alt="Thieving" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Thieving</div>Pickpocket and loot')" onmouseleave="hideTooltip()">
@@ -2466,17 +2482,17 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
-              <button id="hubPersonalFarm_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <button id="hubPersonalFarm_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="dismissFarmCat(); backToActions()">Return</button>
             </div>
           </div>
 
           <div id="hubPetYard" class="hub-screen">
             <h2>Pet Yard</h2>
             
-            <div id="petYardContent" style="margin-top: 20px;"></div>
+            <div id="petYardContent" style="margin-top: 10px;"></div>
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
-              <button id="hubPetYard_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <button id="hubPetYard_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="backToActions()">Return</button>
             </div>
           </div>
 
@@ -2503,11 +2519,25 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubThieving" class="hub-screen">
             <h2>Thieving</h2>
             <div style="margin-top:8px; color:#efe3cf;">Pickpocket targets or loot containers. Be careful not to get caught!</div>
-            <div id="thievingTargetsList" style="margin-top: 20px; display: flex; flex-direction: column;">
+            <div id="thievingTargetsList" style="margin-top: 16px; display: flex; flex-direction: column;">
                 <!-- Targets injected here -->
             </div>
-            <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
+            <div class="action-buttons" style="margin-top: 8px; padding-bottom: 10px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
               <button id="hubThieving_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <div style="display:flex; align-items:center; gap:12px; padding:8px 12px; border:1px solid rgba(255,215,0,0.28); border-radius:12px; background:rgba(0,0,0,0.18);">
+                <div id="thievingAutoEatSlot" class="auto-eat-slot" onclick="unequipAutoEat()"></div>
+                <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px; min-width:130px;">
+                  <div style="font-size:11px; color:#efe3cf; font-weight:bold;">Auto Heal</div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <input type="range" id="thievingAutoHealSlider" min="1" max="99" value="${game.autoEatThreshold || 20}" style="width: 90px; height: 10px;">
+                    <div style="display:flex; align-items:center; gap:4px;">
+                      <input type="number" id="thievingAutoHealInput" min="1" max="99" value="${game.autoEatThreshold || 20}" style="width: 46px; height: 22px; background:#2a1b12; color:var(--gold); border:1px solid rgba(255,215,0,0.35); border-radius:6px; text-align:center;">
+                      <span style="font-size:11px; color:var(--gold);">%</span>
+                    </div>
+                  </div>
+                  <div id="thievingAutoHealPercentDisplay" style="display:none;">${game.autoEatThreshold || 20}%</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2785,7 +2815,7 @@ button.primary:hover { background: var(--accent-hover); }
                 </div>
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
-              <button id="hubBarn_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <button id="hubBarn_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="openPersonalFarmHub()">Return</button>
             </div>
           </div>
 
@@ -2803,7 +2833,7 @@ button.primary:hover { background: var(--accent-hover); }
                 </div>
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
-              <button id="hubChickenCoop_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <button id="hubChickenCoop_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="openPersonalFarmHub()">Return</button>
             </div>
           </div>
 
@@ -3027,10 +3057,32 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="madmaxCastleBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; border: 2px solid #900;">
                 <img src="images/madmaxcastle.jpeg" alt="Madmax Castle" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
               </button>
+
+              <button id="dragonNestAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; border: 2px solid #c98a1d;">
+                <img src="images/dragonnest.png" alt="Dragon Nest" style="width: 80px; height: 80px; border-radius: 4px; object-fit: cover;">
+              </button>
             </div>
 
             <div class="action-buttons" style="margin-top: 30px;">
               <button id="hubCombat_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+          
+          <div id="hubDragonNest" class="hub-screen">
+            <h2 style="color:#c98a1d;">Dragon Nest</h2>
+            <div style="margin-top:8px; color:#efe3cf;">A blazing lair where an ancient wyrm hoards its wrath.</div>
+            
+            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Golden Dragon')" 
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:#f4c542;\'>Golden Dragon (Lvl 100)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/golddragon.png" alt="Golden Dragon" style="height: 160px; object-fit: contain; border-radius: 8px; border: 2px solid #f4c542; box-shadow: 0 0 14px rgba(244,197,66,0.45);">
+                <div style="margin-top:10px; font-weight:bold; color:#f4c542; text-shadow: 0 0 6px rgba(244,197,66,0.35);">Golden Dragon</div>
+              </div>
+            </div>
+
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+              <button id="hubDragonNest_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
           
@@ -3180,7 +3232,7 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
             
             <div class="action-buttons" style="margin-top:20px;">
-              <button id="hubShop_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <button id="hubShop_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="backToActions()">Return</button>
             </div>
           </div>
           
@@ -3226,7 +3278,7 @@ button.primary:hover { background: var(--accent-hover); }
                 </div>
               </div>
               <div class="action-buttons" style="margin-top:0px; align-self: flex-start;">
-                <button id="hubBank_ReturnBtn" class="primary" style="background:#666;">Return</button>
+                <button id="hubBank_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="backToActions()">Return</button>
               </div>
             </div>
           </div>
@@ -3344,7 +3396,7 @@ button.primary:hover { background: var(--accent-hover); }
                 <button id="buyTicketBtn" class="primary" style="background: var(--gold); color: #000; font-size: 18px; padding: 15px 30px;">
                     Buy Ticket (10k Gold)
                 </button>
-                <button id="hubLottery_ReturnBtn" class="primary" style="background:#666;">Return</button>
+                <button id="hubLottery_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="backToActions()">Return</button>
             </div>
             <div id="lotteryResultMsg" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 18px; min-height: 24px;"></div>
           </div>
@@ -3436,6 +3488,7 @@ button.primary:hover { background: var(--accent-hover); }
             <div class="stat-row"><span class="stat-label">Magic Defense</span><span class="stat-value" id="stat-mag-def" style="color:#6dafff;">0</span></div>
           </div>
         </div>
+
         <div id="statsPanelFooter">
           <!-- The button is now pushed to the right by the CSS change above -->
           <button id="closeStatsBtn" class="primary" style="background:#666;">Close</button>
@@ -3690,6 +3743,8 @@ const game = {
   autoEatUnlocked: false,
   autoEatThreshold: 20,
   lastAutoHealTime: 0, // Track the last time a potion was used
+  beerBuffExpiresAt: 0,
+  goldenDragonHp: 2500,
   // +++ END NEW STATE +++
   
   // +++ NEW SESSION LOCK +++
@@ -3935,6 +3990,7 @@ const VALID_ITEMS = [
   'Earthstone',
   'Airstone',
   'Waterstone',
+  'Fire Stone',
 
   // +++ NEW CRAFTING/FLETCHING ITEMS +++
   'Bow String',
@@ -3983,6 +4039,7 @@ const VALID_ITEMS = [
   'Rat Tail', // +++ NEW ITEM +++
   'Pet Spider Egg', // +++ NEW PET EGG +++
   'Pet Owl Egg',
+  'Pet Dragon Egg',
   'Pet Owl',
   'Pet Cat',
   'Sand', // +++ NEW +++
@@ -3991,6 +4048,8 @@ const VALID_ITEMS = [
   'Salt', // +++ NEW +++
   'Lottery Ticket', // +++ NEW +++
   'Empty Bucket', // +++ NEW +++
+  'Empty Glass',
+  'Beer',
   'Bucket of Milk', // +++ NEW +++
   'Bucket of Water', // +++ NEW +++
   'Grass Seed',      // +++ NEW +++
@@ -4169,10 +4228,11 @@ function getFishingDurationMs(poleName) {
 }
 
 // +++ NEW MAGIC SPELL CONSTANTS +++
-const EARTH_BOLT = { name: 'Earth Bolt', level: 1, damage: 2, xp: 5 };
-const AIR_BOLT = { name: 'Air Bolt', level: 10, damage: 3, xp: 10 };
-const WATER_BOLT = { name: 'Water Bolt', level: 15, damage: 4, xp: 15 };
-const SPELL_LIST = [EARTH_BOLT, AIR_BOLT, WATER_BOLT];
+const EARTH_BOLT = { name: 'Earth Bolt', level: 1, damage: 2, xp: 5, requiredStone: 'Earthstone' };
+const AIR_BOLT = { name: 'Air Bolt', level: 10, damage: 3, xp: 10, requiredStone: 'Airstone' };
+const WATER_BOLT = { name: 'Water Bolt', level: 15, damage: 4, xp: 15, requiredStone: 'Waterstone' };
+const FIRE_BOLT = { name: 'Fire Bolt', level: 30, damage: 5, xp: 20, requiredStone: 'Fire Stone' };
+const SPELL_LIST = [EARTH_BOLT, AIR_BOLT, WATER_BOLT, FIRE_BOLT];
 // +++ END NEW MAGIC SPELL CONSTANTS +++
 
 const HERRING_FISH_XP = 10;
@@ -4617,6 +4677,7 @@ const ITEM_SELL_PRICES = {
   'Earthstone': 10,
   'Airstone': 15,
   'Waterstone': 20,
+  'Fire Stone': 25,
 
   // Tools & Weapons
   'Bronze Pickaxe': 4,
@@ -4702,6 +4763,8 @@ const ITEM_SELL_PRICES = {
   'Empty Vial': 10,
   'Lottery Ticket': 10000,
   'Empty Bucket': 2,
+  'Empty Glass': 4,
+  'Beer': 18,
   'Bucket of Milk': 15,
   'Bucket of Water': 5,
   'Grass Seed': 2,
@@ -4716,6 +4779,7 @@ const ITEM_SELL_PRICES = {
   'Wild Herb': 25,
   'Pet Spider Egg': 5000,
   'Pet Owl Egg': 5000,
+  'Pet Dragon Egg': 25000,
   'Cow Hide': 4,
   'Leather': 6,
   'Fishing Bait': 4,
@@ -4781,16 +4845,18 @@ const HARVEST_WHEAT_XP = 40;
 
 // +++ NEW PET CONSTANTS +++
 const PET_EGG_DROP_RATE = 25000;
-const PET_HATCH_TIME_MS = 30000; // 30 Seconds
+const PET_HATCH_TIME_MS = 7200000; // 120 Minutes
 const PET_HP_DECAY_MS = 43200000; // 12 Hours
 const PET_MAX_HP = 10;
 const PET_FEED_XP = 25; // Pet Mastery XP for feeding
 const PET_HATCH_XP = 500; // Pet Mastery XP for hatching
+const PET_SECRET_MASTERY_LVL = 50;
 
 // +++ NEW: EGG CONFIGURATION +++
 const EGG_TYPES = {
     'Pet Spider Egg': 'Spider',
     'Pet Owl Egg': 'Owl',
+    'Pet Dragon Egg': 'Dragon',
     // Future examples:
     // 'Pet Dragon Egg': 'Dragon',
     // 'Pet Rock Egg': 'Rock'
@@ -4807,7 +4873,12 @@ const PET_DATA = {
             if (level >= 40) dmg = 3;
             if (level >= 50) dmg = 4;
             return { physicalDamage: dmg };
-        }
+        },
+        secretBonus: () => ({
+            physicalDef: 4,
+            text: '+4 Phys Def',
+            lockedText: '??? (Locked)'
+        })
     },
     'Owl': {
         name: 'Owl',
@@ -4818,7 +4889,12 @@ const PET_DATA = {
             if (level >= 25) arrowRecoveryChance = 0.25;
             if (level >= 50) arrowRecoveryChance = 0.5;
             return { arrowRecoveryChance };
-        }
+        },
+        secretBonus: () => ({
+            rangedDmg: 4,
+            text: '+4 Ranged Dmg',
+            lockedText: '??? (Locked)'
+        })
     },
     'Cat': {
         name: 'Cat',
@@ -4828,7 +4904,29 @@ const PET_DATA = {
             const scratchChance = level >= 50 ? 1 : level >= 25 ? 0.5 : 0.25;
             const scratchDamage = level >= 50 ? 2 : 1;
             return { scratchChance, scratchDamage };
-        }
+        },
+        secretBonus: () => ({
+            magicDmg: 4,
+            text: '+4 Magic Dmg',
+            lockedText: '??? (Locked)'
+        })
+    },
+    'Dragon': {
+        name: 'Dragon',
+        foodItem: 'Egg',
+        img: 'petdragon',
+        bonus: (level) => {
+            let overall = 2;
+            if (level >= 50) overall = 5;
+            else if (level >= 40) overall = 4;
+            else if (level >= 20) overall = 3;
+            return { overallDamage: overall, overallDefence: overall };
+        },
+        secretBonus: () => ({
+            dragonHealOnAttack: 1,
+            text: '+1 Heal On Attack',
+            lockedText: '??? (Locked)'
+        })
     }
 };
 
@@ -4840,8 +4938,28 @@ function formatPetBonusText(petType, bonusData) {
     if (petType === 'Cat' && bonusData.scratchChance) {
         return Math.round(bonusData.scratchChance * 100) + '% ' + bonusData.scratchDamage + ' Hit Chance';
     }
+    if (petType === 'Dragon' && bonusData.overallDamage) {
+        return '+' + bonusData.overallDamage + ' Overall';
+    }
     if (bonusData.physicalDamage) return '+' + bonusData.physicalDamage + ' Phys Dmg';
     return 'No bonus';
+}
+
+function isPetSecretBonusUnlocked() {
+    return (game.petmastery && game.petmastery.level >= PET_SECRET_MASTERY_LVL);
+}
+
+function getPetSecretBonusData(petType, petLevel) {
+    const petDef = PET_DATA[petType];
+    if (!petDef || typeof petDef.secretBonus !== 'function') return null;
+    return petDef.secretBonus(petLevel) || null;
+}
+
+function getPetSecretBonusText(petType, petLevel) {
+    const secretData = getPetSecretBonusData(petType, petLevel);
+    if (!secretData) return '';
+    if (isPetSecretBonusUnlocked()) return secretData.text || 'Secret Skill Unlocked';
+    return secretData.lockedText || '??? (Locked)';
 }
 
 function getCatScratchDamage() {
@@ -5106,6 +5224,7 @@ function updateHPUI(){
   const hpFill = document.getElementById('hpFill');
   if (hpFill) hpFill.style.width = percent + '%';
   setText('hpText', game.hp + ' / ' + game.maxHP + ' HP');
+  updateBeerBuffTimerUI();
 }
 
 
@@ -5177,8 +5296,30 @@ function getPlayerCombatStats() {
           if (def && def.bonus) {
               const bonuses = def.bonus(petData.level);
               if (bonuses.physicalDamage) stats.meleeStr += bonuses.physicalDamage;
+              if (bonuses.overallDamage) {
+                  stats.meleeStr += bonuses.overallDamage;
+                  stats.rangedStr += bonuses.overallDamage;
+                  stats.magicDmg += bonuses.overallDamage;
+              }
+              if (bonuses.overallDefence) {
+                  stats.meleeDef += bonuses.overallDefence;
+                  stats.rangedDef += bonuses.overallDefence;
+                  stats.magicDef += bonuses.overallDefence;
+              }
+          }
+          if (isPetSecretBonusUnlocked()) {
+              const secretBonuses = getPetSecretBonusData(petData.type, petData.level);
+              if (secretBonuses) {
+                  if (secretBonuses.physicalDef) stats.meleeDef += secretBonuses.physicalDef;
+                  if (secretBonuses.rangedDmg) stats.rangedStr += secretBonuses.rangedDmg;
+                  if (secretBonuses.magicDmg) stats.magicDmg += secretBonuses.magicDmg;
+              }
           }
       }
+  }
+
+  if (isBeerBuffActive()) {
+      stats.meleeDef += 10;
   }
 
   if (game.playerAttackStyle === 'attack') {
@@ -5436,17 +5577,62 @@ function showQuestSubTab(subTab) {
 
 // +++ NEW AUTO EAT FUNCTIONS +++
 
-function renderAutoEatSlot() {
-    const slotEl = document.getElementById('autoEatSlot');
+function setupAutoHealThresholdControl(sliderId, inputId, displayId) {
+    const healSlider = document.getElementById(sliderId);
+    const healInput = document.getElementById(inputId);
+    const healDisplay = document.getElementById(displayId);
+    if (!healSlider || !healDisplay) return;
+
+    const syncThreshold = (rawValue) => {
+        let nextValue = parseInt(rawValue, 10);
+        if (Number.isNaN(nextValue)) nextValue = game.autoEatThreshold || 20;
+        nextValue = Math.max(1, Math.min(99, nextValue));
+        game.autoEatThreshold = nextValue;
+        const formatted = nextValue + '%';
+        const mirrors = [
+            { sliderId: 'autoHealSlider', inputId: 'autoHealInput', displayId: 'autoHealPercentDisplay' },
+            { sliderId: 'thievingAutoHealSlider', inputId: 'thievingAutoHealInput', displayId: 'thievingAutoHealPercentDisplay' }
+        ];
+        mirrors.forEach(({ sliderId: otherSliderId, inputId: otherInputId, displayId: otherDisplayId }) => {
+            const otherSlider = document.getElementById(otherSliderId);
+            const otherInput = document.getElementById(otherInputId);
+            const otherDisplay = document.getElementById(otherDisplayId);
+            if (otherSlider) otherSlider.value = String(nextValue);
+            if (otherInput) otherInput.value = String(nextValue);
+            if (otherDisplay) otherDisplay.innerText = formatted;
+        });
+        game.isDirty = true;
+        renderAutoEatSlot();
+    };
+
+    healSlider.value = String(game.autoEatThreshold || 20);
+    healDisplay.innerText = (game.autoEatThreshold || 20) + '%';
+    if (healInput) healInput.value = String(game.autoEatThreshold || 20);
+
+    healSlider.oninput = function() {
+        syncThreshold(this.value);
+    };
+
+    if (healInput) {
+        healInput.oninput = function() {
+            syncThreshold(this.value);
+        };
+        healInput.onchange = function() {
+            syncThreshold(this.value);
+        };
+    }
+}
+
+function renderSingleAutoEatSlot(slotId) {
+    const slotEl = document.getElementById(slotId);
     if (!slotEl) return;
-    
+
     slotEl.innerHTML = '';
-    
-    // Check if locked
+
     if (!game.autoEatUnlocked) {
         slotEl.innerHTML = `<div style="font-size: 20px; color: #777; pointer-events:none;">Locked</div>`;
         slotEl.style.border = "2px solid #553322";
-        
+
         slotEl.onclick = (e) => {
             e.stopPropagation();
             buyAutoEat();
@@ -5457,7 +5643,6 @@ function renderAutoEatSlot() {
         return;
     }
 
-    // Normal logic for unlocked slot
     slotEl.onclick = unequipAutoEat;
 
     if (game.autoEatSlot) {
@@ -5467,12 +5652,19 @@ function renderAutoEatSlot() {
             <div class="inv-amount">${game.autoEatSlot.qty}</div>
         `;
         slotEl.style.border = "2px solid var(--gold)";
-        slotEl.onmouseenter = (e) => showTooltip(e, `<div style='color:var(--gold); font-weight:bold;'>${game.autoEatSlot.name}</div><div style='font-size:11px'>Auto-consumes when HP < 20%</div><div style='color:#ffaaaa; font-size:10px;'>Click to Unequip</div>`);
+        slotEl.onmouseenter = (e) => showTooltip(e, `<div style='color:var(--gold); font-weight:bold;'>${game.autoEatSlot.name}</div><div style='font-size:11px'>Auto-consumes when HP < ${game.autoEatThreshold || 20}%</div><div style='color:#ffaaaa; font-size:10px;'>Click to Unequip</div>`);
     } else {
         slotEl.style.border = "2px dashed #555";
         slotEl.onmouseenter = (e) => showTooltip(e, "Auto Heal Slot<br><span style='color:#aaa; font-size:11px'>Equip consumables via Inventory</span>");
     }
     slotEl.onmouseleave = hideTooltip;
+}
+
+function renderAutoEatSlot() {
+    renderSingleAutoEatSlot('autoEatSlot');
+    renderSingleAutoEatSlot('thievingAutoEatSlot');
+    setupAutoHealThresholdControl('autoHealSlider', 'autoHealInput', 'autoHealPercentDisplay');
+    setupAutoHealThresholdControl('thievingAutoHealSlider', 'thievingAutoHealInput', 'thievingAutoHealPercentDisplay');
 }
 
 function equipToAutoEat(itemName) {
@@ -5677,12 +5869,14 @@ function renderInventoryGrid(){
               else if (item.name === 'Magic Staff') imgName = 'magicstaff';
               else if (item.name === 'Pet Spider Egg') imgName = 'petegg1';
               else if (item.name === 'Pet Owl Egg') imgName = 'petegg2';
+              else if (item.name === 'Pet Dragon Egg') imgName = 'petegg3';
               else if (item.name === 'Rat Tail') imgName = 'rattail';
               else if (item.name === 'Sand') imgName = 'sand';
               else if (item.name === 'Empty Vial') imgName = 'emptyvial';
               else if (item.name === 'Venom') imgName = 'venom';
               else if (item.name === 'Salt') imgName = 'salt';
               else if (item.name === 'Lottery Ticket') imgName = 'lotteryticket';
+              else if (item.name === 'Fire Stone') imgName = 'firestone';
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
               else if (item.name === 'Air Crystal Shard') imgName = 'aircrystalshard';
               else if (item.name === 'Water Crystal Shard') imgName = 'watercrystalshard';
@@ -5704,6 +5898,8 @@ function renderInventoryGrid(){
               else if (item.name === 'Mapple Fishing Pole') imgName = 'mapplefishingpole';
               else if (item.name === 'Fishing Bait') imgName = 'fishingbait';
               else if (item.name === 'Empty Bucket') imgName = 'emptybucket';
+              else if (item.name === 'Empty Glass') imgName = 'emptyglass';
+              else if (item.name === 'Beer') imgName = 'beer';
               else if (item.name === 'Bucket of Milk') imgName = 'bucketofmilk';
               else if (item.name === 'Bucket of Water') imgName = 'bucketofwater';
               else if (item.name === 'Grass Seed') imgName = 'grassseed';
@@ -5823,6 +6019,9 @@ function renderInventoryGrid(){
       } else if (itemName === 'Venom') {
         itemStats = `<div style="color:#ff8888;">-5 HP</div>`;
         clickAction = '<div style="color:#ffaaaa; margin-top: 5px; font-size:11px;">Click to drink</div>';
+      } else if (itemName === 'Beer') {
+        itemStats = `<div style="color:#e38a42;">+10 Melee Def (60s)</div>`;
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px; font-size:11px;">Click to drink</div>';
       } else if (itemName === 'Mapple Fishing Pole') {
         itemStats = `<div style="color:#7fd3ff;">-5s Fishing Time</div>`;
         clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Used automatically while fishing</div>';
@@ -6042,7 +6241,7 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     handleSellItemClick(slotIndex);
   } else if (itemSlotType) {
     equipItem(itemSlotType, slotIndex);
-  } else if (getFoodHealAmount(itemName) > 0 || itemName === 'Vitality Potion' || itemName === 'Vitality Potion+' || itemName === 'Venom') {
+  } else if (getFoodHealAmount(itemName) > 0 || itemName === 'Vitality Potion' || itemName === 'Vitality Potion+' || itemName === 'Venom' || itemName === 'Beer') {
     showItemContextMenu(event, itemName);
   }
 }
@@ -6065,6 +6264,8 @@ function showItemContextMenu(event, itemName) {
   } else if (itemName === 'Venom') {
     menuContent += `<button class="context-menu-btn" onclick="drinkVenom()">Drink</button>`;
     menuContent += `<button class="context-menu-btn" onclick="equipToAutoEat('Venom')">Equip Auto-Heal</button>`;
+  } else if (itemName === 'Beer') {
+    menuContent += `<button class="context-menu-btn" onclick="drinkBeer()">Drink</button>`;
   
   }
   // We can add other options here later (e.g., "Drop")
@@ -6240,6 +6441,7 @@ async function drinkVitalityPotionPlus() {
   }
   if (removeItem('Vitality Potion+', 1)) {
     game.hp = Math.min(game.maxHP, game.hp + 20); // Heals 20 HP
+    addItem('Empty Vial', 1);
     updateHPUI();
     renderInventoryGrid();
     playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3'); 
@@ -6263,6 +6465,70 @@ async function drinkVenom() {
     }
     if (typeof window.savePlayerData === 'function') {
         window.savePlayerData();
+    }
+  }
+}
+
+const BEER_BUFF_DURATION_MS = 60000;
+let lastBeerBuffActive = false;
+let isBeerBuffTimerDismissed = false;
+
+function getBeerBuffRemainingMs() {
+  return Math.max(0, Number(game.beerBuffExpiresAt || 0) - Date.now());
+}
+
+function dismissBeerBuffTimer() {
+  isBeerBuffTimerDismissed = true;
+  updateBeerBuffTimerUI();
+}
+
+function updateBeerBuffTimerUI() {
+  const timer = document.getElementById('beerBuffTimer');
+  const label = document.getElementById('beerBuffTimerLabel');
+  const fill = document.getElementById('beerBuffTimerFill');
+  const remainingMs = getBeerBuffRemainingMs();
+  const isActive = remainingMs > 0;
+
+  if (timer) timer.style.display = (isActive && !isBeerBuffTimerDismissed) ? 'flex' : 'none';
+
+  if (isActive) {
+    if (label) label.innerText = 'Beer Buff: ' + Math.ceil(remainingMs / 1000) + 's';
+    if (fill) fill.style.width = Math.max(0, Math.min(100, (remainingMs / BEER_BUFF_DURATION_MS) * 100)) + '%';
+  }
+
+  if (lastBeerBuffActive && !isActive && typeof renderEquipment === 'function') {
+    renderEquipment();
+  }
+
+  lastBeerBuffActive = isActive;
+}
+
+setInterval(() => {
+  if (typeof game !== 'undefined') updateBeerBuffTimerUI();
+}, 250);
+
+function isBeerBuffActive() {
+  return Number(game.beerBuffExpiresAt || 0) > Date.now();
+}
+
+async function drinkBeer() {
+  hideItemContextMenu();
+  if (!canReceiveItem('Empty Glass')) {
+    await showGameAlert('Inventory Full', 'You need room for the Empty Glass.');
+    return;
+  }
+  if (removeItem('Beer', 1)) {
+    addItem('Empty Glass', 1);
+    game.beerBuffExpiresAt = Date.now() + BEER_BUFF_DURATION_MS;
+    isBeerBuffTimerDismissed = false;
+    updateHPUI();
+    renderInventoryGrid();
+    if (typeof renderEquipment === 'function') renderEquipment();
+    showWarningPopup('+10 Melee Def (60s)');
+    playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');
+    game.isDirty = true;
+    if (typeof window.savePlayerData === 'function') {
+      window.savePlayerData();
     }
   }
 }
@@ -6760,7 +7026,9 @@ function updateSkillUI(){
     const skillBonusLines = [];
     if (data.level >= 100) skillBonusLines.push(`<div style="color:#aaffaa; font-weight:bold; margin-top:2px;">Bonus: +5 HP</div>`);
     if (skillDataKey === 'fishing' && data.level >= 80) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Fast Fishing: -5s Fishing Time</div>`);
-    const skillBonusHtml = skillBonusLines.length ? skillBonusLines.join('') : `<div>(Total XP: ${data.totalXP.toLocaleString()})</div>`;
+    if (skillDataKey === 'farming' && data.level >= 40) skillBonusLines.push(`<div style="color:#aaffaa; font-weight:bold; margin-top:2px;">Double Crop Yield</div>`);
+    if (skillDataKey === 'farming' && data.level >= 60) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Double Animal Yield</div>`);
+    const skillBonusHtml = `${skillBonusLines.join('')}<div>(Total XP: ${data.totalXP.toLocaleString()})</div>`;
 
     const tooltipContent = `
       <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${skillName}</div>
@@ -12605,6 +12873,14 @@ const COW_MILK_TIMER_MS = 43200000; // 12 Hours
 const COW_SICK_THRESHOLD = 5;
 const MAX_COWS = 5;
 
+function getFarmingHarvestMultiplier() {
+  return game.farming && game.farming.level >= 40 ? 2 : 1;
+}
+
+function getFarmAnimalYieldMultiplier() {
+  return game.farming && game.farming.level >= 60 ? 2 : 1;
+}
+
 // +++ NEW: FARM BUILDING COSTS +++
 const COOP_COST = 75000;
 const BARN_COST = 150000;
@@ -13204,7 +13480,7 @@ function renderPetYard(tab) {
     if (!container) return;
 
     let html = `
-        <div class="sub-tabs" style="justify-content: center; margin-bottom: 20px;">
+        <div class="sub-tabs" style="justify-content: center; margin-bottom: 12px;">
             <button class="${tab === 'pets' ? 'active' : ''}" onclick="renderPetYard('pets')">My Pets</button>
             <button class="${tab === 'hatchery' ? 'active' : ''}" onclick="renderPetYard('hatchery')">Hatchery</button>
         </div>
@@ -13230,6 +13506,8 @@ function renderPetYard(tab) {
                     const bonusData = petBonusDef.bonus(pet.level);
                     bonusText = formatPetBonusText(pet.type, bonusData);
                 }
+                const secretBonusText = getPetSecretBonusText(pet.type, pet.level);
+                const secretBonusColor = isPetSecretBonusUnlocked() ? '#7fd3ff' : '#888';
                 html += `
                 <div 
                     style="background:rgba(0,0,0,0.3); border:2px solid ${isEquipped ? 'var(--gold)' : '#553322'}; border-radius:6px; padding:6px; width:110px; text-align:center;"
@@ -13247,6 +13525,7 @@ function renderPetYard(tab) {
                     
                     <div style="font-size:10px; color:#aaa; margin-top:-2px;">${pet.hp}/${PET_MAX_HP} HP</div>
                     <div style="font-size:10px; color:#aaffaa; margin:2px 0;">${bonusText}</div>
+                    <div style="font-size:9px; color:${secretBonusColor}; margin:1px 0 3px 0;">${secretBonusText}</div>
 
                     <div style="display:flex; flex-wrap: wrap; gap:4px; justify-content:center; margin-top:6px;">
                         <button class="primary" style="padding:4px 8px; font-size:11px; flex: 1;" onclick="event.stopPropagation(); feedPet('${pet.id}')">Feed</button>
@@ -13273,6 +13552,7 @@ function renderPetYard(tab) {
         if (isActive) {
             if (game.incubator.eggType === 'Spider') overlayEggImg = 'petegg1.png';
             else if (game.incubator.eggType === 'Owl') overlayEggImg = 'petegg2.png';
+            else if (game.incubator.eggType === 'Dragon') overlayEggImg = 'petegg3.png';
         }
         let buttonHtml = '';
         let timerHtml = '';
@@ -13821,6 +14101,8 @@ function feedCow(index) {
 function collectMilk() {
     if (!game.farm.cows) return;
 
+    const perCowYield = getFarmAnimalYieldMultiplier();
+
     // 1. Count cows that have milk ready
     let milkReadyCount = 0;
     game.farm.cows.forEach(c => {
@@ -13838,16 +14120,18 @@ function collectMilk() {
         if (slot && slot.name === 'Empty Bucket') emptyBuckets += slot.qty;
     }
 
-    if (emptyBuckets < 1) {
-        showGameAlert("No Buckets", "You need an Empty Bucket to gather milk.");
+    if (emptyBuckets < perCowYield) {
+        const bucketLabel = perCowYield > 1 ? `${perCowYield} Empty Buckets` : 'an Empty Bucket';
+        showGameAlert("No Buckets", `You need ${bucketLabel} to gather milk.`);
         return;
     }
 
-    // 3. Calculate how many we can gather (limited by available milk OR available buckets)
-    const amountToGather = Math.min(milkReadyCount, emptyBuckets);
+    // 3. Calculate how many cows we can gather from, then convert to total milk output
+    const cowsToGather = Math.min(milkReadyCount, Math.floor(emptyBuckets / perCowYield));
+    const amountToGather = cowsToGather * perCowYield;
 
     // 4. Process logic
-    if (removeItem('Empty Bucket', amountToGather)) {
+    if (cowsToGather > 0 && removeItem('Empty Bucket', amountToGather)) {
         addItem('Bucket of Milk', amountToGather);
         
         // Award Farming XP
@@ -13859,7 +14143,7 @@ function collectMilk() {
         // Reset the specific cows that were milked
         let gatheredCount = 0;
         for (let c of game.farm.cows) {
-            if (c.hasMilk && gatheredCount < amountToGather) {
+            if (c.hasMilk && gatheredCount < cowsToGather) {
                 c.hasMilk = false;
                 c.milkTimer = 0; // Reset timer
                 gatheredCount++;
@@ -13870,75 +14154,10 @@ function collectMilk() {
         updateBarnUI();
         game.isDirty = true;
         
-        if (amountToGather < milkReadyCount) {
+        if (cowsToGather < milkReadyCount) {
              showGameAlert("Partial Collection", `You collected ${amountToGather} milk, but ran out of buckets for the rest.`);
         }
     }
-}
-
-function updateBarnUI() {
-    const container = document.getElementById('barnSlotsContainer');
-    if (!container) return;
-    
-    if (!game.farm.cows) game.farm.cows = [];
-
-    container.innerHTML = '';
-
-    // 1. Render Cows
-    game.farm.cows.forEach((c, index) => {
-        const hpPercent = (c.hp / COW_MAX_HP) * 100;
-        const hpColor = c.hp < 5 ? "#d22" : "#44aa44";
-        
-        // Milk Status Visual
-        let statusIndicator = "";
-        if (c.hasMilk) {
-            // Changed top from 5px to 25px to sit below the HP bar
-            statusIndicator = `<div style="position:absolute; top:25px; right:5px; background:#fff; border-radius:50%; width:12px; height:12px; border:2px solid var(--gold); box-shadow:0 0 5px var(--gold);"></div>`;
-        }
-
-        const div = document.createElement('div');
-        div.className = 'cow-slot';
-        div.innerHTML = `
-            ${statusIndicator}
-            <div style="background: #333; width: 80px; height: 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid #000;">
-                <div style="width: ${hpPercent}%; height: 100%; background: ${hpColor}; border-radius: 4px;"></div>
-            </div>
-            
-            <img src="images/personalcow.png" class="cow-img-active"
-                 onmouseenter="showCowTooltip(event, ${index})" 
-                 onmouseleave="hideTooltip()">
-            
-            <button class="primary feed-btn" onclick="feedCow(${index})" 
-                    onmouseenter="showTooltip(event, 'Feed 5 Grass')" onmouseleave="hideTooltip()">
-                Feed
-            </button>
-        `;
-        container.appendChild(div);
-    });
-
-    // 2. Render "Buy New" Slot
-    if (game.farm.cows.length < MAX_COWS) {
-        const div = document.createElement('div');
-        div.className = 'cow-slot';
-        div.style.borderColor = "#444";
-        div.innerHTML = `
-            <div style="height: 8px; margin-bottom: 5px;"></div>
-            <img src="images/personalcow.png" class="cow-img-locked">
-            <button class="primary feed-btn" style="background:var(--gold); color:black; font-weight:bold;" onclick="buyCow()">
-                Buy (${COW_COST}g)
-            </button>
-        `;
-        container.appendChild(div);
-    }
-
-    // 3. Update Global Milk Counter
-    let milkReady = 0;
-    game.farm.cows.forEach(c => { if(c.hasMilk) milkReady++; });
-    
-    const milkDisplay = document.getElementById('milkReadyDisplay');
-    const colBtn = document.getElementById('collectMilkBtn');
-    if (milkDisplay) milkDisplay.innerText = `${milkReady} Ready`;
-    if (colBtn) colBtn.disabled = (milkReady < 1);
 }
 
 // =================================================================
@@ -14152,7 +14371,8 @@ function harvestMushroom(index) {
     return;
   }
 
-  const yieldAmount = Math.floor(Math.random() * (DIRT_SHROOM_HARVEST_MAX - DIRT_SHROOM_HARVEST_MIN + 1)) + DIRT_SHROOM_HARVEST_MIN;
+  const baseYieldAmount = Math.floor(Math.random() * (DIRT_SHROOM_HARVEST_MAX - DIRT_SHROOM_HARVEST_MIN + 1)) + DIRT_SHROOM_HARVEST_MIN;
+  const yieldAmount = baseYieldAmount * getFarmingHarvestMultiplier();
   addItem('Dirt Shroom', yieldAmount);
   addXP('farming', HARVEST_SHROOM_XP);
   
@@ -14364,7 +14584,8 @@ function harvestCrop(index) {
       max = WHEAT_HARVEST_YIELD_MAX;
   }
 
-  const yieldAmount = Math.floor(Math.random() * (max - min + 1)) + min;
+  const baseYieldAmount = Math.floor(Math.random() * (max - min + 1)) + min;
+  const yieldAmount = baseYieldAmount * getFarmingHarvestMultiplier();
   addItem(cropDef.productName, yieldAmount);
   
   // Award Farming XP
@@ -14445,16 +14666,23 @@ function showPetTooltip(e, petId) {
             const b = petDef.bonus(pet.level);
             bonusStr = formatPetBonusText(pet.type, b);
         }
+        let secretBonusStr = getPetSecretBonusText(pet.type, pet.level);
         
         // Override bonus text if sick
-        if (pet.hp <= 0) bonusStr = "<span style='color:#ff4d4d;'>Sick (Inactive)</span>";
-        else bonusStr = `<span style='color:#aaffaa;'>${bonusStr}</span>`;
+        if (pet.hp <= 0) {
+            bonusStr = "<span style='color:#ff4d4d;'>Sick (Inactive)</span>";
+            secretBonusStr = "<span style='color:#666;'>Secret Skill Inactive</span>";
+        } else {
+            bonusStr = `<span style='color:#aaffaa;'>${bonusStr}</span>`;
+            secretBonusStr = `<span style='color:${isPetSecretBonusUnlocked() ? '#7fd3ff' : '#888'};'>${secretBonusStr}</span>`;
+        }
 
         return `
             <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${pet.type}</div>
             <div style="margin-top:2px; font-size:12px; color:#efe3cf;">Lvl ${pet.level}</div>
             <div style="font-size:12px; color:#ccc;">HP: <span style="color:${hpColor}">${pet.hp}/${PET_MAX_HP}</span></div>
-            <div style="font-size:12px; margin-bottom:6px;">${bonusStr}</div>
+            <div style="font-size:12px; margin-bottom:4px;">${bonusStr}</div>
+            <div style="font-size:11px; margin-bottom:6px;">${secretBonusStr}</div>
             <div style="font-size:11px; color:#ccc; margin-bottom:6px;">Hunger in: <span style="color:${timeColor}">${timeStr}</span></div>
             
             <div style="font-size:10px; color:#aaa; display:flex; justify-content:space-between;">
@@ -14710,7 +14938,7 @@ function processFarmLogic() {
                 if (!c.eggTimer) c.eggTimer = 0;
                 c.eggTimer += elapsed;
                 if (c.eggTimer >= CHICKEN_EGG_TIMER_MS) {
-                    c.storedEggs += 1;
+                    c.storedEggs += getFarmAnimalYieldMultiplier();
                     c.eggTimer -= CHICKEN_EGG_TIMER_MS;
                     needsUpdate = true;
                 }
@@ -18292,6 +18520,11 @@ function openMadmaxCastle() {
   showMainScreen('hubMadmaxCastle');
 }
 
+function openDragonNestArea() {
+  game.lastCombatAreaHub = 'hubDragonNest';
+  showMainScreen('hubDragonNest');
+}
+
 function openCombatInterface(enemyName) {
   if (game.miningActive) { stopMining(); game.wasMiningBeforeCombat = true; }
   if (game.blacksmithingActive) { stopBlacksmithing(); game.wasSmithingBeforeCombat = true; }
@@ -18314,13 +18547,15 @@ function openCombatInterface(enemyName) {
     'Crazy Owl': { name: 'Crazy Owl', level: 10, maxHp: 45, style: 'ranged', maxHit: 5, attackLvl: 12, defenceLvl: 8, img: 'images/crazyowlmonster.jpeg' },
     'The Witch': { name: 'The Witch', level: 15, maxHp: 60, style: 'magic', maxHit: 8, attackLvl: 15, defenceLvl: 5, img: 'images/witchmonster.jpeg' },
     'Madmax': { name: 'Madmax', level: 69, maxHp: 500, style: 'melee', maxHit: 15, attackLvl: 60, defenceLvl: 50, img: 'images/madmaxmonster.jpeg', lastSpecialTime: Date.now() },
+    'Golden Dragon': { name: 'Golden Dragon', level: 100, maxHp: 2500, style: 'magic', maxHit: 25, attackLvl: 80, defenceLvl: 80, img: 'images/golddragon.png' },
     'Centipede': { name: 'Centipede', level: 5, maxHp: 20, style: 'melee', maxHit: 4, attackLvl: 5, defenceLvl: 5, img: 'images/centipedemonster.jpeg' }
   };
 
   const def = mobs[enemyName];
   if (!def) { console.error('Unknown enemy:', enemyName); return; }
 
-  game.currentEnemy = { ...def, currentHp: def.maxHp };
+  const startingHp = enemyName === 'Golden Dragon' ? Math.max(0, Math.min(def.maxHp, Number(game.goldenDragonHp || def.maxHp))) : def.maxHp;
+  game.currentEnemy = { ...def, currentHp: startingHp };
 
   const imgEl = document.getElementById('combat-enemy-img');
   if (imgEl) {
@@ -18344,8 +18579,14 @@ function openCombatInterface(enemyName) {
                 <!-- Icon injected via JS -->
             </div>
             <div style="font-size:10px; color:#aaa; margin-top:2px;">Auto Heal</div>
-            <input type="range" id="autoHealSlider" min="1" max="99" value="${game.autoEatThreshold || 20}" style="width: 50px; margin-top: 4px; height: 10px;">
-            <div id="autoHealPercentDisplay" style="font-size: 10px; color: var(--gold);">${game.autoEatThreshold || 20}%</div>
+            <div style="display:flex; align-items:center; gap:6px; margin-top: 4px;">
+              <input type="range" id="autoHealSlider" min="1" max="99" value="${game.autoEatThreshold || 20}" style="width: 50px; height: 10px;">
+              <div style="display:flex; align-items:center; gap:4px;">
+                <input type="number" id="autoHealInput" min="1" max="99" value="${game.autoEatThreshold || 20}" style="width: 40px; height: 20px; background:#2a1b12; color:var(--gold); border:1px solid rgba(255,215,0,0.35); border-radius:6px; text-align:center; font-size:11px;">
+                <span style="font-size:11px; color:var(--gold);">%</span>
+              </div>
+            </div>
+            <div id="autoHealPercentDisplay" style="display:none;">${game.autoEatThreshold || 20}%</div>
         </div>
     </div>
     <div id="combat-main-actions">
@@ -18358,17 +18599,7 @@ function openCombatInterface(enemyName) {
   // Replace the innerHTML of the panel to include our new layout
   combatPanel.innerHTML = styleContainerHtml;
 
-  // Add Slider Listener
-  const healSlider = document.getElementById('autoHealSlider');
-  const healDisplay = document.getElementById('autoHealPercentDisplay');
-  if (healSlider && healDisplay) {
-      healSlider.oninput = function() {
-          game.autoEatThreshold = parseInt(this.value);
-          healDisplay.innerText = this.value + '%';
-          game.isDirty = true;
-      };
-  }
-  
+
   // Render the slot content
   renderAutoEatSlot();
   // +++ END AUTO EAT UI +++
@@ -18526,8 +18757,14 @@ function runFromCombat(playerDied = false) {
 
     // Reset enemy HP
     if (game.currentEnemy) {
-        game.currentEnemy.currentHp = game.currentEnemy.maxHp;
-        updateEnemyCombatUI();
+        if (game.currentEnemy.name === 'Golden Dragon') {
+            game.goldenDragonHp = Math.max(0, game.currentEnemy.currentHp);
+            game.isDirty = true;
+            updateEnemyCombatUI();
+        } else {
+            game.currentEnemy.currentHp = game.currentEnemy.maxHp;
+            updateEnemyCombatUI();
+        }
     }
   }
 }
@@ -18718,7 +18955,7 @@ function playerAttackTurn(spellOverride = null) {
   }
 
 if (activeSpell) {
-  let requiredStone = activeSpell.name.split(' ')[0] + 'stone';
+  let requiredStone = activeSpell.requiredStone || (activeSpell.name.split(' ')[0] + 'stone');
   let stoneCount = 0;
 
   // Determine stone cost based on magic level
@@ -18816,6 +19053,10 @@ if (activeSpell) {
 
   effectiveDamage += catScratchDamage;
   game.currentEnemy.currentHp -= effectiveDamage;
+  if (game.currentEnemy.name === 'Golden Dragon') {
+    game.goldenDragonHp = Math.max(0, game.currentEnemy.currentHp);
+    game.isDirty = true;
+  }
   updateEnemyCombatUI();
 
   if (weaponType === 'ranged') {
@@ -19081,6 +19322,10 @@ function handleEnemyDeath() {
   
 
     // Reset Enemy
+    if (game.currentEnemy.name === 'Golden Dragon') {
+        game.goldenDragonHp = game.currentEnemy.maxHp;
+        game.isDirty = true;
+    }
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
     updateEnemyCombatUI();
     return latestPopupDelay;
@@ -19520,7 +19765,7 @@ function renderBankTabs() {
                 'cooked_chicken': 'cookedchicken', 'burnt_chicken': 'burntchicken', 'cooked_herring': 'cookedherring',
                 'burnt_herring': 'burntherring', 'cooked_trout': 'cookedtrout', 'burnt_trout': 'burnttrout',
                 'cooked_salmon': 'cookedsalmon', 'burnt_salmon': 'burntsalmon', 'beef': 'beef',
-                'cooked_beef': 'cookedbeef', 'burnt_beef': 'burntbeef', 'bread': 'bread', 'burnt_bread': 'burntbread', 'cheese': 'cheese', 'salt_herring': 'saltherring', 'salt_trout': 'salttrout', 'salt_salmon': 'saltsalmon', 'wheat_seed': 'wheatseed', 'wheat': 'wheat', 'flour': 'flour', 'cake': 'cake', 'burnt_cake': 'burntcake', 'gold_crown': 'goldcrown', 'elegant_black_cape': 'elegantblackcape',
+                'cooked_beef': 'cookedbeef', 'burnt_beef': 'burntbeef', 'bread': 'bread', 'burnt_bread': 'burntbread', 'cheese': 'cheese', 'salt_herring': 'saltherring', 'salt_trout': 'salttrout', 'salt_salmon': 'saltsalmon', 'wheat_seed': 'wheatseed', 'wheat': 'wheat', 'flour': 'flour', 'empty_glass': 'emptyglass', 'beer': 'beer', 'cake': 'cake', 'burnt_cake': 'burntcake', 'gold_crown': 'goldcrown', 'elegant_black_cape': 'elegantblackcape',
                 'coal_ore': 'coalore', 'iron_ore': 'ironore', 'iron_bar': 'ironbar',
                 'iron_helmet': 'ironhelmet', 'iron_chestplate': 'ironchestplate', 'iron_boots': 'ironboots',
                 'iron_shortsword': 'ironshortsword', 'copper_platelegs': 'copperplatelegs', 'iron_platelegs': 'ironplatelegs',
@@ -19533,6 +19778,7 @@ function renderBankTabs() {
                 'wizard_trousers': 'wizardtrousers', 'wizard_boots': 'wizardboots', 'magic_staff': 'magicstaff',
                 'pet_spider_egg': 'petegg1', // +++ NEW PET EGG +++
                 'pet_owl_egg': 'petegg2',
+                'pet_dragon_egg': 'petegg3',
                 'rat_tail': 'rattail', 'sand': 'sand', 'empty_vial': 'emptyvial',
                 'venom': 'venom', 'lottery_ticket': 'lotteryticket', 'earth_crystal_shard': 'earthcrystalshard',
                 'air_crystal_shard': 'aircrystalshard', 'water_crystal_shard': 'watercrystalshard', 'bow_string': 'bowstring',
@@ -19756,12 +20002,14 @@ function renderBankGrid() {
               else if (item.name === 'Magic Staff') imgName = 'magicstaff'; // +++ FIX: ADD MAGIC STAFF +++
               else if (item.name === 'Pet Spider Egg') imgName = 'petegg1';
               else if (item.name === 'Pet Owl Egg') imgName = 'petegg2'; // +++ FIX: ADD PET EGG +++
+              else if (item.name === 'Pet Dragon Egg') imgName = 'petegg3';
               else if (item.name === 'Rat Tail') imgName = 'rattail'; // +++ NEW ITEM +++
               else if (item.name === 'Sand') imgName = 'sand'; // +++ NEW +++
               else if (item.name === 'Empty Vial') imgName = 'emptyvial'; // +++ NEW +++
               else if (item.name === 'Venom') imgName = 'venom';
               else if (item.name === 'Salt') imgName = 'salt'; // +++ NEW +++
               else if (item.name === 'Lottery Ticket') imgName = 'lotteryticket'; // +++ NEW +++
+              else if (item.name === 'Fire Stone') imgName = 'firestone';
               
               
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
@@ -20487,6 +20735,8 @@ function resetGameState() {
   game.questLines = {}; 
   game.autoEatUnlocked = false;
   game.lastAutoHealTime = 0;
+  game.beerBuffExpiresAt = 0;
+  game.goldenDragonHp = 2500;
 
   game.miningActive = false;
   game.blacksmithingActive = false;
@@ -20648,7 +20898,7 @@ function closeSettings() {
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
 function showMainScreen(screenIdToShow) {
   // NEW: Safely return item from enchanting table if player navigates away
   if (typeof returnEnchantItem === 'function' && game.enchantSlot) {
@@ -21168,6 +21418,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // --- Hub Madmax Listeners ---
   document.getElementById('madmaxCastleBtn').onclick = openMadmaxCastle;
   document.getElementById('hubMadmaxCastle_ReturnBtn').onclick = openCombatHub;
+  const dragonNestAreaBtn = document.getElementById('dragonNestAreaBtn');
+  if (dragonNestAreaBtn) dragonNestAreaBtn.onclick = openDragonNestArea;
+  const hubDragonNestReturnBtn = document.getElementById('hubDragonNest_ReturnBtn');
+  if (hubDragonNestReturnBtn) hubDragonNestReturnBtn.onclick = openCombatHub;
 
   // --- Hub Forest Listeners ---
   document.getElementById('normalForestAreaBtn').onclick = () => {
@@ -21435,6 +21689,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   document.getElementById('madmaxCastleBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:red; margin-bottom: 4px;">Madmax Castle</div>'); 
   document.getElementById('madmaxCastleBtn').onmouseleave = hideTooltip; 
+  if (dragonNestAreaBtn) dragonNestAreaBtn.onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:#c98a1d; margin-bottom: 4px;">Dragon Nest</div>'); 
+  if (dragonNestAreaBtn) dragonNestAreaBtn.onmouseleave = hideTooltip; 
   
   // --- Tooltips for Hub Fishing ---
   document.getElementById('oceanAreaBtn').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold); margin-bottom: 4px;">The Ocean</div>');
@@ -21984,8 +22240,8 @@ function renderInspectEquipment(equipment, frame) {
         'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 
         'Copper Arrow': 'copperarrow', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
-        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Spider Egg': 'petegg1', 'Pet Owl Egg': 'petegg2',
-        'Empty Bucket': 'emptybucket', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Wheat Seed': 'wheatseed', 'Wheat': 'wheat', 'flour': 'flour', 'Bread': 'bread', 'Burnt Bread': 'burntbread', 'Cheese': 'cheese', 'Salt Herring': 'saltherring', 'Salt Trout': 'salttrout', 'Salt Salmon': 'saltsalmon', 'Cake': 'cake', 'Burnt Cake': 'burntcake', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
+        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Dragon': 'petdragon', 'Pet Spider Egg': 'petegg1', 'Pet Owl Egg': 'petegg2', 'Pet Dragon Egg': 'petegg3', 'Fire Stone': 'firestone',
+        'Empty Bucket': 'emptybucket', 'Empty Glass': 'emptyglass', 'Beer': 'beer', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Wheat Seed': 'wheatseed', 'Wheat': 'wheat', 'flour': 'flour', 'Bread': 'bread', 'Burnt Bread': 'burntbread', 'Cheese': 'cheese', 'Salt Herring': 'saltherring', 'Salt Trout': 'salttrout', 'Salt Salmon': 'saltsalmon', 'Cake': 'cake', 'Burnt Cake': 'burntcake', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
         'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
         'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace',
         'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch', 'Iron Battleaxe': 'ironbattleaxe', 'Iron Shield': 'ironshield',
@@ -22106,6 +22362,7 @@ const THIEVING_TARGET_DEFS = [
 
 function openThievingHub() {
     showMainScreen('hubThieving');
+    renderAutoEatSlot();
     refreshThievingTargets();
 }
 
@@ -22246,6 +22503,7 @@ function renderEnchantSlot() {
     if (item.name === "Leather Chaps") imgName = "leatherpants";
     if (item.name.includes("Ring") && item.name !== "Gold Ring") imgName = item.name.toLowerCase().replace(" ", "");
     if (item.name === "Silver Fangs of the Fallen Monarch") imgName = "silverfangsofthefallenmonarch";
+    if (item.name === "Fire Stone") imgName = "firestone";
 
     img.src = `images/${imgName}.png`;
     img.style.width = "100%";
@@ -22771,6 +23029,8 @@ async function attemptEnchant() {
         autoEatUnlocked: game.autoEatUnlocked, 
         autoEatThreshold: game.autoEatThreshold || 20,
         lastAutoHealTime: game.lastAutoHealTime || 0,
+        beerBuffExpiresAt: game.beerBuffExpiresAt || 0,
+        goldenDragonHp: Number(game.goldenDragonHp || 2500),
         updatedAt: new Date().toISOString()
       };
       await setDoc(doc(db, "players", user.uid), payload, { merge: true });
@@ -23335,6 +23595,8 @@ window.inspectPlayer = async function(playerName) {
         game.autoEatSlot = data.autoEatSlot || null;
         game.autoEatUnlocked = data.autoEatUnlocked || false; 
         game.autoEatThreshold = data.autoEatThreshold || 20; // Load the slider value
+        game.beerBuffExpiresAt = Number(data.beerBuffExpiresAt || 0);
+        game.goldenDragonHp = Number(data.goldenDragonHp || 2500);
         
         // +++ NEW FARM LOADING & OFFLINE CALC (MULTI-CHICKEN & COWS) +++
         game.farm = data.farm || { 
@@ -23395,7 +23657,7 @@ window.inspectPlayer = async function(playerName) {
                     // 2. Calculate Eggs using local constant
                     // Simplified: Only if it ended healthy do we award eggs for the full duration
                     if (endHp >= 5) {
-                        const eggsGained = Math.floor(diff / _EGG_TIMER_MS);
+                        const eggsGained = Math.floor(diff / _EGG_TIMER_MS) * getFarmAnimalYieldMultiplier();
                         c.storedEggs = (c.storedEggs || 0) + eggsGained;
                     }
                 }
@@ -24944,6 +25206,7 @@ window.inspectPlayer = async function(playerName) {
       'images/petmasteryskillicon.jpeg',
       'images/petegg1.png',
       'images/petegg2.png',
+      'images/petegg3.png',
       'images/petowl.png',
       'images/petcat.png',
       'images/cat.png',
@@ -25058,6 +25321,7 @@ window.inspectPlayer = async function(playerName) {
       'images/earthstone.png',
       'images/airstone.png',
       'images/waterstone.png',
+      'images/firestone.png',
       'images/magicstaff.png',
       'images/wizardhat.png',
       'images/wizardrobe.png',
@@ -25321,7 +25585,16 @@ window.inspectPlayer = async function(playerName) {
   function reqHtml(recipe){
     const reqs = Array.isArray(recipe.requirements) ? recipe.requirements : [];
     if (!reqs.length) return '';
-    return '<div style="margin-top:2px;">Requires:</div>' + reqs.map(req => `<div style="color:#ddd;">- ${Number(req.qty || 1)} ${req.name || req.itemId || 'Unknown'}</div>`).join('');
+    return '<div style="margin-top:2px;">Requires:</div>' + reqs.map(req => {
+      const qtyNeeded = Number(req.qty || 1);
+      const reqName = req.name || req.itemId || 'Unknown';
+      let qtyOwned = 0;
+      for (const slot of (window.game?.inventory || [])) {
+        if (slot && slot.name === reqName) qtyOwned += Number(slot.qty || 0);
+      }
+      const meetsReq = qtyOwned >= qtyNeeded;
+      return `<div style="color:${meetsReq ? '#8f8' : '#ff8888'};">- ${qtyNeeded} ${reqName} (You: ${qtyOwned})</div>`;
+    }).join('');
   }
 
   function bindRecipeButtons(container, recipes, currentLevel, label){
@@ -25802,7 +26075,16 @@ window.getCraftJsonDebugSnapshot = function(){
       const lvlNow = currentSkillLevel('alchemy');
       const locked = lvlNow < reqLevel;
       const reqs = Array.isArray(recipe.requirements) ? recipe.requirements : [];
-      const reqHtml = reqs.map(req => `<div style="color:#ddd;">- ${Number(req.qty || 1)} ${req.name || req.itemId || 'Unknown'}</div>`).join('');
+      const reqHtml = reqs.map(req => {
+        const qtyNeeded = Number(req.qty || 1);
+        const reqName = req.name || req.itemId || 'Unknown';
+        let qtyOwned = 0;
+        for (const slot of (window.game?.inventory || [])) {
+          if (slot && slot.name === reqName) qtyOwned += Number(slot.qty || 0);
+        }
+        const meetsReq = qtyOwned >= qtyNeeded;
+        return `<div style="color:${meetsReq ? '#8f8' : '#ff8888'};">- ${qtyNeeded} ${reqName} (You: ${qtyOwned})</div>`;
+      }).join('');
       const title = recipe.displayName || recipe.name || recipe.id;
       btn.classList.toggle('locked-item', locked);
       btn.onclick = () => {
@@ -25820,7 +26102,6 @@ window.getCraftJsonDebugSnapshot = function(){
       btn.onmouseleave = hideTooltip;
     });
   }
-
   window.renderAlchemyItems = renderAlchemyRecipeGrid;
   window.openAlchemyHub = function(){
     showMainScreen('hubAlchemy');
@@ -26010,20 +26291,35 @@ window.getCraftJsonDebugSnapshot = function(){
     return 1;
   }
 
+  function formatSkillRequirement(req){
+    const skillName = req.skill || 'skill';
+    const label = skillName.charAt(0).toUpperCase() + skillName.slice(1);
+    return `${label} Lvl: ${Number(req.level || 1)}`;
+  }
+
+  function getRecipeRequirementQty(req){
+    return getInventoryQtyByName(req.name || req.itemId || '');
+  }
+
   function getExtraSkillRequirements(recipe){
-    return Array.isArray(recipe.extraSkillRequirements) ? recipe.extraSkillRequirements : [];
+    const extraReqs = Array.isArray(recipe?.extraSkillRequirements) ? recipe.extraSkillRequirements : [];
+    const reqSkill = recipe?.reqSkill ? [recipe.reqSkill] : [];
+    return [...reqSkill, ...extraReqs].filter(req => req && req.skill);
   }
 
   function getMissingSkillRequirements(recipe){
     return getExtraSkillRequirements(recipe).filter(req => getSkillLevel(req.skill) < Number(req.level || 1));
   }
 
-  function formatSkillRequirement(req){
-    const skillName = String(req.skill || 'skill');
-    const label = skillName.charAt(0).toUpperCase() + skillName.slice(1);
-    return `${label} Lvl: ${Number(req.level || 1)}`;
+  function formatRecipeRequirementLine(recipe, req, options = {}){
+    const qtyNeeded = Number(req.qty || 1);
+    const reqName = req.name || req.itemId || 'Unknown';
+    const qtyOwned = getRecipeRequirementQty(req);
+    const meetsReq = qtyOwned >= qtyNeeded;
+    const color = meetsReq ? '#8f8' : '#ff8888';
+    const suffix = options.showCurrent ? ` (You: ${qtyOwned})` : '';
+    return `<div style="color:${color};">- ${qtyNeeded} ${reqName}${suffix}</div>`;
   }
-
   function reqHtml(recipe){
     const reqs = Array.isArray(recipe.requirements) ? recipe.requirements : [];
     const extraSkillReqs = getExtraSkillRequirements(recipe);
@@ -26033,7 +26329,7 @@ window.getCraftJsonDebugSnapshot = function(){
     const outputName = recipe.outputName || recipe.displayName || recipe.name || recipe.id;
     const outputText = `<div style="color:#fff; margin-top:2px;">Output: ${outputQty} ${outputName}</div>`;
     const descText = recipe.description ? `<div style="color:#ffd27f; margin-top:4px;">${recipe.description}</div>` : '';
-    const reqText = reqs.length ? '<div style="margin-top:4px;">Requires:</div>' + reqs.map(req => `<div style="color:#ddd;">- ${Number(req.qty || 1)} ${req.name || req.itemId || 'Unknown'}</div>`).join('') : '';
+    const reqText = reqs.length ? '<div style="margin-top:4px;">Requires:</div>' + reqs.map(req => formatRecipeRequirementLine(recipe, req, { showCurrent: true })).join('') : '';
     const extraSkillText = extraSkillReqs.length ? '<div style="margin-top:4px;">Skill Requirements:</div>' + extraSkillReqs.map(req => {
       const skillLevel = getSkillLevel(req.skill);
       const meetsReq = skillLevel >= Number(req.level || 1);
@@ -26163,7 +26459,7 @@ window.getCraftJsonDebugSnapshot = function(){
     stopOtherActivities();
     const wrapper = document.getElementById('hubDynamic');
     if (!wrapper) return;
-    const reqs = (recipe.requirements || []).map(r => `<div>${Number(r.qty || 1)}x ${r.name}</div>`).join('');
+    const reqs = (recipe.requirements || []).map(r => formatRecipeRequirementLine(recipe, r, { showCurrent: true })).join('');
     const extraSkillReqs = getExtraSkillRequirements(recipe);
     const extraSkillHtml = extraSkillReqs.length
       ? `<div style="margin-top:10px; color:#efe3cf;">Skill Requirements:</div><div style="margin-top:6px; color:#efe3cf;">${extraSkillReqs.map(req => {
@@ -26392,6 +26688,13 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
+
+
 
 
 
