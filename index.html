@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -6528,42 +6528,15 @@ function isBeerBuffActive() {
 }
 
 async function postPlayerStatusChat(text) {
-  const localText = (game.name || 'Player') + ': ' + text;
-  const chatMessagesContainer = document.getElementById('chatMessages');
-  const alreadyVisible = chatMessagesContainer && Array.from(chatMessagesContainer.children).some(el => {
-    return (el.textContent || '').trim() === localText;
-  });
-
-  if (!alreadyVisible) {
-    if (chatMessagesContainer) {
-      const msgElement = document.createElement('div');
-      msgElement.style.marginBottom = '6px';
-      msgElement.style.lineHeight = '1.3';
-      msgElement.style.wordBreak = 'break-word';
-      msgElement.style.color = '#aaffaa';
-      msgElement.style.fontStyle = 'italic';
-      msgElement.textContent = localText;
-      chatMessagesContainer.prepend(msgElement);
-      while (chatMessagesContainer.childElementCount > 30) {
-        chatMessagesContainer.lastChild.remove();
-      }
-      chatMessagesContainer.scrollTop = 0;
-    } else if (typeof localMessageQueue !== 'undefined' && Array.isArray(localMessageQueue)) {
-      localMessageQueue.push({ text: localText, type: 'system' });
-    }
-  }
-
   try {
-    const user = auth.currentUser;
-    if (!user || !text) return;
-    await addDoc(collection(db, "messages"), {
-      senderUid: user.uid,
-      senderName: game.name,
-      text,
-      timestamp: serverTimestamp()
-    });
+    if (typeof window.__sendStatusChatMessage === 'function') {
+      await window.__sendStatusChatMessage(text);
+    }
   } catch (e) {
     console.error('Error sending status chat message:', e);
+    if (typeof addLocalChatMessage === 'function') {
+      addLocalChatMessage('Status chat failed: ' + e.message, 'error');
+    }
   }
 }
 
@@ -22890,6 +22863,17 @@ async function attemptEnchant() {
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  window.__sendStatusChatMessage = async function(text) {
+    const user = auth.currentUser;
+    if (!user || !text) return;
+    await addDoc(collection(db, "messages"), {
+      senderUid: user.uid,
+      senderName: game.name,
+      text,
+      timestamp: serverTimestamp()
+    });
+  };
+
   const authScreen = document.getElementById('authScreen');
   const startScreen = document.getElementById('startScreen');
   const gameScreen = document.getElementById('gameScreen');
@@ -24986,6 +24970,7 @@ window.inspectPlayer = async function(playerName) {
           if (isChatHistoryLoaded) {
             hasAdds = true; 
             const msg = change.doc.data();
+            const isDrunkChat = String(msg.text || '').trim().toLowerCase() === 'gets drunk and loves you guys.';
 
             // +++ NEW: Quieter Chat Sound +++
             if (auth.currentUser && msg.senderUid !== auth.currentUser.uid) {
@@ -25031,6 +25016,7 @@ window.inspectPlayer = async function(playerName) {
         querySnapshot.docs.forEach(doc => {
             hadHistoryMessages = true;
             const msg = doc.data();
+            const isDrunkChat = String(msg.text || '').trim().toLowerCase() === 'gets drunk and loves you guys.';
             const msgElement = document.createElement('div');
             msgElement.style.marginBottom = '6px';
             msgElement.style.lineHeight = '1.3';
@@ -26879,6 +26865,8 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
 
 
 
