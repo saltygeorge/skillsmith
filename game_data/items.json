@@ -1,992 +1,1032 @@
-﻿{
-    "items":  {
-                  "copper_helmet":  {
-                                        "id":  "copper_helmet",
-                                        "name":  "Copper Helmet",
-                                        "img":  "images/copperhelmet.png",
-                                        "sellPrice":  20,
-                                        "unlockLevel":  1,
-                                        "stats":  {
-                                                      "meleeDef":  3,
-                                                      "rangedDef":  4,
-                                                      "magicDef":  0,
-                                                      "magicAtk":  -3,
-                                                      "rangedAtk":  -2,
-                                                      "armorType":  "melee"
-                                                  }
-                                    },
-                  "copper_chestplate":  {
-                                            "id":  "copper_chestplate",
-                                            "name":  "Copper Chestplate",
-                                            "img":  "images/copperchestplate.png",
-                                            "sellPrice":  40,
-                                            "unlockLevel":  1,
-                                            "stats":  {
-                                                          "meleeDef":  8,
-                                                          "rangedDef":  9,
-                                                          "magicDef":  0,
-                                                          "magicAtk":  -10,
-                                                          "rangedAtk":  -6,
-                                                          "armorType":  "melee"
-                                                      }
-                                        },
-                  "copper_platelegs":  {
-                                           "id":  "copper_platelegs",
-                                           "name":  "Copper Platelegs",
-                                           "img":  "images/copperplatelegs.png",
-                                           "sellPrice":  25,
-                                           "unlockLevel":  1,
-                                           "stats":  {
-                                                         "meleeDef":  5,
-                                                         "rangedDef":  6,
-                                                         "magicDef":  0,
-                                                         "magicAtk":  -7,
-                                                         "rangedAtk":  -4,
-                                                         "armorType":  "melee"
-                                                     }
-                                       },
-                  "copper_boots":  {
-                                       "id":  "copper_boots",
-                                       "name":  "Copper Boots",
-                                       "img":  "images/copperboots.png",
-                                       "sellPrice":  15,
-                                       "unlockLevel":  1,
-                                       "stats":  {
-                                                     "meleeDef":  2,
-                                                     "rangedDef":  2,
-                                                     "magicDef":  0,
-                                                     "magicAtk":  -3,
-                                                     "rangedAtk":  -1,
-                                                     "armorType":  "melee"
-                                                 }
-                                   },
-                  "copper_shortsword":  {
-                                            "id":  "copper_shortsword",
-                                            "name":  "Copper Shortsword",
-                                            "img":  "images/coppershortsword.png",
-                                            "sellPrice":  20,
-                                            "unlockLevel":  1,
-                                            "stats":  {
-                                                          "meleeStr":  4,
-                                                          "meleeAtk":  5,
-                                                          "weaponType":  "melee",
-                                                          "speed":  2000
-                                                      }
-                                        },
-                  "iron_helmet":  {
-                                      "id":  "iron_helmet",
-                                      "name":  "Iron Helmet",
-                                      "img":  "images/ironhelmet.png",
-                                      "sellPrice":  60,
-                                      "unlockLevel":  10,
-                                      "stats":  {
-                                                    "meleeDef":  5,
-                                                    "rangedDef":  6,
-                                                    "magicDef":  1,
-                                                    "magicAtk":  -4,
-                                                    "rangedAtk":  -2,
-                                                    "armorType":  "melee"
-                                                }
-                                  },
-                  "iron_chestplate":  {
-                                          "id":  "iron_chestplate",
-                                          "name":  "Iron Chestplate",
-                                          "img":  "images/ironchestplate.png",
-                                          "sellPrice":  120,
-                                          "unlockLevel":  10,
-                                          "stats":  {
-                                                        "meleeDef":  12,
-                                                        "rangedDef":  13,
-                                                        "magicDef":  2,
-                                                        "magicAtk":  -15,
-                                                        "rangedAtk":  -10,
-                                                        "armorType":  "melee"
-                                                    }
-                                      },
-                  "iron_platelegs":  {
-                                         "id":  "iron_platelegs",
-                                         "name":  "Iron Platelegs",
-                                         "img":  "images/ironplatelegs.png",
-                                         "sellPrice":  75,
-                                         "unlockLevel":  10,
-                                         "stats":  {
-                                                       "meleeDef":  8,
-                                                       "rangedDef":  9,
-                                                       "magicDef":  1,
-                                                       "magicAtk":  -10,
-                                                       "rangedAtk":  -6,
-                                                       "armorType":  "melee"
-                                                   }
-                                     },
-                  "iron_boots":  {
-                                     "id":  "iron_boots",
-                                     "name":  "Iron Boots",
-                                     "img":  "images/ironboots.png",
-                                     "sellPrice":  55,
-                                     "unlockLevel":  10,
-                                     "stats":  {
-                                                   "meleeDef":  3,
-                                                   "rangedDef":  3,
-                                                   "magicDef":  1,
-                                                   "magicAtk":  -3,
-                                                   "rangedAtk":  -1,
-                                                   "armorType":  "melee"
-                                               }
-                                 },
-                  "iron_shortsword":  {
-                                          "id":  "iron_shortsword",
-                                          "name":  "Iron Shortsword",
-                                          "img":  "images/ironshortsword.png",
-                                          "sellPrice":  65,
-                                          "unlockLevel":  10,
-                                          "stats":  {
-                                                        "meleeStr":  7,
-                                                        "meleeAtk":  9,
-                                                        "weaponType":  "melee",
-                                                        "speed":  2000
-                                                    }
-                                      },
-                  "iron_battleaxe":  {
-                                         "id":  "iron_battleaxe",
-                                         "name":  "Iron Battleaxe",
-                                         "img":  "images/ironbattleaxe.png",
-                                         "sellPrice":  5000,
-                                         "unlockLevel":  15,
-                                         "stats":  {
-                                                       "meleeStr":  12,
-                                                       "meleeAtk":  10,
-                                                       "weaponType":  "melee",
-                                                       "twoHanded":  true,
-                                                       "speed":  2500
-                                                   }
-                                     },
-                  "iron_shield":  {
-                                      "id":  "iron_shield",
-                                      "name":  "Iron Shield",
-                                      "img":  "images/ironshield.png",
-                                      "sellPrice":  5000,
-                                      "unlockLevel":  15,
-                                      "stats":  {
-                                                    "meleeDef":  5,
-                                                    "rangedDef":  5,
-                                                    "magicDef":  0,
-                                                    "armorType":  "hybrid"
-                                                }
-                                  },
-                  "gold_helmet":  {
-                                      "id":  "gold_helmet",
-                                      "name":  "Gold Helmet",
-                                      "img":  "images/goldhelmet.png",
-                                      "sellPrice":  600,
-                                      "unlockLevel":  10,
-                                      "stats":  {
-                                                    "meleeDef":  5,
-                                                    "rangedDef":  6,
-                                                    "magicDef":  1,
-                                                    "magicAtk":  -4,
-                                                    "rangedAtk":  -2,
-                                                    "armorType":  "melee"
-                                                }
-                                  },
-                  "gold_chestplate":  {
-                                          "id":  "gold_chestplate",
-                                          "name":  "Gold Chestplate",
-                                          "img":  "images/goldchestplate.png",
-                                          "sellPrice":  1200,
-                                          "unlockLevel":  10,
-                                          "stats":  {
-                                                        "meleeDef":  12,
-                                                        "rangedDef":  13,
-                                                        "magicDef":  2,
-                                                        "magicAtk":  -15,
-                                                        "rangedAtk":  -10,
-                                                        "armorType":  "melee"
-                                                    }
-                                      },
-                  "gold_platelegs":  {
-                                         "id":  "gold_platelegs",
-                                         "name":  "Gold Platelegs",
-                                         "img":  "images/goldplatelegs.png",
-                                         "sellPrice":  750,
-                                         "unlockLevel":  10,
-                                         "stats":  {
-                                                       "meleeDef":  8,
-                                                       "rangedDef":  9,
-                                                       "magicDef":  1,
-                                                       "magicAtk":  -10,
-                                                       "rangedAtk":  -6,
-                                                       "armorType":  "melee"
-                                                   }
-                                     },
-                  "gold_boots":  {
-                                     "id":  "gold_boots",
-                                     "name":  "Gold Boots",
-                                     "img":  "images/goldboots.png",
-                                     "sellPrice":  550,
-                                     "unlockLevel":  10,
-                                     "stats":  {
-                                                   "meleeDef":  3,
-                                                   "rangedDef":  3,
-                                                   "magicDef":  1,
-                                                   "magicAtk":  -3,
-                                                   "rangedAtk":  -1,
-                                                   "armorType":  "melee"
-                                               }
-                                 },
-                  "gold_shield":  {
-                                      "id":  "gold_shield",
-                                      "name":  "Gold Shield",
-                                      "img":  "images/goldshield.png",
-                                      "sellPrice":  50000,
-                                      "unlockLevel":  15,
-                                      "stats":  {
-                                                    "meleeDef":  5,
-                                                    "rangedDef":  5,
-                                                    "magicDef":  0,
-                                                    "armorType":  "hybrid"
-                                                }
-                                  },
-                  "silver_fangs_of_the_fallen_monarch":  {
-                                                             "id":  "silver_fangs_of_the_fallen_monarch",
-                                                             "name":  "Silver Fangs of the Fallen Monarch",
-                                                             "img":  "images/silverfangsofthefallenmonarch.png",
-                                                             "sellPrice":  25000,
-                                                             "unlockLevel":  1,
-                                                             "stats":  {
-                                                                           "meleeStr":  9,
-                                                                           "meleeAtk":  15,
-                                                                           "weaponType":  "melee",
-                                                                           "twoHanded":  true,
-                                                                           "speed":  1500
-                                                                       }
-                                                         },
-                  "leather_hood":  {
-                                       "id":  "leather_hood",
-                                       "name":  "Leather Hood",
-                                       "img":  "images/leatherhood.png",
-                                       "sellPrice":  10,
-                                       "unlockLevel":  1,
-                                       "stats":  {
-                                                     "meleeDef":  1,
-                                                     "rangedDef":  2,
-                                                     "magicDef":  4,
-                                                     "rangedAtk":  2,
-                                                     "magicAtk":  -1,
-                                                     "armorType":  "ranged"
-                                                 }
-                                   },
-                  "leather_body":  {
-                                       "id":  "leather_body",
-                                       "name":  "Leather Body",
-                                       "img":  "images/leatherarmor.png",
-                                       "sellPrice":  25,
-                                       "unlockLevel":  1,
-                                       "stats":  {
-                                                     "meleeDef":  3,
-                                                     "rangedDef":  4,
-                                                     "magicDef":  8,
-                                                     "rangedAtk":  5,
-                                                     "magicAtk":  -2,
-                                                     "armorType":  "ranged"
-                                                 }
-                                   },
-                  "leather_chaps":  {
-                                        "id":  "leather_chaps",
-                                        "name":  "Leather Chaps",
-                                        "img":  "images/leatherpants.png",
-                                        "sellPrice":  15,
-                                        "unlockLevel":  1,
-                                        "stats":  {
-                                                      "meleeDef":  2,
-                                                      "rangedDef":  3,
-                                                      "magicDef":  6,
-                                                      "rangedAtk":  3,
-                                                      "magicAtk":  -1,
-                                                      "armorType":  "ranged"
-                                                  }
-                                    },
-                  "leather_boots":  {
-                                        "id":  "leather_boots",
-                                        "name":  "Leather Boots",
-                                        "img":  "images/leatherboots.png",
-                                        "sellPrice":  8,
-                                        "unlockLevel":  1,
-                                        "stats":  {
-                                                      "meleeDef":  1,
-                                                      "rangedDef":  1,
-                                                      "magicDef":  2,
-                                                      "rangedAtk":  1,
-                                                      "armorType":  "ranged"
-                                                  }
-                                    },
-                  "softwood_bow":  {
-                                       "id":  "softwood_bow",
-                                       "name":  "Softwood Bow",
-                                       "img":  "images/softwoodbow.png",
-                                       "sellPrice":  10,
-                                       "unlockLevel":  5,
-                                       "stats":  {
-                                                     "rangedStr":  4,
-                                                     "rangedAtk":  5,
-                                                     "weaponType":  "ranged",
-                                                     "twoHanded":  true,
-                                                     "speed":  2400
-                                                 }
-                                   },
-                  "oak_bow":  {
-                                  "id":  "oak_bow",
-                                  "name":  "Oak Bow",
-                                  "img":  "images/oakbow.png",
-                                  "sellPrice":  20,
-                                  "unlockLevel":  15,
-                                  "stats":  {
-                                                "rangedStr":  8,
-                                                "rangedAtk":  10,
-                                                "weaponType":  "ranged",
-                                                "twoHanded":  true,
-                                                "speed":  2400
-                                            }
-                              },
-                  "copper_arrow":  {
-                                       "id":  "copper_arrow",
-                                       "name":  "Copper Arrow",
-                                       "img":  "images/copperarrow.png",
-                                       "sellPrice":  5,
-                                       "unlockLevel":  1,
-                                       "stats":  {
-                                                     "rangedStr":  2
-                                                 }
-                                   },
-                  "copper_arrow_poisoned":  {
-                                                "id":  "copper_arrow_poisoned",
-                                                "name":  "Copper Arrow Poisoned",
-                                                "img":  "images/copperarrowpoisonned.png",
-                                                "sellPrice":  30,
-                                                "unlockLevel":  1,
-                                                "stats":  {
-                                                              "rangedStr":  4
-                                                          }
-                                            },
-                  "wizard_hat":  {
-                                     "id":  "wizard_hat",
-                                     "name":  "Wizard Hat",
-                                     "img":  "images/wizardhat.png",
-                                     "sellPrice":  30,
-                                     "unlockLevel":  1,
-                                     "stats":  {
-                                                   "meleeDef":  1,
-                                                   "rangedDef":  1,
-                                                   "magicDef":  3,
-                                                   "magicAtk":  3,
-                                                   "armorType":  "magic"
-                                               }
-                                 },
-                  "wizard_robe":  {
-                                      "id":  "wizard_robe",
-                                      "name":  "Wizard Robe",
-                                      "img":  "images/wizardrobe.png",
-                                      "sellPrice":  70,
-                                      "unlockLevel":  1,
-                                      "stats":  {
-                                                    "meleeDef":  2,
-                                                    "rangedDef":  2,
-                                                    "magicDef":  6,
-                                                    "magicAtk":  6,
-                                                    "armorType":  "magic"
-                                                }
-                                  },
-                  "wizard_trousers":  {
-                                          "id":  "wizard_trousers",
-                                          "name":  "Wizard Trousers",
-                                          "img":  "images/wizardtrousers.png",
-                                          "sellPrice":  45,
-                                          "unlockLevel":  1,
-                                          "stats":  {
-                                                        "meleeDef":  1,
-                                                        "rangedDef":  1,
-                                                        "magicDef":  4,
-                                                        "magicAtk":  4,
-                                                        "armorType":  "magic"
-                                                    }
-                                      },
-                  "wizard_boots":  {
-                                       "id":  "wizard_boots",
-                                       "name":  "Wizard Boots",
-                                       "img":  "images/wizardboots.png",
-                                       "sellPrice":  30,
-                                       "unlockLevel":  1,
-                                       "stats":  {
-                                                     "meleeDef":  1,
-                                                     "rangedDef":  1,
-                                                     "magicDef":  2,
-                                                     "magicAtk":  2,
-                                                     "armorType":  "magic"
-                                                 }
-                                   },
-                  "magic_staff":  {
-                                      "id":  "magic_staff",
-                                      "name":  "Magic Staff",
-                                      "img":  "images/magicstaff.png",
-                                      "sellPrice":  500,
-                                      "unlockLevel":  1,
-                                      "stats":  {
-                                                    "magicAtk":  10,
-                                                    "magicDmg":  2,
-                                                    "weaponType":  "magic",
-                                                    "twoHanded":  true,
-                                                    "speed":  3000
-                                                }
-                                  },
-                  "gold_crown":  {
-                                     "id":  "gold_crown",
-                                     "name":  "Gold Crown",
-                                     "img":  "images/goldcrown.png",
-                                     "sellPrice":  50000,
-                                     "unlockLevel":  50,
-                                     "stats":  {
-                                                   "meleeDef":  8,
-                                                   "rangedDef":  8,
-                                                   "magicDef":  8,
-                                                   "magicAtk":  2,
-                                                   "rangedAtk":  2,
-                                                   "meleeAtk":  2,
-                                                   "armorType":  "hybrid"
-                                               }
-                                 },
-                  "elegant_black_cape":  {
-                                             "id":  "elegant_black_cape",
-                                             "name":  "Elegant Black Cape",
-                                             "img":  "images/elegantblackcape.png",
-                                             "sellPrice":  50000,
-                                             "unlockLevel":  50,
-                                             "stats":  {
-                                                           "meleeDef":  2,
-                                                           "armorType":  "melee"
-                                                       }
-                                         },
-                  "pet_spider":  {
-                                     "id":  "pet_spider",
-                                     "name":  "Pet Spider",
-                                     "img":  "images/petspider.png",
-                                     "sellPrice":  0,
-                                     "unlockLevel":  1,
-                                     "stats":  {
-                                                   "type":  "pet"
-                                               }
-                                 },
-                  "gold_ring":  {
-                                    "id":  "gold_ring",
-                                    "name":  "Gold Ring",
-                                    "img":  "images/goldring.png",
-                                    "sellPrice":  500,
-                                    "unlockLevel":  38,
-                                    "stats":  {
-                                                  "armorType":  "jewelry"
-                                              }
-                                },
-                  "diamond_ring":  {
-                                       "id":  "diamond_ring",
-                                       "name":  "Diamond Ring",
-                                       "img":  "images/diamondring.png",
-                                       "sellPrice":  1200,
-                                       "unlockLevel":  40,
-                                       "stats":  {
-                                                     "meleeDef":  2,
-                                                     "armorType":  "jewelry"
-                                                 }
-                                   },
-                  "emerald_ring":  {
-                                       "id":  "emerald_ring",
-                                       "name":  "Emerald Ring",
-                                       "img":  "images/emeraldring.png",
-                                       "sellPrice":  1200,
-                                       "unlockLevel":  40,
-                                       "stats":  {
-                                                     "rangedStr":  2,
-                                                     "armorType":  "jewelry"
-                                                 }
-                                   },
-                  "ruby_ring":  {
-                                    "id":  "ruby_ring",
-                                    "name":  "Ruby Ring",
-                                    "img":  "images/rubyring.png",
-                                    "sellPrice":  1200,
-                                    "unlockLevel":  40,
-                                    "stats":  {
-                                                  "meleeStr":  2,
-                                                  "armorType":  "jewelry"
-                                              }
-                                },
-                  "sapphire_ring":  {
-                                        "id":  "sapphire_ring",
-                                        "name":  "Sapphire Ring",
-                                        "img":  "images/sapphirering.png",
-                                        "sellPrice":  1200,
-                                        "unlockLevel":  40,
-                                        "stats":  {
-                                                      "magicDmg":  2,
-                                                      "armorType":  "jewelry"
-                                                  }
-                                    },
-                  "topaz_ring":  {
-                                     "id":  "topaz_ring",
-                                     "name":  "Topaz Ring",
-                                     "img":  "images/topazring.png",
-                                     "sellPrice":  1200,
-                                     "unlockLevel":  40,
-                                     "stats":  {
-                                                   "maxHPBonus":  2,
-                                                   "armorType":  "jewelry"
-                                               }
-                                 },
-                  "diamond_necklace":  {
-                                           "id":  "diamond_necklace",
-                                           "name":  "Diamond Necklace",
-                                           "img":  "images/diamondnecklace.png",
-                                           "sellPrice":  2000,
-                                           "unlockLevel":  50,
-                                           "stats":  {
-                                                         "meleeDef":  2,
-                                                         "armorType":  "jewelry"
-                                                     }
-                                       },
-                  "emerald_necklace":  {
-                                           "id":  "emerald_necklace",
-                                           "name":  "Emerald Necklace",
-                                           "img":  "images/emeraldnecklace.png",
-                                           "sellPrice":  2000,
-                                           "unlockLevel":  50,
-                                           "stats":  {
-                                                         "rangedStr":  2,
-                                                         "armorType":  "jewelry"
-                                                     }
-                                       },
-                  "ruby_necklace":  {
-                                        "id":  "ruby_necklace",
-                                        "name":  "Ruby Necklace",
-                                        "img":  "images/rubynecklace.png",
-                                        "sellPrice":  2000,
-                                        "unlockLevel":  50,
-                                        "stats":  {
-                                                      "meleeStr":  2,
-                                                      "armorType":  "jewelry"
-                                                  }
-                                    },
-                  "sapphire_necklace":  {
-                                            "id":  "sapphire_necklace",
-                                            "name":  "Sapphire Necklace",
-                                            "img":  "images/sapphirenecklace.png",
-                                            "sellPrice":  2000,
-                                            "unlockLevel":  50,
-                                            "stats":  {
-                                                          "magicDmg":  2,
-                                                          "armorType":  "jewelry"
-                                                      }
-                                        },
-                  "topaz_necklace":  {
-                                         "id":  "topaz_necklace",
-                                         "name":  "Topaz Necklace",
-                                         "img":  "images/topaznecklace.png",
-                                         "sellPrice":  2000,
-                                         "unlockLevel":  50,
-                                         "stats":  {
-                                                       "maxHPBonus":  2,
-                                                       "armorType":  "jewelry"
-                                                   }
-                                     },
-                  "copper_bar":  {
-                                     "id":  "copper_bar",
-                                     "name":  "Copper Bar",
-                                     "img":  "images/copperbar.png",
-                                     "sellPrice":  3
-                                 },
-                  "iron_bar":  {
-                                   "id":  "iron_bar",
-                                   "name":  "Iron Bar",
-                                   "img":  "images/ironbar.png",
-                                   "sellPrice":  10
-                               },
-                  "silver_bar":  {
-                                     "id":  "silver_bar",
-                                     "name":  "Silver Bar",
-                                     "img":  "images/silverbar.png",
-                                     "sellPrice":  50
-                                 },
-                  "gold_bar":  {
-                                   "id":  "gold_bar",
-                                   "name":  "Gold Bar",
-                                   "img":  "images/goldbar.png",
-                                   "sellPrice":  250
-                               },
-                  "copper_ore":  {
-                                     "id":  "copper_ore",
-                                     "name":  "Copper Ore",
-                                     "img":  "images/copper_ore.png",
-                                     "sellPrice":  1
-                                 },
-                  "coal_ore":  {
-                                   "id":  "coal_ore",
-                                   "name":  "Coal Ore",
-                                   "img":  "images/coalore.png",
-                                   "sellPrice":  2
-                               },
-                  "iron_ore":  {
-                                   "id":  "iron_ore",
-                                   "name":  "Iron Ore",
-                                   "img":  "images/ironore.png",
-                                   "sellPrice":  4
-                               },
-                  "silver_ore":  {
-                                     "id":  "silver_ore",
-                                     "name":  "Silver Ore",
-                                     "img":  "images/silverore.png",
-                                     "sellPrice":  7
-                                 },
-                  "gold_ore":  {
-                                   "id":  "gold_ore",
-                                   "name":  "Gold Ore",
-                                   "img":  "images/goldore.png",
-                                   "sellPrice":  12
-                               },
-                  "feather":  {
-                                  "id":  "feather",
-                                  "name":  "Feather",
-                                  "img":  "images/feather.png",
-                                  "sellPrice":  1
-                              },
-                  "arrow_shaft":  {
-                                      "id":  "arrow_shaft",
-                                      "name":  "Arrow Shaft",
-                                      "img":  "images/arrowshaft.png",
-                                      "sellPrice":  1
-                                  },
-                  "copper_arrow_tip":  {
-                                           "id":  "copper_arrow_tip",
-                                           "name":  "Copper Arrow Tip",
-                                           "img":  "images/copperarrowtip.png",
-                                           "sellPrice":  2
-                                       },
-                  "unbound_arrow":  {
-                                        "id":  "unbound_arrow",
-                                        "name":  "Unbound Arrow",
-                                        "img":  "images/unboundarrow.png",
-                                        "sellPrice":  3
-                                    },
-                  "unstrung_softwood_bow":  {
-                                                "id":  "unstrung_softwood_bow",
-                                                "name":  "Unstrung Softwood Bow",
-                                                "img":  "images/unstrungsoftwoodbow.png",
-                                                "sellPrice":  5
-                                            },
-                  "unstrung_oak_bow":  {
-                                           "id":  "unstrung_oak_bow",
-                                           "name":  "Unstrung Oak Bow",
-                                           "img":  "images/unstrungoakbow.png",
-                                           "sellPrice":  10
-                                       },
-                  "silk":  {
-                               "id":  "silk",
-                               "name":  "Silk",
-                               "img":  "images/silk.png",
-                               "sellPrice":  2
-                           },
-                  "cloth":  {
-                                "id":  "cloth",
-                                "name":  "Cloth",
-                                "img":  "images/cloth.png",
-                                "sellPrice":  12
-                            },
-                  "sand":  {
-                               "id":  "sand",
-                               "name":  "Sand",
-                               "img":  "images/sand.png",
-                               "sellPrice":  1
-                           },
-                  "empty_vial":  {
-                                     "id":  "empty_vial",
-                                     "name":  "Empty Vial",
-                                     "img":  "images/emptyvial.png",
-                                     "sellPrice":  10
-                                 },
-                  "empty_bucket":  {
-                                       "id":  "empty_bucket",
-                                       "name":  "Empty Bucket",
-                                       "img":  "images/emptybucket.png",
-                                       "sellPrice":  2
-                                   },
-                  "earth_crystal_shard":  {
-                                              "id":  "earth_crystal_shard",
-                                              "name":  "Earth Crystal Shard",
-                                              "img":  "images/earthcrystalshard.png",
-                                              "sellPrice":  5
-                                          },
-                  "air_crystal_shard":  {
-                                            "id":  "air_crystal_shard",
-                                            "name":  "Air Crystal Shard",
-                                            "img":  "images/aircrystalshard.png",
-                                            "sellPrice":  8
-                                        },
-                  "water_crystal_shard":  {
-                                              "id":  "water_crystal_shard",
-                                              "name":  "Water Crystal Shard",
-                                              "img":  "images/watercrystalshard.png",
-                                              "sellPrice":  12
-                                          },
-                  "softwood":  {
-                                   "id":  "softwood",
-                                   "name":  "Softwood",
-                                   "img":  "images/softwood.png",
-                                   "sellPrice":  1
-                               },
-                  "oak":  {
-                              "id":  "oak",
-                              "name":  "Oak",
-                              "img":  "images/oak.png",
-                              "sellPrice":  3
-                          },
-                  "cow_hide":  {
-                                   "id":  "cow_hide",
-                                   "name":  "Cow Hide",
-                                   "img":  "images/cowhide.png",
-                                   "sellPrice":  4
-                               },
-                  "leather":  {
-                                  "id":  "leather",
-                                  "name":  "Leather",
-                                  "img":  "images/leather.png",
-                                  "sellPrice":  6
-                              },
-                  "raw_chicken":  {
-                                      "id":  "raw_chicken",
-                                      "name":  "Raw Chicken",
-                                      "img":  "images/rawchicken.png",
-                                      "sellPrice":  1
-                                  },
-                  "cooked_chicken":  {
-                                         "id":  "cooked_chicken",
-                                         "name":  "Cooked Chicken",
-                                         "img":  "images/cookedchicken.png",
-                                         "sellPrice":  2
-                                     },
-                  "burnt_chicken":  {
-                                        "id":  "burnt_chicken",
-                                        "name":  "Burnt Chicken",
-                                        "img":  "images/burntchicken.png",
-                                        "sellPrice":  1
-                                    },
-                  "vitality_potion":  {
-                                          "id":  "vitality_potion",
-                                          "name":  "Vitality Potion",
-                                          "img":  "images/vitalitypotion.png",
-                                          "sellPrice":  150,
-                                          "effects":  {
-                                                          "heal":  10
-                                                      }
-                                      },
-                  "uncut_topaz":  {
-                                      "id":  "uncut_topaz",
-                                      "name":  "Uncut Topaz",
-                                      "img":  "images/uncuttopaz.png",
-                                      "sellPrice":  25
-                                  },
-                  "uncut_diamond":  {
-                                        "id":  "uncut_diamond",
-                                        "name":  "Uncut Diamond",
-                                        "img":  "images/uncutdiamond.png",
-                                        "sellPrice":  25
-                                    },
-                  "uncut_emerald":  {
-                                        "id":  "uncut_emerald",
-                                        "name":  "Uncut Emerald",
-                                        "img":  "images/uncutemerald.png",
-                                        "sellPrice":  25
-                                    },
-                  "uncut_jade":  {
-                                     "id":  "uncut_jade",
-                                     "name":  "Uncut Jade",
-                                     "img":  "images/uncutjade.png",
-                                     "sellPrice":  25
-                                 },
-                  "uncut_ruby":  {
-                                     "id":  "uncut_ruby",
-                                     "name":  "Uncut Ruby",
-                                     "img":  "images/uncutruby.png",
-                                     "sellPrice":  25
-                                 },
-                  "uncut_sapphire":  {
-                                         "id":  "uncut_sapphire",
-                                         "name":  "Uncut Sapphire",
-                                         "img":  "images/uncutsapphire.png",
-                                         "sellPrice":  25
-                                     },
-                  "topaz":  {
-                                "id":  "topaz",
-                                "name":  "Topaz",
-                                "img":  "images/topaz.png",
-                                "sellPrice":  100
-                            },
-                  "diamond":  {
-                                  "id":  "diamond",
-                                  "name":  "Diamond",
-                                  "img":  "images/diamond.png",
-                                  "sellPrice":  100
-                              },
-                  "emerald":  {
-                                  "id":  "emerald",
-                                  "name":  "Emerald",
-                                  "img":  "images/emerald.png",
-                                  "sellPrice":  100
-                              },
-                  "jade":  {
-                               "id":  "jade",
-                               "name":  "Jade",
-                               "img":  "images/jade.png",
-                               "sellPrice":  100
-                           },
-                  "ruby":  {
-                               "id":  "ruby",
-                               "name":  "Ruby",
-                               "img":  "images/ruby.png",
-                               "sellPrice":  100
-                           },
-                  "sapphire":  {
-                                   "id":  "sapphire",
-                                   "name":  "Sapphire",
-                                   "img":  "images/sapphire.png",
-                                   "sellPrice":  100
-                               },
-                  "bow_string":  {
-                                     "id":  "bow_string",
-                                     "name":  "Bow String",
-                                     "img":  "images/bowstring.png",
-                                     "sellPrice":  3
-                                 },
-                  "dirt_shroom":  {
-                                      "id":  "dirt_shroom",
-                                      "name":  "Dirt Shroom",
-                                      "img":  "images/dirtshroom.png",
-                                      "sellPrice":  8,
-                                      "unlockLevel":  1
-                                  },
-                  "wild_herb":  {
-                                    "id":  "wild_herb",
-                                    "name":  "Wild Herb",
-                                    "img":  "images/wildherb.png",
-                                    "sellPrice":  10,
-                                    "unlockLevel":  1
-                                },
-                  "vitality_potion_plus":  {
-                                               "id":  "vitality_potion_plus",
-                                               "name":  "Vitality Potion+",
-                                               "img":  "images/vitalitypotionplus.png",
-                                               "sellPrice":  450,
-                                               "unlockLevel":  50,
-                                               "effects":  {
-                                                               "heal":  20
-                                                           }
-                                           },
-                  "wheat_seed":  {
-                                     "id":  "wheat_seed",
-                                     "name":  "Wheat Seed",
-                                     "img":  "images/wheatseed.png",
-                                     "sellPrice":  6
-                                 },
-                  "wheat":  {
-                                "id":  "wheat",
-                                "name":  "Wheat",
-                                "img":  "images/wheat.png",
-                                "sellPrice":  9
-                            },
-                  "flour":  {
-                                "id":  "flour",
-                                "name":  "Flour",
-                                "img":  "images/flour.png",
-                                "sellPrice":  12
-                            },
-                  "salt":  {
-                               "id":  "salt",
-                               "name":  "Salt",
-                               "img":  "images/salt.png",
-                               "sellPrice":  5
-                           },
-                  "cake":  {
-                               "id":  "cake",
-                               "name":  "Cake",
-                               "img":  "images/cake.png",
-                               "sellPrice":  45,
-                               "unlockLevel":  50,
-                               "effects":  {
-                                               "heal":  12
-                                           }
-                           },
-                  "burnt_cake":  {
-                                     "id":  "burnt_cake",
-                                     "name":  "Burnt Cake",
-                                     "img":  "images/burntcake.png",
-                                     "sellPrice":  1
-                                 },
-                  "bread":  {
-                                "id":  "bread",
-                                "name":  "Bread",
-                                "img":  "images/bread.png",
-                                "sellPrice":  18,
-                                "unlockLevel":  25,
-                                "effects":  {
-                                                "heal":  5
-                                            }
-                            },
-                  "burnt_bread":  {
-                                      "id":  "burnt_bread",
-                                      "name":  "Burnt Bread",
-                                      "img":  "images/burntbread.png",
-                                      "sellPrice":  1
-                                  },
-                  "cheese":  {
-                                 "id":  "cheese",
-                                 "name":  "Cheese",
-                                 "img":  "images/cheese.png",
-                                 "sellPrice":  24,
-                                 "unlockLevel":  30,
-                                 "effects":  {
-                                                 "heal":  8
-                                             }
-                             },
-                  "salt_herring":  {
-                                       "id":  "salt_herring",
-                                       "name":  "Salt Herring",
-                                       "img":  "images/saltherring.png",
-                                       "sellPrice":  8,
-                                       "unlockLevel":  35,
-                                       "effects":  {
-                                                       "heal":  4
-                                                   }
-                                   },
-                  "salt_trout":  {
-                                     "id":  "salt_trout",
-                                     "name":  "Salt Trout",
-                                     "img":  "images/salttrout.png",
-                                     "sellPrice":  12,
-                                     "unlockLevel":  35,
-                                     "effects":  {
-                                                     "heal":  5
-                                                 }
-                                 },
-                  "salt_salmon":  {
-                                      "id":  "salt_salmon",
-                                      "name":  "Salt Salmon",
-                                      "img":  "images/saltsalmon.png",
-                                      "sellPrice":  16,
-                                      "unlockLevel":  35,
-                                      "effects":  {
-                                                      "heal":  6
-                                                  }
-                                  },
-                  "mapple_fishing_pole":  {
-                                              "id":  "mapple_fishing_pole",
-                                              "name":  "Mapple Fishing Pole",
-                                              "img":  "images/mapplefishingpole.png",
-                                              "sellPrice":  2500,
-                                              "unlockLevel":  50
-                                          }
-              }
+{
+  "items": {
+    "copper_helmet": {
+      "id": "copper_helmet",
+      "name": "Copper Helmet",
+      "img": "images/copperhelmet.png",
+      "sellPrice": 20,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 3,
+        "rangedDef": 4,
+        "magicDef": 0,
+        "magicAtk": -3,
+        "rangedAtk": -2,
+        "armorType": "melee"
+      }
+    },
+    "copper_chestplate": {
+      "id": "copper_chestplate",
+      "name": "Copper Chestplate",
+      "img": "images/copperchestplate.png",
+      "sellPrice": 40,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 8,
+        "rangedDef": 9,
+        "magicDef": 0,
+        "magicAtk": -10,
+        "rangedAtk": -6,
+        "armorType": "melee"
+      }
+    },
+    "copper_platelegs": {
+      "id": "copper_platelegs",
+      "name": "Copper Platelegs",
+      "img": "images/copperplatelegs.png",
+      "sellPrice": 25,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 5,
+        "rangedDef": 6,
+        "magicDef": 0,
+        "magicAtk": -7,
+        "rangedAtk": -4,
+        "armorType": "melee"
+      }
+    },
+    "copper_boots": {
+      "id": "copper_boots",
+      "name": "Copper Boots",
+      "img": "images/copperboots.png",
+      "sellPrice": 15,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 2,
+        "rangedDef": 2,
+        "magicDef": 0,
+        "magicAtk": -3,
+        "rangedAtk": -1,
+        "armorType": "melee"
+      }
+    },
+    "copper_shortsword": {
+      "id": "copper_shortsword",
+      "name": "Copper Shortsword",
+      "img": "images/coppershortsword.png",
+      "sellPrice": 20,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeStr": 4,
+        "meleeAtk": 5,
+        "weaponType": "melee",
+        "speed": 2000
+      }
+    },
+    "iron_helmet": {
+      "id": "iron_helmet",
+      "name": "Iron Helmet",
+      "img": "images/ironhelmet.png",
+      "sellPrice": 60,
+      "unlockLevel": 10,
+      "stats": {
+        "meleeDef": 5,
+        "rangedDef": 6,
+        "magicDef": 1,
+        "magicAtk": -4,
+        "rangedAtk": -2,
+        "armorType": "melee"
+      }
+    },
+    "iron_chestplate": {
+      "id": "iron_chestplate",
+      "name": "Iron Chestplate",
+      "img": "images/ironchestplate.png",
+      "sellPrice": 120,
+      "unlockLevel": 10,
+      "stats": {
+        "meleeDef": 12,
+        "rangedDef": 13,
+        "magicDef": 2,
+        "magicAtk": -15,
+        "rangedAtk": -10,
+        "armorType": "melee"
+      }
+    },
+    "iron_platelegs": {
+      "id": "iron_platelegs",
+      "name": "Iron Platelegs",
+      "img": "images/ironplatelegs.png",
+      "sellPrice": 75,
+      "unlockLevel": 10,
+      "stats": {
+        "meleeDef": 8,
+        "rangedDef": 9,
+        "magicDef": 1,
+        "magicAtk": -10,
+        "rangedAtk": -6,
+        "armorType": "melee"
+      }
+    },
+    "iron_boots": {
+      "id": "iron_boots",
+      "name": "Iron Boots",
+      "img": "images/ironboots.png",
+      "sellPrice": 55,
+      "unlockLevel": 10,
+      "stats": {
+        "meleeDef": 3,
+        "rangedDef": 3,
+        "magicDef": 1,
+        "magicAtk": -3,
+        "rangedAtk": -1,
+        "armorType": "melee"
+      }
+    },
+    "iron_shortsword": {
+      "id": "iron_shortsword",
+      "name": "Iron Shortsword",
+      "img": "images/ironshortsword.png",
+      "sellPrice": 65,
+      "unlockLevel": 10,
+      "stats": {
+        "meleeStr": 7,
+        "meleeAtk": 9,
+        "weaponType": "melee",
+        "speed": 2000
+      }
+    },
+    "iron_battleaxe": {
+      "id": "iron_battleaxe",
+      "name": "Iron Battleaxe",
+      "img": "images/ironbattleaxe.png",
+      "sellPrice": 5000,
+      "unlockLevel": 15,
+      "stats": {
+        "meleeStr": 12,
+        "meleeAtk": 10,
+        "weaponType": "melee",
+        "twoHanded": true,
+        "speed": 2500
+      }
+    },
+    "iron_shield": {
+      "id": "iron_shield",
+      "name": "Iron Shield",
+      "img": "images/ironshield.png",
+      "sellPrice": 5000,
+      "unlockLevel": 15,
+      "stats": {
+        "meleeDef": 5,
+        "rangedDef": 5,
+        "magicDef": 0,
+        "armorType": "hybrid"
+      }
+    },
+    "gold_helmet": {
+      "id": "gold_helmet",
+      "name": "Gold Helmet",
+      "img": "images/goldhelmet.png",
+      "sellPrice": 600,
+      "unlockLevel": 10,
+      "stats": {
+        "meleeDef": 5,
+        "rangedDef": 6,
+        "magicDef": 1,
+        "magicAtk": -4,
+        "rangedAtk": -2,
+        "armorType": "melee"
+      }
+    },
+    "gold_chestplate": {
+      "id": "gold_chestplate",
+      "name": "Gold Chestplate",
+      "img": "images/goldchestplate.png",
+      "sellPrice": 1200,
+      "unlockLevel": 10,
+      "stats": {
+        "meleeDef": 12,
+        "rangedDef": 13,
+        "magicDef": 2,
+        "magicAtk": -15,
+        "rangedAtk": -10,
+        "armorType": "melee"
+      }
+    },
+    "gold_platelegs": {
+      "id": "gold_platelegs",
+      "name": "Gold Platelegs",
+      "img": "images/goldplatelegs.png",
+      "sellPrice": 750,
+      "unlockLevel": 10,
+      "stats": {
+        "meleeDef": 8,
+        "rangedDef": 9,
+        "magicDef": 1,
+        "magicAtk": -10,
+        "rangedAtk": -6,
+        "armorType": "melee"
+      }
+    },
+    "gold_boots": {
+      "id": "gold_boots",
+      "name": "Gold Boots",
+      "img": "images/goldboots.png",
+      "sellPrice": 550,
+      "unlockLevel": 10,
+      "stats": {
+        "meleeDef": 3,
+        "rangedDef": 3,
+        "magicDef": 1,
+        "magicAtk": -3,
+        "rangedAtk": -1,
+        "armorType": "melee"
+      }
+    },
+    "gold_shield": {
+      "id": "gold_shield",
+      "name": "Gold Shield",
+      "img": "images/goldshield.png",
+      "sellPrice": 50000,
+      "unlockLevel": 15,
+      "stats": {
+        "meleeDef": 5,
+        "rangedDef": 5,
+        "magicDef": 0,
+        "armorType": "hybrid"
+      }
+    },
+    "silver_fangs_of_the_fallen_monarch": {
+      "id": "silver_fangs_of_the_fallen_monarch",
+      "name": "Silver Fangs of the Fallen Monarch",
+      "img": "images/silverfangsofthefallenmonarch.png",
+      "sellPrice": 25000,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeStr": 9,
+        "meleeAtk": 15,
+        "weaponType": "melee",
+        "twoHanded": true,
+        "speed": 1500
+      }
+    },
+    "leather_hood": {
+      "id": "leather_hood",
+      "name": "Leather Hood",
+      "img": "images/leatherhood.png",
+      "sellPrice": 10,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 1,
+        "rangedDef": 2,
+        "magicDef": 4,
+        "rangedAtk": 2,
+        "magicAtk": -1,
+        "armorType": "ranged"
+      }
+    },
+    "leather_body": {
+      "id": "leather_body",
+      "name": "Leather Body",
+      "img": "images/leatherarmor.png",
+      "sellPrice": 25,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 3,
+        "rangedDef": 4,
+        "magicDef": 8,
+        "rangedAtk": 5,
+        "magicAtk": -2,
+        "armorType": "ranged"
+      }
+    },
+    "leather_chaps": {
+      "id": "leather_chaps",
+      "name": "Leather Chaps",
+      "img": "images/leatherpants.png",
+      "sellPrice": 15,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 2,
+        "rangedDef": 3,
+        "magicDef": 6,
+        "rangedAtk": 3,
+        "magicAtk": -1,
+        "armorType": "ranged"
+      }
+    },
+    "leather_boots": {
+      "id": "leather_boots",
+      "name": "Leather Boots",
+      "img": "images/leatherboots.png",
+      "sellPrice": 8,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 1,
+        "rangedDef": 1,
+        "magicDef": 2,
+        "rangedAtk": 1,
+        "armorType": "ranged"
+      }
+    },
+    "softwood_bow": {
+      "id": "softwood_bow",
+      "name": "Softwood Bow",
+      "img": "images/softwoodbow.png",
+      "sellPrice": 10,
+      "unlockLevel": 5,
+      "stats": {
+        "rangedStr": 4,
+        "rangedAtk": 5,
+        "weaponType": "ranged",
+        "twoHanded": true,
+        "speed": 2400
+      }
+    },
+    "oak_bow": {
+      "id": "oak_bow",
+      "name": "Oak Bow",
+      "img": "images/oakbow.png",
+      "sellPrice": 20,
+      "unlockLevel": 15,
+      "stats": {
+        "rangedStr": 8,
+        "rangedAtk": 10,
+        "weaponType": "ranged",
+        "twoHanded": true,
+        "speed": 2400
+      }
+    },
+    "copper_arrow": {
+      "id": "copper_arrow",
+      "name": "Copper Arrow",
+      "img": "images/copperarrow.png",
+      "sellPrice": 5,
+      "unlockLevel": 1,
+      "stats": {
+        "rangedStr": 2
+      }
+    },
+    "copper_arrow_poisoned": {
+      "id": "copper_arrow_poisoned",
+      "name": "Copper Arrow Poisoned",
+      "img": "images/copperarrowpoisonned.png",
+      "sellPrice": 30,
+      "unlockLevel": 1,
+      "stats": {
+        "rangedStr": 4
+      }
+    },
+    "wizard_hat": {
+      "id": "wizard_hat",
+      "name": "Wizard Hat",
+      "img": "images/wizardhat.png",
+      "sellPrice": 30,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 1,
+        "rangedDef": 1,
+        "magicDef": 3,
+        "magicAtk": 3,
+        "armorType": "magic"
+      }
+    },
+    "wizard_robe": {
+      "id": "wizard_robe",
+      "name": "Wizard Robe",
+      "img": "images/wizardrobe.png",
+      "sellPrice": 70,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 2,
+        "rangedDef": 2,
+        "magicDef": 6,
+        "magicAtk": 6,
+        "armorType": "magic"
+      }
+    },
+    "wizard_trousers": {
+      "id": "wizard_trousers",
+      "name": "Wizard Trousers",
+      "img": "images/wizardtrousers.png",
+      "sellPrice": 45,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 1,
+        "rangedDef": 1,
+        "magicDef": 4,
+        "magicAtk": 4,
+        "armorType": "magic"
+      }
+    },
+    "wizard_boots": {
+      "id": "wizard_boots",
+      "name": "Wizard Boots",
+      "img": "images/wizardboots.png",
+      "sellPrice": 30,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 1,
+        "rangedDef": 1,
+        "magicDef": 2,
+        "magicAtk": 2,
+        "armorType": "magic"
+      }
+    },
+    "magic_staff": {
+      "id": "magic_staff",
+      "name": "Magic Staff",
+      "img": "images/magicstaff.png",
+      "sellPrice": 500,
+      "unlockLevel": 1,
+      "stats": {
+        "magicAtk": 10,
+        "magicDmg": 2,
+        "weaponType": "magic",
+        "twoHanded": true,
+        "speed": 3000
+      }
+    },
+    "gold_crown": {
+      "id": "gold_crown",
+      "name": "Gold Crown",
+      "img": "images/goldcrown.png",
+      "sellPrice": 50000,
+      "unlockLevel": 50,
+      "stats": {
+        "meleeDef": 8,
+        "rangedDef": 8,
+        "magicDef": 8,
+        "magicAtk": 2,
+        "rangedAtk": 2,
+        "meleeAtk": 2,
+        "armorType": "hybrid"
+      }
+    },
+    "elegant_black_cape": {
+      "id": "elegant_black_cape",
+      "name": "Elegant Black Cape",
+      "img": "images/elegantblackcape.png",
+      "sellPrice": 50000,
+      "unlockLevel": 50,
+      "stats": {
+        "meleeDef": 2,
+        "armorType": "melee"
+      }
+    },
+    "pet_spider": {
+      "id": "pet_spider",
+      "name": "Pet Spider",
+      "img": "images/petspider.png",
+      "sellPrice": 0,
+      "unlockLevel": 1,
+      "stats": {
+        "type": "pet"
+      }
+    },
+    "gold_ring": {
+      "id": "gold_ring",
+      "name": "Gold Ring",
+      "img": "images/goldring.png",
+      "sellPrice": 500,
+      "unlockLevel": 38,
+      "stats": {
+        "armorType": "jewelry"
+      }
+    },
+    "diamond_ring": {
+      "id": "diamond_ring",
+      "name": "Diamond Ring",
+      "img": "images/diamondring.png",
+      "sellPrice": 1200,
+      "unlockLevel": 40,
+      "stats": {
+        "meleeDef": 2,
+        "armorType": "jewelry"
+      }
+    },
+    "emerald_ring": {
+      "id": "emerald_ring",
+      "name": "Emerald Ring",
+      "img": "images/emeraldring.png",
+      "sellPrice": 1200,
+      "unlockLevel": 40,
+      "stats": {
+        "rangedStr": 2,
+        "armorType": "jewelry"
+      }
+    },
+    "ruby_ring": {
+      "id": "ruby_ring",
+      "name": "Ruby Ring",
+      "img": "images/rubyring.png",
+      "sellPrice": 1200,
+      "unlockLevel": 40,
+      "stats": {
+        "meleeStr": 2,
+        "armorType": "jewelry"
+      }
+    },
+    "sapphire_ring": {
+      "id": "sapphire_ring",
+      "name": "Sapphire Ring",
+      "img": "images/sapphirering.png",
+      "sellPrice": 1200,
+      "unlockLevel": 40,
+      "stats": {
+        "magicDmg": 2,
+        "armorType": "jewelry"
+      }
+    },
+    "topaz_ring": {
+      "id": "topaz_ring",
+      "name": "Topaz Ring",
+      "img": "images/topazring.png",
+      "sellPrice": 1200,
+      "unlockLevel": 40,
+      "stats": {
+        "maxHPBonus": 2,
+        "armorType": "jewelry"
+      }
+    },
+    "diamond_necklace": {
+      "id": "diamond_necklace",
+      "name": "Diamond Necklace",
+      "img": "images/diamondnecklace.png",
+      "sellPrice": 2000,
+      "unlockLevel": 50,
+      "stats": {
+        "meleeDef": 2,
+        "armorType": "jewelry"
+      }
+    },
+    "emerald_necklace": {
+      "id": "emerald_necklace",
+      "name": "Emerald Necklace",
+      "img": "images/emeraldnecklace.png",
+      "sellPrice": 2000,
+      "unlockLevel": 50,
+      "stats": {
+        "rangedStr": 2,
+        "armorType": "jewelry"
+      }
+    },
+    "ruby_necklace": {
+      "id": "ruby_necklace",
+      "name": "Ruby Necklace",
+      "img": "images/rubynecklace.png",
+      "sellPrice": 2000,
+      "unlockLevel": 50,
+      "stats": {
+        "meleeStr": 2,
+        "armorType": "jewelry"
+      }
+    },
+    "sapphire_necklace": {
+      "id": "sapphire_necklace",
+      "name": "Sapphire Necklace",
+      "img": "images/sapphirenecklace.png",
+      "sellPrice": 2000,
+      "unlockLevel": 50,
+      "stats": {
+        "magicDmg": 2,
+        "armorType": "jewelry"
+      }
+    },
+    "topaz_necklace": {
+      "id": "topaz_necklace",
+      "name": "Topaz Necklace",
+      "img": "images/topaznecklace.png",
+      "sellPrice": 2000,
+      "unlockLevel": 50,
+      "stats": {
+        "maxHPBonus": 2,
+        "armorType": "jewelry"
+      }
+    },
+    "copper_bar": {
+      "id": "copper_bar",
+      "name": "Copper Bar",
+      "img": "images/copperbar.png",
+      "sellPrice": 3
+    },
+    "iron_bar": {
+      "id": "iron_bar",
+      "name": "Iron Bar",
+      "img": "images/ironbar.png",
+      "sellPrice": 10
+    },
+    "silver_bar": {
+      "id": "silver_bar",
+      "name": "Silver Bar",
+      "img": "images/silverbar.png",
+      "sellPrice": 50
+    },
+    "gold_bar": {
+      "id": "gold_bar",
+      "name": "Gold Bar",
+      "img": "images/goldbar.png",
+      "sellPrice": 250
+    },
+    "copper_ore": {
+      "id": "copper_ore",
+      "name": "Copper Ore",
+      "img": "images/copper_ore.png",
+      "sellPrice": 1
+    },
+    "coal_ore": {
+      "id": "coal_ore",
+      "name": "Coal Ore",
+      "img": "images/coalore.png",
+      "sellPrice": 2
+    },
+    "iron_ore": {
+      "id": "iron_ore",
+      "name": "Iron Ore",
+      "img": "images/ironore.png",
+      "sellPrice": 4
+    },
+    "silver_ore": {
+      "id": "silver_ore",
+      "name": "Silver Ore",
+      "img": "images/silverore.png",
+      "sellPrice": 7
+    },
+    "gold_ore": {
+      "id": "gold_ore",
+      "name": "Gold Ore",
+      "img": "images/goldore.png",
+      "sellPrice": 12
+    },
+    "feather": {
+      "id": "feather",
+      "name": "Feather",
+      "img": "images/feather.png",
+      "sellPrice": 1
+    },
+    "arrow_shaft": {
+      "id": "arrow_shaft",
+      "name": "Arrow Shaft",
+      "img": "images/arrowshaft.png",
+      "sellPrice": 1
+    },
+    "copper_arrow_tip": {
+      "id": "copper_arrow_tip",
+      "name": "Copper Arrow Tip",
+      "img": "images/copperarrowtip.png",
+      "sellPrice": 2
+    },
+    "unbound_arrow": {
+      "id": "unbound_arrow",
+      "name": "Unbound Arrow",
+      "img": "images/unboundarrow.png",
+      "sellPrice": 3
+    },
+    "unstrung_softwood_bow": {
+      "id": "unstrung_softwood_bow",
+      "name": "Unstrung Softwood Bow",
+      "img": "images/unstrungsoftwoodbow.png",
+      "sellPrice": 5
+    },
+    "unstrung_oak_bow": {
+      "id": "unstrung_oak_bow",
+      "name": "Unstrung Oak Bow",
+      "img": "images/unstrungoakbow.png",
+      "sellPrice": 10
+    },
+    "silk": {
+      "id": "silk",
+      "name": "Silk",
+      "img": "images/silk.png",
+      "sellPrice": 2
+    },
+    "cloth": {
+      "id": "cloth",
+      "name": "Cloth",
+      "img": "images/cloth.png",
+      "sellPrice": 12
+    },
+    "sand": {
+      "id": "sand",
+      "name": "Sand",
+      "img": "images/sand.png",
+      "sellPrice": 1
+    },
+    "empty_vial": {
+      "id": "empty_vial",
+      "name": "Empty Vial",
+      "img": "images/emptyvial.png",
+      "sellPrice": 10
+    },
+    "empty_bucket": {
+      "id": "empty_bucket",
+      "name": "Empty Bucket",
+      "img": "images/emptybucket.png",
+      "sellPrice": 2
+    },
+    "earth_crystal_shard": {
+      "id": "earth_crystal_shard",
+      "name": "Earth Crystal Shard",
+      "img": "images/earthcrystalshard.png",
+      "sellPrice": 5
+    },
+    "air_crystal_shard": {
+      "id": "air_crystal_shard",
+      "name": "Air Crystal Shard",
+      "img": "images/aircrystalshard.png",
+      "sellPrice": 8
+    },
+    "water_crystal_shard": {
+      "id": "water_crystal_shard",
+      "name": "Water Crystal Shard",
+      "img": "images/watercrystalshard.png",
+      "sellPrice": 12
+    },
+    "softwood": {
+      "id": "softwood",
+      "name": "Softwood",
+      "img": "images/softwood.png",
+      "sellPrice": 1
+    },
+    "oak": {
+      "id": "oak",
+      "name": "Oak",
+      "img": "images/oak.png",
+      "sellPrice": 3
+    },
+    "cow_hide": {
+      "id": "cow_hide",
+      "name": "Cow Hide",
+      "img": "images/cowhide.png",
+      "sellPrice": 4
+    },
+    "leather": {
+      "id": "leather",
+      "name": "Leather",
+      "img": "images/leather.png",
+      "sellPrice": 6
+    },
+    "raw_chicken": {
+      "id": "raw_chicken",
+      "name": "Raw Chicken",
+      "img": "images/rawchicken.png",
+      "sellPrice": 1
+    },
+    "cooked_chicken": {
+      "id": "cooked_chicken",
+      "name": "Cooked Chicken",
+      "img": "images/cookedchicken.png",
+      "sellPrice": 2
+    },
+    "burnt_chicken": {
+      "id": "burnt_chicken",
+      "name": "Burnt Chicken",
+      "img": "images/burntchicken.png",
+      "sellPrice": 1
+    },
+    "vitality_potion": {
+      "id": "vitality_potion",
+      "name": "Vitality Potion",
+      "img": "images/vitalitypotion.png",
+      "sellPrice": 150,
+      "effects": {
+        "heal": 10
+      }
+    },
+    "uncut_topaz": {
+      "id": "uncut_topaz",
+      "name": "Uncut Topaz",
+      "img": "images/uncuttopaz.png",
+      "sellPrice": 25
+    },
+    "uncut_diamond": {
+      "id": "uncut_diamond",
+      "name": "Uncut Diamond",
+      "img": "images/uncutdiamond.png",
+      "sellPrice": 25
+    },
+    "uncut_emerald": {
+      "id": "uncut_emerald",
+      "name": "Uncut Emerald",
+      "img": "images/uncutemerald.png",
+      "sellPrice": 25
+    },
+    "uncut_jade": {
+      "id": "uncut_jade",
+      "name": "Uncut Jade",
+      "img": "images/uncutjade.png",
+      "sellPrice": 25
+    },
+    "uncut_ruby": {
+      "id": "uncut_ruby",
+      "name": "Uncut Ruby",
+      "img": "images/uncutruby.png",
+      "sellPrice": 25
+    },
+    "uncut_sapphire": {
+      "id": "uncut_sapphire",
+      "name": "Uncut Sapphire",
+      "img": "images/uncutsapphire.png",
+      "sellPrice": 25
+    },
+    "topaz": {
+      "id": "topaz",
+      "name": "Topaz",
+      "img": "images/topaz.png",
+      "sellPrice": 100
+    },
+    "diamond": {
+      "id": "diamond",
+      "name": "Diamond",
+      "img": "images/diamond.png",
+      "sellPrice": 100
+    },
+    "emerald": {
+      "id": "emerald",
+      "name": "Emerald",
+      "img": "images/emerald.png",
+      "sellPrice": 100
+    },
+    "jade": {
+      "id": "jade",
+      "name": "Jade",
+      "img": "images/jade.png",
+      "sellPrice": 100
+    },
+    "ruby": {
+      "id": "ruby",
+      "name": "Ruby",
+      "img": "images/ruby.png",
+      "sellPrice": 100
+    },
+    "sapphire": {
+      "id": "sapphire",
+      "name": "Sapphire",
+      "img": "images/sapphire.png",
+      "sellPrice": 100
+    },
+    "bow_string": {
+      "id": "bow_string",
+      "name": "Bow String",
+      "img": "images/bowstring.png",
+      "sellPrice": 3
+    },
+    "dirt_shroom": {
+      "id": "dirt_shroom",
+      "name": "Dirt Shroom",
+      "img": "images/dirtshroom.png",
+      "sellPrice": 8,
+      "unlockLevel": 1
+    },
+    "wild_herb": {
+      "id": "wild_herb",
+      "name": "Wild Herb",
+      "img": "images/wildherb.png",
+      "sellPrice": 10,
+      "unlockLevel": 1
+    },
+    "vitality_potion_plus": {
+      "id": "vitality_potion_plus",
+      "name": "Vitality Potion+",
+      "img": "images/vitalitypotionplus.png",
+      "sellPrice": 450,
+      "unlockLevel": 50,
+      "effects": {
+        "heal": 20
+      }
+    },
+    "wheat_seed": {
+      "id": "wheat_seed",
+      "name": "Wheat Seed",
+      "img": "images/wheatseed.png",
+      "sellPrice": 6
+    },
+    "wheat": {
+      "id": "wheat",
+      "name": "Wheat",
+      "img": "images/wheat.png",
+      "sellPrice": 9
+    },
+    "flour": {
+      "id": "flour",
+      "name": "Flour",
+      "img": "images/flour.png",
+      "sellPrice": 12
+    },
+    "salt": {
+      "id": "salt",
+      "name": "Salt",
+      "img": "images/salt.png",
+      "sellPrice": 5
+    },
+    "cake": {
+      "id": "cake",
+      "name": "Cake",
+      "img": "images/cake.png",
+      "sellPrice": 45,
+      "unlockLevel": 50,
+      "effects": {
+        "heal": 12
+      }
+    },
+    "burnt_cake": {
+      "id": "burnt_cake",
+      "name": "Burnt Cake",
+      "img": "images/burntcake.png",
+      "sellPrice": 1
+    },
+    "bread": {
+      "id": "bread",
+      "name": "Bread",
+      "img": "images/bread.png",
+      "sellPrice": 18,
+      "unlockLevel": 25,
+      "effects": {
+        "heal": 5
+      }
+    },
+    "burnt_bread": {
+      "id": "burnt_bread",
+      "name": "Burnt Bread",
+      "img": "images/burntbread.png",
+      "sellPrice": 1
+    },
+    "cheese": {
+      "id": "cheese",
+      "name": "Cheese",
+      "img": "images/cheese.png",
+      "sellPrice": 24,
+      "unlockLevel": 30,
+      "effects": {
+        "heal": 8
+      }
+    },
+    "salt_herring": {
+      "id": "salt_herring",
+      "name": "Salt Herring",
+      "img": "images/saltherring.png",
+      "sellPrice": 8,
+      "unlockLevel": 35,
+      "effects": {
+        "heal": 4
+      }
+    },
+    "salt_trout": {
+      "id": "salt_trout",
+      "name": "Salt Trout",
+      "img": "images/salttrout.png",
+      "sellPrice": 12,
+      "unlockLevel": 35,
+      "effects": {
+        "heal": 5
+      }
+    },
+    "salt_salmon": {
+      "id": "salt_salmon",
+      "name": "Salt Salmon",
+      "img": "images/saltsalmon.png",
+      "sellPrice": 16,
+      "unlockLevel": 35,
+      "effects": {
+        "heal": 6
+      }
+    },
+    "mapple_fishing_pole": {
+      "id": "mapple_fishing_pole",
+      "name": "Mapple Fishing Pole",
+      "img": "images/mapplefishingpole.png",
+      "sellPrice": 2500,
+      "unlockLevel": 50
+    },
+    "pet_dragon_egg": {
+      "id": "pet_dragon_egg",
+      "name": "Pet Dragon Egg",
+      "img": "images/petegg3.png",
+      "sellPrice": 25000,
+      "unlockLevel": 1,
+      "stats": {}
+    },
+    "pet_dragon": {
+      "id": "pet_dragon",
+      "name": "Pet Dragon",
+      "img": "images/petdragon.png",
+      "sellPrice": 0,
+      "unlockLevel": 1,
+      "stats": {}
+    },
+    "fire_stone": {
+      "id": "fire_stone",
+      "name": "Fire Stone",
+      "img": "images/firestone.png",
+      "sellPrice": 25,
+      "unlockLevel": 1,
+      "stats": {}
+    }
+  },
+  "empty_glass": {
+    "id": "empty_glass",
+    "name": "Empty Glass",
+    "img": "images/emptyglass.png",
+    "sellPrice": 4
+  },
+  "beer": {
+    "id": "beer",
+    "name": "Beer",
+    "img": "images/beer.png",
+    "sellPrice": 18,
+    "effects": {
+      "meleeDef": 10,
+      "durationMs": 60000
+    }
+  }
 }
