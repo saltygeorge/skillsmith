@@ -421,7 +421,12 @@ body {
   gap: 8px; 
   margin-top: 10px;
 }
+#chatInputWrap {
+  position: relative;
+  flex-grow: 1;
+}
 #chatInput { 
+  width: 100%;
   flex-grow: 1; 
   padding: 8px; 
   border-radius: 6px; 
@@ -429,7 +434,42 @@ body {
   background: #3f2b21; 
   color: #fff;
 }
-
+#chatCommandSuggestions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 6px);
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid rgba(214, 139, 46, 0.55);
+  border-radius: 8px;
+  background: rgba(38, 24, 17, 0.96);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  z-index: 30;
+}
+.chat-command-suggestion {
+  border: 0;
+  border-radius: 6px;
+  padding: 7px 9px;
+  text-align: left;
+  color: #f7e0b2;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  font: inherit;
+}
+.chat-command-suggestion:hover,
+.chat-command-suggestion:focus {
+  outline: none;
+  background: rgba(214, 139, 46, 0.2);
+}
+.chat-command-suggestion small {
+  display: block;
+  margin-top: 2px;
+  color: rgba(255, 243, 220, 0.75);
+  font-size: 11px;
+}
 /* --- Action Progress --- */
 .progress-container {
   background: #7c644c;
@@ -3500,7 +3540,10 @@ button.primary:hover { background: var(--accent-hover); }
           </div>
         
         <div id="chatInputContainer">
-          <input id="chatInput" type="text" placeholder="Type message...">
+          <div id="chatInputWrap">
+            <div id="chatCommandSuggestions"></div>
+            <input id="chatInput" type="text" placeholder="Type message...">
+          </div>
           <button id="chatSendBtn" class="primary" style="padding: 8px 12px;">Send</button>
         </div>
       </div>
@@ -24745,7 +24788,78 @@ window.inspectPlayer = async function(playerName) {
 
 
 
-  async function sendChatMessage() {
+  const CHAT_COMMAND_SUGGESTIONS = [
+  { command: '/helpadmin', desc: 'Show the admin help list' },
+  { command: '/givegold ', desc: 'Give gold to a player' },
+  { command: '/giveitem ', desc: 'Give an item to a player' },
+  { command: '/setlevel ', desc: 'Set a player skill level' },
+  { command: '/forget ', desc: 'Forget a quest line entry' },
+  { command: '/disconnect ', desc: 'Disconnect one active player' },
+  { command: '/disconnectall', desc: 'Disconnect all active players except you' },
+  { command: '/removebuff ', desc: 'Remove beer or drunk buffs' },
+  { command: '/addbuff drunk ', desc: 'Apply the drunk buff' },
+  { command: '/clear ', desc: 'Delete one player\'s chat messages' },
+  { command: '/clearall', desc: 'Delete all chat messages' },
+  { command: '/clearlast', desc: 'Delete the last global chat message' },
+  { command: '/clearlastme', desc: 'Delete your last chat message' },
+  { command: '/update ', desc: 'Post an update message' },
+  { command: '/messageall ', desc: 'Broadcast a message to everyone' },
+  { command: '/godmode', desc: 'Toggle god mode' }
+];
+let activeChatCommandSuggestions = [];
+
+function getChatCommandMatches(value) {
+  if (!game || !game.isAdmin) return [];
+  const trimmed = String(value || '').trimStart();
+  if (!trimmed.startsWith('/')) return [];
+  const lower = trimmed.toLowerCase();
+  return CHAT_COMMAND_SUGGESTIONS.filter(entry => entry.command.toLowerCase().startsWith(lower)).slice(0, 6);
+}
+
+function hideChatCommandSuggestions() {
+  const box = document.getElementById('chatCommandSuggestions');
+  activeChatCommandSuggestions = [];
+  if (box) {
+    box.innerHTML = '';
+    box.style.display = 'none';
+  }
+}
+
+function applyChatCommandSuggestion(command) {
+  const input = document.getElementById('chatInput');
+  if (!input) return;
+  input.value = command;
+  input.focus();
+  input.setSelectionRange(command.length, command.length);
+  hideChatCommandSuggestions();
+}
+
+function updateChatCommandSuggestions() {
+  const input = document.getElementById('chatInput');
+  const box = document.getElementById('chatCommandSuggestions');
+  if (!input || !box) return;
+
+  const matches = getChatCommandMatches(input.value);
+  activeChatCommandSuggestions = matches;
+  if (!matches.length) {
+    hideChatCommandSuggestions();
+    return;
+  }
+
+  box.innerHTML = matches.map((entry, idx) =>
+    `<button type="button" class="chat-command-suggestion" data-command-index="${idx}">${entry.command}<small>${entry.desc}</small></button>`
+  ).join('');
+  box.style.display = 'flex';
+
+  box.querySelectorAll('.chat-command-suggestion').forEach(btn => {
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const entry = matches[Number(btn.dataset.commandIndex)];
+      if (entry) applyChatCommandSuggestion(entry.command);
+    });
+  });
+}
+async function sendChatMessage() {
     const chatInput = document.getElementById('chatInput');
     const messageText = chatInput.value.trim();
     const user = auth.currentUser;
@@ -25178,12 +25292,30 @@ window.inspectPlayer = async function(playerName) {
     const chatSendBtn = document.getElementById('chatSendBtn');
     const chatInput = document.getElementById('chatInput');
     if (chatSendBtn) {
-      chatSendBtn.onclick = sendChatMessage;
+      chatSendBtn.onclick = () => {
+        hideChatCommandSuggestions();
+        sendChatMessage();
+      };
     }
     if (chatInput) {
-      chatInput.addEventListener('keypress', (e) => {
+      chatInput.addEventListener('input', () => {
+        updateChatCommandSuggestions();
+      });
+      chatInput.addEventListener('focus', () => {
+        updateChatCommandSuggestions();
+      });
+      chatInput.addEventListener('blur', () => {
+        setTimeout(() => hideChatCommandSuggestions(), 120);
+      });
+      chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab' && activeChatCommandSuggestions.length) {
+          e.preventDefault();
+          applyChatCommandSuggestion(activeChatCommandSuggestions[0].command);
+          return;
+        }
         if (e.key === 'Enter') {
-          e.preventDefault(); 
+          e.preventDefault();
+          hideChatCommandSuggestions();
           sendChatMessage();
         }
       });
@@ -26865,6 +26997,8 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
 
 
 
