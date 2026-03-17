@@ -1843,6 +1843,29 @@ button.primary:hover { background: var(--accent-hover); }
   z-index: 10;
 }
 
+#gardenHandPumpOverlay {
+  position: absolute;
+  right: -8px;
+  top: 49%;
+  transform: translateY(-50%);
+  width: 78px;
+  height: 78px;
+  z-index: 18;
+  display: none;
+}
+#gardenHandPumpOverlay img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+#gardenHandPumpOverlay img:hover {
+  filter: drop-shadow(0 0 10px rgba(255,215,120,0.95));
+  filter: drop-shadow(0 0 10px rgba(255,215,120,0.95));
+}
+
 /* The interactive shapes */
 .farm-zone {
   fill: rgba(255, 255, 255, 0.0); /* Invisible by default */
@@ -2482,7 +2505,7 @@ button.primary:hover { background: var(--accent-hover); }
             <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
                 
                 <div class="interactive-container">
-                    <img src="images/personalfarm.webp" alt="Personal Farm" class="interactive-bg">
+                    <img id="personalFarmSceneImg" src="images/personalfarm.webp" alt="Personal Farm" class="interactive-bg">
                     
                     <svg class="interactive-overlay" viewBox="0 0 488 300" preserveAspectRatio="none">
                         
@@ -2514,8 +2537,6 @@ button.primary:hover { background: var(--accent-hover); }
                                  onmouseleave="hideTooltip()">
                         </polygon>
 
-                        
-                      
                         <polygon class="farm-zone" 
                                  points="345,126 334,126 334,110 322,110 322,105 368,63 378,63 423,105 423,110 411,110 411,126 403,126 412,250 333,250" 
                                  onclick="handleWindmillClick()" 
@@ -2529,24 +2550,24 @@ button.primary:hover { background: var(--accent-hover); }
                                  onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Well</div>Fresh Water'); playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');" 
                                  onmouseleave="hideTooltip()">
                         </polygon>
-
                     </svg>
                     <div id="farmCatOverlay"></div>
+                    <div style="position:absolute; right:12px; top:50%; transform:translateY(-50%); z-index:20; pointer-events:auto;">
+                        <button id="goToGardenBtn" class="primary" style="padding: 8px 16px; font-size: 18px;" onmouseenter="showTooltip(event, 'Go to Garden')" onmouseleave="hideTooltip()">
+                            &#10140;
+                        </button>
+                    </div>
                 </div>
 
-                <div style="width: 100%; max-width: 420px; display: flex; justify-content: flex-end; margin-top: 10px;">
-                    <button id="goToGardenBtn" class="primary" style="padding: 8px 16px; font-size: 18px;" onmouseenter="showTooltip(event, 'Go to Garden')" onmouseleave="hideTooltip()">
-                        &#10140; </button>
-                </div>
-
+                <div id="farmUpgradesPanel" style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px; margin-top:12px;"></div>
+                
             </div>
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
               <button id="hubPersonalFarm_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="dismissFarmCat(); backToActions()">Return</button>
             </div>
           </div>
-
-          <div id="hubPetYard" class="hub-screen">
+<div id="hubPetYard" class="hub-screen">
             <h2>Pet Yard</h2>
             
             <div id="petYardContent" style="margin-top: 10px;"></div>
@@ -2789,14 +2810,16 @@ button.primary:hover { background: var(--accent-hover); }
 
                     </svg>
                     <div id="gardenTombOverlay"></div>
+                    <div id="gardenHandPumpOverlay"></div>
                     <div id="gardenTombPanel"></div>
+                    <div style="position:absolute; left:12px; top:50%; transform:translateY(-50%); z-index:20; pointer-events:auto;">
+                        <button id="backToFarmFromGardenBtn" class="primary" style="padding: 8px 16px; font-size: 18px;" onmouseenter="showTooltip(event, 'Back to Farm')" onmouseleave="hideTooltip()">
+                            &#10140;
+                        </button>
+                    </div>
                 </div>
 
-                <div style="width: 100%; max-width: 420px; display: flex; justify-content: flex-start; margin-top: 10px;">
-                    <button id="backToFarmFromGardenBtn" class="primary" style="padding: 8px 16px; font-size: 18px;" onmouseenter="showTooltip(event, 'Back to Farm')" onmouseleave="hideTooltip()">
-                        &#10140; 
-                    </button>
-                </div>
+                <div id="gardenSeedBagPanel" style="display:none; flex-direction:column; gap:1px; width:100%; max-width:420px; margin-top:8px; background: rgba(0,0,0,0.22); padding: 6px 10px; border-radius: 8px;"></div>
 
             </div>
 
@@ -2871,6 +2894,8 @@ button.primary:hover { background: var(--accent-hover); }
                 <button id="collectMilkBtn" class="primary" onclick="collectMilk()">Milk All</button>
             </div>
 
+            <div id="barnSiloPanel" style="display:none; flex-direction:column; gap:8px; margin-top: 12px; background: rgba(0,0,0,0.22); padding: 10px 12px; border-radius: 8px; width: 90%; max-width: 440px; margin-left: auto; margin-right: auto;"></div>
+
             <div id="barnSlotsContainer" class="coop-container" style="margin-top: 20px;">
                 </div>
 
@@ -2888,6 +2913,8 @@ button.primary:hover { background: var(--accent-hover); }
                 </div>
                 <button id="collectEggsBtn" class="primary" onclick="collectEggs()">Collect All</button>
             </div>
+
+            <div id="coopSiloPanel" style="display:none; flex-direction:column; gap:8px; margin-top: 12px; background: rgba(0,0,0,0.22); padding: 10px 12px; border-radius: 8px; width: 90%; max-width: 440px; margin-left: auto; margin-right: auto;"></div>
 
             <div id="coopSlotsContainer" class="coop-container" style="margin-top: 20px;">
                 </div>
@@ -3809,7 +3836,9 @@ const game = {
     mill: createDefaultMillState(),
     strayCat: createDefaultStrayCatState(),
     gardenTomb: createDefaultGardenTombState(),
-    buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false }
+    seedBagStorage: createDefaultSeedBagStorage(),
+    siloStorage: createDefaultSiloStorage(),
+    buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
   },
   
   // +++ NEW MAGIC STATE +++
@@ -4723,7 +4752,9 @@ SHOP_INVENTORY[5] = { name: 'Empty Vial', price: 50 };
 SHOP_INVENTORY[6] = { name: 'Corn Seed', price: 30 };
 SHOP_INVENTORY[7] = { name: 'Grass Seed', price: 15 };
 SHOP_INVENTORY[8] = { name: 'Wheat Seed', price: 45 };
-// SHOP_INVENTORY[9] = { name: 'Wheat', price: 20 }; // Disabled from shop
+SHOP_INVENTORY[9] = { name: 'Seed Bag', price: 5000 };
+SHOP_INVENTORY[10] = { name: 'Silo', price: 10000 };
+SHOP_INVENTORY[11] = { name: 'Hand Pump Well', price: 15000 };// SHOP_INVENTORY[9] = { name: 'Wheat', price: 20 }; // Disabled from shop
 //SHOP_INVENTORY[10] = { name: 'Iron Battleaxe', price: 5000 };
 //SHOP_INVENTORY[11] = { name: 'Iron Shield', price: 5000 };
 
@@ -13046,6 +13077,260 @@ function createDefaultGardenTombState() {
   };
 }
 
+const FARM_UPGRADE_CONFIG = {
+  'Seed Bag': { price: 250000, img: 'seedbag.png' },
+  'Silo': { price: 500000, img: 'silo.png' },
+  'Hand Pump Well': { price: 750000, img: 'automaticwell.png' }
+};
+
+function createDefaultSeedBagStorage() {
+  return { 'Corn Seed': 0, 'Grass Seed': 0, 'Wheat Seed': 0 };
+}
+
+function createDefaultSiloStorage() {
+  return { 'Corn': 0, 'Grass': 0 };
+}
+
+function isFarmUpgradeItem(itemName) {
+  return !!FARM_UPGRADE_CONFIG[itemName];
+}
+
+function isFarmUpgradePurchased(itemName) {
+  ensureFarmState();
+  if (itemName === 'Seed Bag') return !!game.farm.buildings.seedbag;
+  if (itemName === 'Silo') return !!game.farm.buildings.silo;
+  if (itemName === 'Hand Pump Well') return !!game.farm.buildings.handPumpWell;
+  return false;
+}
+
+function getStoredSeedCount(seedName) {
+  ensureFarmState();
+  return Number((game.farm.seedBagStorage && game.farm.seedBagStorage[seedName]) || 0);
+}
+
+function getAvailableSeedCount(seedName) {
+  return getInventoryQtyByName(seedName) + getStoredSeedCount(seedName);
+}
+
+function moveInventoryItemToStorage(itemName, amount, storageKey) {
+  let remaining = amount;
+  for (let i = 0; i < game.inventory.length && remaining > 0; i++) {
+    const slot = game.inventory[i];
+    if (!slot || slot.name !== itemName) continue;
+    const moved = Math.min(remaining, Number(slot.qty || 0));
+    slot.qty -= moved;
+    remaining -= moved;
+    game.farm[storageKey][itemName] = Number(game.farm[storageKey][itemName] || 0) + moved;
+    if (slot.qty <= 0) game.inventory[i] = null;
+  }
+  renderInventoryGrid();
+}
+
+function withdrawStorageItem(itemName, amount, storageKey) {
+  const stored = Number(game.farm[storageKey][itemName] || 0);
+  if (stored < amount) return false;
+  if (!canReceiveItem(itemName)) return false;
+  game.farm[storageKey][itemName] = stored - amount;
+  addItem(itemName, amount);
+  return true;
+}
+
+function consumeStoredOrInventoryItem(itemName, amount, storageKey) {
+  let remaining = amount;
+  const invQty = getInventoryQtyByName(itemName);
+  if (invQty > 0) {
+    const fromInv = Math.min(invQty, remaining);
+    if (fromInv > 0) {
+      removeItem(itemName, fromInv);
+      remaining -= fromInv;
+    }
+  }
+  if (remaining <= 0) return true;
+  const stored = Number((game.farm[storageKey] && game.farm[storageKey][itemName]) || 0);
+  if (stored < remaining) return false;
+  game.farm[storageKey][itemName] = stored - remaining;
+  return true;
+}
+
+function consumeSeedForPlanting(seedItemName, amount) {
+  ensureFarmState();
+  return consumeStoredOrInventoryItem(seedItemName, amount, 'seedBagStorage');
+}
+
+function consumeSiloFood(foodName, amount) {
+  ensureFarmState();
+  return consumeStoredOrInventoryItem(foodName, amount, 'siloStorage');
+}
+
+function getPersonalFarmImageSrc() {
+  ensureFarmState();
+  return game.farm.buildings.silo ? 'images/personalfarmupgraded.webp' : 'images/personalfarm.webp';
+}
+
+function renderFarmUpgradePanels() {
+  ensureFarmState();
+
+  const farmImg = document.getElementById('personalFarmSceneImg');
+  if (farmImg) farmImg.src = getPersonalFarmImageSrc();
+
+  const farmPanel = document.getElementById('farmUpgradesPanel');
+  if (farmPanel) {
+    const entries = [
+      { name: 'Seed Bag', owned: !!game.farm.buildings.seedbag },
+      { name: 'Silo', owned: !!game.farm.buildings.silo },
+      { name: 'Hand Pump Well', owned: !!game.farm.buildings.handPumpWell }
+    ];
+    farmPanel.innerHTML = entries.map(entry => {
+      const meta = FARM_UPGRADE_CONFIG[entry.name];
+      return `
+        <div style="display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.2); border:1px solid ${entry.owned ? '#8fd18f' : 'var(--accent)'}; border-radius:8px; padding:6px 8px; width:100%;">
+          <img src="images/${meta.img}" alt="${entry.name}" style="width:26px; height:26px; object-fit:contain; ${entry.owned ? '' : 'filter:grayscale(40%); opacity:0.9;'}">
+          <div style="flex:1; min-width:0;">
+            <div style="color:var(--gold); font-weight:bold; font-size:12px;">${entry.name}</div>
+            <div style="font-size:10px; color:${entry.owned ? '#8fd18f' : '#ccc'};">${entry.owned ? 'Installed' : `${formatAmount(meta.price)} Gold - Buy in shop`}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    farmPanel.style.display = 'grid';
+    farmPanel.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
+    farmPanel.style.gap = '16px';
+    farmPanel.style.gap = '16px';
+  }
+  const seedPanel = document.getElementById('gardenSeedBagPanel');
+  if (seedPanel) {
+    if (!game.farm.buildings.seedbag) {
+      seedPanel.style.display = 'none';
+    } else {
+      const rows = [
+        { item: 'Corn Seed', img: 'cornseed.png', req: CORN_SEEDS_REQ },
+        { item: 'Grass Seed', img: 'grassseed.png', req: GRASS_SEEDS_REQ },
+        { item: 'Wheat Seed', img: 'wheatseed.png', req: WHEAT_SEEDS_REQ }
+      ];
+      seedPanel.innerHTML = rows.map(row => {
+        const inv = getInventoryQtyByName(row.item);
+        const stored = getStoredSeedCount(row.item);
+        return `
+          <div style="display:flex; align-items:center; gap:5px; width:100%; min-height:24px;">
+            <img src="images/${row.img}" alt="${row.item}" style="width:24px; height:24px; object-fit:contain;">
+            <div style="flex:1; font-size:11px; line-height:1.15; color:#efe3cf;">${row.item}<br><span style="font-size:10px; color:#ccc;">Bag: <span style="color:${stored >= row.req ? '#8fd18f' : '#ff8888'};">${stored}</span> | Inv: <span style="color:${inv >= row.req ? '#8fd18f' : '#ff8888'};">${inv}</span></span></div>
+            <button class="primary" style="padding:4px 7px; font-size:10px;" onclick="storeFarmUpgradeItem('${row.item}')">Store All</button>
+            <button class="primary" style="padding:4px 7px; font-size:10px; background:#666;" onclick="withdrawFarmUpgradeItem('${row.item}')">Take All</button>
+          </div>
+        `;
+      }).join('');
+      seedPanel.style.display = 'flex';
+      seedPanel.style.flexDirection = 'column';
+    }
+  }
+
+  const buildSiloRowHtml = (row) => {
+    const inv = getInventoryQtyByName(row.item);
+    const stored = Number((game.farm.siloStorage && game.farm.siloStorage[row.item]) || 0);
+    return `
+      <div style="display:flex; align-items:center; gap:5px; width:100%; min-height:24px;">
+        <img src="images/${row.img}" alt="${row.item}" style="width:24px; height:24px; object-fit:contain;">
+        <div style="flex:1; font-size:12px; color:#efe3cf;">${row.item}<br><span style="color:#ccc;">Silo: ${stored} | Inv: ${inv}</span></div>
+        <button class="primary" style="padding:4px 7px; font-size:10px;" onclick="storeFarmUpgradeItem('${row.item}')">Store All</button>
+        <button class="primary" style="padding:4px 7px; font-size:10px; background:#666;" onclick="withdrawFarmUpgradeItem('${row.item}')">Take All</button>
+      </div>
+    `;
+  };
+
+  const barnPanel = document.getElementById('barnSiloPanel');
+  if (barnPanel) {
+    if (!game.farm.buildings.silo) {
+      barnPanel.style.display = 'none';
+    } else {
+      barnPanel.innerHTML = buildSiloRowHtml({ item: 'Grass', img: 'grass.png' });
+      barnPanel.style.display = 'flex';
+      barnPanel.style.flexDirection = 'column';
+    }
+  }
+
+  const coopPanel = document.getElementById('coopSiloPanel');
+  if (coopPanel) {
+    if (!game.farm.buildings.silo) {
+      coopPanel.style.display = 'none';
+    } else {
+      coopPanel.innerHTML = buildSiloRowHtml({ item: 'Corn', img: 'corn.png' });
+      coopPanel.style.display = 'flex';
+      coopPanel.style.flexDirection = 'column';
+    }
+  }
+
+}
+function storeFarmUpgradeItem(itemName) {
+  ensureFarmState();
+  if (itemName.endsWith('Seed')) {
+    if (!game.farm.buildings.seedbag) return;
+    const amount = getInventoryQtyByName(itemName);
+    if (amount <= 0) return;
+    moveInventoryItemToStorage(itemName, amount, 'seedBagStorage');
+  } else {
+    if (!game.farm.buildings.silo) return;
+    const amount = getInventoryQtyByName(itemName);
+    if (amount <= 0) return;
+    moveInventoryItemToStorage(itemName, amount, 'siloStorage');
+  }
+  renderFarmUpgradePanels();
+  game.isDirty = true;
+}
+
+function withdrawFarmUpgradeItem(itemName) {
+  ensureFarmState();
+  const storageKey = itemName.endsWith('Seed') ? 'seedBagStorage' : 'siloStorage';
+  const stored = Number((game.farm[storageKey] && game.farm[storageKey][itemName]) || 0);
+  if (stored <= 0) return;
+  if (!withdrawStorageItem(itemName, stored, storageKey)) {
+    showGameAlert('Inventory Full', 'You need room in your inventory.');
+    return;
+  }
+  renderFarmUpgradePanels();
+  game.isDirty = true;
+}
+
+function waterAllGardenPlots() {
+  ensureFarmState();
+  if (!game.farm.buildings.handPumpWell) return;
+  let wateredCount = 0;
+  game.farm.garden.forEach(slotData => {
+    if (slotData && !slotData.watered) {
+      slotData.watered = true;
+      slotData.waterTime = Date.now();
+      wateredCount++;
+    }
+  });
+  if (wateredCount <= 0) {
+    showGameAlert('Nothing to Water', 'All planted plots are already watered.');
+    return;
+  }
+  playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');
+  renderGarden();
+  game.isDirty = true;
+  showGameAlert('Hand Pump Well', `${wateredCount} plot${wateredCount === 1 ? '' : 's'} watered.`);
+}
+
+async function purchaseFarmUpgrade(itemName, price) {
+  ensureFarmState();
+  if (isFarmUpgradePurchased(itemName)) {
+    await showGameAlert('Already Owned', `${itemName} is already installed on your farm.`);
+    return;
+  }
+  if (game.gold < price) {
+    await showGameAlert('Not Enough Gold', `You need ${price} Gold to buy that.`);
+    return;
+  }
+  addGold(-price);
+  if (itemName === 'Seed Bag') game.farm.buildings.seedbag = true;
+  if (itemName === 'Silo') game.farm.buildings.silo = true;
+  if (itemName === 'Hand Pump Well') game.farm.buildings.handPumpWell = true;
+  renderFarmUpgradePanels();
+  game.isDirty = true;
+  await showGameAlert('Upgrade Installed', `${itemName} has been added to your farm.`);
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
 function createDefaultMillState() {
   return {
     inputWheat: 0,
@@ -13063,7 +13348,11 @@ function ensureFarmState() {
       garden: new Array(16).fill(null),
       cellar: new Array(16).fill(null),
       mill: createDefaultMillState(),
-      buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false }
+      strayCat: createDefaultStrayCatState(),
+      gardenTomb: createDefaultGardenTombState(),
+      seedBagStorage: createDefaultSeedBagStorage(),
+      siloStorage: createDefaultSiloStorage(),
+      buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
     };
   }
 
@@ -13074,15 +13363,17 @@ function ensureFarmState() {
   if (!game.farm.mill) game.farm.mill = createDefaultMillState();
   if (!game.farm.strayCat) game.farm.strayCat = createDefaultStrayCatState();
   if (!game.farm.gardenTomb) game.farm.gardenTomb = createDefaultGardenTombState();
+  if (!game.farm.seedBagStorage) game.farm.seedBagStorage = createDefaultSeedBagStorage();
+  if (!game.farm.siloStorage) game.farm.siloStorage = createDefaultSiloStorage();
   if (typeof game.farm.gardenTomb.panelOpen !== 'boolean') game.farm.gardenTomb.panelOpen = false;
   if (!game.farm.gardenTomb.offeringItem) game.farm.gardenTomb.offeringItem = null;
   if (typeof game.farm.gardenTomb.lastGiftDay !== 'string') game.farm.gardenTomb.lastGiftDay = '';
 
   if (!game.farm.buildings) {
-    game.farm.buildings = { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false };
+    game.farm.buildings = { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false };
   }
 
-  const keys = ['coop', 'barn', 'well', 'garden', 'cellar', 'mill'];
+  const keys = ['coop', 'barn', 'well', 'garden', 'cellar', 'mill', 'seedbag', 'silo', 'handPumpWell'];
   keys.forEach(k => {
     if (game.farm.buildings[k] === undefined) game.farm.buildings[k] = false;
   });
@@ -13497,6 +13788,21 @@ async function offerGardenTombGift() {
   }
 }
 
+function renderGardenHandPumpOverlay() {
+  const overlay = document.getElementById('gardenHandPumpOverlay');
+  if (!overlay) return;
+
+  ensureFarmState();
+  if (!game.farm.buildings || !game.farm.buildings.handPumpWell) {
+    overlay.innerHTML = '';
+    overlay.style.display = 'none';
+    return;
+  }
+
+  overlay.style.display = 'block';
+  overlay.innerHTML = `<img src="images/automaticwell.png" alt="Hand Pump Well" onclick="event.stopPropagation(); waterAllGardenPlots();" onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Hand Pump Well</div>Water every planted plot instantly.')" onmouseleave="hideTooltip()">`;
+}
+
 function renderGardenTombOverlay() {
   const overlay = document.getElementById("gardenTombOverlay");
   if (!overlay) return;
@@ -13564,6 +13870,7 @@ function openPersonalFarmHub() {
   showMainScreen('hubPersonalFarm');
   maybeSpawnFarmCat();
   renderFarmCatOverlay();
+  renderFarmUpgradePanels();
 }
 
 function openPetYardHub() {
@@ -13969,6 +14276,7 @@ async function handleChickenCoopClick() {
                // Open after purchase
                showMainScreen('hubChickenCoop');
                updateCoopUI(); 
+               renderFarmUpgradePanels(); 
            } else {
                await showGameAlert("Not Enough Gold", `You need ${formatAmount(COOP_COST)} Gold.`);
            }
@@ -13978,6 +14286,7 @@ async function handleChickenCoopClick() {
 
    showMainScreen('hubChickenCoop');
    updateCoopUI(); 
+   renderFarmUpgradePanels();
 }
 
 // --- CHICKEN COOP LOGIC ---
@@ -14021,13 +14330,13 @@ function feedChicken(index) {
         return;
     }
 
-    // Remove 3 Corn
-    if (removeItem('Corn', 3)) {
+    if (consumeSiloFood('Corn', 3)) {
         c.hp = Math.min(CHICKEN_MAX_HP, c.hp + 1); // Heal 1 HP
         
         // Visual feedback
         playGlobalSound('sounds/soundeffects/inventorysound.mp3'); // Using generic eat sound
         updateCoopUI();
+        renderFarmUpgradePanels();
         game.isDirty = true;
     } else {
         showGameAlert("No Food", "You need 3 Corn to feed the chicken.");
@@ -14143,9 +14452,65 @@ function updateCoopUI() {
     const colBtn = document.getElementById('collectEggsBtn');
     if (eggDisplay) eggDisplay.innerText = globalEggs;
     if (colBtn) colBtn.disabled = (globalEggs < 1);
+    renderFarmUpgradePanels();
 }
 
-// --- COW BARN LOGIC ---
+function updateBarnUI() {
+    const container = document.getElementById('barnSlotsContainer');
+    if (!container) return;
+
+    if (!game.farm.cows) game.farm.cows = [];
+
+    container.innerHTML = '';
+
+    game.farm.cows.forEach((c, index) => {
+        const hpPercent = (c.hp / COW_MAX_HP) * 100;
+        const hpColor = c.hp < COW_SICK_THRESHOLD ? '#d22' : '#44aa44';
+
+        const div = document.createElement('div');
+        div.className = 'cow-slot';
+        div.innerHTML = `
+            <div style="background: #333; width: 80px; height: 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid #000;">
+                <div style="width: ${hpPercent}%; height: 100%; background: ${hpColor}; border-radius: 4px;"></div>
+            </div>
+
+            <img src="images/personalcow.png" class="cow-img-active"
+                 onmouseenter="showCowTooltip(event, ${index})"
+                 onmouseleave="hideTooltip()">
+
+            <button class="primary feed-btn" onclick="feedCow(${index})"
+                    onmouseenter="showTooltip(event, 'Feed 5 Grass')" onmouseleave="hideTooltip()">
+                Feed
+            </button>
+        `;
+        container.appendChild(div);
+    });
+
+    if (game.farm.cows.length < MAX_COWS) {
+        const div = document.createElement('div');
+        div.className = 'cow-slot';
+        div.style.borderColor = '#444';
+        div.innerHTML = `
+            <div style="height: 8px; margin-bottom: 5px;"></div>
+            <img src="images/personalcow.png" class="cow-img-locked">
+            <button class="primary feed-btn" style="background:var(--gold); color:black; font-weight:bold;" onclick="buyCow()">
+                Buy (${COW_COST}g)
+            </button>
+        `;
+        container.appendChild(div);
+    }
+
+    let milkReadyCount = 0;
+    game.farm.cows.forEach(c => {
+        if (c.hasMilk) milkReadyCount++;
+    });
+
+    const milkDisplay = document.getElementById('milkReadyDisplay');
+    const collectBtn = document.getElementById('collectMilkBtn');
+    if (milkDisplay) milkDisplay.innerText = `${milkReadyCount} Ready`;
+    if (collectBtn) collectBtn.disabled = (milkReadyCount < 1);
+    renderFarmUpgradePanels();
+}// --- COW BARN LOGIC ---
 
 async function handleBarnClick() {
    dismissFarmCat();
@@ -14171,6 +14536,7 @@ async function handleBarnClick() {
                // Open after purchase
                showMainScreen('hubBarn');
                updateBarnUI();
+               renderFarmUpgradePanels();
            } else {
                await showGameAlert("Not Enough Gold", `You need ${formatAmount(BARN_COST)} Gold.`);
            }
@@ -14180,6 +14546,7 @@ async function handleBarnClick() {
 
    showMainScreen('hubBarn');
    updateBarnUI();
+   renderFarmUpgradePanels();
 }
 
 function buyCow() {
@@ -14220,11 +14587,11 @@ function feedCow(index) {
         return;
     }
 
-    // Remove 5 Grass
-    if (removeItem('Grass', 5)) {
+    if (consumeSiloFood('Grass', 5)) {
         c.hp = Math.min(COW_MAX_HP, c.hp + 2); // Heals 2 HP because it's bigger
         playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         updateBarnUI();
+        renderFarmUpgradePanels();
         game.isDirty = true;
     } else {
         showGameAlert("No Food", "You need 5 Grass to feed the cow.");
@@ -14285,6 +14652,7 @@ function collectMilk() {
 
         playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         updateBarnUI();
+        renderFarmUpgradePanels();
         game.isDirty = true;
         
         if (cowsToGather < milkReadyCount) {
@@ -14299,6 +14667,7 @@ function collectMilk() {
 
 function renderGarden() {
   if (!game.farm.garden) game.farm.garden = new Array(16).fill(null);
+  renderGardenHandPumpOverlay();
   renderGardenTombOverlay();
   renderGardenTombOfferingPanel();
 
@@ -14602,10 +14971,7 @@ function showPlantingMenu(event, index) {
   });
 
   options.forEach(opt => {
-      let seedCount = 0;
-      for(const slot of game.inventory) {
-        if(slot && slot.name === opt.seed) seedCount += slot.qty;
-      }
+      const seedCount = getAvailableSeedCount(opt.seed);
 
       if (seedCount >= opt.cost) {
          hasOptions = true;
@@ -14625,7 +14991,7 @@ function showPlantingMenu(event, index) {
               <img src="images/${opt.img}">
               <div>
                 <div>${opt.name}</div>
-                <div style="font-size:11px; color:#aaa;">Cost: ${opt.cost} Seeds</div>
+                <div style="font-size:11px; color:#aaa;">Cost: ${opt.cost} Seeds (You: ${seedCount})</div>
                 <div style="font-size:11px; color:${reqColor};">(Requires Farming Lvl:${reqLevel})</div>
               </div>
            </div>
@@ -14650,7 +15016,7 @@ function showPlantingMenu(event, index) {
 }
 
 function plantSeed(index, cropName, seedItemName, cost) {
-  if (!removeItem(seedItemName, cost)) {
+  if (!consumeSeedForPlanting(seedItemName, cost)) {
     showGameAlert("Error", "Not enough seeds.");
     return;
   }
@@ -14665,6 +15031,7 @@ function plantSeed(index, cropName, seedItemName, cost) {
 
   playGlobalSound('sounds/soundeffects/inventorysound.mp3');
   renderGarden();
+  renderFarmUpgradePanels();
   game.isDirty = true;
 }
 
@@ -15516,6 +15883,7 @@ async function handleGardenClick() {
                maybeSpawnGardenTomb();
                renderGarden();
                renderGardenTombOverlay();
+               renderFarmUpgradePanels();
            } else {
                await showGameAlert("Not Enough Gold", `You need ${formatAmount(GARDEN_COST)} Gold.`);
            }
@@ -15527,6 +15895,7 @@ async function handleGardenClick() {
    maybeSpawnGardenTomb();
    renderGarden();
    renderGardenTombOverlay();
+   renderFarmUpgradePanels();
 }
 
 function openWellHub() {
@@ -15547,6 +15916,7 @@ function openWellHub() {
   wrapper.innerHTML = `
     <h2>The Well</h2>
     <div style="margin-top:8px; color:#efe3cf;">Requires: Empty Bucket.</div>
+    ${game.farm.buildings.handPumpWell ? '<div style="margin-top:6px; color:#8fd18f; font-size:13px;">Hand Pump Well installed: water every planted plot instantly.</div>' : ''}
     
     <div style="margin-top:16px;">
       <div class="progress-container">
@@ -15558,6 +15928,7 @@ function openWellHub() {
     <div class="action-buttons" style="margin-top: 10px;">
       <button id="startWaterBtn" class="primary">Gather Water</button>
       <button id="stopWaterBtn" class="primary" style="background:#555; display:none;">Stop</button>
+      ${game.farm.buildings.handPumpWell ? '<button id="handPumpWaterAllBtn" class="primary" style="background:#4d7f5a;">Water All Plots</button>' : ''}
       <button id="hubWell_ReturnBtn" class="primary" style="background:#666;">Return</button>
     </div>
   `;
@@ -15565,6 +15936,8 @@ function openWellHub() {
   // Re-attach listeners
   document.getElementById('startWaterBtn').onclick = startGatheringWater;
   document.getElementById('stopWaterBtn').onclick = stopGatheringWater;
+  const handPumpWaterAllBtn = document.getElementById('handPumpWaterAllBtn');
+  if (handPumpWaterAllBtn) handPumpWaterAllBtn.onclick = waterAllGardenPlots;
   document.getElementById('hubWell_ReturnBtn').onclick = openPersonalFarmHub; // Return to Farm view
 
   showMainScreen('hubWell');
@@ -20883,55 +21256,50 @@ async function buyShopItem(itemName, price) {
     await showGameAlert("Session Not Active", "This tab is not active. Please take control to perform actions.");
     return;
   }
-  // Check if they can afford at least one
+
+  if (isFarmUpgradeItem(itemName)) {
+    await purchaseFarmUpgrade(itemName, price);
+    renderShopGrid();
+    return;
+  }
+
   if (game.gold < price) {
     await showGameAlert("Not Enough Gold", `You need ${price} Gold to buy that.`);
     return;
   }
 
-  // --- NEW: Ask for quantity ---
   const input = await showGamePrompt(
-    `Buy ${itemName}`, 
-    `How many ${itemName} do you want to buy? (Price: ${price}ea)`, 
-    1 // Default value
+    `Buy ${itemName}`,
+    `How many ${itemName} do you want to buy? (Price: ${price}ea)`,
+    1
   );
 
-  if (input === null) return; // User cancelled
+  if (input === null) return;
   const qtyToBuy = parseInt(input);
-
-  if (isNaN(qtyToBuy) || qtyToBuy <= 0) {
-    return; // Invalid number
-  }
-  // --- END NEW ---
+  if (isNaN(qtyToBuy) || qtyToBuy <= 0) return;
 
   const totalCost = price * qtyToBuy;
-  
-  // Check if they have enough gold for the total purchase
   if (game.gold < totalCost) {
     await showGameAlert("Not Enough Gold", `You need ${totalCost} Gold to buy ${qtyToBuy} ${itemName}.`);
     return;
   }
 
-  // Check for inventory space (find existing stack OR an empty slot)
-  // Your addItem function is smart, so we just need to make sure
-  // it *can* add (i.e., not full with no matching stacks).
   const stackIndex = game.inventory.findIndex(slot => slot && slot.name === itemName);
   const emptySlotIndex = game.inventory.findIndex(slot => slot === null);
-  
   if (stackIndex === -1 && emptySlotIndex === -1) {
      await showGameAlert("Inventory Full", "You have no space in your inventory to buy this.");
      return;
   }
   
   addGold(-totalCost);
-  addItem(itemName, qtyToBuy); // Use the new quantity
+  addItem(itemName, qtyToBuy);
   await showGameAlert("Purchase Complete", `You bought ${qtyToBuy} ${itemName} for ${totalCost} Gold.`);
   
-  // No need to render, addItem and addGold already do.
   if (typeof window.savePlayerData === 'function') {
     window.savePlayerData();
   }
 }
+
 
 function openShop() {
   showMainScreen('hubShop');
@@ -21001,7 +21369,11 @@ function resetGameState() {
     garden: new Array(16).fill(null),
     cellar: new Array(16).fill(null),
     mill: createDefaultMillState(),
-    buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false }
+    strayCat: createDefaultStrayCatState(),
+    gardenTomb: createDefaultGardenTombState(),
+    seedBagStorage: createDefaultSeedBagStorage(),
+    siloStorage: createDefaultSiloStorage(),
+    buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
   };
 
   game.questLines = {}; 
@@ -21336,16 +21708,13 @@ function renderShopGrid() {
     slot.className = 'inv-slot';
     
     if(item) {
-      // slot.draggable = true; // <-- DISABLED
-      // slot.addEventListener('dragstart', (e) => handleShopDragStart(e, item)); // <-- DISABLED
-      // slot.addEventListener('dragend', () => { // <-- DISABLED
-      //   draggedShopItem = null;
-      //   game.isDragging = false; 
-      //   const draggingEl = document.querySelector('.inv-slot.dragging');
-      //   if (draggingEl) draggingEl.classList.remove('dragging');
-      // }); // <-- DISABLED
-      
-      slot.onclick = () => buyShopItem(item.name, item.price); 
+      const isOwnedUpgrade = isFarmUpgradeItem(item.name) && isFarmUpgradePurchased(item.name);
+      if (!isOwnedUpgrade) {
+        slot.onclick = () => buyShopItem(item.name, item.price);
+      } else {
+        slot.style.opacity = '0.62';
+        slot.style.cursor = 'default';
+      }
 
       const img = document.createElement('img');
       let imgName = item.name.toLowerCase().replace(/\s+/g,'_');
@@ -21356,16 +21725,16 @@ function renderShopGrid() {
       else if (item.name === 'Fishing Bait') imgName = 'fishingbait';
       else if (item.name === 'Empty Bucket') imgName = 'emptybucket';
       else if (item.name === 'Empty Vial') imgName = 'emptyvial';
-      // +++ NEW SEED FIX +++
       else if (item.name === 'Grass Seed') imgName = 'grassseed';
       else if (item.name === 'Corn Seed') imgName = 'cornseed';
       else if (item.name === 'Wheat Seed') imgName = 'wheatseed';
-      // +++ END NEW +++
+      else if (item.name === 'Seed Bag') imgName = 'seedbag';
+      else if (item.name === 'Silo') imgName = 'silo';
+      else if (item.name === 'Hand Pump Well') imgName = 'automaticwell';
       
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
       
-      // Apply Enchantment Glows
       const eLvl = item.enchantLevel || 0;
       if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
           slot.classList.add('legendary-glow');
@@ -21380,21 +21749,23 @@ function renderShopGrid() {
           slot.appendChild(badge);
       }
 
-      // Shrink diamond images slightly...
-      // Shrink diamond images slightly to match higher res gems
       if (item.name === 'Diamond' || item.name === 'Uncut Diamond') {
           img.style.transform = 'scale(0.93)';
       }
       img.onerror = function(){ this.style.opacity='0.08'; };
       slot.appendChild(img);
-      
-      // Don't show an amount, just the item
 
-      const tooltipContent = `
-        <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
-        <div style="color:#fff;">Price: ${item.price} Gold</div>
-        <div style="color:#aaffaa; margin-top: 5px;">Click to buy...</div>
-      `; // <-- UPDATED TOOLTIP
+      const tooltipContent = isOwnedUpgrade
+        ? `
+          <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
+          <div style="color:#fff;">Price: ${item.price} Gold</div>
+          <div style="color:#8fd18f; margin-top: 5px;">Already installed on your farm.</div>
+        `
+        : `
+          <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
+          <div style="color:#fff;">Price: ${item.price} Gold</div>
+          <div style="color:#aaffaa; margin-top: 5px;">${isFarmUpgradeItem(item.name) ? 'One-time farm upgrade.' : 'Click to buy...'}</div>
+        `;
       slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
       slot.onmouseleave = hideTooltip;
     }
@@ -21402,10 +21773,6 @@ function renderShopGrid() {
   }
 }
 
-// --- END: Settings Functions ---
-
-
-// --- MODIFIED: Added isDragging logic ---
 document.addEventListener('DOMContentLoaded', ()=>{
   
   // --- NEW: Stats Panel Listeners ---
@@ -23904,7 +24271,9 @@ window.inspectPlayer = async function(playerName) {
             mill: createDefaultMillState(),
             strayCat: createDefaultStrayCatState(),
             gardenTomb: createDefaultGardenTombState(),
-            buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false }
+            seedBagStorage: createDefaultSeedBagStorage(),
+            siloStorage: createDefaultSiloStorage(),
+            buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
         };
         ensureFarmState();
         
@@ -27210,6 +27579,31 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
