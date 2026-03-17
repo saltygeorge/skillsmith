@@ -156,6 +156,21 @@ body {
 .beer-buff-timer-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .beer-buff-timer-close { width: 18px; height: 18px; border: 0; border-radius: 999px; background: rgba(255,255,255,0.08); color: #f2d489; cursor: pointer; font-size: 12px; font-weight: 700; line-height: 18px; padding: 0; }
 .beer-buff-timer-close:hover { background: rgba(255,255,255,0.16); }
+.combat-effect-popup {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  border: 1px solid rgba(0,0,0,0.25);
+}
+.combat-effect-popup.resist {
+  background: #7fd3ff;
+  color: #111;
+}
+.combat-effect-popup.weak {
+  background: #c92b2b;
+  color: #fff;
+}
 
 .tabs { 
   display: flex; 
@@ -517,6 +532,11 @@ button.primary:hover { background: var(--accent-hover); }
   animation: rise 900ms ease-out forwards;
   box-shadow: 0 8px 18px rgba(0,0,0,0.35);
   white-space: nowrap; /* <--- Forces text to stay on one line */
+}
+.xp-popup.effect-popup {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
 }
 @keyframes rise {
   0% { transform: translateY(0); opacity: 1; }
@@ -3068,18 +3088,18 @@ button.primary:hover { background: var(--accent-hover); }
             <div style="margin-top:8px; color:#efe3cf;">Choose an area to start fighting.</div>
             
             <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
-              <button id="farmAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;">
+              <button id="farmAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;" onclick="openFarmCombatArea()" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Farm</div><div>Face Chickens, Cows, and a training dummy.</div>')" onmouseleave="hideTooltip()">
                 <img src="images/farm.png" alt="Farm Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
               </button>
               
-              <button id="caveAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;">
+              <button id="caveAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;" onclick="openCaveCombatArea()" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Cave</div><div>Fight Rats, Spiders, and Centipedes.</div>')" onmouseleave="hideTooltip()">
                 <img src="images/cave.png" alt="Cave Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
               </button>
 
               <!-- NEW FOREST BUTTON -->
               <button id="normalForestAreaBtn" class="primary" 
                       style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; outline: none; background: transparent; border: none; box-shadow: none; overflow: hidden;"
-                      onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Forest</div>')" 
+                      onclick="game.lastCombatAreaHub='hubNormalForest'; showMainScreen('hubNormalForest');" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Forest</div><div>Hunt Goblins, Platypus, and Koalas.</div>')" 
                       onmouseleave="hideTooltip()">
                 <img src="images/normalforest.jpeg" alt="Forest Area" 
                      style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover; display: block; image-rendering: auto; backface-visibility: hidden;">
@@ -3088,18 +3108,24 @@ button.primary:hover { background: var(--accent-hover); }
               <!-- DARK FOREST BUTTON -->
               <button id="darkForestAreaBtn" class="primary" 
                       style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; outline: none; background: transparent; border: none; box-shadow: none; overflow: hidden;"
-                      onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Dark Forest</div>')" 
+                      onclick="game.lastCombatAreaHub='hubDarkForest'; showMainScreen('hubDarkForest');" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Dark Forest</div><div>Face Crazy Owls and The Witch.</div>')" 
                       onmouseleave="hideTooltip()">
                 <img src="images/darkforest.jpeg" alt="Dark Forest Area" 
                      style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover; display: block; image-rendering: auto; backface-visibility: hidden;">
               </button>
               
-              <button id="madmaxCastleBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; border: 2px solid #900;">
+              <button id="madmaxCastleBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; border: 2px solid #900;" onclick="openMadmaxCastle()" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:red;\'>Madmax Castle</div><div>A brutal arena for a late-game boss fight.</div>')" onmouseleave="hideTooltip()">
                 <img src="images/madmaxcastle.jpeg" alt="Madmax Castle" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
               </button>
 
-              <button id="dragonNestAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; border: 2px solid #c98a1d;">
+              <button id="dragonNestAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; border: 2px solid #c98a1d;" onclick="openDragonNestArea()" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:#c98a1d;\'>Dragon Nest</div><div>The lair of the Golden Dragon.</div>')" onmouseleave="hideTooltip()">
                 <img src="images/dragonnest.png" alt="Dragon Nest" style="width: 80px; height: 80px; border-radius: 4px; object-fit: cover;">
+              </button>
+              <button id="combatBestiaryBtn" class="primary" 
+                      style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;"
+                      onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Bestiary</div><div>Study enemy weaknesses and resistances.</div>')" 
+                      onmouseleave="hideTooltip()">
+                <img src="images/bestiaryicon.png" alt="Bestiary" style="width: 80px; height: 80px; border-radius: 4px; object-fit: cover;">
               </button>
             </div>
 
@@ -3107,6 +3133,15 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="hubCombat_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
+          <div id="hubBestiary" class="hub-screen">
+            <h2>Bestiary</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Study enemy styles, weaknesses, and the safest way to bring them down.</div>
+            <div id="bestiaryList" style="margin-top:14px; display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items:start; max-height: 340px; overflow-y: auto; padding-right: 6px;"></div>
+            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+              <button id="hubBestiary_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+          
           
           <div id="hubDragonNest" class="hub-screen">
             <h2 style="color:#c98a1d;">Dragon Nest</h2>
@@ -3122,7 +3157,7 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
 
             <div class="action-buttons" style="margin-top: 14px; width: 100%;">
-              <button id="hubDragonNest_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <button id="hubDragonNest_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
           
@@ -3160,7 +3195,7 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
             
             <div class="action-buttons" style="margin-top: 14px; width: 100%;">
-              <button id="hubCave_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <button id="hubCave_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
 
@@ -3179,7 +3214,7 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
             
             <div class="action-buttons" style="margin-top: 14px; width: 100%;">
-              <button id="hubMadmaxCastle_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <button id="hubMadmaxCastle_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
 
@@ -3205,7 +3240,7 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
             
             <div class="action-buttons" style="margin-top: 14px; width: 100%;">
-              <button id="hubNormalForest_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <button id="hubNormalForest_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
 
@@ -3230,7 +3265,7 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
             
             <div class="action-buttons" style="margin-top: 24px;">
-              <button id="hubDarkForest_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <button id="hubDarkForest_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
           <div id="hubEnchanting" class="hub-screen">
@@ -3350,7 +3385,7 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
             
             <div class="action-buttons" style="margin-top: 14px; width: 100%;">
-              <button id="hubFarm_ReturnBtn" class="primary" style="background:#666;">Return</button>
+              <button id="hubFarm_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
           <div id="hubDynamic" class="hub-screen">
@@ -3762,6 +3797,7 @@ const game = {
   questLines: {},
   
   lastSmithingTab: 'copper',
+  bestiaryUnlocked: {},
   lastCombatAreaHub: 'hubActions', // +++ NEW +++
 
   // +++ NEW FARM STATE +++
@@ -4273,10 +4309,10 @@ function getFishingDurationMs(poleName) {
 }
 
 // +++ NEW MAGIC SPELL CONSTANTS +++
-const EARTH_BOLT = { name: 'Earth Bolt', level: 1, damage: 2, xp: 5, requiredStone: 'Earthstone' };
-const AIR_BOLT = { name: 'Air Bolt', level: 15, damage: 3, xp: 10, requiredStone: 'Airstone' };
-const WATER_BOLT = { name: 'Water Bolt', level: 30, damage: 4, xp: 15, requiredStone: 'Waterstone' };
-const FIRE_BOLT = { name: 'Fire Bolt', level: 50, damage: 5, xp: 20, requiredStone: 'Fire Stone' };
+const EARTH_BOLT = { name: 'Earth Bolt', level: 1, damage: 2, xp: 5, requiredStone: 'Earthstone', elementType: 'earth' };
+const AIR_BOLT = { name: 'Air Bolt', level: 15, damage: 3, xp: 10, requiredStone: 'Airstone', elementType: 'air' };
+const WATER_BOLT = { name: 'Water Bolt', level: 30, damage: 4, xp: 15, requiredStone: 'Waterstone', elementType: 'water' };
+const FIRE_BOLT = { name: 'Fire Bolt', level: 50, damage: 5, xp: 20, requiredStone: 'Fire Stone', elementType: 'fire' };
 const SPELL_LIST = [EARTH_BOLT, AIR_BOLT, WATER_BOLT, FIRE_BOLT];
 // +++ END NEW MAGIC SPELL CONSTANTS +++
 
@@ -7290,7 +7326,10 @@ function showItemPopup(text, progressElementId, delay = 0) {
     const popup = document.createElement('div');
     popup.className = 'xp-popup';
     popup.innerHTML = text; // Allow HTML
-popup.style.lineHeight = '1.4';
+    if (text.includes('combat-effect-popup')) {
+        popup.classList.add('effect-popup');
+    }
+    popup.style.lineHeight = '1.4';
     const bar = document.getElementById(progressElementId);
     if (bar) {
         const barRect = bar.getBoundingClientRect();
@@ -12984,7 +13023,7 @@ const MILL_COST = 250000;
 const MILL_PROCESS_TIME_MS = 30000; // 30 seconds per Flour
 const FARM_STRAY_CAT_CHANCE_DENOM = 100; // 1 in 100 chance per farm-entry check
 const FARM_STRAY_CAT_COOLDOWN_MS = 10000; // 10 seconds between farm-entry checks for testing
-const GARDEN_TOMB_CHANCE_DENOM = 25; // 1 in 25 chance per garden-entry check
+const GARDEN_TOMB_CHANCE_DENOM = 10; // 1 in 10 chance per garden-entry check
 
 function createDefaultStrayCatState() {
   return {
@@ -18650,6 +18689,81 @@ function openDragonNestArea() {
   showMainScreen('hubDragonNest');
 }
 
+function openBestiaryHub() {
+  showMainScreen('hubBestiary');
+}
+
+function getCombatMobDefinitions() {
+  return {
+    'Chicken': { name: 'Chicken', level: 1, maxHp: 10, style: 'melee', maxHit: 1, attackLvl: 1, defenceLvl: 1, img: 'images/chickenmonster.jpeg', weaks: ['air', 'poison'] },
+    'Rat': { name: 'Rat', level: 1, maxHp: 10, style: 'melee', maxHit: 1, attackLvl: 1, defenceLvl: 1, img: 'images/ratmonster.jpeg', weaks: ['earth', 'poison'] },
+    'Spider': { name: 'Spider', level: 2, maxHp: 12, style: 'melee', maxHit: 2, attackLvl: 2, defenceLvl: 2, img: 'images/spidermonster.jpeg', resists: ['poison'], weaks: ['fire'] },
+    'Cow': { name: 'Cow', level: 2, maxHp: 15, style: 'melee', maxHit: 2, attackLvl: 3, defenceLvl: 3, img: 'images/cowmonster.png', resists: ['earth'], weaks: ['air'] },
+    'Dummy Target': { name: 'Dummy Target', level: 1, maxHp: 10, style: 'melee', maxHit: 0, attackLvl: 0, defenceLvl: 0, img: 'images/dummytarget.png', grantsFlatCombatXp: 1, noEnemyAttack: true },
+    'Goblin': { name: 'Goblin', level: 8, maxHp: 25, style: 'melee', maxHit: 3, attackLvl: 8, defenceLvl: 5, img: 'images/goblinmonster.jpeg', weaks: ['air'] },
+    'Crazy Platypus': { name: 'Crazy Platypus', level: 5, maxHp: 20, style: 'ranged', maxHit: 3, attackLvl: 6, defenceLvl: 4, img: 'images/platypusmonster.jpeg', resists: ['water'], weaks: ['poison'] },
+    'Stupid Koala': { name: 'Stupid Koala', level: 9, maxHp: 28, style: 'melee', maxHit: 4, attackLvl: 9, defenceLvl: 7, img: 'images/koalamonster.png', resists: ['earth'], weaks: ['fire'] },
+    'Crazy Owl': { name: 'Crazy Owl', level: 10, maxHp: 45, style: 'ranged', maxHit: 5, attackLvl: 12, defenceLvl: 8, img: 'images/crazyowlmonster.jpeg', weaks: ['air', 'poison'] },
+    'The Witch': { name: 'The Witch', level: 15, maxHp: 60, style: 'magic', maxHit: 8, attackLvl: 15, defenceLvl: 5, img: 'images/witchmonster.jpeg', resists: ['fire', 'poison'], weaks: ['earth'] },
+    'Madmax': { name: 'Madmax', level: 69, maxHp: 500, style: 'melee', maxHit: 15, attackLvl: 60, defenceLvl: 50, img: 'images/madmaxmonster.jpeg', lastSpecialTime: Date.now(), resists: ['earth'], weaks: ['water'] },
+    'Golden Dragon': { name: 'Golden Dragon', level: 100, maxHp: 2500, style: 'magic', maxHit: 25, attackLvl: 80, defenceLvl: 80, img: 'images/golddragon.png', resists: ['fire'], weaks: ['water'] },
+    'Centipede': { name: 'Centipede', level: 5, maxHp: 20, style: 'melee', maxHit: 4, attackLvl: 5, defenceLvl: 5, img: 'images/centipedemonster.jpeg', resists: ['poison'], weaks: ['fire'] }
+  };
+}
+
+function formatBestiaryTypes(types, emptyText) {
+  if (!types || !types.length) return emptyText;
+  return types.map(type => type.charAt(0).toUpperCase() + type.slice(1)).join(', ');
+}
+
+function getBestiaryRecommendedStyle(enemy) {
+  const weaks = enemy.weaks || [];
+  if (weaks.includes('water')) return 'Water Bolt';
+  if (weaks.includes('fire')) return 'Fire Bolt';
+  if (weaks.includes('air') && enemy.style === 'melee') return 'Ranged / Air';
+  if (weaks.includes('poison')) return 'Poison Arrows';
+  if (weaks.includes('earth') && enemy.style === 'magic') return 'Melee / Earth';
+  if (weaks.includes('earth')) return 'Earth Bolt';
+  if (enemy.style === 'melee') return 'Ranged';
+  if (enemy.style === 'magic') return 'Melee / Earth';
+  if (enemy.style === 'ranged') return 'Magic';
+  return 'Any Style';
+}
+function renderBestiary() {
+  const list = document.getElementById('bestiaryList');
+  if (!list) return;
+
+  const unlockedMap = game.bestiaryUnlocked || {};
+  const mobs = Object.values(getCombatMobDefinitions()).sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
+  list.innerHTML = mobs.map(enemy => {
+    const isUnlocked = !!unlockedMap[enemy.name];
+    if (!isUnlocked) {
+      return `
+      <div style="display:flex; gap:10px; align-items:flex-start; background: rgba(44,22,12,0.92); border: 1px solid rgba(212,163,97,0.18); border-radius: 8px; padding: 10px; min-height: 116px; box-sizing: border-box; opacity: 0.9;">
+        <img src="${enemy.img}" alt="${enemy.name}" style="width:56px; height:56px; object-fit:contain; border-radius:6px; background: rgba(0,0,0,0.2); flex-shrink:0; filter: grayscale(100%) brightness(0.55); opacity: 0.92;">
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:bold; color:#b9a38a; font-size:16px; line-height:1.1;">${enemy.name}</div>
+          <div style="margin-top:6px; color:#c9b59a; font-size:12px;">Defeat this enemy at least once to unlock its entry.</div>
+          <div style="margin-top:8px; color:#8f8f8f; font-size:12px;">Status: Locked</div>
+        </div>
+      </div>`;
+    }
+
+    const styleLabel = enemy.style.charAt(0).toUpperCase() + enemy.style.slice(1);
+    const resistText = formatBestiaryTypes(enemy.resists, 'None');
+    const weakText = formatBestiaryTypes(enemy.weaks, 'None');
+    return `
+      <div style="display:flex; gap:10px; align-items:flex-start; background: rgba(44,22,12,0.92); border: 1px solid rgba(212,163,97,0.28); border-radius: 8px; padding: 10px; min-height: 116px; box-sizing: border-box;">
+        <img src="${enemy.img}" alt="${enemy.name}" style="width:56px; height:56px; object-fit:contain; border-radius:6px; background: rgba(0,0,0,0.15); flex-shrink:0;">
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:bold; color:var(--gold); font-size:16px; line-height:1.1;">${enemy.name}</div>
+          <div style="margin-top:3px; color:#efe3cf; font-size:12px;">Lvl ${enemy.level} | ${styleLabel} | HP ${enemy.maxHp}</div>
+          <div style="margin-top:8px; color:#8fc8ff; font-size:12px;"><span style="font-weight:bold; color:#b7dbff;">Resist:</span> ${resistText}</div>
+          <div style="margin-top:3px; color:#ffb0b0; font-size:12px;"><span style="font-weight:bold; color:#ffd0d0;">Weak:</span> ${weakText}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
 function openCombatInterface(enemyName) {
   if (game.miningActive) { stopMining(); game.wasMiningBeforeCombat = true; }
   if (game.blacksmithingActive) { stopBlacksmithing(); game.wasSmithingBeforeCombat = true; }
@@ -18659,22 +18773,8 @@ function openCombatInterface(enemyName) {
   if (game.fishingActive) { stopFishing(); game.wasFishingBeforeCombat = true; }
   if (game.stoneforgingActive) { stopStoneForging(); game.wasStoneForgingBeforeCombat = true; }
 
-  // --- FIXED: Added 'name' property to all mobs and added Spider back ---
-  const mobs = {
-    'Chicken': { name: 'Chicken', level: 1, maxHp: 10, style: 'melee', maxHit: 1, attackLvl: 1, defenceLvl: 1, img: 'images/chickenmonster.jpeg' },
-    'Rat': { name: 'Rat', level: 1, maxHp: 10, style: 'melee', maxHit: 1, attackLvl: 1, defenceLvl: 1, img: 'images/ratmonster.jpeg' },
-    'Spider': { name: 'Spider', level: 2, maxHp: 12, style: 'melee', maxHit: 2, attackLvl: 2, defenceLvl: 2, img: 'images/spidermonster.jpeg' }, // <-- Added Spider
-    'Cow': { name: 'Cow', level: 2, maxHp: 15, style: 'melee', maxHit: 2, attackLvl: 3, defenceLvl: 3, img: 'images/cowmonster.png' },
-    'Dummy Target': { name: 'Dummy Target', level: 1, maxHp: 10, style: 'melee', maxHit: 0, attackLvl: 0, defenceLvl: 0, img: 'images/dummytarget.png', grantsFlatCombatXp: 1, noEnemyAttack: true },
-    'Goblin': { name: 'Goblin', level: 8, maxHp: 25, style: 'melee', maxHit: 3, attackLvl: 8, defenceLvl: 5, img: 'images/goblinmonster.jpeg' },
-    'Crazy Platypus': { name: 'Crazy Platypus', level: 5, maxHp: 20, style: 'ranged', maxHit: 3, attackLvl: 6, defenceLvl: 4, img: 'images/platypusmonster.jpeg' },
-    'Stupid Koala': { name: 'Stupid Koala', level: 9, maxHp: 28, style: 'melee', maxHit: 4, attackLvl: 9, defenceLvl: 7, img: 'images/koalamonster.png' },
-    'Crazy Owl': { name: 'Crazy Owl', level: 10, maxHp: 45, style: 'ranged', maxHit: 5, attackLvl: 12, defenceLvl: 8, img: 'images/crazyowlmonster.jpeg' },
-    'The Witch': { name: 'The Witch', level: 15, maxHp: 60, style: 'magic', maxHit: 8, attackLvl: 15, defenceLvl: 5, img: 'images/witchmonster.jpeg' },
-    'Madmax': { name: 'Madmax', level: 69, maxHp: 500, style: 'melee', maxHit: 15, attackLvl: 60, defenceLvl: 50, img: 'images/madmaxmonster.jpeg', lastSpecialTime: Date.now() },
-    'Golden Dragon': { name: 'Golden Dragon', level: 100, maxHp: 2500, style: 'magic', maxHit: 25, attackLvl: 80, defenceLvl: 80, img: 'images/golddragon.png' },
-    'Centipede': { name: 'Centipede', level: 5, maxHp: 20, style: 'melee', maxHit: 4, attackLvl: 5, defenceLvl: 5, img: 'images/centipedemonster.jpeg' }
-  };
+  const mobs = getCombatMobDefinitions();
+
 
   const def = mobs[enemyName];
   if (!def) { console.error('Unknown enemy:', enemyName); return; }
@@ -19043,6 +19143,33 @@ function showDamageSplat(target, amount, type) {
  * NEW: Recursive combat loop.
  * Allows gear switching without resetting the current cooldown.
  */
+function getAttackElementType(weaponType, activeSpell) {
+  if (activeSpell && activeSpell.elementType) return activeSpell.elementType;
+  if (weaponType === 'melee') return 'earth';
+  if (weaponType === 'ranged') {
+    if (game.equipment.arrows && game.equipment.arrows.name === 'Copper Arrow Poisoned') return 'poison';
+    return 'air';
+  }
+  return null;
+}
+
+function getEnemyTypeModifier(enemy, attackType) {
+  if (!enemy || !attackType) return { multiplier: 1, effect: null };
+  const resists = Array.isArray(enemy.resists) ? enemy.resists : [];
+  const weaks = Array.isArray(enemy.weaks) ? enemy.weaks : [];
+  if (resists.includes(attackType)) return { multiplier: 0.5, effect: 'resist' };
+  if (weaks.includes(attackType)) return { multiplier: 1.5, effect: 'weak' };
+  return { multiplier: 1, effect: null };
+}
+
+function triggerCombatEffectPopup(effect) {
+  if (effect === 'resist') {
+    setTimeout(() => showItemPopup('<span class="combat-effect-popup resist">Resisted!</span>', null, 0), 180);
+  } else if (effect === 'weak') {
+    setTimeout(() => showItemPopup('<span class="combat-effect-popup weak">Weakness Hit!</span>', null, 0), 180);
+  }
+}
+
 function playerCombatLoop() {
   if (!game.inCombat) return;
   
@@ -19161,6 +19288,12 @@ if (activeSpell) {
     }
   }
 
+  const attackElementType = getAttackElementType(weaponType, activeSpell);
+  const typeModifier = getEnemyTypeModifier(enemy, attackElementType);
+  if (damage > 0 && typeModifier.multiplier !== 1) {
+    damage = Math.floor(damage * typeModifier.multiplier);
+  }
+
   // --- OVERKILL CAP FIX ---
   // If the damage is higher than the enemy's remaining health, cap it.
   let effectiveDamage = Math.min(damage, enemy.currentHp);
@@ -19168,6 +19301,7 @@ if (activeSpell) {
 
   if (effectiveDamage > 0) {
     showDamageSplat('enemy', effectiveDamage, 'damage');
+    if (typeModifier.effect) triggerCombatEffectPopup(typeModifier.effect);
   } else {
     // If we actually rolled a hit but it resulted in 0 damage, or we missed.
     showDamageSplat('enemy', 0, 'block');
@@ -19355,6 +19489,9 @@ function enemyAttackTurn() {
 
 function handleEnemyDeath() {
     updateQuestKillCount(game.currentEnemy.name);
+    game.bestiaryUnlocked = game.bestiaryUnlocked || {};
+    game.bestiaryUnlocked[game.currentEnemy.name] = true;
+    game.isDirty = true;
     
     // Start delays at 900ms so they appear AFTER the 2 XP popups
     let dropDelay = 900;
@@ -20868,6 +21005,7 @@ function resetGameState() {
   };
 
   game.questLines = {}; 
+  game.bestiaryUnlocked = {};
   game.autoEatUnlocked = false;
   game.lastAutoHealTime = 0;
   game.beerBuffExpiresAt = 0;
@@ -21034,7 +21172,7 @@ function closeSettings() {
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
 function showMainScreen(screenIdToShow) {
   // NEW: Safely return item from enchanting table if player navigates away
   if (typeof returnEnchantItem === 'function' && game.enchantSlot) {
@@ -21101,6 +21239,10 @@ function showMainScreen(screenIdToShow) {
 
   if (screenIdToShow === 'hubTailoring') {
     renderTailoringItems();
+  }
+
+  if (screenIdToShow === 'hubBestiary') {
+    renderBestiary();
   }
 
   // +++ NEW: Special case for Garden hub +++
@@ -21531,6 +21673,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('cookSalmonBtn').onclick = () => {
     if (game.cooking.level >= COOK_SALMON_LVL) openCookSalmon();
   };
+  document.getElementById('combatBestiaryBtn').onclick = openBestiaryHub;
+  document.getElementById('hubBestiary_ReturnBtn').onclick = openCombatHub;
   document.getElementById('hubKitchen_ReturnBtn').onclick = backToActions;
 
   // --- Hub Combat Listeners ---
@@ -23171,6 +23315,7 @@ async function attemptEnchant() {
         autoEatSlot: game.autoEatSlot || null,
         farm: game.farm,
         questLines: game.questLines,
+        bestiaryUnlocked: game.bestiaryUnlocked || {},
         playerAttackStyle: game.playerAttackStyle, 
         autocastSpell: game.autocastSpell || null,
         autoEatUnlocked: game.autoEatUnlocked, 
@@ -23468,6 +23613,7 @@ window.inspectPlayer = async function(playerName) {
         game.gold = (typeof data.gold === 'number') ? data.gold : 0; 
         game.bankGold = (typeof data.bankGold === 'number') ? data.bankGold : 0;
         game.questLines = data.questLines || {}; 
+        game.bestiaryUnlocked = data.bestiaryUnlocked || {};
 
         // NEW: Automatically return item to inventory if it was left on the table in the DB
         if (data.enchantSlot) {
@@ -23740,12 +23886,14 @@ window.inspectPlayer = async function(playerName) {
           game.farming = { level: 1, xp: 0, totalXP: 0 }; 
         }
         game.activeBounty = data.activeBounty || null;
+        game.bestiaryUnlocked = data.bestiaryUnlocked || {};
         game.autoEatSlot = data.autoEatSlot || null;
         game.autoEatUnlocked = data.autoEatUnlocked || false; 
         game.autoEatThreshold = data.autoEatThreshold || 20; // Load the slider value
         game.beerBuffExpiresAt = Number(data.beerBuffExpiresAt || 0);
         game.drunkExpiresAt = Number(data.drunkExpiresAt || 0);
         game.goldenDragonHp = Number(data.goldenDragonHp || 2500);
+        game.bestiaryUnlocked = data.bestiaryUnlocked || {};
         
         // +++ NEW FARM LOADING & OFFLINE CALC (MULTI-CHICKEN & COWS) +++
         game.farm = data.farm || { 
@@ -25303,6 +25451,25 @@ async function sendChatMessage() {
           </div>
         `;
       });
+      const currentPlayerIndex = auth.currentUser ? players.findIndex(player => game.name === player.name) : -1;
+      if (currentPlayerIndex >= 10) {
+        const currentPlayer = players[currentPlayerIndex];
+        leaderboardHtml += `
+          <div style="padding: 8px 10px 4px; opacity: 0.75; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;">Your Rank</div>
+          <div 
+            class="leaderboard-entry" 
+            style="display: flex; justify-content: space-between; padding: 2px 10px; border-top: 1px dashed rgba(255,255,255,0.15); border-bottom: 1px dashed rgba(255,255,255,0.1); background: rgba(181, 166, 66, 0.1); cursor: pointer;"
+            data-name="${currentPlayer.name}"
+            onclick="window.inspectPlayer('${currentPlayer.name}')"
+          >
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 30px; text-align: right; font-weight: bold; color: #fff;">${currentPlayerIndex + 1}.</span>
+              <span>${currentPlayer.totalXp.toLocaleString()}</span>
+            </div>
+            <span style="font-weight: bold;">${currentPlayer.name}</span>
+          </div>
+        `;
+      }
       if(players.length === 0){
         leaderboardHtml += `<div style="text-align:center; padding: 20px; opacity: 0.7;">No players found. Start playing to get on the board!</div>`;
       }
@@ -26828,7 +26995,7 @@ window.getCraftJsonDebugSnapshot = function(){
       <div style="margin-top:4px; color:#efe3cf;">XP: ${Number(recipe.xp || 0)} | Time: ${(Number(recipe.time || 0)/1000).toFixed(1)}s</div>
       ${descHtml}
       <div style="margin-top:10px; color:#efe3cf;">Requires:</div>
-      <div style="margin-top:6px; color:#efe3cf;">${reqs}</div>
+      <div id="jsonRecipeRequirements" style="margin-top:6px; color:#efe3cf;">${reqs}</div>
       ${extraSkillHtml}
       <div style="margin-top:16px;">
         <div class="progress-container"><div class="progress-fill" id="jsonRecipeProgress"></div></div>
@@ -26891,6 +27058,8 @@ window.getCraftJsonDebugSnapshot = function(){
       showItemPopup(`+${Number(recipe.xp || 0)} ${(SECTION_META[recipe.section]?.label || 'Crafting')} XP`, 'jsonRecipeProgress', 0);
       const bar = document.getElementById('jsonRecipeProgress');
       if (bar) bar.style.width = '0%';
+      const reqsEl = document.getElementById('jsonRecipeRequirements');
+      if (reqsEl) reqsEl.innerHTML = (recipe.requirements || []).map(r => formatRecipeRequirementLine(recipe, r, { showCurrent: true })).join('');
       if (!hasMaterials(recipe)) {
         stopJsonRecipe();
         return;
@@ -27041,6 +27210,14 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
+
+
+
 
 
 
