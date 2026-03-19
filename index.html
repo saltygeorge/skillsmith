@@ -4765,9 +4765,9 @@ SHOP_INVENTORY[5] = { name: 'Empty Vial', price: 50 };
 SHOP_INVENTORY[6] = { name: 'Corn Seed', price: 30 };
 SHOP_INVENTORY[7] = { name: 'Grass Seed', price: 15 };
 SHOP_INVENTORY[8] = { name: 'Wheat Seed', price: 45 };
-SHOP_INVENTORY[9] = { name: 'Seed Bag', price: 5000 };
-SHOP_INVENTORY[10] = { name: 'Silo', price: 10000 };
-SHOP_INVENTORY[11] = { name: 'Hand Pump Well', price: 15000 };// SHOP_INVENTORY[9] = { name: 'Wheat', price: 20 }; // Disabled from shop
+SHOP_INVENTORY[9] = { name: 'Seed Bag', price: 250000 };
+SHOP_INVENTORY[10] = { name: 'Silo', price: 500000 };
+SHOP_INVENTORY[11] = { name: 'Hand Pump Well', price: 750000 };// SHOP_INVENTORY[9] = { name: 'Wheat', price: 20 }; // Disabled from shop
 //SHOP_INVENTORY[10] = { name: 'Iron Battleaxe', price: 5000 };
 //SHOP_INVENTORY[11] = { name: 'Iron Shield', price: 5000 };
 
@@ -4974,6 +4974,7 @@ const PET_HATCH_TIME_MS = 7200000; // 120 Minutes
 const PET_HP_DECAY_MS = 43200000; // 12 Hours
 const PET_MAX_HP = 10;
 const PET_FEED_XP = 25; // Pet Mastery XP for feeding
+const PET_DIRECT_FEED_XP = 5; // Direct pet XP for feeding
 const PET_HATCH_XP = 500; // Pet Mastery XP for hatching
 const PET_SECRET_MASTERY_LVL = 50;
 
@@ -14178,10 +14179,20 @@ function feedPet(petId) {
     
     const config = PET_DATA[pet.type];
     const food = config.foodItem;
-    
     if (removeItem(food, 1)) {
         pet.hp++;
         addXP('petmastery', PET_FEED_XP);
+        if (pet.level < 50) {
+            pet.xp += PET_DIRECT_FEED_XP;
+            while (pet.level < 50) {
+                const xpNeeded = pet.level * 100;
+                if (pet.xp < xpNeeded) break;
+                pet.xp -= xpNeeded;
+                pet.level++;
+                showItemPopup(`Pet Lvl Up: ${pet.level}!`, null, 600);
+                playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+            }
+        }
         playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         renderPetYard('pets');
         game.isDirty = true;
@@ -27949,6 +27960,8 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
 
 
 
