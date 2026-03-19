@@ -1846,8 +1846,7 @@ button.primary:hover { background: var(--accent-hover); }
 #gardenHandPumpOverlay {
   position: absolute;
   right: -8px;
-  top: 49%;
-  transform: translateY(-50%);
+  top: 118px;
   width: 78px;
   height: 78px;
   z-index: 18;
@@ -1858,11 +1857,9 @@ button.primary:hover { background: var(--accent-hover); }
   height: 100%;
   object-fit: contain;
   cursor: pointer;
-  transition: filter 0.15s ease, transform 0.15s ease;
 }
 
-#gardenHandPumpOverlay img:hover {
-  filter: drop-shadow(0 0 10px rgba(255,215,120,0.95));
+#gardenHandPumpOverlay.is-hovered img {
   filter: drop-shadow(0 0 10px rgba(255,215,120,0.95));
 }
 
@@ -2349,6 +2346,9 @@ button.primary:hover { background: var(--accent-hover); }
   <button onclick="showTab('quests')" id="tabQuestsBtn" onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Quests / Missions</div>')" onmouseleave="hideTooltip()">
     <img src="images/questicon.png" alt="Quests">
   </button>
+  <button onclick="showTab('achievements')" id="tabAchievementsBtn" style="display:none;">
+    <img src="images/questicon.png" alt="Achievements">
+  </button>
 </div>
         <div class="tab-content">
           <div id="equipmentTab">
@@ -2433,6 +2433,8 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
 
             </div>
+          <div id="achievementsTab" style="display:none; flex-direction: column; flex-grow: 1; overflow: hidden;"></div>
+          
           
         </div>
       </div>
@@ -2466,6 +2468,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="elementalForgeActionIcon" src="images/elementalforge.jpeg" alt="Elemental Forge" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="lotteryActionIcon" src="images/lotteryicon.jpeg" alt="Lottery" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openLotteryHub()">
               <img id="questsActionIcon" src="images/questbuttonicon.jpg" alt="Quests" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="achievementsActionIcon" src="images/questicon.png" alt="Achievements" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openAchievementsHub()">
               <img id="huntingBoardActionIcon" src="images/huntingboard.jpeg" alt="Hunting Board" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="personalFarmActionIcon" src="images/farmicon.jpeg" alt="My Farm" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openPersonalFarmHub()">
               <img id="petYardActionIcon" src="images/petyardicon.jpeg" alt="Pet Yard" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openPetYardHub()">
@@ -2485,6 +2488,15 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="hubQuests_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
+          <div id="hubAchievements" class="hub-screen">
+            <h2>Achievements</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Track your milestones, kills, deaths, and major account progress.</div>
+            <div id="achievementsHubContent" style="margin-top: 14px; display:flex; flex-direction:column; flex:1; min-height:0; max-height:340px; overflow-y:auto; padding-right:6px; width:100%; box-sizing:border-box;"></div>
+            <div class="action-buttons" style="margin-top: 10px;">
+              <button id="hubAchievements_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
 
           <div id="hubHuntingBoard" class="hub-screen">
             <h2>Hunting Board</h2>
@@ -3252,10 +3264,10 @@ button.primary:hover { background: var(--accent-hover); }
             
             <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
               
-              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Crazy Platypus')"
-                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Crazy Platypus (Lvl 5)</div>')"
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Platypus')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Platypus (Lvl 5)</div>')"
                    onmouseleave="hideTooltip()">
-                <img src="images/platypusmonster.jpeg" alt="Crazy Platypus" style="height: 100px; object-fit: cover; object-position: center;">
+                <img src="images/platypusmonster.jpeg" alt="Platypus" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
 
               <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Stupid Koala')"
@@ -3854,6 +3866,7 @@ const game = {
   beerBuffExpiresAt: 0,
   drunkExpiresAt: 0,
   goldenDragonHp: 2500,
+  achievementStats: { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} },
   // +++ END NEW STATE +++
   
   // +++ NEW SESSION LOCK +++
@@ -5627,16 +5640,19 @@ function showTab(tab){
   document.getElementById('inventoryTab').style.display = 'none';
   document.getElementById('skillsTab').style.display = 'none';
   document.getElementById('questsTab').style.display = 'none'; 
+  document.getElementById('achievementsTab').style.display = 'none'; 
   
   if (tab === 'quests') {
       renderQuestTabContent();
       // Ensure the correct sub-tab is shown on load
       const isMissionActive = document.getElementById('missionsSubTabContent').style.display === 'block';
       showQuestSubTab(isMissionActive ? 'missions' : 'quests');
+  } else if (tab === 'achievements') {
+      renderAchievementsTab();
   }
   
   const activeTab = document.getElementById(tab + 'Tab');
-  activeTab.style.display = (tab === 'skills' || tab === 'quests') ? 'flex' : 'block';
+  activeTab.style.display = (tab === 'skills' || tab === 'quests' || tab === 'achievements') ? 'flex' : 'block';
 }
 
 /**
@@ -6672,6 +6688,8 @@ async function drinkBeer() {
     if (currentRemainingMs >= DRUNK_STATUS_THRESHOLD_MS) {
       game.drunkExpiresAt = game.beerBuffExpiresAt;
       if (justBecameDrunk) {
+        ensureAchievementStats();
+        game.achievementStats.hadBeenDrunk = true;
         await postPlayerStatusChat('gets drunk and loves you guys.');
       }
     } else if (isDrunkStatusActive()) {
@@ -13384,7 +13402,7 @@ function ensureFarmState() {
   if (typeof game.farm.mill.lastCalcTime !== 'number') game.farm.mill.lastCalcTime = Date.now();
 }
 // +++ NEW BOUNTY HUNTING CONSTANTS +++
-const BOUNTY_TIER_1_TARGETS = ['Rat', 'Spider', 'Chicken', 'Cow', 'Centipede', 'Goblin', 'Crazy Platypus'];
+const BOUNTY_TIER_1_TARGETS = ['Rat', 'Spider', 'Chicken', 'Cow', 'Centipede', 'Goblin', 'Platypus'];
 const BOUNTY_TIER_2_TARGETS = ['Stupid Koala', 'Crazy Owl', 'The Witch']; 
 const BOUNTY_TIER_1_ITEM_REQUESTS = [
   { name: 'Venom', qty: 100, reward: 5000 },
@@ -13787,7 +13805,6 @@ async function offerGardenTombGift() {
     await showGameAlert('The Spirit Does Not Like Your Gift', 'The spirit turns away from your offering.');
   }
 }
-
 function renderGardenHandPumpOverlay() {
   const overlay = document.getElementById('gardenHandPumpOverlay');
   if (!overlay) return;
@@ -13796,11 +13813,16 @@ function renderGardenHandPumpOverlay() {
   if (!game.farm.buildings || !game.farm.buildings.handPumpWell) {
     overlay.innerHTML = '';
     overlay.style.display = 'none';
+    overlay.classList.remove('is-hovered');
+    overlay.onmouseenter = null;
+    overlay.onmouseleave = null;
     return;
   }
 
   overlay.style.display = 'block';
-  overlay.innerHTML = `<img src="images/automaticwell.png" alt="Hand Pump Well" onclick="event.stopPropagation(); waterAllGardenPlots();" onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Hand Pump Well</div>Water every planted plot instantly.')" onmouseleave="hideTooltip()">`;
+  overlay.innerHTML = `<img src="images/automaticwell.png" alt="Hand Pump Well" onclick="event.stopPropagation(); waterAllGardenPlots();">`;
+  overlay.onmouseenter = () => overlay.classList.add('is-hovered');
+  overlay.onmouseleave = () => overlay.classList.remove('is-hovered');
 }
 
 function renderGardenTombOverlay() {
@@ -13874,6 +13896,7 @@ function openPersonalFarmHub() {
 }
 
 function openPetYardHub() {
+  refreshPetHungerState();
   showMainScreen('hubPetYard');
   renderPetYard('pets'); // Default to pets tab
 }
@@ -13886,8 +13909,33 @@ function formatPetTime(ms) {
     return `${h}h ${m}m`;
 }
 
+function refreshPetHungerState() {
+    if (!game.pets || !game.pets.length) return;
+
+    const now = Date.now();
+    let changed = false;
+
+    game.pets.forEach(pet => {
+        if (!pet || pet.hp <= 0) return;
+
+        const lastCalc = pet.lastCalcTime || now;
+        const diff = now - lastCalc;
+        if (diff < PET_HP_DECAY_MS) return;
+
+        const hpLost = Math.floor(diff / PET_HP_DECAY_MS);
+        if (hpLost <= 0) return;
+
+        pet.hp = Math.max(0, pet.hp - hpLost);
+        pet.lastCalcTime = lastCalc + (hpLost * PET_HP_DECAY_MS);
+        changed = true;
+    });
+
+    if (changed) game.isDirty = true;
+}
+
 function updatePetTimers() {
     if (!game.pets) return;
+    refreshPetHungerState();
     
     // Only run if Pet Yard is open and on "My Pets" tab
     const yard = document.getElementById('hubPetYard');
@@ -16923,6 +16971,19 @@ async function fishingSalmonLoop(timestamp, startTime) {
 
 // =================================================================
 // --- END NEW FISHING FUNCTIONS ---
+
+function renderAchievementsHub() {
+  const container = document.getElementById("achievementsHubContent");
+  const hiddenTab = document.getElementById("achievementsTab");
+  if (!container || !hiddenTab) return;
+  renderAchievementsTab();
+  container.innerHTML = hiddenTab.innerHTML;
+}
+
+function openAchievementsHub() {
+  showMainScreen("hubAchievements");
+  renderAchievementsHub();
+}
 // =================================================================
 
 // =================================================================
@@ -19074,9 +19135,9 @@ function getCombatMobDefinitions() {
     'Cow': { name: 'Cow', level: 2, maxHp: 15, style: 'melee', maxHit: 2, attackLvl: 3, defenceLvl: 3, img: 'images/cowmonster.png', resists: ['earth'], weaks: ['air'] },
     'Dummy Target': { name: 'Dummy Target', level: 1, maxHp: 10, style: 'melee', maxHit: 0, attackLvl: 0, defenceLvl: 0, img: 'images/dummytarget.png', grantsFlatCombatXp: 1, noEnemyAttack: true },
     'Goblin': { name: 'Goblin', level: 8, maxHp: 25, style: 'melee', maxHit: 3, attackLvl: 8, defenceLvl: 5, img: 'images/goblinmonster.jpeg', weaks: ['air'] },
-    'Crazy Platypus': { name: 'Crazy Platypus', level: 5, maxHp: 20, style: 'ranged', maxHit: 3, attackLvl: 6, defenceLvl: 4, img: 'images/platypusmonster.jpeg', resists: ['water'], weaks: ['poison'] },
+    'Platypus': { name: 'Platypus', level: 5, maxHp: 20, style: 'ranged', maxHit: 3, attackLvl: 6, defenceLvl: 4, img: 'images/platypusmonster.jpeg', resists: ['water'], weaks: ['poison'] },
     'Stupid Koala': { name: 'Stupid Koala', level: 9, maxHp: 28, style: 'melee', maxHit: 4, attackLvl: 9, defenceLvl: 7, img: 'images/koalamonster.png', resists: ['earth'], weaks: ['fire'] },
-    'Crazy Owl': { name: 'Crazy Owl', level: 10, maxHp: 45, style: 'ranged', maxHit: 5, attackLvl: 12, defenceLvl: 8, img: 'images/crazyowlmonster.jpeg', weaks: ['air', 'poison'] },
+    'Crazy Owl': { name: 'Crazy Owl', level: 10, maxHp: 45, style: 'ranged', maxHit: 5, attackLvl: 12, defenceLvl: 8, img: 'images/crazyowlmonster.jpeg', resists: ['earth'], weaks: ['air', 'poison'] },
     'The Witch': { name: 'The Witch', level: 15, maxHp: 60, style: 'magic', maxHit: 8, attackLvl: 15, defenceLvl: 5, img: 'images/witchmonster.jpeg', resists: ['fire', 'poison'], weaks: ['earth'] },
     'Madmax': { name: 'Madmax', level: 69, maxHp: 500, style: 'melee', maxHit: 15, attackLvl: 60, defenceLvl: 50, img: 'images/madmaxmonster.jpeg', lastSpecialTime: Date.now(), resists: ['earth'], weaks: ['water'] },
     'Golden Dragon': { name: 'Golden Dragon', level: 100, maxHp: 2500, style: 'magic', maxHit: 25, attackLvl: 80, defenceLvl: 80, img: 'images/golddragon.png', resists: ['fire'], weaks: ['water'] },
@@ -19086,9 +19147,9 @@ function getCombatMobDefinitions() {
 
 function formatBestiaryTypes(types, emptyText) {
   if (!types || !types.length) return emptyText;
-  return types.map(type => type.charAt(0).toUpperCase() + type.slice(1)).join(', ');
+  const typeLabels = { earth: 'Melee/Earth', air: 'Ranged/Air', fire: 'Fire', water: 'Water', poison: 'Poison' };
+  return types.map(type => typeLabels[type] || (type.charAt(0).toUpperCase() + type.slice(1))).join(', ');
 }
-
 function getBestiaryRecommendedStyle(enemy) {
   const weaks = enemy.weaks || [];
   if (weaks.includes('water')) return 'Water Bolt';
@@ -19101,6 +19162,288 @@ function getBestiaryRecommendedStyle(enemy) {
   if (enemy.style === 'magic') return 'Melee / Earth';
   if (enemy.style === 'ranged') return 'Magic';
   return 'Any Style';
+}
+function ensureAchievementStats() {
+  if (!game.achievementStats) game.achievementStats = { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} };
+  if (!game.achievementStats.kills) game.achievementStats.kills = {};
+  if (!Number.isFinite(Number(game.achievementStats.deaths))) game.achievementStats.deaths = 0;
+  if (typeof game.achievementStats.hadBeenDrunk !== 'boolean') game.achievementStats.hadBeenDrunk = false;
+  if (!game.achievementStats.unlocked || typeof game.achievementStats.unlocked !== 'object') game.achievementStats.unlocked = {};
+}
+
+function getAchievementKillCount(enemyName) {
+  ensureAchievementStats();
+  return Number(game.achievementStats.kills[enemyName] || 0);
+}
+
+function getTotalAchievementKills() {
+  ensureAchievementStats();
+  return Object.values(game.achievementStats.kills).reduce((sum, value) => sum + Number(value || 0), 0);
+}
+
+function getTrackedSkillEntries() {
+  return [
+    ['Mining', 'mining'], ['Blacksmith', 'blacksmith'], ['Attack', 'attack'], ['Strength', 'strength'],
+    ['Defence', 'defence'], ['Vitality', 'vitality'], ['Crafting', 'crafting'], ['Fletching', 'fletching'],
+    ['Tailoring', 'tailoring'], ['Ranged', 'ranged'], ['Fishing', 'fishing'], ['Stone Forging', 'stoneforging'],
+    ['Cooking', 'cooking'], ['Woodcutting', 'woodcutting'], ['Farming', 'farming'], ['Pet Mastery', 'petmastery'],
+    ['Magic', 'magic'], ['Bounty Hunting', 'bountyhunting'], ['Alchemy', 'alchemy'], ['Thieving', 'thieving']
+  ];
+}
+
+function getHighestEnchantLevelOwned() {
+  let highest = 0;
+  const checkItem = (item) => {
+    if (!item) return;
+    highest = Math.max(highest, Number(item.enchantLevel || 0));
+  };
+  (game.inventory || []).forEach(checkItem);
+  Object.values(game.equipment || {}).forEach(checkItem);
+  if (game.enchantSlot) checkItem(game.enchantSlot);
+  if (game.bankTabs) {
+    Object.values(game.bankTabs).forEach(tab => {
+      (tab || []).forEach(checkItem);
+    });
+  }
+  return highest;
+}
+
+function ownsItemAnywhere(itemName) {
+  let found = false;
+  const checkItem = (item) => {
+    if (!item || found) return;
+    if (String(item.name || '') === itemName) found = true;
+  };
+  (game.inventory || []).forEach(checkItem);
+  Object.values(game.equipment || {}).forEach(checkItem);
+  if (game.enchantSlot) checkItem(game.enchantSlot);
+  if (game.bankTabs) {
+    Object.values(game.bankTabs).forEach(tab => {
+      (tab || []).forEach(checkItem);
+    });
+  }
+  return found;
+}
+
+function getAchievementImage(title) {
+  const skillImages = {
+    'Mining': 'images/miningskillicon.png',
+    'Blacksmith': 'images/blacksmithskillicon.png',
+    'Attack': 'images/attackskillicon.jpeg',
+    'Strength': 'images/strengthskillicon.png',
+    'Defence': 'images/defenseskillicon.png',
+    'Vitality': 'images/vitalityskillicon.png',
+    'Crafting': 'images/craftingskillicon.png',
+    'Fletching': 'images/fletchingskillicon.jpeg',
+    'Tailoring': 'images/tailoringskillicon.jpeg',
+    'Ranged': 'images/rangedskillicon.jpeg',
+    'Fishing': 'images/fishingskillicon.jpeg',
+    'Stone Forging': 'images/stoneforgingskillicon.jpeg',
+    'Cooking': 'images/cookingskillicon.png',
+    'Woodcutting': 'images/woodcuttingskillicon.jpeg',
+    'Farming': 'images/farmingskillicon.jpeg',
+    'Pet Mastery': 'images/petmasteryskillicon.jpeg',
+    'Magic': 'images/magicskillicon.jpeg',
+    'Bounty Hunting': 'images/bountyhunterskillicon.jpeg',
+    'Alchemy': 'images/alchemyskillicon.jpeg',
+    'Thieving': 'images/thievingskillicon.jpeg'
+  };
+  if (title.endsWith(' Level 100')) {
+    const base = title.replace(/ Level 100$/, '');
+    return skillImages[base] || 'images/questicon.png';
+  }
+  if (title === 'Spider Pet Level 50') return 'images/petspider.png';
+  if (title === 'Owl Pet Level 50') return 'images/petowl.png';
+  if (title === 'Cat Pet Level 50') return 'images/petcat.png';
+  if (title === 'Dragon Pet Level 50') return 'images/petdragon.png';
+  if (title === 'Madmax Slayer') return 'images/madmaxmonster.jpeg';
+  if (title === 'Golden Dragon Slayer') return 'images/golddragon.png';
+  if (title === 'Drunk Night') return 'images/beer.png';
+  if (title === 'Millionaire') return 'images/goldpouch.png';
+  if (title === 'Gold Crown Owner') return 'images/goldcrown.png';
+  if (title === 'Elegant Black Cape Owner') return 'images/elegantblackcape.png';
+  if (title === 'Master Enchanter (+4)') return 'images/enchantingtableicon.jpeg';
+  return 'images/questicon.png';
+}
+
+function renderAchievementsTab() {
+  const tab = document.getElementById('achievementsTab');
+  if (!tab) return;
+  ensureAchievementStats();
+  const mobs = Object.values(getCombatMobDefinitions()).sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
+  const totalKills = getTotalAchievementKills();
+  const totalDeaths = Number(game.achievementStats.deaths || 0);
+  const maxEnchantLevel = getHighestEnchantLevelOwned();
+  const skillAchievements = getTrackedSkillEntries().map(([label, key]) => ({
+    title: `${label} Level 100`,
+    unlocked: Number((game[key] && game[key].level) || 1) >= 100,
+    detail: `${Math.min(100, Number((game[key] && game[key].level) || 1))}/100`
+  }));
+  const petAchievements = ['Spider', 'Owl', 'Cat', 'Dragon'].map(type => {
+    const bestLevel = Math.max(0, ...((game.pets || []).filter(p => p.type === type).map(p => Number(p.level || 0))));
+    return { title: `${type} Pet Level 50`, unlocked: bestLevel >= 50, detail: `${bestLevel}/50` };
+  });
+  const specialAchievements = [
+    { title: 'Madmax Slayer', unlocked: getAchievementKillCount('Madmax') > 0, detail: `${getAchievementKillCount('Madmax')} kill` },
+    { title: 'Golden Dragon Slayer', unlocked: getAchievementKillCount('Golden Dragon') > 0, detail: `${getAchievementKillCount('Golden Dragon')} kill` },
+    { title: 'Drunk Night', unlocked: !!game.achievementStats.hadBeenDrunk, detail: game.achievementStats.hadBeenDrunk ? 'Completed' : 'Not yet' },
+    { title: 'Millionaire', unlocked: Number(game.gold || 0) >= 1000000, detail: `${Number(game.gold || 0).toLocaleString()} / 1,000,000` },
+    { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown'), detail: ownsItemAnywhere('Gold Crown') ? 'Owned' : 'Not yet' },
+    { title: 'Elegant Black Cape Owner', unlocked: ownsItemAnywhere('Elegant Black Cape'), detail: ownsItemAnywhere('Elegant Black Cape') ? 'Owned' : 'Not yet' },
+    { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4, detail: `Best enchant: +${maxEnchantLevel}` }
+  ];
+  const achievementCards = [...specialAchievements, ...petAchievements, ...skillAchievements].map(ach => {
+    const border = ach.unlocked ? 'rgba(143,209,143,0.6)' : 'rgba(212,163,97,0.22)';
+    const bg = ach.unlocked ? 'rgba(22,54,24,0.72)' : 'rgba(44,22,12,0.82)';
+    const titleColor = ach.unlocked ? '#b8f0b8' : 'var(--gold)';
+    const status = ach.unlocked ? 'Unlocked' : 'Locked';
+    const statusColor = ach.unlocked ? '#8fd18f' : '#ffb36b';
+    const img = getAchievementImage(ach.title);
+    return `<div style="background:${bg}; border:1px solid ${border}; border-radius:8px; padding:11px; min-height:84px; box-sizing:border-box;"><div style="display:flex; gap:12px; align-items:flex-start;"><img src="${img}" alt="${ach.title}" style="width:46px; height:46px; object-fit:contain; border-radius:8px; background:rgba(0,0,0,0.18); flex-shrink:0;"><div style="flex:1; min-width:0;"><div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start;"><div style="font-weight:bold; color:${titleColor}; font-size:13px; line-height:1.25;">${ach.title}</div><div style="font-size:11px; color:${statusColor}; white-space:nowrap;">${status}</div></div><div style="margin-top:8px; color:#d7c9b1; font-size:10px; line-height:1.25; word-break:break-word;">${ach.detail}</div></div></div></div>`;
+  }).join('');
+  const killRows = mobs.map(enemy => {
+    const kills = getAchievementKillCount(enemy.name);
+    return `<div style="display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:#efe3cf;">${enemy.name}</span><span style="color:${kills > 0 ? '#8fd18f' : '#b89b76'}; font-weight:bold;">${kills}</span></div>`;
+  }).join('');
+  tab.innerHTML = `
+    <div style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
+      <div style="width:100%; margin-top:6px; display:flex; flex-direction:column; gap:10px; overflow:hidden;">
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px;">
+          <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Monster Kills</div><div style="font-size:20px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalKills}</div></div>
+          <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Deaths</div><div style="font-size:20px; color:#ff8d8d; font-weight:bold; margin-top:4px;">${totalDeaths}</div></div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; flex:1; min-height:0; overflow:hidden;">
+          <div style="display:flex; flex-direction:column; min-height:0; background:rgba(0,0,0,0.18); border:1px solid rgba(212,163,97,0.2); border-radius:8px; padding:10px;">
+            <div style="font-weight:bold; color:var(--gold); margin-bottom:8px;">Achievements</div>
+            <div style="display:grid; grid-template-columns:1fr; gap:8px; overflow-y:auto; padding-right:4px;">${achievementCards}</div>
+          </div>
+          <div style="display:flex; flex-direction:column; min-height:0; background:rgba(0,0,0,0.18); border:1px solid rgba(212,163,97,0.2); border-radius:8px; padding:10px;">
+            <div style="font-weight:bold; color:var(--gold); margin-bottom:8px;">Monster Kills</div>
+            <div style="overflow-y:auto; padding-right:4px;">${killRows}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function getAchievementEntriesForTracking() {
+  ensureAchievementStats();
+  const maxEnchantLevel = getHighestEnchantLevelOwned();
+  const skillAchievements = getTrackedSkillEntries().map(([label, key]) => ({
+    title: `${label} Level 100`,
+    unlocked: Number((game[key] && game[key].level) || 1) >= 100
+  }));
+  const petAchievements = ['Spider', 'Owl', 'Cat', 'Dragon'].map(type => {
+    const bestLevel = Math.max(0, ...((game.pets || []).filter(p => p.type === type).map(p => Number(p.level || 0))));
+    return { title: `${type} Pet Level 50`, unlocked: bestLevel >= 50 };
+  });
+  const specialAchievements = [
+    { title: 'Madmax Slayer', unlocked: getAchievementKillCount('Madmax') > 0 },
+    { title: 'Golden Dragon Slayer', unlocked: getAchievementKillCount('Golden Dragon') > 0 },
+    { title: 'Drunk Night', unlocked: !!game.achievementStats.hadBeenDrunk },
+    { title: 'Millionaire', unlocked: Number(game.gold || 0) >= 1000000 },
+    { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown') },
+    { title: 'Elegant Black Cape Owner', unlocked: ownsItemAnywhere('Elegant Black Cape') },
+    { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4 }
+  ];
+  return [...specialAchievements, ...petAchievements, ...skillAchievements];
+}
+
+let achievementPopupQueue = [];
+let achievementPopupActive = false;
+
+function ensureAchievementPopupHost() {
+  let host = document.getElementById('achievementPopupHost');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'achievementPopupHost';
+    Object.assign(host.style, {
+      position: 'fixed',
+      right: '18px',
+      bottom: '18px',
+      zIndex: '2200',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+      gap: '10px',
+      pointerEvents: 'none'
+    });
+    document.body.appendChild(host);
+  }
+  return host;
+}
+
+function showNextAchievementPopup() {
+  if (!achievementPopupQueue.length) {
+    achievementPopupActive = false;
+    return;
+  }
+  achievementPopupActive = true;
+  if (typeof playGlobalSound === 'function') playGlobalSound('sounds/soundeffects/achievement.mp3');
+  const achievementTitle = achievementPopupQueue.shift();
+  const host = ensureAchievementPopupHost();
+  const popup = document.createElement('div');
+  Object.assign(popup.style, {
+    minWidth: '240px',
+    maxWidth: '300px',
+    padding: '10px 12px',
+    borderRadius: '10px',
+    border: '1px solid rgba(212,163,97,0.55)',
+    background: 'linear-gradient(180deg, rgba(61,34,16,0.95) 0%, rgba(36,20,10,0.95) 100%)',
+    boxShadow: '0 12px 28px rgba(0,0,0,0.35)',
+    color: '#efe3cf',
+    opacity: '0',
+    transform: 'translateY(16px)',
+    transition: 'opacity 0.2s ease, transform 0.2s ease',
+    pointerEvents: 'none'
+  });
+  const popupImg = getAchievementImage(achievementTitle);
+  popup.innerHTML = `<div style="display:flex; gap:10px; align-items:center;"><img src="${popupImg}" alt="${achievementTitle}" style="width:40px; height:40px; object-fit:contain; border-radius:8px; background:rgba(0,0,0,0.18); flex-shrink:0;"><div><div style="font-size:11px; font-weight:700; letter-spacing:0.4px; text-transform:uppercase; color:#f0d27a;">Achievement Unlocked</div><div style="margin-top:4px; font-size:15px; font-weight:700; color:#fff4cf;">${achievementTitle}</div></div></div>`;
+  host.appendChild(popup);
+  requestAnimationFrame(() => {
+    popup.style.opacity = '1';
+    popup.style.transform = 'translateY(0)';
+  });
+  setTimeout(() => {
+    popup.style.opacity = '0';
+    popup.style.transform = 'translateY(10px)';
+    setTimeout(() => {
+      popup.remove();
+      showNextAchievementPopup();
+    }, 220);
+  }, 3200);
+}
+
+function queueAchievementPopup(title) {
+  if (!title || achievementPopupQueue.includes(title)) return;
+  achievementPopupQueue.push(title);
+  if (!achievementPopupActive) showNextAchievementPopup();
+}
+
+function syncAchievementUnlockState(showPopups = false) {
+  ensureAchievementStats();
+  let hasNewUnlock = false;
+  const unlockedMap = game.achievementStats.unlocked;
+  getAchievementEntriesForTracking().forEach(entry => {
+    if (!entry.unlocked || unlockedMap[entry.title]) return;
+    unlockedMap[entry.title] = true;
+    hasNewUnlock = true;
+    if (showPopups) queueAchievementPopup(entry.title);
+  });
+  if (hasNewUnlock) {
+    game.isDirty = true;
+    if (document.getElementById('hubAchievements')?.classList.contains('active')) {
+      renderAchievementsHub();
+    }
+  }
+}
+
+if (!window.__achievementUnlockWatcherStarted) {
+  window.__achievementUnlockWatcherStarted = true;
+  setInterval(() => {
+    if (!game || !game.name) return;
+    syncAchievementUnlockState(true);
+  }, 1500);
 }
 function renderBestiary() {
   const list = document.getElementById('bestiaryList');
@@ -19126,7 +19469,7 @@ function renderBestiary() {
     const resistText = formatBestiaryTypes(enemy.resists, 'None');
     const weakText = formatBestiaryTypes(enemy.weaks, 'None');
     return `
-      <div style="display:flex; gap:10px; align-items:flex-start; background: rgba(44,22,12,0.92); border: 1px solid rgba(212,163,97,0.28); border-radius: 8px; padding: 10px; min-height: 116px; box-sizing: border-box;">
+      <div style="display:flex; gap:10px; align-items:flex-start; background: rgba(44,22,12,0.92); border: 1px solid rgba(212,163,97,0.28); border-radius: 8px; padding: 10px; height: 126px; box-sizing: border-box; overflow:hidden;">
         <img src="${enemy.img}" alt="${enemy.name}" style="width:56px; height:56px; object-fit:contain; border-radius:6px; background: rgba(0,0,0,0.15); flex-shrink:0;">
         <div style="flex:1; min-width:0;">
           <div style="font-weight:bold; color:var(--gold); font-size:16px; line-height:1.1;">${enemy.name}</div>
@@ -19439,6 +19782,9 @@ function hideDeathOverlay() {
  * Handles all logic when a player's HP reaches 0.
  */
 function handlePlayerDeath() {
+  ensureAchievementStats();
+  game.achievementStats.deaths = Number(game.achievementStats.deaths || 0) + 1;
+  game.isDirty = true;
   // 1. Wipe inventory
   game.inventory = new Array(game.inventoryCapacity).fill(null);
   renderInventoryGrid();
@@ -19864,6 +20210,9 @@ function handleEnemyDeath() {
     updateQuestKillCount(game.currentEnemy.name);
     game.bestiaryUnlocked = game.bestiaryUnlocked || {};
     game.bestiaryUnlocked[game.currentEnemy.name] = true;
+    ensureAchievementStats();
+    const defeatedEnemyName = game.currentEnemy.name;
+    game.achievementStats.kills[defeatedEnemyName] = Number(game.achievementStats.kills[defeatedEnemyName] || 0) + 1;
     game.isDirty = true;
     
     // Start delays at 900ms so they appear AFTER the 2 XP popups
@@ -19914,7 +20263,7 @@ function handleEnemyDeath() {
     } else if (name === 'Goblin') {
       addItem('Copper Ore', 5);
       queueDeathPopup(`+5 Copper Ore`, dropDelay);
-    } else if (name === 'Crazy Platypus') {
+    } else if (name === 'Platypus') {
       addItem('Fishing Bait', 2);
       queueDeathPopup(`+2 Fishing Bait`, dropDelay);
     } else if (name === 'Stupid Koala') {
@@ -21383,6 +21732,7 @@ function resetGameState() {
   game.beerBuffExpiresAt = 0;
   game.drunkExpiresAt = 0;
   game.goldenDragonHp = 2500;
+  game.achievementStats = { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} };
 
   game.miningActive = false;
   game.blacksmithingActive = false;
@@ -21521,7 +21871,7 @@ function applySettingsUI() {
 
 /**
  * Opens the settings modal
- */
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubAchievements', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
 function openSettings() {
   const modal = document.getElementById('settingsModalOverlay');
   if (modal) {
@@ -21544,7 +21894,7 @@ function closeSettings() {
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubAchievements', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
 function showMainScreen(screenIdToShow) {
   // NEW: Safely return item from enchanting table if player navigates away
   if (typeof returnEnchantItem === 'function' && game.enchantSlot) {
@@ -21895,6 +22245,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('blacksmithActionIcon').onclick = openBlacksmithHub;
   document.getElementById('kitchenActionIcon').onclick = openKitchenHub;
   document.getElementById('combatActionIcon').onclick = openCombatHub;
+  const achievementsBtn = document.getElementById("achievementsActionIcon");
+  if (achievementsBtn) {
+      achievementsBtn.onclick = openAchievementsHub;
+      achievementsBtn.onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Achievements</div>Track kills, deaths, and milestones');
+      achievementsBtn.onmouseleave = hideTooltip;
+  }
+  document.getElementById("hubAchievements_ReturnBtn").onclick = backToActions;
   document.getElementById('shopActionIcon').onclick = openShop;
   document.getElementById('bankActionIcon').onclick = openBank;
   document.getElementById('fletchingActionIcon').onclick = openFletchingHub; // +++ NEW +++
@@ -23691,6 +24048,7 @@ async function attemptEnchant() {
         beerBuffExpiresAt: game.beerBuffExpiresAt || 0,
         drunkExpiresAt: game.drunkExpiresAt || 0,
         goldenDragonHp: Number(game.goldenDragonHp || 2500),
+        achievementStats: game.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} },
         updatedAt: new Date().toISOString()
       };
       await setDoc(doc(db, "players", user.uid), payload, { merge: true });
@@ -24261,6 +24619,9 @@ window.inspectPlayer = async function(playerName) {
         game.drunkExpiresAt = Number(data.drunkExpiresAt || 0);
         game.goldenDragonHp = Number(data.goldenDragonHp || 2500);
         game.bestiaryUnlocked = data.bestiaryUnlocked || {};
+        game.achievementStats = data.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} };
+        ensureAchievementStats();
+        syncAchievementUnlockState(false);
         
         // +++ NEW FARM LOADING & OFFLINE CALC (MULTI-CHICKEN & COWS) +++
         game.farm = data.farm || { 
@@ -24716,6 +25077,7 @@ window.inspectPlayer = async function(playerName) {
                 '/disconnectall - Disconnect all active sessions (except you)',
                 '/removebuff [playername] - Remove beer/drunk buffs',
                 '/addbuff drunk [playername] - Apply drunk status',
+                '/testachievement [name] - Show an achievement popup',
                 '/clear [playername] - Delete one player\'s chat messages',
                 '/clearall - Delete all chat messages',
                 '/clearlast - Delete last global chat message',
@@ -25014,6 +25376,13 @@ window.inspectPlayer = async function(playerName) {
         }
 
         // --- COMMAND: /addbuff drunk playername ---
+        if (command === 'testachievement') {
+            const achievementName = args.join(' ').trim() || 'Test Achievement';
+            queueAchievementPopup(achievementName);
+            addLocalChatMessage('Admin: Triggered achievement popup.', 'system');
+            return true;
+        }
+
         if (command === 'addbuff') {
             const buffName = args[0] ? args[0].toLowerCase() : '';
             const targetName = args.slice(1).join(' ').trim().toLowerCase();
@@ -25359,6 +25728,7 @@ window.inspectPlayer = async function(playerName) {
   { command: '/disconnectall', desc: 'Disconnect all active players except you' },
   { command: '/removebuff ', desc: 'Remove beer or drunk buffs' },
   { command: '/addbuff drunk ', desc: 'Apply the drunk buff' },
+  { command: '/testachievement ', desc: 'Show an achievement popup' },
   { command: '/clear ', desc: 'Delete one player\'s chat messages' },
   { command: '/clearall', desc: 'Delete all chat messages' },
   { command: '/clearlast', desc: 'Delete the last global chat message' },
@@ -27579,6 +27949,28 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
