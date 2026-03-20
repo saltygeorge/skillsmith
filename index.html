@@ -2325,7 +2325,7 @@ button.primary:hover { background: var(--accent-hover); }
       <div class="sidebar">
         <div class="char-header" style="position: relative;">
           <h2 id="charName">Player</h2>
-          <button id="settingsBtn" onmouseenter="showTooltip(event, 'Settings')" onmouseleave="hideTooltip()">
+          <button id="settingsBtn" onclick="openSettings()" onmouseenter="showTooltip(event, 'Settings')" onmouseleave="hideTooltip()">
             <img src="images/gearicon.png" alt="Settings">
           </button>
         </div>
@@ -3520,6 +3520,7 @@ button.primary:hover { background: var(--accent-hover); }
               
               <div id="combat-enemy-area">
                 <img id="combat-enemy-img" src="" alt="Enemy">
+                <div id="combat-enemy-name" style="margin: 6px 0 8px; min-height: 18px; text-align: center; font-weight: bold; color: var(--gold);"></div>
                 <div id="combat-enemy-hp-bar">
                   <div id="combat-enemy-hp-fill" style="width:100%"></div>
                   <div id="combat-enemy-hp-text">10 / 10 HP</div>
@@ -3702,21 +3703,36 @@ button.primary:hover { background: var(--accent-hover); }
 </div>
 
 <div id="playerInspectOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 4000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
-    <div class="game-modal" style="max-width: 450px;">
+    <div class="game-modal" style="max-width: 540px; width: 100%;">
         <div class="game-modal-title">Inspecting <span id="inspectPlayerName">Player</span></div>
+        <div id="inspectAdminViewTabs" style="display:none; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+            <button id="inspectTabEquipmentBtn" class="primary" type="button">Equipment</button>
+            <button id="inspectTabInventoryBtn" class="primary" type="button">Inventory</button>
+            <button id="inspectTabBankBtn" class="primary" type="button">Bank</button>
+        </div>
         <div id="inspectEquipmentPanel" class="game-modal-content">
             <div class="equipment-character" style="border-bottom: 2px solid var(--accent); padding-bottom: 15px;">
-                <div class="character-frame" id="inspectEquipmentFrame">
-                    </div>
+                <div class="character-frame" id="inspectEquipmentFrame"></div>
             </div>
-
             <div style="margin-top: 15px;">
-                <div id="inspectStatsPanel" style="padding: 10px; background: rgba(0,0,0,0.15); border-radius: 6px; width: 100%; box-sizing: border-box;">
-                    </div>
+                <div id="inspectStatsPanel" style="padding: 10px; background: rgba(0,0,0,0.15); border-radius: 6px; width: 100%; box-sizing: border-box;"></div>
             </div>
-            
+        </div>
+        <div id="inspectInventoryPanel" class="game-modal-content" style="display:none;">
+            <div class="inventory-grid-wrap" style="height:320px; margin-left:0; width:100%;">
+                <div class="inventory-grid" id="inspectInventoryGrid"></div>
+            </div>
+            <div id="inspectInventoryMeta" style="margin-top:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#efe3cf; font-size:12px;"></div>
+        </div>
+        <div id="inspectBankPanel" class="game-modal-content" style="display:none;">
+            <div id="inspectBankTabsContainer" class="bank-tabs" style="border-bottom:none; margin-bottom:8px; padding-bottom:0;"></div>
+            <div class="inventory-grid-wrap" style="height:320px; margin-left:0; width:100%;">
+                <div class="inventory-grid" id="inspectBankGrid"></div>
+            </div>
+            <div id="inspectBankMeta" style="margin-top:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#efe3cf; font-size:12px;"></div>
         </div>
         <div class="game-modal-buttons">
+            <button id="inspectDuelBtn" class="primary">Duel</button>
             <button id="closeInspectBtn" class="primary" style="background:#666;">Close</button>
         </div>
     </div>
@@ -3866,7 +3882,7 @@ const game = {
   beerBuffExpiresAt: 0,
   drunkExpiresAt: 0,
   goldenDragonHp: 2500,
-  achievementStats: { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} },
+  achievementStats: { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} },
   // +++ END NEW STATE +++
   
   // +++ NEW SESSION LOCK +++
@@ -5913,7 +5929,7 @@ function triggerAutoEat() {
         playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');
         if (game.hp <= 0) {
             if (game.inCombat) runFromCombat(true);
-            handlePlayerDeath();
+            handlePlayerDeath({ type: 'poison' });
         }
         return true; 
     }
@@ -6590,7 +6606,7 @@ async function drinkVenom() {
     playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3'); 
     if (game.hp <= 0) {
         if (game.inCombat) runFromCombat(true);
-        handlePlayerDeath();
+        handlePlayerDeath({ type: 'poison' });
     }
     if (typeof window.savePlayerData === 'function') {
         window.savePlayerData();
@@ -19175,10 +19191,12 @@ function getBestiaryRecommendedStyle(enemy) {
   return 'Any Style';
 }
 function ensureAchievementStats() {
-  if (!game.achievementStats) game.achievementStats = { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} };
+  if (!game.achievementStats) game.achievementStats = { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} };
   if (!game.achievementStats.kills) game.achievementStats.kills = {};
   if (!Number.isFinite(Number(game.achievementStats.deaths))) game.achievementStats.deaths = 0;
   if (typeof game.achievementStats.hadBeenDrunk !== 'boolean') game.achievementStats.hadBeenDrunk = false;
+  if (!Number.isFinite(Number(game.achievementStats.lotteryRolls))) game.achievementStats.lotteryRolls = 0;
+  if (typeof game.achievementStats.wonBarehandedKill !== 'boolean') game.achievementStats.wonBarehandedKill = false;
   if (!game.achievementStats.unlocked || typeof game.achievementStats.unlocked !== 'object') game.achievementStats.unlocked = {};
 }
 
@@ -19236,6 +19254,11 @@ function ownsItemAnywhere(itemName) {
   return found;
 }
 
+function hasBareHandsEquipped() {
+  const weapon = game.equipment && game.equipment.weapon;
+  return !weapon && !game.autocastSpell;
+}
+
 function getAchievementImage(title) {
   const skillImages = {
     'Mining': 'images/miningskillicon.png',
@@ -19274,6 +19297,9 @@ function getAchievementImage(title) {
   if (title === 'Gold Crown Owner') return 'images/goldcrown.png';
   if (title === 'Elegant Black Cape Owner') return 'images/elegantblackcape.png';
   if (title === 'Master Enchanter (+4)') return 'images/enchantingtableicon.jpeg';
+  if (title === 'Bare Knuckle Victory') return 'images/attackskillicon.jpeg';
+  if (title === 'Lottery Roller') return 'images/lotteryicon.jpeg';
+  if (title === 'Lottery Master (1000 Rolls)') return 'images/lotteryicon.jpeg';
   return 'images/questicon.png';
 }
 
@@ -19284,6 +19310,7 @@ function renderAchievementsTab() {
   const mobs = Object.values(getCombatMobDefinitions()).sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
   const totalKills = getTotalAchievementKills();
   const totalDeaths = Number(game.achievementStats.deaths || 0);
+  const totalLotteryRolls = Number(game.achievementStats.lotteryRolls || 0);
   const maxEnchantLevel = getHighestEnchantLevelOwned();
   const skillAchievements = getTrackedSkillEntries().map(([label, key]) => ({
     title: `${label} Level 100`,
@@ -19301,7 +19328,10 @@ function renderAchievementsTab() {
     { title: 'Millionaire', unlocked: Number(game.gold || 0) >= 1000000, detail: `${Number(game.gold || 0).toLocaleString()} / 1,000,000` },
     { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown'), detail: ownsItemAnywhere('Gold Crown') ? 'Owned' : 'Not yet' },
     { title: 'Elegant Black Cape Owner', unlocked: ownsItemAnywhere('Elegant Black Cape'), detail: ownsItemAnywhere('Elegant Black Cape') ? 'Owned' : 'Not yet' },
-    { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4, detail: `Best enchant: +${maxEnchantLevel}` }
+    { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4, detail: `Best enchant: +${maxEnchantLevel}` },
+    { title: 'Bare Knuckle Victory', unlocked: !!game.achievementStats.wonBarehandedKill, detail: game.achievementStats.wonBarehandedKill ? 'Completed' : 'Kill 1 monster with no weapon equipped' },
+    { title: 'Lottery Roller', unlocked: totalLotteryRolls > 0, detail: `${totalLotteryRolls.toLocaleString()} rolls` },
+    { title: 'Lottery Master (1000 Rolls)', unlocked: totalLotteryRolls >= 1000, detail: `${totalLotteryRolls.toLocaleString()} / 1,000 rolls` }
   ];
   const achievementCards = [...specialAchievements, ...petAchievements, ...skillAchievements].map(ach => {
     const border = ach.unlocked ? 'rgba(143,209,143,0.6)' : 'rgba(212,163,97,0.22)';
@@ -19317,9 +19347,9 @@ function renderAchievementsTab() {
     return `<div style="display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:#efe3cf;">${enemy.name}</span><span style="color:${kills > 0 ? '#8fd18f' : '#b89b76'}; font-weight:bold;">${kills}</span></div>`;
   }).join('');
   tab.innerHTML = `
-    <div style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
       <div style="width:100%; margin-top:6px; display:flex; flex-direction:column; gap:10px; overflow:hidden;">
-        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px;">
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;">
+          <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Monster Kills</div><div style="font-size:20px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalKills}</div></div>
           <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Monster Kills</div><div style="font-size:20px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalKills}</div></div>
           <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Deaths</div><div style="font-size:20px; color:#ff8d8d; font-weight:bold; margin-top:4px;">${totalDeaths}</div></div>
         </div>
@@ -19355,7 +19385,9 @@ function getAchievementEntriesForTracking() {
     { title: 'Millionaire', unlocked: Number(game.gold || 0) >= 1000000 },
     { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown') },
     { title: 'Elegant Black Cape Owner', unlocked: ownsItemAnywhere('Elegant Black Cape') },
-    { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4 }
+    { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4 },
+    { title: 'Lottery Roller', unlocked: Number(game.achievementStats.lotteryRolls || 0) > 0 },
+    { title: 'Lottery Master (1000 Rolls)', unlocked: Number(game.achievementStats.lotteryRolls || 0) >= 1000 }
   ];
   return [...specialAchievements, ...petAchievements, ...skillAchievements];
 }
@@ -19771,9 +19803,13 @@ function updateEnemyCombatUI() {
   
   const fill = document.getElementById('combat-enemy-hp-fill');
   const text = document.getElementById('combat-enemy-hp-text');
+  const enemyNameEl = document.getElementById('combat-enemy-name');
   
   if (fill) fill.style.width = percent + '%';
   if (text) text.textContent = `${enemy.currentHp} / ${enemy.maxHp} HP`;
+  if (enemyNameEl) {
+      enemyNameEl.textContent = enemy.isLeaderboardClone ? `Duel vs ${enemy.name.replace(/ Clone$/, '')}` : enemy.name;
+  }
 }
 
 function showDeathOverlay() {
@@ -19790,10 +19826,42 @@ function hideDeathOverlay() {
 }
 
 /**
- * Handles all logic when a player's HP reaches 0.
+ * Returns the shared death chat message for a given cause.
  */
-function handlePlayerDeath() {
+function getPlayerDeathChatMessage(cause) {
+  if (cause && cause.type === 'thieving') {
+    const targetName = cause.target || 'a failed theft';
+    return `was caught and beaten by ${targetName}.`;
+  }
+  if (cause && cause.type === 'poison') {
+    return "thought it was a potion. It wasn't.";
+  }
+  const enemyName = (cause && cause.enemyName) || (game.currentEnemy && game.currentEnemy.name) || 'an unknown force';
+  if (enemyName.endsWith(' Clone')) {
+    const originalName = enemyName.replace(/ Clone$/, '');
+    return `challenged ${originalName} and got humbled in the duel.`;
+  }
+  const specialMessages = {
+    'Chicken': 'was pecked to death by a Chicken.',
+    'Cow': 'was trampled by a Cow.',
+    'Rat': 'was gnawed apart by a Rat.',
+    'Spider': 'was consumed by a Spider.',
+    'Centipede': 'was overrun by a Centipede.',
+    'Goblin': 'was ambushed by a Goblin.',
+    'Platypus': 'was outplayed by a Platypus.',
+    'Stupid Koala': 'was driven mad by a Stupid Koala.',
+    'Crazy Owl': 'was torn apart by a Crazy Owl.',
+    'The Witch': 'was cursed by The Witch.',
+    'Madmax': 'was crushed by Madmax.',
+    'Golden Dragon': 'was reduced to ashes by the Golden Dragon.',
+    'Dummy Target': 'was defeated by a Dummy Target.'
+  };
+  return specialMessages[enemyName] || `was killed by ${enemyName}.`;
+}
+
+function handlePlayerDeath(cause = null) {
   ensureAchievementStats();
+  postPlayerStatusChat(getPlayerDeathChatMessage(cause));
   game.achievementStats.deaths = Number(game.achievementStats.deaths || 0) + 1;
   game.isDirty = true;
   // 1. Wipe inventory
@@ -20224,6 +20292,7 @@ function handleEnemyDeath() {
     ensureAchievementStats();
     const defeatedEnemyName = game.currentEnemy.name;
     game.achievementStats.kills[defeatedEnemyName] = Number(game.achievementStats.kills[defeatedEnemyName] || 0) + 1;
+    if (hasBareHandsEquipped()) game.achievementStats.wonBarehandedKill = true;
     game.isDirty = true;
     
     // Start delays at 900ms so they appear AFTER the 2 XP popups
@@ -20241,6 +20310,13 @@ function handleEnemyDeath() {
     }
 
     const name = game.currentEnemy.name;
+    
+    if (name.endsWith(' Clone')) {
+      const originalName = name.replace(/ Clone$/, '');
+      queueDeathPopup(`<span style="color:var(--gold); font-size:16px;">${game.name} destroyed ${originalName}.</span>`, dropDelay);
+      if (typeof postPlayerStatusChat === 'function') postPlayerStatusChat(`destroyed ${originalName} in a duel.`);
+      dropDelay += 450;
+    }
     
     // Drops
     if (name === 'Chicken') { 
@@ -20382,10 +20458,10 @@ const LOTTERY_LOOT = [
 
 function getRandomLotteryFiller() {
     let totalWeight = 0;
-    for (const item of LOTTERY_LOOT) totalWeight += (item.weight || 10);
+    for (const item of LOTTERY_LOOT) totalWeight += (item.weight ?? 10);
     let random = Math.floor(Math.random() * totalWeight);
     for (const item of LOTTERY_LOOT) {
-        const weight = item.weight || 10;
+        const weight = item.weight ?? 10;
         if (random < weight) return item;
         random -= weight;
     }
@@ -20519,6 +20595,8 @@ async function buyLotteryTicket() {
     if (usingTicket) removeItem('Lottery Ticket', 1);
     else addGold(-LOTTERY_COST);
 
+    ensureAchievementStats();
+    game.achievementStats.lotteryRolls = Number(game.achievementStats.lotteryRolls || 0) + 1;
     game.isDirty = true; 
 
     // 4. Visual Reel Setup
@@ -21741,7 +21819,7 @@ function resetGameState() {
   game.autoEatUnlocked = false;
   game.lastAutoHealTime = 0;
   game.beerBuffExpiresAt = 0;
-  game.drunkExpiresAt = 0;
+  game.achievementStats = { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} };
   game.goldenDragonHp = 2500;
   game.achievementStats = { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} };
 
@@ -21882,22 +21960,37 @@ function applySettingsUI() {
 
 /**
  * Opens the settings modal
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubAchievements', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
+/**
+ * Opens the settings modal
+ */
 function openSettings() {
   const modal = document.getElementById('settingsModalOverlay');
-  if (modal) {
-    applySettingsUI(); // Ensure UI is in sync when opening
-    modal.style.display = 'flex';
+  if (!modal) return;
+  try {
+    applySettingsUI();
+  } catch (e) {
+    console.error('openSettings applySettingsUI failed:', e);
   }
+  modal.style.display = 'flex';
+  modal.style.visibility = 'visible';
+  modal.style.opacity = '1';
+  modal.style.pointerEvents = 'auto';
+  modal.style.zIndex = '99999';
 }
+window.openSettings = openSettings;
 
 /**
  * Closes the settings modal
  */
 function closeSettings() {
   const modal = document.getElementById('settingsModalOverlay');
-  if (modal) modal.style.display = 'none';
+  if (!modal) return;
+  modal.style.display = 'none';
+  modal.style.visibility = 'hidden';
+  modal.style.opacity = '0';
+  modal.style.pointerEvents = 'none';
 }
+window.closeSettings = closeSettings;
 
 /**
  * The new global sound player that respects settings
@@ -23263,6 +23356,8 @@ function renderInspectEquipment(equipment, frame) {
         'Gold Helmet': 'goldhelmet', 'Gold Chestplate': 'goldchestplate', 'Gold Platelegs': 'goldplatelegs', 'Gold Boots': 'goldboots', 'Gold Shield': 'goldshield'
     };
 
+    window.__inspectItemImageMap = itemImageMap;
+
     slots.forEach(slotType => {
         const item = equipment[slotType];
         const slotEl = document.createElement('div');
@@ -23353,6 +23448,241 @@ function renderInspectEquipment(equipment, frame) {
         }
         frame.appendChild(slotEl);
     });
+}
+
+function normalizeSavedInventoryForInspect(savedInvData, minCapacity = 40) {
+    const fallbackCapacity = Math.max(1, Number(minCapacity || 40));
+    if (!Array.isArray(savedInvData)) {
+        const entries = Object.entries(savedInvData || {});
+        const slots = new Array(Math.max(fallbackCapacity, entries.length)).fill(null);
+        entries.forEach(([name, qty], index) => {
+            slots[index] = { name, qty: Number(qty || 0), enchantLevel: 0, slot: index };
+        });
+        return slots;
+    }
+
+    let maxSlot = -1;
+    savedInvData.forEach((item, index) => {
+        if (!item) return;
+        maxSlot = Math.max(maxSlot, typeof item.slot === "number" ? item.slot : index);
+    });
+
+    const slots = new Array(Math.max(fallbackCapacity, maxSlot + 1, savedInvData.length)).fill(null);
+    savedInvData.forEach((item, index) => {
+        if (!item) return;
+        const slotIndex = typeof item.slot === "number" ? item.slot : index;
+        if (slotIndex < 0 || slotIndex >= slots.length) return;
+        slots[slotIndex] = {
+            ...item,
+            qty: Number(item.qty || 0),
+            enchantLevel: Number(item.enchantLevel || 0)
+        };
+    });
+    return slots;
+}
+
+function normalizeSavedBankTabsForInspect(playerData, defaultCapacity = 60) {
+    const fallbackCapacity = Math.max(1, Number(defaultCapacity || 60));
+    const rawTabs = playerData ? playerData.bankTabs : null;
+    const tabs = [];
+
+    const convertTab = (tabData) => {
+        if (!Array.isArray(tabData)) return new Array(fallbackCapacity).fill(null);
+        let maxSlot = -1;
+        tabData.forEach((item, index) => {
+            if (!item) return;
+            maxSlot = Math.max(maxSlot, typeof item.slot === "number" ? item.slot : index);
+        });
+        const slots = new Array(Math.max(fallbackCapacity, maxSlot + 1, tabData.length)).fill(null);
+        tabData.forEach((item, index) => {
+            if (!item) return;
+            const slotIndex = typeof item.slot === "number" ? item.slot : index;
+            if (slotIndex < 0 || slotIndex >= slots.length) return;
+            slots[slotIndex] = {
+                ...item,
+                qty: Number(item.qty || 0),
+                enchantLevel: Number(item.enchantLevel || 0)
+            };
+        });
+        return slots;
+    };
+
+    if (rawTabs && typeof rawTabs === "object" && !Array.isArray(rawTabs)) {
+        Object.keys(rawTabs).sort((a, b) => Number(a) - Number(b)).forEach(key => {
+            tabs.push(convertTab(rawTabs[key]));
+        });
+    } else if (Array.isArray(rawTabs)) {
+        rawTabs.forEach(tab => tabs.push(convertTab(tab)));
+    } else if (Array.isArray(playerData && playerData.bank)) {
+        tabs.push(convertTab(playerData.bank));
+    }
+
+    if (tabs.length === 0) tabs.push(new Array(fallbackCapacity).fill(null));
+    return tabs;
+}
+
+function getInspectItemImageName(itemName, fallback = "gearicon") {
+    const map = window.__inspectItemImageMap || {};
+    return map[itemName] || String(itemName || fallback).toLowerCase().replace(/\s+/g, "");
+}
+
+function getInspectItemTooltipHtml(item) {
+    if (!item) return "Empty Slot";
+    const qty = Number(item.qty || 0);
+    const enchantLevel = Number(item.enchantLevel || 0);
+    const details = [];
+    if (qty > 1) details.push(`<div style="color:#ddd;">Qty: ${qty.toLocaleString()}</div>`);
+    if (enchantLevel > 0) details.push(`<div style="color:#8fd18f;">Enchant: +${enchantLevel}</div>`);
+    return `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}${enchantLevel > 0 ? ` +${enchantLevel}` : ""}</div>${details.join("") || `<div style="color:#ccc;">No extra data</div>`}`;
+}
+
+function createInspectReadOnlySlot(item) {
+    const slotEl = document.createElement("div");
+    slotEl.className = "inv-slot";
+    slotEl.style.cursor = "default";
+
+    if (item) {
+        const img = document.createElement("img");
+        img.src = `images/${getInspectItemImageName(item.name)}.png`;
+        img.alt = item.name || "Item";
+        img.loading = "eager";
+        slotEl.appendChild(img);
+
+        const qty = Number(item.qty || 0);
+        if (qty > 1) {
+            const amount = document.createElement("div");
+            amount.className = "inv-amount";
+            amount.textContent = qty.toLocaleString();
+            slotEl.appendChild(amount);
+        }
+
+        const enchantLevel = Number(item.enchantLevel || 0);
+        if (item.name === "Gold Crown" || item.name === "Elegant Black Cape") {
+            slotEl.classList.add("legendary-glow");
+        } else if (enchantLevel > 0) {
+            slotEl.classList.add(`enchant-glow-${enchantLevel}`);
+            const badge = document.createElement("div");
+            badge.className = "enchant-level-badge";
+            badge.textContent = `+${enchantLevel}`;
+            slotEl.appendChild(badge);
+        }
+
+        slotEl.onmouseenter = (evt) => window.showTooltip(evt, getInspectItemTooltipHtml(item));
+        slotEl.onmouseleave = window.hideTooltip;
+    } else {
+        slotEl.onmouseenter = (evt) => window.showTooltip(evt, "Empty Slot");
+        slotEl.onmouseleave = window.hideTooltip;
+    }
+
+    return slotEl;
+}
+
+function renderInspectReadOnlyGrid(items, gridEl) {
+    if (!gridEl) return;
+    gridEl.innerHTML = "";
+    (items || []).forEach(item => gridEl.appendChild(createInspectReadOnlySlot(item)));
+}
+
+function setInspectPlayerView(view) {
+    const views = [
+        { key: "equipment", panelId: "inspectEquipmentPanel", btnId: "inspectTabEquipmentBtn" },
+        { key: "inventory", panelId: "inspectInventoryPanel", btnId: "inspectTabInventoryBtn" },
+        { key: "bank", panelId: "inspectBankPanel", btnId: "inspectTabBankBtn" }
+    ];
+
+    views.forEach(({ key, panelId, btnId }) => {
+        const panel = document.getElementById(panelId);
+        const btn = document.getElementById(btnId);
+        const active = key === view;
+        if (panel) panel.style.display = active ? "block" : "none";
+        if (btn) {
+            btn.style.background = active ? "var(--accent)" : "#6d452d";
+            btn.style.opacity = active ? "1" : "0.85";
+        }
+    });
+}
+
+function renderInspectBankTabs(tabs, activeIndex, playerData) {
+    const container = document.getElementById("inspectBankTabsContainer");
+    const bankGrid = document.getElementById("inspectBankGrid");
+    const bankMeta = document.getElementById("inspectBankMeta");
+    if (!container) return;
+
+    container.innerHTML = "";
+    tabs.forEach((tab, index) => {
+        const usedSlots = tab.filter(Boolean).length;
+        const btn = document.createElement("button");
+        btn.className = "primary";
+        btn.type = "button";
+        btn.textContent = `Tab ${index + 1}`;
+        btn.style.padding = "4px 10px";
+        btn.style.fontSize = "11px";
+        btn.style.background = index === activeIndex ? "var(--accent)" : "#6d452d";
+        btn.style.opacity = index === activeIndex ? "1" : "0.85";
+        btn.title = `${usedSlots}/${tab.length} used slots`;
+        btn.onclick = () => {
+            window.lastInspectedBankTabIndex = index;
+            renderInspectReadOnlyGrid(tabs[index], bankGrid);
+            renderInspectBankTabs(tabs, index, playerData);
+            setInspectPlayerView("bank");
+        };
+        container.appendChild(btn);
+    });
+
+    const activeTab = tabs[activeIndex] || [];
+    const activeUsed = activeTab.filter(Boolean).length;
+    if (bankMeta) {
+        bankMeta.innerHTML = `
+            <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                <span>Tab ${activeIndex + 1}: ${activeUsed}/${activeTab.length} slots</span>
+                <span>Total Tabs: ${tabs.length}</span>
+                <span style="color:var(--gold);">Bank Gold: ${Number((playerData && playerData.bankGold) || 0).toLocaleString()}</span>
+            </div>
+        `;
+    }
+}
+
+function renderInspectAdminPanels(playerData) {
+    const tabsRow = document.getElementById("inspectAdminViewTabs");
+    const equipmentBtn = document.getElementById("inspectTabEquipmentBtn");
+    const inventoryBtn = document.getElementById("inspectTabInventoryBtn");
+    const bankBtn = document.getElementById("inspectTabBankBtn");
+    const inventoryGrid = document.getElementById("inspectInventoryGrid");
+    const inventoryMeta = document.getElementById("inspectInventoryMeta");
+    const bankGrid = document.getElementById("inspectBankGrid");
+
+    const isAdminView = typeof window.isCurrentUserAdmin === "function" && window.isCurrentUserAdmin();
+    if (!isAdminView) {
+        if (tabsRow) tabsRow.style.display = "none";
+        setInspectPlayerView("equipment");
+        return;
+    }
+
+    if (tabsRow) tabsRow.style.display = "flex";
+    if (equipmentBtn) equipmentBtn.onclick = () => setInspectPlayerView("equipment");
+    if (inventoryBtn) inventoryBtn.onclick = () => setInspectPlayerView("inventory");
+    if (bankBtn) bankBtn.onclick = () => setInspectPlayerView("bank");
+
+    const inspectInventory = normalizeSavedInventoryForInspect(playerData.inventory || [], Number(playerData.inventoryCapacity || 40));
+    renderInspectReadOnlyGrid(inspectInventory, inventoryGrid);
+    if (inventoryMeta) {
+        const usedSlots = inspectInventory.filter(Boolean).length;
+        const distinctItems = new Set(inspectInventory.filter(Boolean).map(item => item.name)).size;
+        inventoryMeta.innerHTML = `
+            <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                <span>Used Slots: ${usedSlots}/${inspectInventory.length}</span>
+                <span>Distinct Items: ${distinctItems}</span>
+                <span style="color:var(--gold);">Gold: ${Number(playerData.gold || 0).toLocaleString()}</span>
+            </div>
+        `;
+    }
+
+    const inspectBankTabs = normalizeSavedBankTabsForInspect(playerData, Number(playerData.bankCapacity || 60));
+    window.lastInspectedBankTabs = inspectBankTabs;
+    window.lastInspectedBankTabIndex = 0;
+    renderInspectReadOnlyGrid(inspectBankTabs[0], bankGrid);
+    renderInspectBankTabs(inspectBankTabs, 0, playerData);
+    setInspectPlayerView("equipment");
 }
 // This function needs to be defined in the module script to access Firebase, 
 // but exposed to the window object so the HTML onclick can trigger it.
@@ -23448,7 +23778,7 @@ async function attemptSteal(instanceId) {
         showDamageSplat('player', target.dmg, 'damage');
         showWarningPopup(`Caught! You took ${target.dmg} damage.`);
         playGlobalSound('sounds/soundeffects/swordsoundeffect.mp3');
-        if (game.hp <= 0) handlePlayerDeath();
+        if (game.hp <= 0) handlePlayerDeath({ type: 'thieving', target: target.name });
     } else {
         // SUCCESS
         addXP('thieving', target.xp);
@@ -23829,6 +24159,11 @@ async function attemptEnchant() {
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  function isCurrentUserAdmin() {
+    return !!(auth.currentUser && auth.currentUser.uid === ADMIN_UID);
+  }
+  window.isCurrentUserAdmin = isCurrentUserAdmin;
+
   window.__sendStatusChatMessage = async function(text) {
     const user = auth.currentUser;
     if (!user || !text) return;
@@ -24057,7 +24392,7 @@ async function attemptEnchant() {
         autoEatThreshold: game.autoEatThreshold || 20,
         lastAutoHealTime: game.lastAutoHealTime || 0,
         beerBuffExpiresAt: game.beerBuffExpiresAt || 0,
-        drunkExpiresAt: game.drunkExpiresAt || 0,
+        achievementStats: game.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} },
         goldenDragonHp: Number(game.goldenDragonHp || 2500),
         achievementStats: game.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} },
         updatedAt: new Date().toISOString()
@@ -24079,19 +24414,143 @@ async function attemptEnchant() {
    * NOTE: This function must be exposed to the window object to be called from the leaderboard HTML.
    * @param {string} playerName - The name of the player to inspect.
    */
-window.inspectPlayer = async function(playerName) {
+window.lastInspectedPlayerData = null;
+
+function getInspectedPlayerCombatStyle(playerData) {
+  const equipment = playerData && playerData.equipment ? playerData.equipment : {};
+  const weapon = equipment.weapon;
+  if (weapon && weapon.name && window.ITEM_STATS && window.ITEM_STATS[weapon.name] && window.ITEM_STATS[weapon.name].weaponType) {
+    return window.ITEM_STATS[weapon.name].weaponType;
+  }
+  if (playerData && playerData.autocastSpell) return 'magic';
+  return 'melee';
+}
+
+function getInspectedPlayerStyleImage(style) {
+  if (style === 'ranged') return 'images/ranged.png';
+  if (style === 'magic') return 'images/magic.png';
+  return 'images/melee.png';
+}
+
+function buildLeaderboardCloneEnemy(playerData) {
+  const equipment = playerData.equipment || {};
+  const style = getInspectedPlayerCombatStyle(playerData);
+  let meleeStr = 0, rangedStr = 0, magicDmg = 0;
+  Object.values(equipment).forEach(item => {
+    if (!item || !item.name || !window.ITEM_STATS || !window.ITEM_STATS[item.name]) return;
+    const def = window.ITEM_STATS[item.name];
+    const eLvl = item.enchantLevel || 0;
+    const stdB = eLvl;
+    meleeStr += (def.meleeStr || 0) + (def.meleeStr ? stdB : 0);
+    rangedStr += (def.rangedStr || 0) + (def.rangedStr ? stdB : 0);
+    magicDmg += (def.magicDmg || 0) + (def.magicDmg ? stdB : 0);
+  });
+  const maxHp = Number(playerData.maxHP || 10);
+  const defenceLvl = Number((playerData.defence && playerData.defence.level) || 1);
+  const attackLvl = style === 'ranged' ? Number((playerData.ranged && playerData.ranged.level) || 1) : style === 'magic' ? Number((playerData.magic && playerData.magic.level) || 1) : Number((playerData.attack && playerData.attack.level) || 1);
+  const strengthLvl = Number((playerData.strength && playerData.strength.level) || 1);
+  const rangedLvl = Number((playerData.ranged && playerData.ranged.level) || 1);
+  const magicLvl = Number((playerData.magic && playerData.magic.level) || 1);
+  let maxHit = 1;
+  if (style === 'ranged') maxHit = Math.floor(2 + (rangedLvl / 4) + (rangedStr / 1.5));
+  else if (style === 'magic') maxHit = Math.floor(2 + (magicLvl / 4) + (magicDmg * 2));
+  else maxHit = Math.floor(2 + (strengthLvl / 4) + (meleeStr / 1.5));
+  return {
+    name: `${playerData.name} Clone`,
+    level: Math.max(1, attackLvl),
+    maxHp: Math.max(10, maxHp),
+    currentHp: Math.max(10, maxHp),
+    style,
+    maxHit: Math.max(1, maxHit),
+    attackLvl: Math.max(1, attackLvl),
+    defenceLvl: Math.max(1, defenceLvl),
+    img: getInspectedPlayerStyleImage(style),
+    isLeaderboardClone: true
+  };
+}
+
+window.startLeaderboardCloneDuel = function() {
+  const playerData = window.lastInspectedPlayerData;
+  if (!playerData || !playerData.name) return;
+  const inspectOverlay = document.getElementById('playerInspectOverlay');
+  if (inspectOverlay) inspectOverlay.style.display = 'none';
+  if (typeof window.hideTooltip === 'function') window.hideTooltip();
+  const cloneEnemy = buildLeaderboardCloneEnemy(playerData);
+  game.lastCombatAreaHub = 'hubActions';
+  game.currentEnemy = cloneEnemy;
+  game.inCombat = false;
+  const imgEl = document.getElementById('combat-enemy-img');
+  if (imgEl) {
+    imgEl.src = cloneEnemy.img;
+    imgEl.style.height = '';
+  }
+  const combatPanel = document.getElementById('combat-action-panel');
+  if (combatPanel) {
+    const styleContainerHtml = `
+      <p style="margin: 0 0 5px 0; font-weight: bold;">Combat Style & Auto-Heal:</p>
+      <div id="combat-styles-container">
+          <div id="combat-styles">
+              <button id="style-attack" class="primary" onclick="setAttackStyle('attack')">Accurate</button>
+              <button id="style-strength" class="primary" onclick="setAttackStyle('strength')">Aggressive</button>
+              <button id="style-defence" class="primary" onclick="setAttackStyle('defence')">Defensive</button>
+          </div>
+          <div id="auto-eat-slot-wrapper">
+              <div id="autoEatSlot" class="auto-eat-slot" onclick="unequipAutoEat()"></div>
+              <div style="font-size:10px; color:#aaa; margin-top:2px;">Auto Heal</div>
+              <div style="display:flex; align-items:center; gap:6px; margin-top: 4px;">
+                <input type="range" id="autoHealSlider" min="1" max="99" value="${game.autoEatThreshold || 20}" style="width: 50px; height: 10px;">
+                <div style="display:flex; align-items:center; gap:4px;">
+                  <input type="number" id="autoHealInput" min="1" max="99" value="${game.autoEatThreshold || 20}" style="width: 40px; height: 20px; background:#2a1b12; color:var(--gold); border:1px solid rgba(255,215,0,0.35); border-radius:6px; text-align:center; font-size:11px;">
+                  <span style="font-size:11px; color:var(--gold);">%</span>
+                </div>
+              </div>
+              <div id="autoHealPercentDisplay" style="display:none;">${game.autoEatThreshold || 20}%</div>
+          </div>
+      </div>
+      <div id="combat-main-actions">
+          <button id="combat-fight-btn" class="primary" style="background:#900;" onclick="beginCombat()">Fight</button>
+          <button id="combat-run-btn" class="primary" style="background:#080; display:none;" onclick="runFromCombat()">Run</button>
+          <button id="combat-return-btn" class="primary" style="background:#555;" onclick="returnToCombatArea()">Return</button>
+      </div>
+    `;
+    combatPanel.innerHTML = styleContainerHtml;
+  }
+  renderAutoEatSlot();
+  updateEnemyCombatUI();
+  renderEquipment();
+  setAttackStyle(game.playerAttackStyle, true);
+  showMainScreen('hubActiveCombat');
+};
+
+window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
     if (!auth.currentUser) return;
-    if (typeof window.playGlobalSound === 'function') window.playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');
+    if (typeof window.playGlobalSound === "function") window.playGlobalSound("sounds/soundeffects/buttonsoundeffect.mp3");
     
-    const frame = document.getElementById('inspectEquipmentFrame');
-    const statsPanel = document.getElementById('inspectStatsPanel');
-    const modalName = document.getElementById('inspectPlayerName');
-    const inspectOverlay = document.getElementById('playerInspectOverlay');
-    
-    if (frame) frame.innerHTML = ''; 
-    if (statsPanel) statsPanel.innerHTML = '<div style="color:#ccc; text-align:center; padding:20px;">Loading Stats...</div>'; 
-    if (modalName) modalName.textContent = 'Loading...';
-    if (inspectOverlay) inspectOverlay.style.display = 'flex';
+    const frame = document.getElementById("inspectEquipmentFrame");
+    const statsPanel = document.getElementById("inspectStatsPanel");
+    const modalName = document.getElementById("inspectPlayerName");
+    const inspectOverlay = document.getElementById("playerInspectOverlay");
+    const duelBtn = document.getElementById("inspectDuelBtn");
+    const inventoryGrid = document.getElementById("inspectInventoryGrid");
+    const bankGrid = document.getElementById("inspectBankGrid");
+    const inventoryMeta = document.getElementById("inspectInventoryMeta");
+    const bankMeta = document.getElementById("inspectBankMeta");
+    const bankTabs = document.getElementById("inspectBankTabsContainer");
+    const adminTabsRow = document.getElementById("inspectAdminViewTabs");
+    if (frame) frame.innerHTML = "";
+    if (statsPanel) statsPanel.innerHTML = '<div style="color:#ccc; text-align:center; padding:20px;">Loading Stats...</div>';
+    if (modalName) modalName.textContent = "Loading...";
+    if (inventoryGrid) inventoryGrid.innerHTML = "";
+    if (bankGrid) bankGrid.innerHTML = "";
+    if (inventoryMeta) inventoryMeta.innerHTML = "";
+    if (bankMeta) bankMeta.innerHTML = "";
+    if (bankTabs) bankTabs.innerHTML = "";
+    if (adminTabsRow) adminTabsRow.style.display = "none";
+    if (duelBtn) duelBtn.disabled = true;
+    window.lastInspectedBankTabs = null;
+    window.lastInspectedBankTabIndex = 0;
+    setInspectPlayerView("equipment");
+    if (inspectOverlay) inspectOverlay.style.display = "flex";
 
     try {
       const nameLower = playerName.toLowerCase();
@@ -24100,19 +24559,25 @@ window.inspectPlayer = async function(playerName) {
 
       if (querySnapshot.empty) {
         await window.showGameAlert("Player Not Found", "Could not find player data.");
-        if (inspectOverlay) inspectOverlay.style.display = 'none';
+        if (inspectOverlay) inspectOverlay.style.display = "none";
         return;
       }
 
       const playerData = querySnapshot.docs[0].data();
       const playerEquipment = playerData.equipment || {};
+      window.lastInspectedPlayerData = playerData;
 
-      modalName.textContent = playerData.name || 'Player';
+      if (modalName) modalName.textContent = playerData.name || "Player";
+      if (duelBtn) {
+        duelBtn.disabled = false;
+        duelBtn.onclick = window.startLeaderboardCloneDuel;
+      }
       renderInspectEquipment(playerEquipment, frame);
 
-      // --- Sync Calculation logic with local Player Stats ---
       let meleeStr = 0, rangedStr = 0, magicDmg = 0;
       let meleeDef = 0, rangedDef = 0, magicDef = 0;
+      const inspectedVitalityLevel = Number((playerData.vitality && playerData.vitality.level) || 1);
+      const inspectedMaxHp = Number(playerData.maxHP || (10 + Math.max(0, inspectedVitalityLevel - 1)));
 
       Object.values(playerEquipment).forEach(item => {
           if (item && item.name) {
@@ -24122,22 +24587,19 @@ window.inspectPlayer = async function(playerName) {
                   const stdB = eLvl;
                   const penB = Math.floor(eLvl / 2);
 
-                  // Offense
                   meleeStr += (def.meleeStr || 0) + (def.meleeStr ? stdB : 0);
                   rangedStr += (def.rangedStr || 0) + (def.rangedStr ? stdB : 0);
                   magicDmg += (def.magicDmg || 0) + (def.magicDmg ? stdB : 0);
                   
-                  // Defense Scaling based on gear type
-                  if (def.armorType === 'melee') {
+                  if (def.armorType === "melee") {
                       meleeDef += (def.meleeDef || 0) + stdB;
                       rangedDef += (def.rangedDef || 0) + stdB;
                       magicDef += (def.magicDef || 0) + penB;
-                  } else if (def.armorType === 'ranged' || def.armorType === 'magic') {
+                  } else if (def.armorType === "ranged" || def.armorType === "magic") {
                       meleeDef += (def.meleeDef || 0) + penB;
                       rangedDef += (def.rangedDef || 0) + stdB;
                       magicDef += (def.magicDef || 0) + stdB;
-                  } else if (def.armorType === 'hybrid') {
-                      // Only hybrid gear stats show up in the Total display
+                  } else if (def.armorType === "hybrid") {
                       meleeDef += (def.meleeDef || 0) + stdB;
                       rangedDef += (def.rangedDef || 0) + stdB;
                       magicDef += (def.magicDef || 0) + stdB;
@@ -24146,33 +24608,38 @@ window.inspectPlayer = async function(playerName) {
           }
       });
 
-      // Update HTML to 2-column layout (Matches Player Stats Tab exactly)
-      statsPanel.innerHTML = `
-          <div style="display: flex; gap: 12px;">
-            <!-- Left Column: Offense -->
-            <div class="stats-column" style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-              <div class="stat-row"><span class="stat-label">Melee Strength</span><span class="stat-value" style="color:#ff4d4d;">+${meleeStr}</span></div>
-              <div class="stat-row"><span class="stat-label">Ranged Strength</span><span class="stat-value" style="color:#44aa44;">+${rangedStr}</span></div>
-              <div class="stat-row"><span class="stat-label">Magic Damage</span><span class="stat-value" style="color:#4da6ff;">+${magicDmg}</span></div>
-            </div>
-            
-            <!-- Right Column: Defense -->
-            <div class="stats-column" style="flex: 1; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(109, 69, 45, 0.5); padding-left: 10px;">
-              <div class="stat-row"><span class="stat-label">Melee Defense</span><span class="stat-value" style="color:#e38a42;">+${meleeDef}</span></div>
-              <div class="stat-row"><span class="stat-label">Ranged Defense</span><span class="stat-value" style="color:#aaffaa;">+${rangedDef}</span></div>
-              <div class="stat-row"><span class="stat-label">Magic Defense</span><span class="stat-value" style="color:#6dafff;">+${magicDef}</span></div>
-            </div>
-          </div>
-      `;
+      if (statsPanel) {
+          statsPanel.innerHTML = `
+              <div style="display: flex; gap: 12px;">
+                <div class="stats-column" style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                  <div class="stat-row"><span class="stat-label">Melee Strength</span><span class="stat-value" style="color:#ff4d4d;">+${meleeStr}</span></div>
+                  <div class="stat-row"><span class="stat-label">Ranged Strength</span><span class="stat-value" style="color:#44aa44;">+${rangedStr}</span></div>
+                  <div class="stat-row"><span class="stat-label">Magic Damage</span><span class="stat-value" style="color:#4da6ff;">+${magicDmg}</span></div>
+                </div>
+                <div class="stats-column" style="flex: 1; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(109, 69, 45, 0.5); padding-left: 10px;">
+                  <div class="stat-row"><span class="stat-label">HP</span><span class="stat-value" style="color:#ff8d8d;">${inspectedMaxHp}</span></div>
+                  <div class="stat-row"><span class="stat-label">Melee Defense</span><span class="stat-value" style="color:#e38a42;">+${meleeDef}</span></div>
+                  <div class="stat-row"><span class="stat-label">Ranged Defense</span><span class="stat-value" style="color:#aaffaa;">+${rangedDef}</span></div>
+                  <div class="stat-row"><span class="stat-label">Magic Defense</span><span class="stat-value" style="color:#6dafff;">+${magicDef}</span></div>
+                </div>
+              </div>
+          `;
+      }
 
-      document.getElementById('closeInspectBtn').onclick = () => {
-          inspectOverlay.style.display = 'none';
-          window.hideTooltip(); 
+      renderInspectAdminPanels(playerData);
+      if (typeof preferredView === 'string' && preferredView) setInspectPlayerView(preferredView);
+
+      document.getElementById("closeInspectBtn").onclick = () => {
+          inspectOverlay.style.display = "none";
+          window.lastInspectedPlayerData = null;
+          window.lastInspectedBankTabs = null;
+          window.lastInspectedBankTabIndex = 0;
+          window.hideTooltip();
       };
 
     } catch (e) {
       console.error("Inspect error:", e);
-      if (inspectOverlay) inspectOverlay.style.display = 'none';
+      if (inspectOverlay) inspectOverlay.style.display = "none";
     }
 };
   
@@ -24628,7 +25095,7 @@ window.inspectPlayer = async function(playerName) {
         game.autoEatThreshold = data.autoEatThreshold || 20; // Load the slider value
         game.beerBuffExpiresAt = Number(data.beerBuffExpiresAt || 0);
         game.drunkExpiresAt = Number(data.drunkExpiresAt || 0);
-        game.goldenDragonHp = Number(data.goldenDragonHp || 2500);
+        game.achievementStats = data.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} };
         game.bestiaryUnlocked = data.bestiaryUnlocked || {};
         game.achievementStats = data.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} };
         ensureAchievementStats();
@@ -25028,6 +25495,110 @@ window.inspectPlayer = async function(playerName) {
       return inventoryToSave;
   }
 
+  async function findPlayerDocByAdminName(targetName) {
+      const lowered = String(targetName || '').trim().toLowerCase();
+      if (!lowered) return null;
+
+      const exactSnap = await getDocs(query(collection(db, 'players'), where('name_lowercase', '==', lowered), limit(1)));
+      if (!exactSnap.empty) return exactSnap.docs[0];
+
+      const allPlayersSnap = await getDocs(query(collection(db, 'players')));
+      return allPlayersSnap.docs.find(doc => {
+          const data = doc.data() || {};
+          const name = String(data.name_lowercase || data.name || '').trim().toLowerCase();
+          return name === lowered || name.startsWith(lowered) || name.includes(lowered);
+      }) || null;
+  }
+
+  function summarizeSavedInventoryData(savedInvData) {
+      const items = Array.isArray(savedInvData)
+          ? savedInvData.filter(item => item)
+          : Object.entries(savedInvData || {}).map(([name, qty]) => ({ name, qty }));
+      const distinctNames = new Set();
+      let occupiedSlots = 0;
+      let totalQty = 0;
+      let ticketCount = 0;
+      let maxSlot = -1;
+
+      items.forEach((item, index) => {
+          occupiedSlots += 1;
+          const qty = Number(item.qty || 0);
+          totalQty += qty;
+          distinctNames.add(String(item.name || ''));
+          if (item.name === 'Lottery Ticket') ticketCount += qty;
+          if (typeof item.slot === 'number') {
+              maxSlot = Math.max(maxSlot, item.slot);
+          } else {
+              maxSlot = Math.max(maxSlot, index);
+          }
+      });
+
+      return {
+          capacity: Math.max(40, maxSlot + 1, occupiedSlots),
+          occupiedSlots,
+          distinctItems: distinctNames.size,
+          totalQty,
+          ticketCount
+      };
+  }
+
+  function summarizeSavedBankData(playerData) {
+      const summary = { tabs: 0, occupiedSlots: 0, totalQty: 0 };
+      const countItem = (item) => {
+          if (!item) return;
+          summary.occupiedSlots += 1;
+          summary.totalQty += Number(item.qty || 1);
+      };
+
+      const rawTabs = playerData ? playerData.bankTabs : null;
+      if (rawTabs && typeof rawTabs === 'object' && !Array.isArray(rawTabs)) {
+          const keys = Object.keys(rawTabs).sort((a, b) => Number(a) - Number(b));
+          summary.tabs = keys.length;
+          keys.forEach(key => {
+              const tabData = rawTabs[key];
+              if (Array.isArray(tabData)) tabData.forEach(countItem);
+          });
+      } else if (Array.isArray(rawTabs)) {
+          summary.tabs = rawTabs.length;
+          rawTabs.forEach(tab => {
+              if (Array.isArray(tab)) tab.forEach(countItem);
+          });
+      } else if (Array.isArray(playerData && playerData.bank)) {
+          summary.tabs = 1;
+          playerData.bank.forEach(countItem);
+      }
+
+      return summary;
+  }
+
+  function summarizeSavedEquipmentData(playerData) {
+      const equipment = (playerData && playerData.equipment) || {};
+      const slotLabels = {
+          helmet: 'Helmet',
+          cape: 'Cape',
+          necklace: 'Necklace',
+          weapon: 'Weapon',
+          chest: 'Chest',
+          shield: 'Shield',
+          ring1: 'Ring 1',
+          ring2: 'Ring 2',
+          legs: 'Legs',
+          arrows: 'Arrows',
+          boots: 'Boots',
+          pet: 'Pet'
+      };
+      const style = getInspectedPlayerCombatStyle(playerData);
+      const entries = [];
+      Object.entries(slotLabels).forEach(([slot, label]) => {
+          const item = equipment[slot];
+          if (!item) return;
+          const parts = [label + ': ' + (item.name || 'Unknown')];
+          if (typeof item.qty === 'number' && item.qty > 1) parts.push('x' + item.qty);
+          if (typeof item.enchantLevel === 'number' && item.enchantLevel > 0) parts.push('+' + item.enchantLevel);
+          entries.push(parts.join(' '));
+      });
+      return { style, equippedCount: entries.length, entries };
+  }
   function modifyInventory(localInvArray, itemName, qtyChange) {
       const newInv = JSON.parse(JSON.stringify(localInvArray)); 
       if (qtyChange > 0) { // Adding
@@ -25070,7 +25641,7 @@ window.inspectPlayer = async function(playerName) {
     if (!user) return false;
 
     // 1. Check if Admin
-    if (game.isAdmin && messageText.startsWith('/')) {
+    if (isCurrentUserAdmin() && messageText.startsWith('/')) {
                 const parts = messageText.substring(1).split(' ');
         const command = parts[0].toLowerCase();
         const args = parts.slice(1);
@@ -25089,6 +25660,11 @@ window.inspectPlayer = async function(playerName) {
                 '/removebuff [playername] - Remove beer/drunk buffs',
                 '/addbuff drunk [playername] - Apply drunk status',
                 '/testachievement [name] - Show an achievement popup',
+                '/inspectlottery [playername]',
+                '/inspectgold [playername]',
+                '/inspectbank [playername]',
+                '/inspectinventory [playername]',
+                '/inspectequipment [playername]',
                 '/clear [playername] - Delete one player\'s chat messages',
                 '/clearall - Delete all chat messages',
                 '/clearlast - Delete last global chat message',
@@ -25098,6 +25674,149 @@ window.inspectPlayer = async function(playerName) {
                 '/godmode'
             ];
             helpLines.slice().reverse().forEach(line => addLocalChatMessage(line, 'system'));
+            return true;
+        }
+
+        // --- COMMAND: /inspectlottery playername ---
+        if (command === 'inspectlottery') {
+            const targetName = args.join(' ').trim().toLowerCase();
+            if (!targetName) {
+                addLocalChatMessage('Usage: /inspectlottery [playername]', 'error');
+                return true;
+            }
+            try {
+                const targetDoc = await findPlayerDocByAdminName(targetName);
+                if (!targetDoc) {
+                    addLocalChatMessage('Player not found: ' + targetName, 'error');
+                    return true;
+                }
+                const playerData = targetDoc.data() || {};
+                const exactName = (playerData.name || '').trim() || targetName;
+                const invSummary = summarizeSavedInventoryData(playerData.inventory || []);
+                const lotteryRolls = Number((((playerData.achievementStats || {}).lotteryRolls)) || 0);
+                const lines = [
+                    'Inspect Lottery - ' + exactName,
+                    'Rolls: ' + lotteryRolls.toLocaleString() + ' | Tickets: ' + invSummary.ticketCount.toLocaleString()
+                ];
+                lines.slice().reverse().forEach(line => addLocalChatMessage(line, 'system'));
+            } catch (e) {
+                console.error('Error inspecting lottery:', e);
+                addLocalChatMessage('Error inspecting lottery: ' + e.message, 'error');
+            }
+            return true;
+        }
+
+        // --- COMMAND: /inspectgold playername ---
+        if (command === 'inspectgold') {
+            const targetName = args.join(' ').trim().toLowerCase();
+            if (!targetName) {
+                addLocalChatMessage("Usage: /inspectgold [playername]", 'error');
+                return true;
+            }
+            try {
+                const targetDoc = await findPlayerDocByAdminName(targetName);
+                if (!targetDoc) {
+                    addLocalChatMessage('Player not found: ' + targetName, 'error');
+                    return true;
+                }
+                const playerData = targetDoc.data() || {};
+                const exactName = (playerData.name || '').trim() || targetName;
+                const gold = Number(playerData.gold || 0);
+                const bankGold = Number(playerData.bankGold || 0);
+                const lines = [
+                    'Inspect Gold - ' + exactName,
+                    'Gold: ' + gold.toLocaleString() + ' | Bank: ' + bankGold.toLocaleString() + ' | Total: ' + (gold + bankGold).toLocaleString()
+                ];
+                lines.slice().reverse().forEach(line => addLocalChatMessage(line, 'system'));
+            } catch (e) {
+                console.error('Error inspecting gold:', e);
+                addLocalChatMessage('Error inspecting gold: ' + e.message, 'error');
+            }
+            return true;
+        }
+
+        // --- COMMAND: /inspectbank playername ---
+        if (command === 'inspectbank') {
+            const targetName = args.join(' ').trim().toLowerCase();
+            if (!targetName) {
+                addLocalChatMessage("Usage: /inspectbank [playername]", 'error');
+                return true;
+            }
+            try {
+                const targetDoc = await findPlayerDocByAdminName(targetName);
+                if (!targetDoc) {
+                    addLocalChatMessage('Player not found: ' + targetName, 'error');
+                    return true;
+                }
+                const playerData = targetDoc.data() || {};
+                const exactName = (playerData.name || '').trim() || targetName;
+                if (typeof window.inspectPlayer === 'function') {
+                    await window.inspectPlayer(exactName, 'bank');
+                }
+            } catch (e) {
+                console.error('Error inspecting bank:', e);
+                addLocalChatMessage('Error inspecting bank: ' + e.message, 'error');
+            }
+            return true;
+        }
+
+        // --- COMMAND: /inspectinventory playername ---
+        if (command === 'inspectinventory') {
+            const targetName = args.join(' ').trim().toLowerCase();
+            if (!targetName) {
+                addLocalChatMessage("Usage: /inspectinventory [playername]", 'error');
+                return true;
+            }
+            try {
+                const targetDoc = await findPlayerDocByAdminName(targetName);
+                if (!targetDoc) {
+                    addLocalChatMessage('Player not found: ' + targetName, 'error');
+                    return true;
+                }
+                const playerData = targetDoc.data() || {};
+                const exactName = (playerData.name || '').trim() || targetName;
+                if (typeof window.inspectPlayer === 'function') {
+                    await window.inspectPlayer(exactName, 'inventory');
+                }
+            } catch (e) {
+                console.error('Error inspecting inventory:', e);
+                addLocalChatMessage('Error inspecting inventory: ' + e.message, 'error');
+            }
+            return true;
+        }
+
+        // --- COMMAND: /inspectequipment playername ---
+        if (command === 'inspectequipment') {
+            const targetName = args.join(' ').trim().toLowerCase();
+            if (!targetName) {
+                addLocalChatMessage('Usage: /inspectequipment [playername]', 'error');
+                return true;
+            }
+            try {
+                const targetDoc = await findPlayerDocByAdminName(targetName);
+                if (!targetDoc) {
+                    addLocalChatMessage('Player not found: ' + targetName, 'error');
+                    return true;
+                }
+                const playerData = targetDoc.data() || {};
+                const exactName = (playerData.name || '').trim() || targetName;
+                const equipmentSummary = summarizeSavedEquipmentData(playerData);
+                const lines = [
+                    'Inspect Equipment - ' + exactName,
+                    'Style: ' + String(equipmentSummary.style || 'melee').replace(/^./, c => c.toUpperCase()) + ' | Equipped Slots: ' + equipmentSummary.equippedCount
+                ];
+                if (equipmentSummary.entries.length) {
+                    for (let i = 0; i < equipmentSummary.entries.length; i += 3) {
+                        lines.push(equipmentSummary.entries.slice(i, i + 3).join(' | '));
+                    }
+                } else {
+                    lines.push('No equipment equipped.');
+                }
+                lines.slice().reverse().forEach(line => addLocalChatMessage(line, 'system'));
+            } catch (e) {
+                console.error('Error inspecting equipment:', e);
+                addLocalChatMessage('Error inspecting equipment: ' + e.message, 'error');
+            }
             return true;
         }
 
@@ -25740,6 +26459,11 @@ window.inspectPlayer = async function(playerName) {
   { command: '/removebuff ', desc: 'Remove beer or drunk buffs' },
   { command: '/addbuff drunk ', desc: 'Apply the drunk buff' },
   { command: '/testachievement ', desc: 'Show an achievement popup' },
+  { command: '/inspectlottery ', desc: 'Inspect a player\'s lottery stats' },
+  { command: '/inspectgold ', desc: 'Inspect a player\'s gold totals' },
+  { command: '/inspectbank ', desc: 'Inspect a player\'s bank summary' },
+  { command: '/inspectinventory ', desc: 'Inspect a player\'s inventory summary' },
+  { command: '/inspectequipment ', desc: 'Inspect a player\'s equipped items' },
   { command: '/clear ', desc: 'Delete one player\'s chat messages' },
   { command: '/clearall', desc: 'Delete all chat messages' },
   { command: '/clearlast', desc: 'Delete the last global chat message' },
@@ -25751,7 +26475,7 @@ window.inspectPlayer = async function(playerName) {
 let activeChatCommandSuggestions = [];
 
 function getChatCommandMatches(value) {
-  if (!game || !game.isAdmin) return [];
+  if (!game || !isCurrentUserAdmin()) return [];
   const trimmed = String(value || '').trimStart();
   if (!trimmed.startsWith('/')) return [];
   const lower = trimmed.toLowerCase();
@@ -27960,6 +28684,11 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
 
 
 
