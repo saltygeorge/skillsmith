@@ -19542,7 +19542,7 @@ function renderAchievementsTab() {
     const status = ach.unlocked ? 'Unlocked' : 'Locked';
     const statusColor = ach.unlocked ? '#8fd18f' : '#ffb36b';
     const img = getAchievementImage(ach.title);
-    return `<div style="background:${bg}; border:1px solid ${border}; border-radius:8px; padding:11px; min-height:84px; box-sizing:border-box;"><div style="display:flex; gap:12px; align-items:flex-start;"><img src="${img}" alt="${ach.title}" style="width:46px; height:46px; object-fit:contain; border-radius:8px; background:rgba(0,0,0,0.18); flex-shrink:0;"><div style="flex:1; min-width:0;"><div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start;"><div style="font-weight:bold; color:${titleColor}; font-size:13px; line-height:1.25;">${ach.title}</div><div style="font-size:11px; color:${statusColor}; white-space:nowrap;">${status}</div></div><div style="margin-top:8px; color:#d7c9b1; font-size:10px; line-height:1.25; word-break:break-word;">${ach.detail}</div></div></div></div>`;
+    return `<div style="background:${bg}; border:1px solid ${border}; border-radius:8px; padding:11px; min-height:84px; box-sizing:border-box;"><div style="display:flex; gap:8px; align-items:flex-start;"><img src="${img}" alt="${ach.title}" style="width:46px; height:46px; object-fit:contain; border-radius:8px; background:rgba(0,0,0,0.18); flex-shrink:0;"><div style="flex:1; min-width:0;"><div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start;"><div style="font-weight:bold; color:${titleColor}; font-size:13px; line-height:1.25;">${ach.title}</div><div style="font-size:11px; color:${statusColor}; white-space:nowrap;">${status}</div></div><div style="margin-top:8px; color:#d7c9b1; font-size:10px; line-height:1.25; word-break:break-word;">${ach.detail}</div></div></div></div>`;
   }).join('');
   const killRows = mobs.map(enemy => {
     const kills = getAchievementKillCount(enemy.name);
@@ -24940,6 +24940,15 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       let meleeDef = 0, rangedDef = 0, magicDef = 0;
       const inspectedVitalityLevel = Number((playerData.vitality && playerData.vitality.level) || 1);
       const inspectedMaxHp = Number(playerData.maxHP || (10 + Math.max(0, inspectedVitalityLevel - 1)));
+      const isAdminInspector = isCurrentUserAdmin();
+      const activeSessionTimestamp = Number((((playerData.activeSession || {}).timestamp)) || 0);
+      const updatedAtMs = Date.parse(playerData.updatedAt || '');
+      const lastConnectMs = activeSessionTimestamp > 0 ? activeSessionTimestamp : (Number.isFinite(updatedAtMs) ? updatedAtMs : 0);
+      const isInspectPlayerOnline = activeSessionTimestamp > 0 && (Date.now() - activeSessionTimestamp) < LOCK_STALE_TIME_MS;
+      const lastConnectDisplay = lastConnectMs > 0
+        ? (new Date(lastConnectMs).toLocaleString() + (isInspectPlayerOnline ? ' (Active)' : ''))
+        : 'Unknown';
+
 
       Object.values(playerEquipment).forEach(item => {
           if (item && item.name) {
@@ -24973,37 +24982,49 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           }
       });
       if (exportBtn) {
-        exportBtn.disabled = false;
-        exportBtn.onclick = () => copyInspectedPlayerStats(playerData, {
-          hp: inspectedMaxHp,
-          meleeAtk, rangedAtk, magicAtk,
-          meleeStr, rangedStr, magicDmg,
-          meleeDef, rangedDef, magicDef
-        });
+        exportBtn.style.display = isAdminInspector ? '' : 'none';
+        exportBtn.disabled = !isAdminInspector;
+        exportBtn.onclick = isAdminInspector
+          ? (() => copyInspectedPlayerStats(playerData, {
+              hp: inspectedMaxHp,
+              meleeAtk, rangedAtk, magicAtk,
+              meleeStr, rangedStr, magicDmg,
+              meleeDef, rangedDef, magicDef
+            }))
+          : null;
       }
+
+      const buildInspectStatRow = (label, value, color) => `
+        <div class="stat-row" style="gap:6px;">
+          <span class="stat-label" style="min-width:110px; padding-right:4px;">${label}</span>
+          <span class="stat-value" style="color:${color}; min-width:64px; text-align:right;">${value}</span>
+        </div>`;
+
+      const adminInspectRightExtra = isAdminInspector
+        ? buildInspectStatRow('Last Connect', lastConnectDisplay, isInspectPlayerOnline ? '#8dff8d' : '#d7c09b')
+        : '';
 
       if (statsPanel) {
           statsPanel.innerHTML = `
-              <div style="display: flex; gap: 12px;">
-                <div class="stats-column" style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-                  <div class="stat-row"><span class="stat-label">Melee Attack</span><span class="stat-value" style="color:#ff9a66;">${meleeAtk >= 0 ? '+' : ''}${meleeAtk}</span></div>
-                  <div class="stat-row"><span class="stat-label">Ranged Attack</span><span class="stat-value" style="color:#7fe37f;">${rangedAtk >= 0 ? '+' : ''}${rangedAtk}</span></div>
-                  <div class="stat-row"><span class="stat-label">Magic Attack</span><span class="stat-value" style="color:#7fbfff;">${magicAtk >= 0 ? '+' : ''}${magicAtk}</span></div>
-                  <div class="stat-row"><span class="stat-label">Melee Strength</span><span class="stat-value" style="color:#ff4d4d;">+${meleeStr}</span></div>
-                  <div class="stat-row"><span class="stat-label">Ranged Strength</span><span class="stat-value" style="color:#44aa44;">+${rangedStr}</span></div>
-                  <div class="stat-row"><span class="stat-label">Magic Damage</span><span class="stat-value" style="color:#4da6ff;">+${magicDmg}</span></div>
+              <div style="display:flex; gap:12px; align-items:flex-start;">
+                <div class="stats-column" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                  ${buildInspectStatRow('HP', inspectedMaxHp, '#ff8d8d')}
+                  ${buildInspectStatRow('Melee Attack', `${meleeAtk >= 0 ? '+' : ''}${meleeAtk}`, '#ff9a66')}
+                  ${buildInspectStatRow('Ranged Attack', `${rangedAtk >= 0 ? '+' : ''}${rangedAtk}`, '#7fe37f')}
+                  ${buildInspectStatRow('Magic Attack', `${magicAtk >= 0 ? '+' : ''}${magicAtk}`, '#7fbfff')}
+                  ${buildInspectStatRow('Melee Strength', `+${meleeStr}`, '#ff4d4d')}
+                  ${buildInspectStatRow('Ranged Strength', `+${rangedStr}`, '#44aa44')}
                 </div>
-                </div>
-                <div class="stats-column" style="flex: 1; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(109, 69, 45, 0.5); padding-left: 10px;">
-                  <div class="stat-row"><span class="stat-label">HP</span><span class="stat-value" style="color:#ff8d8d;">${inspectedMaxHp}</span></div>
-                  <div class="stat-row"><span class="stat-label">Melee Defense</span><span class="stat-value" style="color:#e38a42;">+${meleeDef}</span></div>
-                  <div class="stat-row"><span class="stat-label">Ranged Defense</span><span class="stat-value" style="color:#aaffaa;">+${rangedDef}</span></div>
-                  <div class="stat-row"><span class="stat-label">Magic Defense</span><span class="stat-value" style="color:#6dafff;">+${magicDef}</span></div>
+                <div class="stats-column" style="flex:1; display:flex; flex-direction:column; gap:4px; border-left:1px solid rgba(109, 69, 45, 0.5); padding-left:8px;">
+                  ${buildInspectStatRow('Magic Damage', `+${magicDmg}`, '#4da6ff')}
+                  ${adminInspectRightExtra}
+                  ${buildInspectStatRow('Melee Defense', `+${meleeDef}`, '#e38a42')}
+                  ${buildInspectStatRow('Ranged Defense', `+${rangedDef}`, '#aaffaa')}
+                  ${buildInspectStatRow('Magic Defense', `+${magicDef}`, '#6dafff')}
                 </div>
               </div>
           `;
       }
-
       renderInspectAdminPanels(playerData);
       if (typeof preferredView === 'string' && preferredView) setInspectPlayerView(preferredView);
 
@@ -25890,6 +25911,49 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       }) || null;
   }
 
+  let adminPlayerNameCache = [];
+  let adminPlayerNameCacheLoadedAt = 0;
+  let adminPlayerNameRefreshPromise = null;
+
+  async function refreshAdminPlayerNameCache(force = false) {
+      if (!isCurrentUserAdmin() || !auth.currentUser) return adminPlayerNameCache;
+      const now = Date.now();
+      if (!force && adminPlayerNameCache.length && (now - adminPlayerNameCacheLoadedAt) < 300000) return adminPlayerNameCache;
+      if (adminPlayerNameRefreshPromise && !force) return adminPlayerNameRefreshPromise;
+
+      adminPlayerNameRefreshPromise = (async () => {
+          try {
+              const snap = await getDocs(query(collection(db, 'players')));
+              adminPlayerNameCache = snap.docs
+                  .map(doc => String((doc.data() || {}).name || '').trim())
+                  .filter(Boolean)
+                  .sort((a, b) => a.localeCompare(b));
+              adminPlayerNameCacheLoadedAt = Date.now();
+          } catch (err) {
+              console.error('Failed to refresh admin player cache:', err);
+          } finally {
+              adminPlayerNameRefreshPromise = null;
+          }
+          return adminPlayerNameCache;
+      })();
+
+      return adminPlayerNameRefreshPromise;
+  }
+
+  function getCachedAdminPlayerNameMatches(partial) {
+      const lowered = String(partial || '').trim().toLowerCase();
+      return adminPlayerNameCache
+          .filter(name => !lowered || name.toLowerCase().includes(lowered))
+          .slice(0, 6);
+  }
+
+  function getValidItemNameMatches(partial) {
+      const lowered = String(partial || '').trim().toLowerCase();
+      return (Array.isArray(VALID_ITEMS) ? VALID_ITEMS : [])
+          .filter(name => !lowered || name.toLowerCase().includes(lowered))
+          .slice(0, 6);
+  }
+
   function summarizeSavedInventoryData(savedInvData) {
       const items = Array.isArray(savedInvData)
           ? savedInvData.filter(item => item)
@@ -26011,6 +26075,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           }
       }
       return newInv;
+
   }
 
  // =================================================================
@@ -26043,6 +26108,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 '/inspect [playername]',
                 '/inspectlottery [playername]',
                 '/inspectdeath [playername]',
+                '/refresh - Refresh cached player names for autocomplete',
                 '/clear [playername] - Delete one player\'s chat messages',
                 '/clearall - Delete all chat messages',
                 '/clearlast - Delete last global chat message',
@@ -26052,6 +26118,18 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 '/godmode'
             ];
             helpLines.slice().reverse().forEach(line => addLocalChatMessage(line, 'system'));
+            return true;
+        }
+
+        // --- COMMAND: /refresh ---
+        if (command === 'refresh') {
+            try {
+                const names = await refreshAdminPlayerNameCache(true);
+                addLocalChatMessage('Refreshed player cache: ' + names.length.toLocaleString() + ' players loaded.', 'system');
+            } catch (e) {
+                console.error('Error refreshing player cache:', e);
+                addLocalChatMessage('Error refreshing player cache: ' + e.message, 'error');
+            }
             return true;
         }
 
@@ -26066,6 +26144,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 const targetDoc = await findPlayerDocByAdminName(targetName);
                 if (!targetDoc) {
                     addLocalChatMessage('Player not found: ' + targetName, 'error');
+
                     return true;
                 }
                 const playerData = targetDoc.data() || {};
@@ -26721,9 +26800,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             if (!targetName || !skill || isNaN(level)) return true;
 
             const newTotalXP = (window.getTotalXPForLevel) ? window.getTotalXPForLevel(level) : 0; 
-            const newSkillData = { level: level, xp: 0, totalXP: newTotalXP };
-
-            // Self
+            const newSkillData = { level: level, xp: 0, totalXP: newTotalXP };            // Self
             if (targetName === game.name.toLowerCase()) {
                 game[skill] = newSkillData; 
                 if(window.updateSkillUI) window.updateSkillUI();
@@ -26770,9 +26847,10 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
   { command: '/disconnectall', desc: 'Disconnect all active players except you' },
   { command: '/removebuff ', desc: 'Remove beer or drunk buffs' },
   { command: '/inspect ', desc: 'Open the full player inspect popup' },
-  { command: '/inspectlottery ', desc: 'Inspect a player\'s lottery stats' },
-  { command: '/inspectdeath ', desc: 'Inspect a player\'s death count' },
-  { command: '/clear ', desc: 'Delete one player\'s chat messages' },
+  { command: '/inspectlottery ', desc: "Inspect a player's lottery stats" },
+  { command: '/inspectdeath ', desc: "Inspect a player's death count" },
+  { command: '/refresh', desc: 'Refresh cached player-name suggestions' },
+  { command: '/clear ', desc: "Delete one player's chat messages" },
   { command: '/clearall', desc: 'Delete all chat messages' },
   { command: '/clearlast', desc: 'Delete the last global chat message' },
   { command: '/clearlastme', desc: 'Delete your last chat message' },
@@ -26787,6 +26865,44 @@ function getChatCommandMatches(value) {
   const trimmed = String(value || '').trimStart();
   if (!trimmed.startsWith('/')) return [];
   const lower = trimmed.toLowerCase();
+  const parts = trimmed.slice(1).split(' ');
+  const command = (parts[0] || '').toLowerCase();
+
+  const playerCommands = new Set(['givegold', 'inspect', 'inspectlottery', 'inspectdeath', 'disconnect', 'clear', 'removebuff']);
+
+  if (playerCommands.has(command)) {
+    const prefix = '/' + command + ' ';
+    if (lower.startsWith(prefix)) {
+      const partialPlayer = trimmed.slice(prefix.length);
+      return getCachedAdminPlayerNameMatches(partialPlayer).map(name => ({
+        command: prefix + name + ' ',
+        desc: 'Player name'
+      }));
+    }
+  }
+
+  if (command === 'giveitem') {
+    const prefix = '/giveitem ';
+    const rest = trimmed.slice(prefix.length);
+    if (!rest.length) {
+      return getCachedAdminPlayerNameMatches('').map(name => ({ command: prefix + name + ' ', desc: 'Player name' }));
+    }
+
+    const firstSpace = rest.indexOf(' ');
+    if (firstSpace === -1) {
+      return getCachedAdminPlayerNameMatches(rest).map(name => ({ command: prefix + name + ' ', desc: 'Player name' }));
+    }
+
+    const playerName = rest.slice(0, firstSpace).trim();
+    const itemPartial = rest.slice(firstSpace + 1).trim();
+    if (playerName && !/^\d+$/.test(itemPartial)) {
+      return getValidItemNameMatches(itemPartial).map(itemName => ({
+        command: prefix + playerName + ' ' + itemName + ' ',
+        desc: 'Item name'
+      }));
+    }
+  }
+
   return CHAT_COMMAND_SUGGESTIONS.filter(entry => entry.command.toLowerCase().startsWith(lower)).slice(0, 6);
 }
 
@@ -26826,13 +26942,14 @@ function updateChatCommandSuggestions() {
   box.style.display = 'flex';
 
   box.querySelectorAll('.chat-command-suggestion').forEach(btn => {
-    btn.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      const entry = matches[Number(btn.dataset.commandIndex)];
+    btn.onclick = () => {
+      const idx = Number(btn.getAttribute('data-command-index'));
+      const entry = activeChatCommandSuggestions[idx];
       if (entry) applyChatCommandSuggestion(entry.command);
-    });
+    };
   });
 }
+
 async function sendChatMessage() {
     const chatInput = document.getElementById('chatInput');
     const messageText = chatInput.value.trim();
@@ -27197,13 +27314,6 @@ async function sendChatMessage() {
                         (data.crafting?.totalXP || 0) + 
                         (data.ranged?.totalXP || 0) + 
                         (data.magic?.totalXP || 0) + 
-                        (data.fishing?.totalXP || 0) + 
-                        (data.stoneforging?.totalXP || 0) +
-                        (data.bountyhunting?.totalXP || 0) +
-                        (data.farming?.totalXP || 0) +
-                        (data.petmastery?.totalXP || 0) +
-                        (data.alchemy?.totalXP || 0) +
-                        (data.tailoring?.totalXP || 0) +
                         (data.thieving?.totalXP || 0);
         // --- END OF FIX ---
 
@@ -27293,9 +27403,14 @@ async function sendChatMessage() {
     }
     if (chatInput) {
       chatInput.addEventListener('input', () => {
+        const currentValue = String(chatInput.value || '').trimStart().toLowerCase();
+        if (currentValue.startsWith('/give') || currentValue.startsWith('/inspect') || currentValue.startsWith('/disconnect') || currentValue.startsWith('/clear') || currentValue.startsWith('/removebuff')) {
+          refreshAdminPlayerNameCache().then(() => updateChatCommandSuggestions());
+        }
         updateChatCommandSuggestions();
       });
       chatInput.addEventListener('focus', () => {
+        refreshAdminPlayerNameCache().then(() => updateChatCommandSuggestions());
         updateChatCommandSuggestions();
       });
       chatInput.addEventListener('blur', () => {
@@ -27314,33 +27429,6 @@ async function sendChatMessage() {
         }
       });
     }
-    
-    // +++ NEW: Session Lock Button +++
-    const takeControlBtn = document.getElementById('takeControlButton');
-    if (takeControlBtn) {
-      takeControlBtn.onclick = () => {
-        if (typeof window.acquireSessionLock === 'function') {
-          // Pass true to force the takeover
-          window.acquireSessionLock(true);
-        }
-      };
-    }
-  });
-
-  // --- Game Loop (Runs every 1s) ---
-  setInterval(() => {
-      if (game.isSessionActive) {
-          if (typeof processFarmLogic === 'function') processFarmLogic();
-          
-          // NEW: Updates the Lottery timer clock every second
-          if (typeof updateLotteryTimer === 'function') updateLotteryTimer();
-      }
-       // +++ REFRESH THIEVING TARGETS IF TAB IS ACTIVE +++
-      const thievingHub = document.getElementById('hubThieving');
-      if (thievingHub && thievingHub.classList.contains('active')) {
-          refreshThievingTargets();
-      }
-  }, 1000);
 
   // --- Autosave: Keep Session Lock Heartbeat ---
   // Now runs every 60 seconds instead of 5.
@@ -27854,6 +27942,7 @@ async function sendChatMessage() {
     });
 
   })();
+  });
 
 
   
