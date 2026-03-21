@@ -1028,5 +1028,60 @@
       "meleeDef": 10,
       "durationMs": 60000
     }
+  },
+  "cloth_cape": {
+    "id": "cloth_cape",
+    "name": "Cloth Cape",
+    "img": "images/clothcape.png",
+    "sellPrice": 60,
+    "unlockLevel": 1,
+    "stats": {
+      "meleeDef": 1,
+      "rangedDef": 1,
+      "magicDef": 1,
+      "armorType": "hybrid"
+    }
+  },
+  "red_dye": {
+    "id": "red_dye",
+    "name": "Red Dye",
+    "img": "images/reddye.png",
+    "sellPrice": 20
+  },
+  "blue_dye": {
+    "id": "blue_dye",
+    "name": "Blue Dye",
+    "img": "images/bluedye.png",
+    "sellPrice": 20
+  },
+  "black_dye": {
+    "id": "black_dye",
+    "name": "Black Dye",
+    "img": "images/blackdye.png",
+    "sellPrice": 30
+  },
+  "green_dye": {
+    "id": "green_dye",
+    "name": "Green Dye",
+    "img": "images/greendye.png",
+    "sellPrice": 20
+  },
+  "white_dye": {
+    "id": "white_dye",
+    "name": "White Dye",
+    "img": "images/whitedye.png",
+    "sellPrice": 25
+  },
+  "gold_dye": {
+    "id": "gold_dye",
+    "name": "Gold Dye",
+    "img": "images/golddye.png",
+    "sellPrice": 100
+  },
+  "bleach": {
+    "id": "bleach",
+    "name": "Bleach",
+    "img": "images/bleach.png",
+    "sellPrice": 15
   }
 }

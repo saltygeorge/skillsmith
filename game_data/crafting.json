@@ -1871,6 +1871,26 @@
       "slot": 9
     },
     {
+      "id": "tailor_cloth_cape",
+      "section": "tailoring",
+      "skill": "tailoring",
+      "level": 10,
+      "displayName": "Cloth Cape",
+      "image": "images/clothcape.png",
+      "requirements": [
+        {
+          "name": "Cloth",
+          "qty": 8
+        }
+      ],
+      "time": 5000,
+      "xp": 90,
+      "outputName": "Cloth Cape",
+      "outputQty": 1,
+      "slot": 10,
+      "description": "A simple cape woven from cloth."
+    },
+    {
       "id": "craft_mapple_fishing_pole",
       "section": "crafting",
       "skill": "crafting",
@@ -1906,3 +1926,4 @@
     }
   ]
 }
+
