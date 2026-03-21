@@ -24528,7 +24528,7 @@ async function attemptEnchant() {
   window.releaseSessionLock = async function(isAsync = true) {
     stopSessionHeartbeat();
     const playerRef = getPlayerRef();
-    if (!playerRef) return;
+    if (!playerRef) return false;
     
     // We only release the lock if we are the one holding it.
     try {
@@ -24555,7 +24555,7 @@ async function attemptEnchant() {
    */
   window.acquireSessionLock = async function(force = false) {
     const playerRef = getPlayerRef();
-    if (!playerRef) return;
+    if (!playerRef) return false;
     
     try {
       await runTransaction(db, async (transaction) => {
@@ -24588,9 +24588,11 @@ async function attemptEnchant() {
       
       game.isSessionActive = true;
       hideSessionLockOverlay();
+      return true;
       
     } catch (e) {
       console.error("Failed to acquire lock:", e.message);
+      return false;
     }
   }
   // +++ --- END NEW SESSION LOCK FUNCTIONS --- +++
@@ -27399,6 +27401,24 @@ async function sendChatMessage() {
       chatSendBtn.onclick = () => {
         hideChatCommandSuggestions();
         sendChatMessage();
+      };
+    }
+    const takeControlBtn = document.getElementById('takeControlButton');
+    if (takeControlBtn) {
+      takeControlBtn.onclick = async () => {
+        const originalText = takeControlBtn.textContent;
+        takeControlBtn.disabled = true;
+        takeControlBtn.textContent = 'Taking Control...';
+        try {
+          if (typeof window.acquireSessionLock === 'function') {
+            await window.acquireSessionLock(true);
+          }
+        } catch (e) {
+          console.error('Take Control failed:', e);
+        } finally {
+          takeControlBtn.disabled = false;
+          takeControlBtn.textContent = originalText;
+        }
       };
     }
     if (chatInput) {
