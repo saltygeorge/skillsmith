@@ -305,13 +305,34 @@ body {
   transition: transform 0.1s; /* Smooths it out */
 }
 
-/* Specific scaling and vertical offset for necklaces */
-.inv-slot img[src*="necklace"], 
-.equipment-slot img[src*="necklace"],
-#craftingItemsContainer button img[src*="necklace"],
-#hubDynamic img[src*="necklace"] {
-  /* scale(1.4) makes it bigger, translateY(-5px) moves it UP by 5 pixels */
+/* Specific scaling and vertical offset for actual necklace items */
+.inv-slot img[src*="diamondnecklace"],
+.inv-slot img[src*="emeraldnecklace"],
+.inv-slot img[src*="rubynecklace"],
+.inv-slot img[src*="sapphirenecklace"],
+.inv-slot img[src*="topaznecklace"],
+.equipment-slot img[src*="diamondnecklace"],
+.equipment-slot img[src*="emeraldnecklace"],
+.equipment-slot img[src*="rubynecklace"],
+.equipment-slot img[src*="sapphirenecklace"],
+.equipment-slot img[src*="topaznecklace"],
+#craftingItemsContainer button img[src*="diamondnecklace"],
+#craftingItemsContainer button img[src*="emeraldnecklace"],
+#craftingItemsContainer button img[src*="rubynecklace"],
+#craftingItemsContainer button img[src*="sapphirenecklace"],
+#craftingItemsContainer button img[src*="topaznecklace"],
+#hubDynamic img[src*="diamondnecklace"],
+#hubDynamic img[src*="emeraldnecklace"],
+#hubDynamic img[src*="rubynecklace"],
+#hubDynamic img[src*="sapphirenecklace"],
+#hubDynamic img[src*="topaznecklace"] {
   transform: scale(1.4) translateY(-3px) !important;
+}
+
+/* Keep the empty necklace placeholder centered */
+.equipment-slot img[alt="Necklace"],
+.equipment-slot img[alt="necklace"] {
+  transform: none !important;
 }
 
 /* Optional: If the rings also look too small, you can add them here too */
@@ -714,6 +735,12 @@ button.primary:hover { background: var(--accent-hover); }
   border-color: var(--gold);
   border-style: dashed;
   background: rgba(181, 166, 66, 0.1);
+}
+
+.equipment-slot.drag-valid {
+  border-color: rgba(255, 215, 0, 0.9);
+  box-shadow: 0 0 0 1px rgba(255,215,0,0.25) inset, 0 0 10px rgba(255,215,0,0.28);
+  background: rgba(181, 166, 66, 0.14);
 }
 
 /* +++ NEW: SESSION LOCK OVERLAY +++ */
@@ -2347,6 +2374,7 @@ button.primary:hover { background: var(--accent-hover); }
   <button onclick="showTab('quests')" id="tabQuestsBtn" onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Quests / Missions</div>')" onmouseleave="hideTooltip()">
     <img src="images/questicon.png" alt="Quests">
   </button>
+
   <button onclick="showTab('achievements')" id="tabAchievementsBtn" style="display:none;">
     <img src="images/questicon.png" alt="Achievements">
   </button>
@@ -2470,6 +2498,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="lotteryActionIcon" src="images/lotteryicon.jpeg" alt="Lottery" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openLotteryHub()">
               <img id="questsActionIcon" src="images/questbuttonicon.jpg" alt="Quests" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="achievementsActionIcon" src="images/questicon.png" alt="Achievements" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openAchievementsHub()">
+              <img id="trophyRoomActionIcon" src="images/equipmenticon.png" alt="Trophy Rooms" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openTrophyRoomHub()">
               <img id="huntingBoardActionIcon" src="images/huntingboard.jpeg" alt="Hunting Board" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="personalFarmActionIcon" src="images/farmicon.jpeg" alt="My Farm" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openPersonalFarmHub()">
               <img id="petYardActionIcon" src="images/petyardicon.jpeg" alt="Pet Yard" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openPetYardHub()">
@@ -2498,6 +2527,15 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
           </div>
 
+          <div id="hubTrophyRoom" class="hub-screen">
+            <h2>Trophy Rooms</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Store full gear setups and swap them instantly.</div>
+            <div id="trophyRoomSelector" style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;"></div>
+            <div id="trophyRoomContent" style="margin-top:12px; display:flex; flex-direction:column; flex:1; min-height:0; max-height:340px; overflow-y:auto; padding-right:6px; width:100%; box-sizing:border-box;"></div>
+            <div class="action-buttons" style="margin-top: 10px;">
+              <button id="hubTrophyRoom_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
 
           <div id="hubHuntingBoard" class="hub-screen">
             <h2>Hunting Board</h2>
@@ -3714,6 +3752,7 @@ button.primary:hover { background: var(--accent-hover); }
             <button id="inspectTabInventoryBtn" class="primary" type="button">Inventory</button>
             <button id="inspectTabBankBtn" class="primary" type="button">Bank</button>
             <button id="inspectTabSkillsBtn" class="primary" type="button">Skills</button>
+            <button id="inspectTabAchievementsBtn" class="primary" type="button">Achievements</button>
         </div>
         <div id="inspectEquipmentPanel" class="game-modal-content">
             <div class="equipment-character" style="border-bottom: 2px solid var(--accent); padding-bottom: 15px;">
@@ -3739,6 +3778,14 @@ button.primary:hover { background: var(--accent-hover); }
         <div id="inspectSkillsPanel" class="game-modal-content" style="display:none;">
             <div id="inspectSkillsMeta" style="margin-bottom:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#efe3cf; font-size:12px;"></div>
             <div id="inspectSkillsGrid" style="max-height:320px; overflow-y:auto; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px;"></div>
+        </div>
+        <div id="inspectAchievementsPanel" class="game-modal-content" style="display:none;">
+            <div id="inspectAchievementsMeta" style="margin-bottom:12px; display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px;"></div>
+            <div id="inspectAchievementsGrid" style="max-height:220px; overflow-y:auto; display:grid; grid-template-columns:1fr; gap:8px;"></div>
+            <div style="margin-top:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#efe3cf; font-size:12px;">
+                <div style="font-weight:bold; color:var(--gold); margin-bottom:8px;">Monster Kills</div>
+                <div id="inspectAchievementKillsGrid" style="max-height:120px; overflow-y:auto;"></div>
+            </div>
         </div>
         <div class="game-modal-buttons">
             <button id="inspectDuelBtn" class="primary">Duel</button>
@@ -3786,6 +3833,8 @@ const game = {
     boots: null,
     pet: null       // <-- NEW PET SLOT
   },
+  trophyRooms: [],
+  activeTrophyRoomIndex: 0,
   mining: { level: 1, xp: 0, totalXP: 0 },
   blacksmith: { level: 1, xp: 0, totalXP: 0 },
   attack: { level: 1, xp: 0, totalXP: 0 }, 
@@ -3919,6 +3968,640 @@ isDragging: false,
 
 window.game = game;
 globalThis.game = game;
+
+const EQUIPMENT_SLOT_KEYS = ['necklace', 'helmet', 'cape', 'weapon', 'chest', 'shield', 'ring1', 'legs', 'ring2', 'arrows', 'boots', 'pet'];
+const TROPHY_ROOM_DEFS = [
+  { id: 'trophy_room_1', name: 'Trophy Room 1', unlockCost: 0 },
+  { id: 'trophy_room_2', name: 'Trophy Room 2', unlockCost: 1000000 },
+  { id: 'trophy_room_3', name: 'Trophy Room 3', unlockCost: 10000000 }
+];
+
+function createEmptyEquipmentSet() {
+  const equipment = {};
+  EQUIPMENT_SLOT_KEYS.forEach(slot => { equipment[slot] = null; });
+  return equipment;
+}
+
+function clonePlainData(value) {
+  return value == null ? null : JSON.parse(JSON.stringify(value));
+}
+
+function normalizeEquipmentSet(source) {
+  const normalized = createEmptyEquipmentSet();
+  if (!source || typeof source !== 'object') return normalized;
+  EQUIPMENT_SLOT_KEYS.forEach(slot => {
+    normalized[slot] = clonePlainData(source[slot]) || null;
+  });
+  return normalized;
+}
+
+function createDefaultTrophyRoom(index) {
+  const def = TROPHY_ROOM_DEFS[index];
+  return {
+    id: def.id,
+    name: def.name,
+    unlocked: index === 0,
+    unlockCost: def.unlockCost,
+    equipment: createEmptyEquipmentSet(),
+    playerAttackStyle: 'strength',
+    autocastSpell: null
+  };
+}
+
+function ensureTrophyRoomState() {
+  if (!Array.isArray(game.trophyRooms)) game.trophyRooms = [];
+  game.trophyRooms = TROPHY_ROOM_DEFS.map((def, index) => {
+    const existing = game.trophyRooms[index] && typeof game.trophyRooms[index] === 'object' ? game.trophyRooms[index] : {};
+    return {
+      id: def.id,
+      name: def.name,
+      unlocked: index === 0 ? true : !!existing.unlocked,
+      unlockCost: def.unlockCost,
+      equipment: normalizeEquipmentSet(existing.equipment),
+      playerAttackStyle: typeof existing.playerAttackStyle === 'string' ? existing.playerAttackStyle : 'strength',
+      autocastSpell: typeof existing.autocastSpell === 'string' ? existing.autocastSpell : null
+    };
+  });
+  const activeIndex = Number(game.activeTrophyRoomIndex || 0);
+  game.activeTrophyRoomIndex = Number.isFinite(activeIndex) ? Math.min(Math.max(0, Math.floor(activeIndex)), game.trophyRooms.length - 1) : 0;
+  return game.trophyRooms;
+}
+
+function isEquipmentSetEmpty(equipment) {
+  return EQUIPMENT_SLOT_KEYS.every(slot => !equipment || !equipment[slot]);
+}
+
+function getLoadoutCombatStyle(equipment, autocastSpell) {
+  const weapon = equipment && equipment.weapon;
+  if (weapon && weapon.name && window.ITEM_STATS && window.ITEM_STATS[weapon.name] && window.ITEM_STATS[weapon.name].weaponType) {
+    return window.ITEM_STATS[weapon.name].weaponType;
+  }
+  if (autocastSpell) return 'magic';
+  return 'melee';
+}
+
+function formatLoadoutStyleLabel(style) {
+  const normalized = String(style || 'melee');
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function formatAutocastSpellLabel(spellId) {
+  if (!spellId) return 'None';
+  return String(spellId)
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, ch => ch.toUpperCase())
+    .trim();
+}
+
+const TROPHY_ROOM_SLOT_ICON_MAP = {
+  necklace: 'necklace',
+  helmet: 'helmet',
+  cape: 'cape',
+  weapon: 'weapon',
+  chest: 'chestplate',
+  shield: 'shield',
+  ring1: 'ring',
+  legs: 'legs',
+  ring2: 'ring',
+  arrows: 'arrows',
+  boots: 'boots',
+  pet: 'pet'
+};
+
+function getTrophyRoomEquipSlot(itemName) {
+  const equipableItems = {
+    'Copper Helmet': 'helmet',
+    'Copper Chestplate': 'chest',
+    'Copper Shortsword': 'weapon',
+    'Copper Boots': 'boots',
+    'Iron Helmet': 'helmet',
+    'Iron Chestplate': 'chest',
+    'Iron Shortsword': 'weapon',
+    'Iron Boots': 'boots',
+    'Copper Platelegs': 'legs',
+    'Iron Platelegs': 'legs',
+    'Softwood Bow': 'weapon',
+    'Oak Bow': 'weapon',
+    'Copper Arrow': 'arrows',
+    'Copper Arrow Poisoned': 'arrows',
+    'Leather Hood': 'helmet',
+    'Leather Body': 'chest',
+    'Ranger Chest': 'chest',
+    'Leather Chaps': 'legs',
+    'Leather Boots': 'boots',
+    'Wizard Hat': 'helmet',
+    'Wizard Robe': 'chest',
+    'Wizard Trousers': 'legs',
+    'Wizard Boots': 'boots',
+    'Magic Staff': 'weapon',
+    'Advanced Magic Staff': 'weapon',
+    'Gold Crown': 'helmet',
+    'Elegant Black Cape': 'cape',
+    'Cloth Cape': 'cape',
+    '1tapper': 'weapon',
+    'Gold Ring': 'ring_choice',
+    'Diamond Ring': 'ring_choice',
+    'Emerald Ring': 'ring_choice',
+    'Ruby Ring': 'ring_choice',
+    'Sapphire Ring': 'ring_choice',
+    'Topaz Ring': 'ring_choice',
+    'Archery Bracer': 'ring_choice',
+    'Diamond Necklace': 'necklace',
+    'Emerald Necklace': 'necklace',
+    'Ruby Necklace': 'necklace',
+    'Sapphire Necklace': 'necklace',
+    'Topaz Necklace': 'necklace',
+    'Silver Fangs of the Fallen Monarch': 'weapon',
+    'Iron Battleaxe': 'weapon',
+    'Iron Shield': 'shield',
+    'Gold Helmet': 'helmet',
+    'Gold Chestplate': 'chest',
+    'Gold Platelegs': 'legs',
+    'Gold Boots': 'boots',
+    'Gold Shield': 'shield'
+  };
+  return equipableItems[itemName] || null;
+}
+
+function getTrophyRoomDisplayedSourceSlot(roomEquipment, requestedSlotType) {
+  if (roomEquipment && roomEquipment[requestedSlotType]) return requestedSlotType;
+  if (requestedSlotType === 'shield' && roomEquipment && roomEquipment.weapon && window.ITEM_STATS && window.ITEM_STATS[roomEquipment.weapon.name] && window.ITEM_STATS[roomEquipment.weapon.name].twoHanded) {
+    return 'weapon';
+  }
+  if (requestedSlotType === 'ring1' && roomEquipment && roomEquipment.ring2 && window.ITEM_STATS && window.ITEM_STATS[roomEquipment.ring2.name] && window.ITEM_STATS[roomEquipment.ring2.name].occupiesBothRings) {
+    return 'ring2';
+  }
+  if (requestedSlotType === 'ring2' && roomEquipment && roomEquipment.ring1 && window.ITEM_STATS && window.ITEM_STATS[roomEquipment.ring1.name] && window.ITEM_STATS[roomEquipment.ring1.name].occupiesBothRings) {
+    return 'ring1';
+  }
+  return null;
+}
+
+function isTrophyRoomDragCompatible(slotType, draggedItem) {
+  if (!draggedItem || !draggedItem.name) return false;
+  const sourceSlotType = getTrophyRoomEquipSlot(draggedItem.name);
+  if (!sourceSlotType) return false;
+  if (sourceSlotType === 'ring_choice') return slotType === 'ring1' || slotType === 'ring2';
+  return sourceSlotType === slotType;
+}
+
+function clearTrophyRoomDragHighlights() {
+  document.querySelectorAll('#trophyRoomPreviewFrame .equipment-slot.drag-valid').forEach(slot => slot.classList.remove('drag-valid'));
+}
+
+function updateTrophyRoomDragHighlights() {
+  clearTrophyRoomDragHighlights();
+  const trophyScreen = document.getElementById('hubTrophyRoom');
+  const roomFrame = document.getElementById('trophyRoomPreviewFrame');
+  if (!trophyScreen || !roomFrame || !trophyScreen.classList.contains('active')) return;
+
+  const dragIndex = typeof window.__draggedInventoryIndex === 'number' ? window.__draggedInventoryIndex : null;
+  if (dragIndex === null || dragIndex < 0) return;
+  const draggedItem = game.inventory[dragIndex];
+  if (!draggedItem || !draggedItem.name) return;
+
+  roomFrame.querySelectorAll('.equipment-slot[data-slot-type]').forEach(slot => {
+    if (isTrophyRoomDragCompatible(slot.dataset.slotType, draggedItem)) {
+      slot.classList.add('drag-valid');
+    }
+  });
+}
+function cloneTrophyRoomItem(item, qtyOverride = null) {
+  if (!item || !item.name) return null;
+  const qty = Math.max(1, Number(qtyOverride == null ? item.qty || 1 : qtyOverride));
+  const clone = {
+    name: item.name,
+    qty,
+    enchantLevel: Number(item.enchantLevel || 0)
+  };
+  const dyeColor = typeof normalizeItemDyeColor === 'function' ? normalizeItemDyeColor(item.dyeColor) : null;
+  if (dyeColor) clone.dyeColor = dyeColor;
+  return clone;
+}
+
+function buildInventoryPreviewAfterTrophyConsume(dragIndex, targetSlotType) {
+  const preview = Array.isArray(game.inventory)
+    ? game.inventory.map(slot => (slot ? cloneTrophyRoomItem(slot, slot.qty || 1) : null))
+    : [];
+  const src = preview[dragIndex];
+  if (!src) return preview;
+  const qtyToMove = targetSlotType === 'arrows' ? Math.max(1, Number(src.qty || 0)) : 1;
+  if (Number(src.qty || 0) <= qtyToMove) preview[dragIndex] = null;
+  else src.qty -= qtyToMove;
+  return preview;
+}
+
+function canInventoryPreviewReceiveItem(previewInventory, item) {
+  if (!item || !item.name) return true;
+  const qty = Math.max(1, Number(item.qty || 1));
+  const enchantLevel = Number(item.enchantLevel || 0);
+  const dyeColor = typeof normalizeItemDyeColor === 'function' ? normalizeItemDyeColor(item.dyeColor) : null;
+
+  for (const slot of previewInventory) {
+    if (itemsMatchForStack(slot, item.name, enchantLevel, dyeColor)) {
+      slot.qty += qty;
+      return true;
+    }
+  }
+
+  const emptyIndex = previewInventory.findIndex(slot => slot === null);
+  if (emptyIndex === -1) return false;
+
+  previewInventory[emptyIndex] = cloneTrophyRoomItem(item, qty);
+  return true;
+}
+
+function canInventoryReceiveTrophyItemsAfterDrag(dragIndex, targetSlotType, itemsToReturn) {
+  const previewInventory = buildInventoryPreviewAfterTrophyConsume(dragIndex, targetSlotType);
+  for (const item of itemsToReturn) {
+    if (!canInventoryPreviewReceiveItem(previewInventory, item)) return false;
+  }
+  return true;
+}
+
+function consumeInventoryItemForTrophyRoom(dragIndex, targetSlotType) {
+  const stack = game.inventory[dragIndex];
+  if (!stack) return null;
+  const qtyToMove = targetSlotType === 'arrows' ? Math.max(1, Number(stack.qty || 0)) : 1;
+  const movedItem = cloneTrophyRoomItem(stack, qtyToMove);
+
+  if (Number(stack.qty || 0) <= qtyToMove) game.inventory[dragIndex] = null;
+  else stack.qty -= qtyToMove;
+
+  return movedItem;
+}
+
+function clearTrophyRoomDragState() {
+  window.__draggedInventoryIndex = null;
+  window.__millDraggedWheatQty = 0;
+  window.__millDraggedFlourQty = 0;
+  if (typeof draggedBankItem !== 'undefined') draggedBankItem = null;
+  game.isDragging = false;
+  clearTrophyRoomDragHighlights();
+  const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
+  if (draggingEl) draggingEl.classList.remove('dragging');
+}
+
+function getTrophyRoomDisplacedItems(roomEquipment, targetSlotType, incomingItem) {
+  const displaced = [];
+  const seenSlots = new Set();
+  const pushSlot = (slotKey) => {
+    if (!slotKey || seenSlots.has(slotKey)) return;
+    seenSlots.add(slotKey);
+    const slotItem = roomEquipment[slotKey];
+    if (slotItem) displaced.push(cloneTrophyRoomItem(slotItem, slotItem.qty || 1));
+  };
+
+  pushSlot(targetSlotType);
+
+  const incomingStats = (window.ITEM_STATS && incomingItem && incomingItem.name) ? window.ITEM_STATS[incomingItem.name] : null;
+  if (targetSlotType === 'weapon' && incomingStats && incomingStats.twoHanded) pushSlot('shield');
+  if (targetSlotType === 'shield' && roomEquipment.weapon && window.ITEM_STATS && window.ITEM_STATS[roomEquipment.weapon.name] && window.ITEM_STATS[roomEquipment.weapon.name].twoHanded) {
+    pushSlot('weapon');
+  }
+
+  if (targetSlotType === 'ring1' || targetSlotType === 'ring2') {
+    const otherSlot = targetSlotType === 'ring1' ? 'ring2' : 'ring1';
+    if (incomingStats && incomingStats.occupiesBothRings) pushSlot(otherSlot);
+    else if (roomEquipment[otherSlot] && window.ITEM_STATS && window.ITEM_STATS[roomEquipment[otherSlot].name] && window.ITEM_STATS[roomEquipment[otherSlot].name].occupiesBothRings) {
+      pushSlot(otherSlot);
+    }
+  }
+
+  return displaced;
+}
+
+async function removeTrophyRoomItem(roomIndex, requestedSlotType) {
+  if (game.isDragging) return;
+
+  const rooms = ensureTrophyRoomState();
+  const room = rooms[roomIndex];
+  if (!room || !room.unlocked) return;
+
+  room.equipment = normalizeEquipmentSet(room.equipment);
+  const sourceSlotType = getTrophyRoomDisplayedSourceSlot(room.equipment, requestedSlotType);
+  if (!sourceSlotType) return;
+
+  const item = room.equipment[sourceSlotType];
+  if (!item) return;
+
+  if (!canReceiveItem(item.name, Number(item.enchantLevel || 0), item.dyeColor || null)) {
+    await showGameAlert('Inventory Full', 'You need room in your inventory to remove that item from the Trophy Room.');
+    return;
+  }
+
+  addItem(item.name, Number(item.qty || 1), Number(item.enchantLevel || 0), item.dyeColor || null);
+  room.equipment[sourceSlotType] = null;
+  game.activeTrophyRoomIndex = roomIndex;
+  game.isDirty = true;
+
+  renderInventoryGrid();
+  renderTrophyRoom();
+  hideTooltip();
+  if (typeof playGlobalSound === 'function') playGlobalSound('sounds/soundeffects/itemequipsoundeffect.mp3');
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+async function handleTrophyRoomSlotDrop(event, roomIndex, requestedSlotType) {
+  event.preventDefault();
+  event.stopPropagation();
+  const slotEl = event.currentTarget;
+  if (slotEl) slotEl.classList.remove('drag-over');
+
+  const dragIndex = typeof window.__draggedInventoryIndex === 'number' ? window.__draggedInventoryIndex : null;
+  if (dragIndex === null || dragIndex < 0) {
+    clearTrophyRoomDragState();
+    return;
+  }
+
+  const draggedStack = game.inventory[dragIndex];
+  if (!draggedStack || !draggedStack.name) {
+    clearTrophyRoomDragState();
+    renderInventoryGrid();
+    return;
+  }
+
+  const sourceSlotType = getTrophyRoomEquipSlot(draggedStack.name);
+  if (!sourceSlotType) {
+    clearTrophyRoomDragState();
+    renderInventoryGrid();
+    await showGameAlert('Cannot Store', 'Only equipable items can be dropped into a Trophy Room.');
+    return;
+  }
+
+  let targetSlotType = null;
+  if (sourceSlotType === 'ring_choice') {
+    if (requestedSlotType === 'ring1' || requestedSlotType === 'ring2') targetSlotType = requestedSlotType;
+  } else if (sourceSlotType === requestedSlotType) {
+    targetSlotType = requestedSlotType;
+  }
+
+  if (!targetSlotType) {
+    clearTrophyRoomDragState();
+    renderInventoryGrid();
+    await showGameAlert('Wrong Slot', 'That item does not fit in this Trophy Room slot.');
+    return;
+  }
+
+  const rooms = ensureTrophyRoomState();
+  const room = rooms[roomIndex];
+  if (!room || !room.unlocked) {
+    clearTrophyRoomDragState();
+    renderInventoryGrid();
+    return;
+  }
+
+  room.equipment = normalizeEquipmentSet(room.equipment);
+  const displacedItems = getTrophyRoomDisplacedItems(room.equipment, targetSlotType, draggedStack);
+  if (!canInventoryReceiveTrophyItemsAfterDrag(dragIndex, targetSlotType, displacedItems)) {
+    clearTrophyRoomDragState();
+    renderInventoryGrid();
+    await showGameAlert('Inventory Full', 'You need more inventory space to replace that Trophy Room slot.');
+    return;
+  }
+
+  const movedItem = consumeInventoryItemForTrophyRoom(dragIndex, targetSlotType);
+  if (!movedItem) {
+    clearTrophyRoomDragState();
+    renderInventoryGrid();
+    return;
+  }
+
+  displacedItems.forEach(item => {
+    addItem(item.name, Number(item.qty || 1), Number(item.enchantLevel || 0), item.dyeColor || null);
+  });
+
+  const incomingStats = (window.ITEM_STATS && movedItem.name) ? window.ITEM_STATS[movedItem.name] : null;
+  if (targetSlotType === 'weapon' && incomingStats && incomingStats.twoHanded) room.equipment.shield = null;
+  if (targetSlotType === 'shield' && room.equipment.weapon && window.ITEM_STATS && window.ITEM_STATS[room.equipment.weapon.name] && window.ITEM_STATS[room.equipment.weapon.name].twoHanded) {
+    room.equipment.weapon = null;
+  }
+  if (targetSlotType === 'ring1' || targetSlotType === 'ring2') {
+    const otherSlot = targetSlotType === 'ring1' ? 'ring2' : 'ring1';
+    if (incomingStats && incomingStats.occupiesBothRings) room.equipment[otherSlot] = null;
+    else if (room.equipment[otherSlot] && window.ITEM_STATS && window.ITEM_STATS[room.equipment[otherSlot].name] && window.ITEM_STATS[room.equipment[otherSlot].name].occupiesBothRings) {
+      room.equipment[otherSlot] = null;
+    }
+  }
+
+  room.equipment[targetSlotType] = movedItem;
+  game.activeTrophyRoomIndex = roomIndex;
+  game.isDirty = true;
+
+  clearTrophyRoomDragState();
+  renderInventoryGrid();
+  renderTrophyRoom();
+  hideTooltip();
+  if (typeof playGlobalSound === 'function') playGlobalSound('sounds/soundeffects/itemequipsoundeffect.mp3');
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function renderTrophyRoomEquipmentFrame(equipment, frame, roomIndex) {
+  if (!frame) return;
+  frame.innerHTML = '';
+
+  const roomEquipment = normalizeEquipmentSet(equipment);
+  EQUIPMENT_SLOT_KEYS.forEach(slotType => {
+    const actualItem = roomEquipment[slotType];
+    const displayedSourceSlot = getTrophyRoomDisplayedSourceSlot(roomEquipment, slotType);
+    const displayedItem = displayedSourceSlot ? roomEquipment[displayedSourceSlot] : null;
+    const slotEl = document.createElement('div');
+    slotEl.className = 'equipment-slot';
+    slotEl.dataset.slotType = slotType;
+
+    let imgName = TROPHY_ROOM_SLOT_ICON_MAP[slotType] || slotType;
+    let blockedMessage = '';
+
+    if (slotType === 'shield' && !actualItem && displayedSourceSlot === 'weapon' && displayedItem) {
+      imgName = getInspectItemImageName(displayedItem, imgName);
+      blockedMessage = 'Blocked by a 2H weapon';
+    } else if ((slotType === 'ring1' || slotType === 'ring2') && !actualItem && displayedSourceSlot && displayedSourceSlot !== slotType && displayedItem) {
+      imgName = getInspectItemImageName(displayedItem, 'ring');
+      blockedMessage = 'Blocked by a 2-slot accessory';
+    } else if (displayedItem) {
+      imgName = getInspectItemImageName(displayedItem, imgName);
+    }
+
+    const img = document.createElement('img');
+    img.src = `images/${imgName}.png`;
+    img.alt = slotType;
+    if (blockedMessage) {
+      img.style.opacity = '0.5';
+      img.style.filter = 'grayscale(100%)';
+    }
+    slotEl.appendChild(img);
+
+    if (displayedItem && Number(displayedItem.qty || 0) > 1) {
+      const amt = document.createElement('div');
+      amt.className = 'inv-amount';
+      amt.innerText = formatAmount(Number(displayedItem.qty || 0));
+      slotEl.appendChild(amt);
+    }
+
+    if (displayedItem) {
+      const enchantLevel = Number(displayedItem.enchantLevel || 0);
+      if (displayedItem.name === 'Gold Crown' || displayedItem.name === 'Elegant Black Cape') slotEl.classList.add('legendary-glow');
+      else if (enchantLevel > 0) slotEl.classList.add(`enchant-glow-${enchantLevel}`);
+
+      if (enchantLevel > 0) {
+        const badge = document.createElement('div');
+        badge.className = 'enchant-level-badge';
+        badge.innerText = `+${enchantLevel}`;
+        slotEl.appendChild(badge);
+      }
+    }
+
+    const emptyTooltip = blockedMessage
+      ? `${blockedMessage}<div style="color:#aaa; margin-top:4px; font-size:11px;">Click to remove it, or drag a valid item here to replace it.</div>`
+      : `Empty Slot<div style="color:#aaa; margin-top:4px; font-size:11px;">Drag matching gear here from your inventory.</div>`;
+    const tooltipContent = displayedItem
+      ? `${getInspectItemTooltipHtml(displayedItem)}<div style="color:#aaa; margin-top:4px; font-size:11px;">Click to remove it, or drag from inventory to replace this slot.</div>`
+      : emptyTooltip;
+
+    slotEl.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+    slotEl.onmouseleave = () => {
+      slotEl.classList.remove('drag-over');
+      hideTooltip();
+    };
+    slotEl.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      slotEl.classList.add('drag-over');
+    });
+    slotEl.addEventListener('dragleave', () => slotEl.classList.remove('drag-over'));
+    slotEl.addEventListener('drop', (e) => handleTrophyRoomSlotDrop(e, roomIndex, slotType));
+
+    if (displayedSourceSlot && displayedItem) {
+      slotEl.style.cursor = 'pointer';
+      slotEl.onclick = () => removeTrophyRoomItem(roomIndex, slotType);
+    }
+
+    frame.appendChild(slotEl);
+  });
+
+  updateTrophyRoomDragHighlights();
+}
+
+async function unlockTrophyRoom(index) {
+  const rooms = ensureTrophyRoomState();
+  const room = rooms[index];
+  if (!room || room.unlocked) return;
+  const cost = Number(room.unlockCost || 0);
+  if (Number(game.gold || 0) < cost) {
+    await showGameAlert('Not Enough Gold', `You need ${cost.toLocaleString()} Gold to unlock ${room.name}.`);
+    return;
+  }
+  addGold(-cost);
+  room.unlocked = true;
+  game.isDirty = true;
+  renderTrophyRoom();
+  showWarningPopup(`${room.name} unlocked.`);
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+async function swapCurrentGearWithTrophyRoom(index) {
+  const rooms = ensureTrophyRoomState();
+  const room = rooms[index];
+  if (!room || !room.unlocked) return;
+
+  const roomWasEmpty = isEquipmentSetEmpty(room.equipment);
+  const roomEquipment = normalizeEquipmentSet(room.equipment);
+  const roomStyle = room.playerAttackStyle || 'strength';
+  const roomAutocast = room.autocastSpell || null;
+
+  room.equipment = normalizeEquipmentSet(game.equipment);
+  room.playerAttackStyle = game.playerAttackStyle || 'strength';
+  room.autocastSpell = game.autocastSpell || null;
+
+  game.equipment = roomEquipment;
+  if (!roomWasEmpty) {
+    game.playerAttackStyle = roomStyle;
+    game.autocastSpell = roomAutocast;
+  }
+
+  game.activeTrophyRoomIndex = index;
+  game.isDirty = true;
+  if (typeof setAttackStyle === 'function') setAttackStyle(game.playerAttackStyle || 'strength', true);
+  else if (typeof renderEquipment === 'function') renderEquipment();
+  if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
+  renderTrophyRoom();
+  hideTooltip();
+  if (typeof playGlobalSound === 'function') playGlobalSound('sounds/soundeffects/itemequipsoundeffect.mp3');
+  showWarningPopup(roomWasEmpty ? `${room.name} now stores your current gear.` : `Swapped your current gear with ${room.name}.`);
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+function renderTrophyRoom() {
+  const selector = document.getElementById('trophyRoomSelector');
+  const content = document.getElementById('trophyRoomContent');
+  if (!selector || !content) return;
+
+  const rooms = ensureTrophyRoomState();
+  const activeIndex = Number(game.activeTrophyRoomIndex || 0);
+  const room = rooms[activeIndex] || rooms[0];
+  const roomStyle = getLoadoutCombatStyle(room.equipment, room.autocastSpell);
+  const roomIsEmpty = isEquipmentSetEmpty(room.equipment);
+
+  selector.innerHTML = rooms.map((entry, index) => {
+    const active = index === activeIndex;
+    const stateLabel = entry.unlocked ? `Room ${index + 1}` : `Room ${index + 1} Locked`;
+    return `<button class="primary" type="button" data-room-index="${index}" style="background:${active ? 'var(--accent)' : '#6d452d'}; opacity:${entry.unlocked ? '1' : '0.82'};">${stateLabel}</button>`;
+  }).join('');
+  selector.querySelectorAll('button[data-room-index]').forEach(btn => {
+    btn.onclick = () => {
+      game.activeTrophyRoomIndex = Number(btn.dataset.roomIndex || 0);
+      renderTrophyRoom();
+    };
+  });
+
+  if (!room.unlocked) {
+    content.innerHTML = `
+      <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:14px; display:flex; flex-direction:column; gap:10px;">
+        <div style="font-weight:bold; color:var(--gold); font-size:16px;">${room.name}</div>
+        <div style="color:#efe3cf; font-size:13px; line-height:1.35;">Unlock this extra trophy room to store another full gear preset and swap to it quickly.</div>
+        <div style="color:var(--gold); font-weight:bold;">Cost: ${Number(room.unlockCost || 0).toLocaleString()} Gold</div>
+        <button id="trophyRoomUnlockBtn" class="primary" type="button">Unlock ${room.name}</button>
+      </div>
+    `;
+    const unlockBtn = document.getElementById('trophyRoomUnlockBtn');
+    if (unlockBtn) unlockBtn.onclick = () => unlockTrophyRoom(activeIndex);
+    return;
+  }
+
+  content.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:10px; min-height:0;">
+      <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:12px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:bold; color:var(--gold); font-size:15px;">${room.name}</div>
+          <div style="color:#efe3cf; font-size:12px; margin-top:4px;">Saved Style: ${formatLoadoutStyleLabel(roomStyle)}</div>
+          <div style="color:#9dc7ff; font-size:12px; margin-top:2px;">Autocast: ${formatAutocastSpellLabel(room.autocastSpell)}</div>
+        </div>
+        <div style="color:${roomIsEmpty ? '#cdb388' : '#8fd18f'}; font-size:12px; align-self:flex-start;">${roomIsEmpty ? 'Empty Room' : 'Preset Ready'}</div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="trophyRoomSwapBtn" class="primary" type="button">${roomIsEmpty ? 'Store Current Gear Here' : 'Swap Current Gear With Room'}</button>
+      </div>
+      <div style="background:rgba(0,0,0,0.18); border:1px solid rgba(212,163,97,0.2); border-radius:8px; padding:10px;">
+        <div style="font-weight:bold; color:var(--gold); margin-bottom:8px;">${room.name}</div>
+        <div class="equipment-character" style="border-bottom:2px solid rgba(212,163,97,0.12); padding-bottom:10px;">
+          <div class="character-frame" id="trophyRoomPreviewFrame"></div>
+        </div>
+        <div style="margin-top:10px; color:#efe3cf; font-size:12px;">Style: ${formatLoadoutStyleLabel(roomStyle)} | Autocast: ${formatAutocastSpellLabel(room.autocastSpell)}</div>
+      </div>
+      <div style="padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#d7c9b1; font-size:12px; line-height:1.35;">Drag items from your inventory into the slots to build this preset manually. The swap button still lets you trade your current gear with the whole room instantly.</div>
+    </div>
+  `;
+
+  const swapBtn = document.getElementById('trophyRoomSwapBtn');
+  if (swapBtn) swapBtn.onclick = () => swapCurrentGearWithTrophyRoom(activeIndex);
+
+  const roomFrame = document.getElementById('trophyRoomPreviewFrame');
+  if (roomFrame) renderTrophyRoomEquipmentFrame(room.equipment || createEmptyEquipmentSet(), roomFrame, activeIndex);
+}
+
+window.ensureTrophyRoomState = ensureTrophyRoomState;
+window.renderTrophyRoom = renderTrophyRoom;
+ensureTrophyRoomState();
 
 const MATERIAL_TIERS = {
     // Tier 1
@@ -4160,6 +4843,7 @@ const VALID_ITEMS = [
   'Leather',
   'Leather Hood',
   'Leather Body',
+  'Ranger Chest',
   'Leather Chaps',
   'Leather Boots',
   
@@ -4189,6 +4873,7 @@ const VALID_ITEMS = [
   'Salt Salmon',
   'Burnt Cake',
   'Magic Staff',
+  'Advanced Magic Staff',
   'Gold Crown',
   'Elegant Black Cape', // +++ NEW CAPE +++
   '1tapper', // +++ NEW ADMIN ITEM +++
@@ -4226,6 +4911,8 @@ const VALID_ITEMS = [
   'Uncut Jade',
   'Uncut Ruby',
   'Uncut Sapphire',
+  'Uncut Amethyst',
+  'Amethyst',
   'Topaz',
   'Diamond',
   'Emerald',
@@ -4243,6 +4930,7 @@ const VALID_ITEMS = [
   'Ruby Necklace',
   'Sapphire Necklace',
   'Topaz Necklace',
+  'Archery Bracer',
   'Silver Fangs of the Fallen Monarch',
   'Iron Battleaxe',
   'Iron Shield',
@@ -4754,6 +5442,7 @@ const ITEM_STATS = {
   // --- RANGED GEAR (High Magic Def, Positive Range Atk) ---
   'Leather Hood': { meleeDef: 1, rangedDef: 2, magicDef: 4, rangedAtk: 2, magicAtk: -1, armorType: 'ranged' },
   'Leather Body': { meleeDef: 3, rangedDef: 4, magicDef: 8, rangedAtk: 5, magicAtk: -2, armorType: 'ranged' },
+  'Ranger Chest': { meleeDef: 5, rangedDef: 8, magicDef: 12, rangedAtk: 10, magicAtk: -2, armorType: 'ranged' },
   'Leather Chaps': { meleeDef: 2, rangedDef: 3, magicDef: 6, rangedAtk: 3, magicAtk: -1, armorType: 'ranged' },
   'Leather Boots': { meleeDef: 1, rangedDef: 1, magicDef: 2, rangedAtk: 1, armorType: 'ranged' },
   
@@ -4770,6 +5459,7 @@ const ITEM_STATS = {
   'Cloth Cape': { meleeDef: 1, rangedDef: 1, magicDef: 1, armorType: 'hybrid' },
   
   'Magic Staff': { magicAtk: 10, magicDmg: 2, weaponType: 'magic', twoHanded: true, speed: 3000 },
+  'Advanced Magic Staff': { magicAtk: 15, magicDmg: 4, weaponType: 'magic', twoHanded: true, speed: 2500 },
 
   // --- COSMETICS / SPECIALS ---
   'Gold Crown': { meleeDef: 8, rangedDef: 8, magicDef: 8, magicAtk: 2, rangedAtk: 2, meleeAtk: 2, armorType: 'hybrid' },
@@ -4786,7 +5476,8 @@ const ITEM_STATS = {
   'Emerald Necklace': { rangedStr: 2, armorType: 'jewelry' },
   'Ruby Necklace': { meleeStr: 2, armorType: 'jewelry' },
   'Sapphire Necklace': { magicDmg: 2, armorType: 'jewelry' },
-  'Topaz Necklace': { maxHPBonus: 2, armorType: 'jewelry' }
+  'Topaz Necklace': { maxHPBonus: 2, armorType: 'jewelry' },
+  'Archery Bracer': { rangedStr: 5, rangedAtk: 5, armorType: 'jewelry', occupiesBothRings: true }
 };
 window.ITEM_STATS = ITEM_STATS;
 
@@ -4859,6 +5550,7 @@ const ITEM_SELL_PRICES = {
   'Copper Shortsword': 20,
   'Iron Shortsword': 65,
   'Magic Staff': 500,
+  'Advanced Magic Staff': 2500,
   'Fishing Pole': 1000,
   'Mapple Fishing Pole': 2500,
   '1tapper': 0,
@@ -4882,6 +5574,7 @@ const ITEM_SELL_PRICES = {
   'Gold Boots': 550,
   'Leather Hood': 10,
   'Leather Body': 25,
+  'Ranger Chest': 250,
   'Leather Chaps': 15,
   'Leather Boots': 8,
   'Wizard Hat': 30,
@@ -4951,10 +5644,13 @@ const ITEM_SELL_PRICES = {
   'Wheat': 9,
     'Flour': 12,
   'Cake': 45,
+  'Burnt Cake': 1,
   'Dirt Shroom': 5,
   'Wild Herb': 25,
   'Pet Spider Egg': 5000,
+  'Pet Spider': 0,
   'Pet Owl Egg': 5000,
+  'Pet Dragon': 0,
   'Pet Dragon Egg': 25000,
   'Cow Hide': 4,
   'Leather': 6,
@@ -4967,6 +5663,8 @@ const ITEM_SELL_PRICES = {
   'Uncut Jade': 25,
   'Uncut Ruby': 25,
   'Uncut Sapphire': 25,
+  'Uncut Amethyst': 25,
+  'Amethyst': 100,
   'Topaz': 100,
   'Diamond': 100,
   'Emerald': 100,
@@ -4985,7 +5683,8 @@ const ITEM_SELL_PRICES = {
   'Emerald Necklace': 2000,
   'Ruby Necklace': 2000,
   'Sapphire Necklace': 2000,
-  'Topaz Necklace': 2000
+  'Topaz Necklace': 2000,
+  'Archery Bracer': 2000
 };
 const DYE_ITEM_TO_COLOR = {
   'Red Dye': 'red',
@@ -5037,7 +5736,7 @@ function normalizeItemDyeColor(color) {
 
 function getItemRenderImageName(itemOrName, fallbackName = 'gearicon') {
   const item = (itemOrName && typeof itemOrName === 'object') ? itemOrName : { name: itemOrName };
-  const fallbackOverrides = { 'Copper Ore': 'copper_ore', 'Vitality Potion+': 'vitalitypotionplus', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants' };
+  const fallbackOverrides = { 'Copper Ore': 'copper_ore', 'Vitality Potion+': 'vitalitypotionplus', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 'Archery Bracer': 'archerybracer' };
   const baseName = (window.__inspectItemImageMap && item && item.name && window.__inspectItemImageMap[item.name]) || (item && item.name && fallbackOverrides[item.name]) || String(item && item.name ? item.name : fallbackName).toLowerCase().replace(/\s+/g, '').replace(/\+/g, 'plus');
   const dyeColor = normalizeItemDyeColor(item && item.dyeColor);
   const variantMap = item && item.name ? DYE_VARIANT_IMAGE_MAP[item.name] : null;
@@ -5712,12 +6411,12 @@ function renderEquipment() {
   'Iron Helmet': 'ironhelmet', 'Iron Chestplate': 'ironchestplate', 'Iron Shortsword': 'ironshortsword', 'Iron Boots': 'ironboots',
   'Copper Platelegs': 'copperplatelegs', 'Iron Platelegs': 'ironplatelegs',
   'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 'Copper Arrow': 'copperarrow', 'Copper Arrow Poisoned': 'copperarrowpoisonned',
-  'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 'Leather Boots': 'leatherboots',
-  'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff',
+  'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 'Leather Boots': 'leatherboots',
+  'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Advanced Magic Staff': 'advancedmagicstaff',
   'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat',
   'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach',
   'Gold Ring': 'goldring', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
-  'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace',
+  'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace', 'Archery Bracer': 'archerybracer',
   'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch',
   'Iron Battleaxe': 'ironbattleaxe',
   'Iron Shield': 'ironshield',
@@ -5741,15 +6440,41 @@ function renderEquipment() {
     }
     
     let isTwoHandedBlock = false;
+    let isTwoAccessoryBlock = false;
+    let blockedBySlot = null;
+    let blockedLabel = '';
+    let blockedDisplayItem = null;
     if (slotType === 'shield' && !item && game.equipment.weapon && ITEM_STATS[game.equipment.weapon.name]?.twoHanded) {
         isTwoHandedBlock = true;
-        imgName = itemImageMap[game.equipment.weapon.name];
+        blockedBySlot = 'weapon';
+        blockedLabel = '2H Weapon';
+        blockedDisplayItem = game.equipment.weapon;
+        imgName = itemImageMap[blockedDisplayItem.name] || 'weapon';
     }
 
+    if ((slotType === 'ring1' || slotType === 'ring2') && !item) {
+        const ring1Item = game.equipment.ring1;
+        const ring2Item = game.equipment.ring2;
+        if (slotType === 'ring2' && ring1Item && ITEM_STATS[ring1Item.name]?.occupiesBothRings) {
+            isTwoAccessoryBlock = true;
+            blockedBySlot = 'ring1';
+            blockedLabel = '2-Slot Accessory';
+            blockedDisplayItem = ring1Item;
+            imgName = itemImageMap[ring1Item.name] || 'ring';
+        } else if (slotType === 'ring1' && ring2Item && ITEM_STATS[ring2Item.name]?.occupiesBothRings) {
+            isTwoAccessoryBlock = true;
+            blockedBySlot = 'ring2';
+            blockedLabel = '2-Slot Accessory';
+            blockedDisplayItem = ring2Item;
+            imgName = itemImageMap[ring2Item.name] || 'ring';
+        }
+    }
+
+    const displayedItem = item || blockedDisplayItem;
     let img = document.createElement('img');
-    img.src = `images/${item ? getItemRenderImageName(item, imgName) : imgName}.png`;
+    img.src = `images/${displayedItem ? getItemRenderImageName(displayedItem, imgName) : imgName}.png`;
     img.alt = slotType;
-    if (isTwoHandedBlock) { img.style.opacity = '0.5'; img.style.filter = 'grayscale(100%)'; }
+    if (isTwoHandedBlock || isTwoAccessoryBlock) { img.style.opacity = '0.5'; img.style.filter = 'grayscale(100%)'; }
     mainSlotEl.appendChild(img);
 
     if (item && item.qty > 1) {
@@ -5759,10 +6484,10 @@ function renderEquipment() {
         mainSlotEl.appendChild(amt);
     }
 
-    if (item) {
-        const eLvl = item.enchantLevel || 0;
+    if (displayedItem) {
+        const eLvl = displayedItem.enchantLevel || 0;
         // Apply Gold Aura for Legendary items, otherwise apply Enchantment glows
-        if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
+        if (displayedItem.name === 'Gold Crown' || displayedItem.name === 'Elegant Black Cape') {
             mainSlotEl.classList.add('legendary-glow');
         } else if (eLvl > 0) {
             mainSlotEl.classList.add(`enchant-glow-${eLvl}`);
@@ -5774,7 +6499,10 @@ function renderEquipment() {
             badge.innerText = `+${eLvl}`;
             mainSlotEl.appendChild(badge);
         }
+    }
 
+    if (item) {
+        const eLvl = item.enchantLevel || 0;
         const def = ITEM_STATS[item.name];
         let html = `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name} ${eLvl > 0 ? `+${eLvl}` : ''}</div>`;
         
@@ -5816,15 +6544,22 @@ function renderEquipment() {
             mainSlotEl.onmouseenter = (e) => showTooltip(e, html);
         }
         mainSlotEl.onmouseleave = hideTooltip;
-    } else if (isTwoHandedBlock) {
-        mainSlotEl.onclick = () => unequipItem('weapon');
-        mainSlotEl.onmouseenter = (e) => showTooltip(e, "Occupied by 2H Weapon");
+    } else if (isTwoHandedBlock || isTwoAccessoryBlock) {
+        const blockedTitle = typeof getItemDisplayTitle === 'function' && displayedItem ? getItemDisplayTitle(displayedItem) : (displayedItem?.name || blockedLabel);
+        const blockedHint = `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${blockedTitle}</div><div style="color:#ffaaaa; margin-top:5px;">Occupied by ${blockedLabel}</div><div style="color:#aaa; margin-top:5px; font-size:11px;">Click to unequip</div>`;
+        mainSlotEl.onclick = () => unequipItem(blockedBySlot);
+        mainSlotEl.onmouseenter = (e) => showTooltip(e, blockedHint);
         mainSlotEl.onmouseleave = hideTooltip;
     } else {
         mainSlotEl.onclick = null;
         mainSlotEl.onmouseenter = null;
     }
   });
+
+  const trophyRoomHub = document.getElementById('hubTrophyRoom');
+  if (trophyRoomHub && trophyRoomHub.classList.contains('active') && typeof renderTrophyRoom === 'function') {
+    renderTrophyRoom();
+  }
 }
 
 function updateGoldUI() {
@@ -6206,6 +6941,8 @@ function renderInventoryGrid(){
               else if (item.name === 'Wizard Boots') imgName = 'wizardboots';
               else if (item.name === 'Cloth Cape') imgName = 'clothcape';
               else if (item.name === 'Magic Staff') imgName = 'magicstaff';
+              else if (item.name === 'Ranger Chest') imgName = 'rangerchest';
+              else if (item.name === 'Advanced Magic Staff') imgName = 'advancedmagicstaff';
               else if (item.name === 'Pet Spider Egg') imgName = 'petegg1';
               else if (item.name === 'Pet Owl Egg') imgName = 'petegg2';
               else if (item.name === 'Pet Dragon Egg') imgName = 'petegg3';
@@ -6568,12 +7305,12 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Copper Helmet': 'helmet', 'Copper Chestplate': 'chest', 'Copper Shortsword': 'weapon', 'Copper Boots': 'boots',
     'Iron Helmet': 'helmet', 'Iron Chestplate': 'chest', 'Iron Shortsword': 'weapon', 'Iron Boots': 'boots',
     'Copper Platelegs': 'legs', 'Iron Platelegs': 'legs', 'Softwood Bow': 'weapon', 'Oak Bow': 'weapon',
-    'Copper Arrow': 'arrows', 'Copper Arrow Poisoned': 'arrows', 'Leather Hood': 'helmet', 'Leather Body': 'chest', 'Leather Chaps': 'legs',
+    'Copper Arrow': 'arrows', 'Copper Arrow Poisoned': 'arrows', 'Leather Hood': 'helmet', 'Leather Body': 'chest', 'Ranger Chest': 'chest', 'Leather Chaps': 'legs',
     'Leather Boots': 'boots', 'Wizard Hat': 'helmet', 'Wizard Robe': 'chest', 'Wizard Trousers': 'legs',
-    'Wizard Boots': 'boots', 'Magic Staff': 'weapon', 'Gold Crown': 'helmet', 'Elegant Black Cape': 'cape',
+    'Wizard Boots': 'boots', 'Magic Staff': 'weapon', 'Advanced Magic Staff': 'weapon', 'Gold Crown': 'helmet', 'Elegant Black Cape': 'cape',
     'Cloth Cape': 'cape',
     '1tapper': 'weapon', 'Gold Ring': 'ring_choice', 'Diamond Ring': 'ring_choice', 'Emerald Ring': 'ring_choice',
-    'Ruby Ring': 'ring_choice', 'Sapphire Ring': 'ring_choice', 'Topaz Ring': 'ring_choice',
+    'Ruby Ring': 'ring_choice', 'Sapphire Ring': 'ring_choice', 'Topaz Ring': 'ring_choice', 'Archery Bracer': 'ring_choice',
     'Diamond Necklace': 'necklace', 'Emerald Necklace': 'necklace', 'Ruby Necklace': 'necklace',
     'Sapphire Necklace': 'necklace', 'Topaz Necklace': 'necklace',
     'Silver Fangs of the Fallen Monarch': 'weapon', 'Iron Battleaxe': 'weapon', 'Iron Shield': 'shield',
@@ -6942,8 +7679,33 @@ async function equipItem(slotType, fromInvIndex) {
   const itemStack = game.inventory[fromInvIndex];
   if (!itemStack) return;
 
+  const stats = ITEM_STATS[itemStack.name];
+  const isTwoHanded = stats && stats.twoHanded;
+  const occupiesBothRings = stats && stats.occupiesBothRings;
+
   if (slotType === 'ring_choice') {
-    if (!game.equipment.ring1) {
+    const ring1OccupiesBoth = game.equipment.ring1 && ITEM_STATS[game.equipment.ring1.name]?.occupiesBothRings;
+    const ring2OccupiesBoth = game.equipment.ring2 && ITEM_STATS[game.equipment.ring2.name]?.occupiesBothRings;
+
+    if (occupiesBothRings) {
+      if (game.equipment.ring1) {
+        const success = await unequipItem('ring1');
+        if (!success) return;
+      }
+      if (game.equipment.ring2) {
+        const success = await unequipItem('ring2');
+        if (!success) return;
+      }
+      slotType = 'ring1';
+    } else if (ring1OccupiesBoth) {
+      const success = await unequipItem('ring1');
+      if (!success) return;
+      slotType = 'ring1';
+    } else if (ring2OccupiesBoth) {
+      const success = await unequipItem('ring2');
+      if (!success) return;
+      slotType = game.equipment.ring1 ? 'ring2' : 'ring1';
+    } else if (!game.equipment.ring1) {
       slotType = 'ring1';
     } else if (!game.equipment.ring2) {
       slotType = 'ring2';
@@ -6958,12 +7720,9 @@ async function equipItem(slotType, fromInvIndex) {
     }
   }
 
-  const stats = ITEM_STATS[itemStack.name];
-  const isTwoHanded = stats && stats.twoHanded;
-
   if (slotType === 'weapon') {
-    if (itemStack.name === 'Magic Staff') setAttackStyle('magic', true);
-    else if (game.equipment.weapon && game.equipment.weapon.name === 'Magic Staff') setAttackStyle('strength', true);
+    if (['Magic Staff', 'Advanced Magic Staff'].includes(itemStack.name)) setAttackStyle('magic', true);
+    else if (game.equipment.weapon && ['Magic Staff', 'Advanced Magic Staff'].includes(game.equipment.weapon.name)) setAttackStyle('strength', true);
   }
 
   if (slotType === 'weapon' && isTwoHanded && game.equipment.shield) {
@@ -7005,6 +7764,11 @@ async function equipItem(slotType, fromInvIndex) {
     };
     
     game.equipment[slotType] = newItem;
+    if (slotType === 'ring1' && occupiesBothRings) {
+      game.equipment.ring2 = null;
+    } else if (slotType === 'ring2' && occupiesBothRings) {
+      game.equipment.ring1 = null;
+    }
     itemStack.qty -= 1;
 
     if (itemStack.qty <= 0) {
@@ -7048,7 +7812,7 @@ async function unequipItem(slotType) {
   // Use the fixed addItem function to handle stacking vs new slot automatically
   addItem(item.name, item.qty, item.enchantLevel || 0, item.dyeColor || null);
 
-  if (slotType === 'weapon' && item.name === 'Magic Staff') {
+  if (slotType === 'weapon' && ['Magic Staff', 'Advanced Magic Staff'].includes(item.name)) {
     setAttackStyle('strength', true);
     if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
   }
@@ -7425,6 +8189,11 @@ function updateSkillUI(){
     if (skillDataKey === 'farming' && data.level >= 60) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Double Animal Yield</div>`);
     if (skillDataKey === 'mining' && data.level >= 80) skillBonusLines.push(`<div style="color:#aaffaa; font-weight:bold; margin-top:2px;">Double Mining Yield</div>`);
     if (skillDataKey === 'woodcutting' && data.level >= 80) skillBonusLines.push(`<div style="color:#aaffaa; font-weight:bold; margin-top:2px;">Double Woodcutting Yield</div>`);
+    if (skillDataKey === 'magic') {
+        if (data.level >= 80) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Spell Cost: 1 Stone</div>`);
+        else if (data.level >= 20) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Spell Cost: 2 Stones</div>`);
+        else skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Spell Cost: 3 Stones</div>`);
+    }
     const skillBonusHtml = `${skillBonusLines.join('')}<div>(Total XP: ${data.totalXP.toLocaleString()})</div>`;
 
     const tooltipContent = `
@@ -7695,6 +8464,7 @@ function addXP(skill, amount, delay = 0) {
   }
 
   updateSkillUI();
+  if (skill === 'magic' && typeof renderSpellsPanel === 'function') renderSpellsPanel();
 
   // Progress Bars
   let barId = '';
@@ -17213,6 +17983,11 @@ function openAchievementsHub() {
   showMainScreen("hubAchievements");
   renderAchievementsHub();
 }
+
+function openTrophyRoomHub() {
+  showMainScreen("hubTrophyRoom");
+  renderTrophyRoom();
+}
 // =================================================================
 
 // =================================================================
@@ -19436,6 +20211,11 @@ function getHighestEnchantLevelOwned() {
       (tab || []).forEach(checkItem);
     });
   }
+  if (game.trophyRooms) {
+    (game.trophyRooms || []).forEach(room => {
+      Object.values((room && room.equipment) || {}).forEach(checkItem);
+    });
+  }
   return highest;
 }
 
@@ -19451,6 +20231,11 @@ function ownsItemAnywhere(itemName) {
   if (game.bankTabs) {
     Object.values(game.bankTabs).forEach(tab => {
       (tab || []).forEach(checkItem);
+    });
+  }
+  if (game.trophyRooms) {
+    (game.trophyRooms || []).forEach(room => {
+      Object.values((room && room.equipment) || {}).forEach(checkItem);
     });
   }
   return found;
@@ -19509,11 +20294,12 @@ function renderAchievementsTab() {
   const tab = document.getElementById('achievementsTab');
   if (!tab) return;
   ensureAchievementStats();
+  const maxEnchantLevel = getHighestEnchantLevelOwned();
   const mobs = Object.values(getCombatMobDefinitions()).sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
   const totalKills = getTotalAchievementKills();
   const totalDeaths = Number(game.achievementStats.deaths || 0);
   const totalLotteryRolls = Number(game.achievementStats.lotteryRolls || 0);
-  const maxEnchantLevel = getHighestEnchantLevelOwned();
+  const millionaireUnlocked = !!((game.achievementStats.unlocked || {})['Millionaire']) || Number(game.gold || 0) >= 1000000;
   const skillAchievements = getTrackedSkillEntries().map(([label, key]) => ({
     title: `${label} Level 100`,
     unlocked: Number((game[key] && game[key].level) || 1) >= 100,
@@ -19527,7 +20313,7 @@ function renderAchievementsTab() {
     { title: 'Madmax Slayer', unlocked: getAchievementKillCount('Madmax') > 0, detail: `${getAchievementKillCount('Madmax')} kill` },
     { title: 'Golden Dragon Slayer', unlocked: getAchievementKillCount('Golden Dragon') > 0, detail: `${getAchievementKillCount('Golden Dragon')} kill` },
     { title: 'Drunk Night', unlocked: !!game.achievementStats.hadBeenDrunk, detail: game.achievementStats.hadBeenDrunk ? 'Completed' : 'Not yet' },
-    { title: 'Millionaire', unlocked: Number(game.gold || 0) >= 1000000, detail: `${Number(game.gold || 0).toLocaleString()} / 1,000,000` },
+    { title: 'Millionaire', unlocked: millionaireUnlocked, detail: millionaireUnlocked ? 'Unlocked' : `${Number(game.gold || 0).toLocaleString()} / 1,000,000` },
     { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown'), detail: ownsItemAnywhere('Gold Crown') ? 'Owned' : 'Not yet' },
     { title: 'Elegant Black Cape Owner', unlocked: ownsItemAnywhere('Elegant Black Cape'), detail: ownsItemAnywhere('Elegant Black Cape') ? 'Owned' : 'Not yet' },
     { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4, detail: `Best enchant: +${maxEnchantLevel}` },
@@ -19552,7 +20338,7 @@ function renderAchievementsTab() {
       <div style="width:100%; margin-top:6px; display:flex; flex-direction:column; gap:10px; overflow:hidden;">
         <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;">
           <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Monster Kills</div><div style="font-size:20px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalKills}</div></div>
-          <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Monster Kills</div><div style="font-size:20px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalKills}</div></div>
+          <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Lottery Rolls</div><div style="font-size:20px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalLotteryRolls.toLocaleString()}</div></div>
           <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Deaths</div><div style="font-size:20px; color:#ff8d8d; font-weight:bold; margin-top:4px;">${totalDeaths}</div></div>
         </div>
         <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; flex:1; min-height:0; overflow:hidden;">
@@ -19584,10 +20370,11 @@ function getAchievementEntriesForTracking() {
     { title: 'Madmax Slayer', unlocked: getAchievementKillCount('Madmax') > 0 },
     { title: 'Golden Dragon Slayer', unlocked: getAchievementKillCount('Golden Dragon') > 0 },
     { title: 'Drunk Night', unlocked: !!game.achievementStats.hadBeenDrunk },
-    { title: 'Millionaire', unlocked: Number(game.gold || 0) >= 1000000 },
+    { title: 'Millionaire', unlocked: !!((game.achievementStats.unlocked || {})['Millionaire']) || Number(game.gold || 0) >= 1000000 },
     { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown') },
     { title: 'Elegant Black Cape Owner', unlocked: ownsItemAnywhere('Elegant Black Cape') },
     { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4 },
+    { title: 'Bare Knuckle Victory', unlocked: !!game.achievementStats.wonBarehandedKill },
     { title: 'Lottery Roller', unlocked: Number(game.achievementStats.lotteryRolls || 0) > 0 },
     { title: 'Lottery Master (1000 Rolls)', unlocked: Number(game.achievementStats.lotteryRolls || 0) >= 1000 }
   ];
@@ -21286,6 +22073,8 @@ function renderBankGrid() {
               else if (item.name === 'Wizard Boots') imgName = 'wizardboots';
               else if (item.name === 'Cloth Cape') imgName = 'clothcape';
               else if (item.name === 'Magic Staff') imgName = 'magicstaff'; // +++ FIX: ADD MAGIC STAFF +++
+              else if (item.name === 'Ranger Chest') imgName = 'rangerchest';
+              else if (item.name === 'Advanced Magic Staff') imgName = 'advancedmagicstaff';
               else if (item.name === 'Pet Spider Egg') imgName = 'petegg1';
               else if (item.name === 'Pet Owl Egg') imgName = 'petegg2'; // +++ FIX: ADD PET EGG +++
               else if (item.name === 'Pet Dragon Egg') imgName = 'petegg3';
@@ -21324,6 +22113,8 @@ function renderBankGrid() {
                   imgName = 'leatherhood';
               } else if (item.name === 'Leather Body') {
                   imgName = 'leatherarmor';
+              } else if (item.name === 'Ranger Chest') {
+                  imgName = 'rangerchest';
               } else if (item.name === 'Leather Chaps') {
                   imgName = 'leatherpants';
               } else if (item.name === 'Leather Boots') {
@@ -21984,6 +22775,9 @@ function resetGameState() {
     ring1: null, legs: null, ring2: null, 
     arrows: null, boots: null, pet: null 
   };
+  game.trophyRooms = [];
+  game.activeTrophyRoomIndex = 0;
+  ensureTrophyRoomState();
 
   game.mining = { level: 1, xp: 0, totalXP: 0 };
   game.blacksmith ??= { level: 1, xp: 0, totalXP: 0 };
@@ -22203,7 +22997,7 @@ window.closeSettings = closeSettings;
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubAchievements', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubAchievements', 'hubTrophyRoom', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
 function showMainScreen(screenIdToShow) {
   // NEW: Safely return item from enchanting table if player navigates away
   if (typeof returnEnchantItem === 'function' && game.enchantSlot) {
@@ -22390,6 +23184,7 @@ function renderShopGrid() {
       else if (item.name === 'Seed Bag') imgName = 'seedbag';
       else if (item.name === 'Silo') imgName = 'silo';
       else if (item.name === 'Hand Pump Well') imgName = 'automaticwell';
+      else if (item.name === 'Advanced Magic Staff') imgName = 'advancedmagicstaff';
       else if (item.name === 'Red Dye') imgName = 'reddye';
       else if (item.name === 'Blue Dye') imgName = 'bluedye';
       else if (item.name === 'Black Dye') imgName = 'blackdye';
@@ -22567,7 +23362,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
       achievementsBtn.onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Achievements</div>Track kills, deaths, and milestones');
       achievementsBtn.onmouseleave = hideTooltip;
   }
+  const trophyRoomBtn = document.getElementById("trophyRoomActionIcon");
+  if (trophyRoomBtn) {
+      trophyRoomBtn.onclick = openTrophyRoomHub;
+      trophyRoomBtn.onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Trophy Rooms</div>Store and quick-swap full gear presets');
+      trophyRoomBtn.onmouseleave = hideTooltip;
+  }
   document.getElementById("hubAchievements_ReturnBtn").onclick = backToActions;
+  document.getElementById("hubTrophyRoom_ReturnBtn").onclick = backToActions;
   document.getElementById('shopActionIcon').onclick = openShop;
   document.getElementById('bankActionIcon').onclick = openBank;
   document.getElementById('fletchingActionIcon').onclick = openFletchingHub; // +++ NEW +++
@@ -23159,8 +23961,7 @@ if (bankGridWrap) {
       draggedItemIndex = parseInt(e.target.dataset.slotIndex);
       window.__draggedInventoryIndex = draggedItemIndex;
       window.__millDraggedWheatQty = 0;
-      window.__millDraggedWheatQty = 0;
-    window.__millDraggedFlourQty = 0;
+      window.__millDraggedFlourQty = 0;
       e.dataTransfer.effectAllowed = 'move';
       
       // +++ NEW: Link to bank drag system +++
@@ -23173,13 +23974,13 @@ if (bankGridWrap) {
 
       // +++ NEW: Set dragging flag +++
       game.isDragging = true;
+      updateTrophyRoomDragHighlights();
       
       setTimeout(() => {
         e.target.classList.add('dragging');
       }, 0);
     }
   });
-
 
   // +++ FIX: AGGRESSIVE Global listeners to prevent forbidden cursor +++
   // We use capture: true to intercept the event immediately.
@@ -23217,7 +24018,6 @@ if (bankGridWrap) {
       }
     }
   });
-
 inventoryGrid.addEventListener('dragend', (e) => {
     // 1. Clean up the '.dragging' class
     const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
@@ -23239,6 +24039,7 @@ inventoryGrid.addEventListener('dragend', (e) => {
     draggedBankItem = null;
     draggedShopItem = null;
     game.isDragging = false;
+    clearTrophyRoomDragHighlights();
 
     // 4. --- NEW: Stop any active scrolling ---
     if (inventoryScrollInterval) {
@@ -23250,7 +24051,6 @@ inventoryGrid.addEventListener('dragend', (e) => {
         bankScrollInterval = null;
     }
   });
-
   inventoryGrid.addEventListener('drop', async (e) => {
     e.preventDefault();
     game.isDragging = false; // FIX: Immediately unlock tooltips on drop
@@ -23280,12 +24080,13 @@ inventoryGrid.addEventListener('dragend', (e) => {
 
     if (!dropSlot) {
       draggedItemIndex = null;
-    window.__draggedInventoryIndex = null;
-    window.__millDraggedWheatQty = 0;
-    window.__millDraggedFlourQty = 0;
+      window.__draggedInventoryIndex = null;
+      window.__millDraggedWheatQty = 0;
+      window.__millDraggedFlourQty = 0;
       draggedBankItem = null;
       draggedShopItem = null;
       game.isDragging = false;
+      clearTrophyRoomDragHighlights();
       return;
     }
     
@@ -23410,7 +24211,6 @@ inventoryGrid.addEventListener('dragend', (e) => {
         }
       }
     }
-    
     draggedItemIndex = null;
     window.__draggedInventoryIndex = null;
     window.__millDraggedWheatQty = 0;
@@ -23418,6 +24218,7 @@ inventoryGrid.addEventListener('dragend', (e) => {
     draggedBankItem = null;
     draggedShopItem = null;
     game.isDragging = false; // Final safety unlock
+    clearTrophyRoomDragHighlights();
   });
   
   // --- NEW: Settings Modal Listeners ---
@@ -23558,12 +24359,12 @@ function renderInspectEquipment(equipment, frame) {
         'Copper Platelegs': 'copperplatelegs', 'Iron Platelegs': 'ironplatelegs', 
         'Silver Pickaxe': 'silverpickaxe', 'Silver Axe': 'silveraxe',
         'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 
-        'Copper Arrow': 'copperarrow', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Leather Chaps': 'leatherpants', 
+        'Copper Arrow': 'copperarrow', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
-        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', 'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Dragon': 'petdragon', 'Pet Spider Egg': 'petegg1', 'Pet Owl Egg': 'petegg2', 'Pet Dragon Egg': 'petegg3', 'Fire Stone': 'firestone',
+        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Advanced Magic Staff': 'advancedmagicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', 'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Dragon': 'petdragon', 'Pet Spider Egg': 'petegg1', 'Pet Owl Egg': 'petegg2', 'Pet Dragon Egg': 'petegg3', 'Fire Stone': 'firestone',
         'Empty Bucket': 'emptybucket', 'Empty Glass': 'emptyglass', 'Beer': 'beer', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Wheat Seed': 'wheatseed', 'Wheat': 'wheat', 'flour': 'flour', 'Bread': 'bread', 'Burnt Bread': 'burntbread', 'Cheese': 'cheese', 'Salt Herring': 'saltherring', 'Salt Trout': 'salttrout', 'Salt Salmon': 'saltsalmon', 'Cake': 'cake', 'Burnt Cake': 'burntcake', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
         'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
-        'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace',
+        'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace', 'Archery Bracer': 'archerybracer',
         'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch', 'Iron Battleaxe': 'ironbattleaxe', 'Iron Shield': 'ironshield',
         'Gold Helmet': 'goldhelmet', 'Gold Chestplate': 'goldchestplate', 'Gold Platelegs': 'goldplatelegs', 'Gold Boots': 'goldboots', 'Gold Shield': 'goldshield'
     };
@@ -23834,6 +24635,123 @@ function getInspectedSavedSkillLevel(playerData, key) {
     return 1;
 }
 
+function getInspectAchievementStats(playerData) {
+    const stats = (playerData && playerData.achievementStats) || {};
+    return {
+        kills: stats.kills && typeof stats.kills === 'object' ? stats.kills : {},
+        deaths: Number.isFinite(Number(stats.deaths)) ? Number(stats.deaths) : 0,
+        hadBeenDrunk: !!stats.hadBeenDrunk,
+        lotteryRolls: Number.isFinite(Number(stats.lotteryRolls)) ? Number(stats.lotteryRolls) : 0,
+        wonBarehandedKill: !!stats.wonBarehandedKill,
+        unlocked: stats.unlocked && typeof stats.unlocked === 'object' ? stats.unlocked : {}
+    };
+}
+
+function forEachInspectPlayerItem(playerData, callback) {
+    if (!playerData || typeof callback !== 'function') return;
+    const visit = (item) => {
+        if (item) callback(item);
+    };
+    (playerData.inventory || []).forEach(visit);
+    Object.values(playerData.equipment || {}).forEach(visit);
+    if (playerData.enchantSlot) visit(playerData.enchantSlot);
+    Object.values(playerData.bankTabs || {}).forEach(tab => {
+        if (Array.isArray(tab)) tab.forEach(visit);
+    });
+    (playerData.trophyRooms || []).forEach(room => {
+        Object.values((room && room.equipment) || {}).forEach(visit);
+    });
+}
+
+function inspectPlayerOwnsItemAnywhere(playerData, itemName) {
+    let found = false;
+    forEachInspectPlayerItem(playerData, item => {
+        if (!found && item && item.name === itemName) found = true;
+    });
+    return found;
+}
+
+function getInspectHighestEnchantLevel(playerData) {
+    let highest = 0;
+    forEachInspectPlayerItem(playerData, item => {
+        highest = Math.max(highest, Number((item && item.enchantLevel) || 0));
+    });
+    return highest;
+}
+
+function getInspectAchievementEntries(playerData) {
+    const achievementStats = getInspectAchievementStats(playerData);
+    const totalLotteryRolls = achievementStats.lotteryRolls;
+    const maxEnchantLevel = getInspectHighestEnchantLevel(playerData);
+    const millionaireUnlocked = !!achievementStats.unlocked['Millionaire'] || Number((playerData && playerData.gold) || 0) >= 1000000;
+    const skillAchievements = getTrackedSkillEntries().map(([label, key]) => {
+        const level = getInspectedSavedSkillLevel(playerData, key);
+        return {
+            title: `${label} Level 100`,
+            unlocked: level >= 100,
+            detail: `${Math.min(100, level)}/100`
+        };
+    });
+    const pets = Array.isArray(playerData && playerData.pets) ? playerData.pets : [];
+    const petAchievements = ['Spider', 'Owl', 'Cat', 'Dragon'].map(type => {
+        const bestLevel = Math.max(0, ...pets.filter(p => p.type === type).map(p => Number(p.level || 0)));
+        return { title: `${type} Pet Level 50`, unlocked: bestLevel >= 50, detail: `${bestLevel}/50` };
+    });
+    const getKillCount = (enemyName) => Number(achievementStats.kills[enemyName] || 0);
+    const hasGoldCrown = inspectPlayerOwnsItemAnywhere(playerData, 'Gold Crown');
+    const hasElegantCape = inspectPlayerOwnsItemAnywhere(playerData, 'Elegant Black Cape');
+    const specialAchievements = [
+        { title: 'Madmax Slayer', unlocked: getKillCount('Madmax') > 0, detail: `${getKillCount('Madmax')} kill` },
+        { title: 'Golden Dragon Slayer', unlocked: getKillCount('Golden Dragon') > 0, detail: `${getKillCount('Golden Dragon')} kill` },
+        { title: 'Drunk Night', unlocked: achievementStats.hadBeenDrunk, detail: achievementStats.hadBeenDrunk ? 'Completed' : 'Not yet' },
+        { title: 'Millionaire', unlocked: millionaireUnlocked, detail: millionaireUnlocked ? 'Unlocked' : `${Number((playerData && playerData.gold) || 0).toLocaleString()} / 1,000,000` },
+        { title: 'Gold Crown Owner', unlocked: hasGoldCrown, detail: hasGoldCrown ? 'Owned' : 'Not yet' },
+        { title: 'Elegant Black Cape Owner', unlocked: hasElegantCape, detail: hasElegantCape ? 'Owned' : 'Not yet' },
+        { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4, detail: `Best enchant: +${maxEnchantLevel}` },
+        { title: 'Bare Knuckle Victory', unlocked: achievementStats.wonBarehandedKill, detail: achievementStats.wonBarehandedKill ? 'Completed' : 'Kill 1 monster with no weapon equipped' },
+        { title: 'Lottery Roller', unlocked: totalLotteryRolls > 0, detail: `${totalLotteryRolls.toLocaleString()} rolls` },
+        { title: 'Lottery Master (1000 Rolls)', unlocked: totalLotteryRolls >= 1000, detail: `${totalLotteryRolls.toLocaleString()} / 1,000 rolls` }
+    ];
+    return {
+        achievementStats,
+        totalLotteryRolls,
+        entries: [...specialAchievements, ...petAchievements, ...skillAchievements]
+    };
+}
+
+function renderInspectAchievementsPanel(playerData) {
+    const metaEl = document.getElementById('inspectAchievementsMeta');
+    const gridEl = document.getElementById('inspectAchievementsGrid');
+    const killsEl = document.getElementById('inspectAchievementKillsGrid');
+    if (!metaEl || !gridEl || !killsEl) return;
+
+    const { achievementStats, totalLotteryRolls, entries } = getInspectAchievementEntries(playerData);
+    const totalKills = Object.values(achievementStats.kills).reduce((sum, value) => sum + Number(value || 0), 0);
+    const totalDeaths = Number(achievementStats.deaths || 0);
+    const mobs = Object.values(getCombatMobDefinitions()).sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
+
+    metaEl.innerHTML = [
+        `<div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Kills</div><div style="font-size:18px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalKills}</div></div>`,
+        `<div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Lottery Rolls</div><div style="font-size:18px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalLotteryRolls.toLocaleString()}</div></div>`,
+        `<div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Deaths</div><div style="font-size:18px; color:#ff8d8d; font-weight:bold; margin-top:4px;">${totalDeaths}</div></div>`
+    ].join('');
+
+    gridEl.innerHTML = entries.map(ach => {
+        const border = ach.unlocked ? 'rgba(143,209,143,0.6)' : 'rgba(212,163,97,0.22)';
+        const bg = ach.unlocked ? 'rgba(22,54,24,0.72)' : 'rgba(44,22,12,0.82)';
+        const titleColor = ach.unlocked ? '#b8f0b8' : 'var(--gold)';
+        const status = ach.unlocked ? 'Unlocked' : 'Locked';
+        const statusColor = ach.unlocked ? '#8fd18f' : '#ffb36b';
+        const img = getAchievementImage(ach.title);
+        return `<div style="background:${bg}; border:1px solid ${border}; border-radius:8px; padding:11px; min-height:84px; box-sizing:border-box;"><div style="display:flex; gap:8px; align-items:flex-start;"><img src="${img}" alt="${ach.title}" style="width:46px; height:46px; object-fit:contain; border-radius:8px; background:rgba(0,0,0,0.18); flex-shrink:0;"><div style="flex:1; min-width:0;"><div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start;"><div style="font-weight:bold; color:${titleColor}; font-size:13px; line-height:1.25;">${ach.title}</div><div style="font-size:11px; color:${statusColor}; white-space:nowrap;">${status}</div></div><div style="margin-top:8px; color:#d7c9b1; font-size:10px; line-height:1.25; word-break:break-word;">${ach.detail}</div></div></div></div>`;
+    }).join('');
+
+    killsEl.innerHTML = mobs.map(enemy => {
+        const kills = Number(achievementStats.kills[enemy.name] || 0);
+        return `<div style="display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:#efe3cf;">${enemy.name}</span><span style="color:${kills > 0 ? '#8fd18f' : '#b89b76'}; font-weight:bold;">${kills}</span></div>`;
+    }).join('');
+}
+
 function renderInspectSkillsPanel(playerData) {
     const metaEl = document.getElementById("inspectSkillsMeta");
     const gridEl = document.getElementById("inspectSkillsGrid");
@@ -23865,7 +24783,8 @@ function setInspectPlayerView(view) {
         { key: "equipment", panelId: "inspectEquipmentPanel", btnId: "inspectTabEquipmentBtn" },
         { key: "inventory", panelId: "inspectInventoryPanel", btnId: "inspectTabInventoryBtn" },
         { key: "bank", panelId: "inspectBankPanel", btnId: "inspectTabBankBtn" },
-        { key: "skills", panelId: "inspectSkillsPanel", btnId: "inspectTabSkillsBtn" }
+        { key: "skills", panelId: "inspectSkillsPanel", btnId: "inspectTabSkillsBtn" },
+        { key: "achievements", panelId: "inspectAchievementsPanel", btnId: "inspectTabAchievementsBtn" }
     ];
 
     views.forEach(({ key, panelId, btnId }) => {
@@ -23926,6 +24845,7 @@ function renderInspectAdminPanels(playerData) {
     const inventoryBtn = document.getElementById("inspectTabInventoryBtn");
     const bankBtn = document.getElementById("inspectTabBankBtn");
     const skillsBtn = document.getElementById("inspectTabSkillsBtn");
+    const achievementsBtn = document.getElementById("inspectTabAchievementsBtn");
     const inventoryGrid = document.getElementById("inspectInventoryGrid");
     const inventoryMeta = document.getElementById("inspectInventoryMeta");
     const bankGrid = document.getElementById("inspectBankGrid");
@@ -23942,6 +24862,7 @@ function renderInspectAdminPanels(playerData) {
     if (inventoryBtn) inventoryBtn.onclick = () => setInspectPlayerView("inventory");
     if (bankBtn) bankBtn.onclick = () => setInspectPlayerView("bank");
     if (skillsBtn) skillsBtn.onclick = () => setInspectPlayerView("skills");
+    if (achievementsBtn) achievementsBtn.onclick = () => setInspectPlayerView("achievements");
 
     const inspectInventory = normalizeSavedInventoryForInspect(playerData.inventory || [], Number(playerData.inventoryCapacity || 40));
     renderInspectReadOnlyGrid(inspectInventory, inventoryGrid);
@@ -23963,6 +24884,7 @@ function renderInspectAdminPanels(playerData) {
     renderInspectReadOnlyGrid(inspectBankTabs[0], bankGrid);
     renderInspectBankTabs(inspectBankTabs, 0, playerData);
     renderInspectSkillsPanel(playerData);
+    renderInspectAchievementsPanel(playerData);
     setInspectPlayerView("equipment");
 }
 // This function needs to be defined in the module script to access Firebase, 
@@ -24644,6 +25566,8 @@ async function attemptEnchant() {
         bankTabs: bankTabsToSave,
         bankGold: game.bankGold,
         equipment: game.equipment,
+        trophyRooms: game.trophyRooms || [],
+        activeTrophyRoomIndex: Number(game.activeTrophyRoomIndex || 0),
         mining: game.mining,
         blacksmith: game.blacksmith,
         attack: game.attack,
@@ -24679,7 +25603,6 @@ async function attemptEnchant() {
         beerBuffExpiresAt: game.beerBuffExpiresAt || 0,
         achievementStats: game.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} },
         goldenDragonHp: Number(game.goldenDragonHp || 2500),
-        achievementStats: game.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} },
         updatedAt: new Date().toISOString()
       };
       await setDoc(doc(db, "players", user.uid), payload, { merge: true });
@@ -24897,6 +25820,9 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
     const adminTabsRow = document.getElementById("inspectAdminViewTabs");
     const skillsGrid = document.getElementById("inspectSkillsGrid");
     const skillsMeta = document.getElementById("inspectSkillsMeta");
+    const achievementsMeta = document.getElementById("inspectAchievementsMeta");
+    const achievementsGrid = document.getElementById("inspectAchievementsGrid");
+    const achievementKillsGrid = document.getElementById("inspectAchievementKillsGrid");
     if (frame) frame.innerHTML = "";
     if (statsPanel) statsPanel.innerHTML = '<div style="color:#ccc; text-align:center; padding:20px;">Loading Stats...</div>';
     if (modalName) modalName.textContent = "Loading...";
@@ -24907,6 +25833,9 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
     if (bankTabs) bankTabs.innerHTML = "";
     if (skillsGrid) skillsGrid.innerHTML = "";
     if (skillsMeta) skillsMeta.innerHTML = "";
+    if (achievementsMeta) achievementsMeta.innerHTML = "";
+    if (achievementsGrid) achievementsGrid.innerHTML = "";
+    if (achievementKillsGrid) achievementKillsGrid.innerHTML = "";
     if (adminTabsRow) adminTabsRow.style.display = "none";
     if (duelBtn) duelBtn.disabled = true;
     if (exportBtn) exportBtn.disabled = true;
@@ -25170,6 +26099,9 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         
         // +++ NEW: Load Equipment +++
         game.equipment = data.equipment || { helmet: null, chest: null, weapon: null, boots: null };
+        game.trophyRooms = Array.isArray(data.trophyRooms) ? data.trophyRooms : [];
+        game.activeTrophyRoomIndex = Number.isFinite(Number(data.activeTrophyRoomIndex)) ? Number(data.activeTrophyRoomIndex) : 0;
+        if (typeof window.ensureTrophyRoomState === 'function') window.ensureTrophyRoomState();
         renderEquipment(); // <-- Render the equipment on load
         // +++ END NEW +++
 
@@ -25500,7 +26432,6 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         game.drunkExpiresAt = Number(data.drunkExpiresAt || 0);
         game.achievementStats = data.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} };
         game.bestiaryUnlocked = data.bestiaryUnlocked || {};
-        game.achievementStats = data.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} };
         ensureAchievementStats();
         syncAchievementUnlockState(false);
         
@@ -25723,6 +26654,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         bankGold: 0,
         // +++ END NEW +++
         equipment: { helmet: null, chest: null, weapon: null, boots: null },
+        trophyRooms: [],
+        activeTrophyRoomIndex: 0,
         mining: { level: 1, xp: 0, totalXP: 0 },
         blacksmith: { level: 1, xp: 0, totalXP: 0 }, 
         attack: { level: 1, xp: 0, totalXP: 0 }, 
@@ -29102,6 +30035,23 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
