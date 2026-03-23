@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -2498,6 +2498,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="lotteryActionIcon" src="images/lotteryicon.jpeg" alt="Lottery" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openLotteryHub()">
               <img id="questsActionIcon" src="images/questbuttonicon.jpg" alt="Quests" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="achievementsActionIcon" src="images/questicon.png" alt="Achievements" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openAchievementsHub()">
+              <img id="eventJournalActionIcon" src="images/eventbuttonicon.jpg" alt="Event Journal" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="trophyRoomActionIcon" src="images/equipmenticon.png" alt="Trophy Rooms" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openTrophyRoomHub()">
               <img id="huntingBoardActionIcon" src="images/huntingboard.jpeg" alt="Hunting Board" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="personalFarmActionIcon" src="images/farmicon.jpeg" alt="My Farm" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openPersonalFarmHub()">
@@ -2524,6 +2525,15 @@ button.primary:hover { background: var(--accent-hover); }
             <div id="achievementsHubContent" style="margin-top: 14px; display:flex; flex-direction:column; flex:1; min-height:0; max-height:340px; overflow-y:auto; padding-right:6px; width:100%; box-sizing:border-box;"></div>
             <div class="action-buttons" style="margin-top: 10px;">
               <button id="hubAchievements_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubEventJournal" class="hub-screen">
+            <h2>Event Journal</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Deaths, duel results, and drunk moments now land here instead of flooding global chat.</div>
+            <div id="eventJournalContent" style="margin-top: 14px; display:flex; flex-direction:column; flex:1; min-height:0; max-height:340px; overflow-y:auto; padding-right:6px; width:100%; box-sizing:border-box;"></div>
+            <div class="action-buttons" style="margin-top: 10px;">
+              <button id="hubEventJournal_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
 
@@ -3751,6 +3761,7 @@ button.primary:hover { background: var(--accent-hover); }
             <button id="inspectTabEquipmentBtn" class="primary" type="button">Equipment</button>
             <button id="inspectTabInventoryBtn" class="primary" type="button">Inventory</button>
             <button id="inspectTabBankBtn" class="primary" type="button">Bank</button>
+            <button id="inspectTabTrophyRoomsBtn" class="primary" type="button">Trophy Rooms</button>
             <button id="inspectTabSkillsBtn" class="primary" type="button">Skills</button>
             <button id="inspectTabAchievementsBtn" class="primary" type="button">Achievements</button>
         </div>
@@ -3774,6 +3785,10 @@ button.primary:hover { background: var(--accent-hover); }
                 <div class="inventory-grid" id="inspectBankGrid"></div>
             </div>
             <div id="inspectBankMeta" style="margin-top:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#efe3cf; font-size:12px;"></div>
+        </div>
+        <div id="inspectTrophyRoomsPanel" class="game-modal-content" style="display:none;">
+            <div id="inspectTrophyRoomSelector" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;"></div>
+            <div id="inspectTrophyRoomContent" style="display:flex; flex-direction:column; gap:12px; max-height:360px; overflow-y:auto; padding-right:6px;"></div>
         </div>
         <div id="inspectSkillsPanel" class="game-modal-content" style="display:none;">
             <div id="inspectSkillsMeta" style="margin-bottom:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#efe3cf; font-size:12px;"></div>
@@ -3942,6 +3957,7 @@ const game = {
   drunkExpiresAt: 0,
   goldenDragonHp: 2500,
   achievementStats: { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} },
+  eventJournal: [],
   // +++ END NEW STATE +++
   
   // +++ NEW SESSION LOCK +++
@@ -4603,6 +4619,190 @@ window.ensureTrophyRoomState = ensureTrophyRoomState;
 window.renderTrophyRoom = renderTrophyRoom;
 ensureTrophyRoomState();
 
+const EVENT_JOURNAL_MAX_ENTRIES = 60;
+const EVENT_JOURNAL_TYPE_META = {
+  death: { label: 'Death', color: '#ff8d8d', border: 'rgba(255,120,120,0.35)' },
+  duel: { label: 'Duel', color: '#9dc7ff', border: 'rgba(120,180,255,0.35)' },
+  drunk: { label: 'Drunk', color: '#f1c06b', border: 'rgba(241,192,107,0.35)' },
+  system: { label: 'System', color: '#d7c9b1', border: 'rgba(212,163,97,0.22)' }
+};
+
+function ensureEventJournalState() {
+  if (!Array.isArray(game.eventJournal)) game.eventJournal = [];
+  game.eventJournal = game.eventJournal
+    .filter(entry => entry && typeof entry === 'object' && String(entry.text || '').trim())
+    .map(entry => ({
+      type: EVENT_JOURNAL_TYPE_META[entry.type] ? entry.type : 'system',
+      senderName: String(entry.senderName || 'System').trim().slice(0, 24) || 'System',
+      text: String(entry.text || '').trim().slice(0, 240),
+      timestamp: Number.isFinite(Number(entry.timestamp)) ? Number(entry.timestamp) : Date.now()
+    }))
+    .sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0))
+    .slice(0, EVENT_JOURNAL_MAX_ENTRIES);
+  return game.eventJournal;
+}
+
+function formatEventJournalTimestamp(timestamp) {
+  const ms = Number(timestamp || 0);
+  if (!Number.isFinite(ms) || ms <= 0) return 'Just now';
+  return new Date(ms).toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+}
+
+function addEventJournalEntry(type, text, senderName = '') {
+  const cleanedText = String(text || '').trim();
+  if (!cleanedText) return;
+  const normalizedType = EVENT_JOURNAL_TYPE_META[type] ? type : 'system';
+  const entries = ensureEventJournalState();
+  entries.unshift({
+    type: normalizedType,
+    senderName: String(senderName || game.name || 'System').trim().slice(0, 24) || 'System',
+    text: cleanedText.slice(0, 240),
+    timestamp: Date.now()
+  });
+  if (entries.length > EVENT_JOURNAL_MAX_ENTRIES) entries.length = EVENT_JOURNAL_MAX_ENTRIES;
+  if (document.getElementById('hubEventJournal')?.classList.contains('active')) {
+    renderEventJournalHub();
+  }
+}
+
+function postPublicEventJournalEntry(type, text) {
+  const cleanedText = String(text || '').trim();
+  if (!cleanedText) return;
+  if (typeof window.__sendEventJournalMessage === 'function') {
+    window.__sendEventJournalMessage(type, cleanedText).catch(error => {
+      console.error('Error sending public event journal message:', error);
+      addEventJournalEntry(type, cleanedText, game.name || 'System');
+    });
+    return;
+  }
+  addEventJournalEntry(type, cleanedText, game.name || 'System');
+}
+
+function renderEventJournalHub() {
+  const content = document.getElementById('eventJournalContent');
+  if (!content) return;
+
+  const entries = ensureEventJournalState();
+  const counts = { death: 0, duel: 0, drunk: 0 };
+  entries.forEach(entry => {
+    if (Object.prototype.hasOwnProperty.call(counts, entry.type)) counts[entry.type]++;
+  });
+
+  content.innerHTML = '';
+
+  const summary = document.createElement('div');
+  summary.style.display = 'grid';
+  summary.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
+  summary.style.gap = '8px';
+  summary.style.marginBottom = '12px';
+
+  [
+    { label: 'Deaths', value: counts.death, color: '#ff8d8d' },
+    { label: 'Duels', value: counts.duel, color: '#9dc7ff' },
+    { label: 'Drunk', value: counts.drunk, color: '#f1c06b' }
+  ].forEach(cardData => {
+    const card = document.createElement('div');
+    card.style.background = 'rgba(0,0,0,0.22)';
+    card.style.border = '1px solid rgba(212,163,97,0.22)';
+    card.style.borderRadius = '8px';
+    card.style.padding = '10px';
+    card.style.textAlign = 'center';
+
+    const label = document.createElement('div');
+    label.style.fontSize = '11px';
+    label.style.color = '#cdb388';
+    label.textContent = cardData.label;
+
+    const value = document.createElement('div');
+    value.style.fontSize = '18px';
+    value.style.fontWeight = 'bold';
+    value.style.marginTop = '4px';
+    value.style.color = cardData.color;
+    value.textContent = String(cardData.value || 0);
+
+    card.appendChild(label);
+    card.appendChild(value);
+    summary.appendChild(card);
+  });
+
+  content.appendChild(summary);
+
+  if (!entries.length) {
+    const emptyState = document.createElement('div');
+    emptyState.style.padding = '16px';
+    emptyState.style.background = 'rgba(0,0,0,0.18)';
+    emptyState.style.border = '1px solid rgba(212,163,97,0.2)';
+    emptyState.style.borderRadius = '8px';
+    emptyState.style.color = '#d7c9b1';
+    emptyState.style.textAlign = 'center';
+    emptyState.textContent = 'No recent events yet.';
+    content.appendChild(emptyState);
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.style.display = 'flex';
+  list.style.flexDirection = 'column';
+  list.style.gap = '8px';
+
+  entries.forEach(entry => {
+    const meta = EVENT_JOURNAL_TYPE_META[entry.type] || EVENT_JOURNAL_TYPE_META.system;
+    const card = document.createElement('div');
+    card.style.background = 'rgba(0,0,0,0.18)';
+    card.style.border = `1px solid ${meta.border}`;
+    card.style.borderRadius = '8px';
+    card.style.padding = '10px';
+
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+    header.style.gap = '10px';
+    header.style.flexWrap = 'wrap';
+
+    const title = document.createElement('div');
+    title.style.fontWeight = 'bold';
+    title.style.color = meta.color;
+    title.textContent = meta.label;
+
+    const time = document.createElement('div');
+    time.style.fontSize = '11px';
+    time.style.color = '#b89b76';
+    time.textContent = formatEventJournalTimestamp(entry.timestamp);
+
+    const sender = document.createElement('div');
+    sender.style.marginTop = '5px';
+    sender.style.fontSize = '11px';
+    sender.style.color = '#cdb388';
+    sender.textContent = entry.senderName || 'System';
+
+    const detail = document.createElement('div');
+    detail.style.marginTop = '4px';
+    detail.style.color = '#efe3cf';
+    detail.style.lineHeight = '1.35';
+    detail.textContent = entry.text;
+
+    header.appendChild(title);
+    header.appendChild(time);
+    card.appendChild(header);
+    card.appendChild(sender);
+    card.appendChild(detail);
+    list.appendChild(card);
+  });
+
+  content.appendChild(list);
+}
+
+window.EVENT_JOURNAL_MAX_ENTRIES = EVENT_JOURNAL_MAX_ENTRIES;
+window.ensureEventJournalState = ensureEventJournalState;
+window.renderEventJournalHub = renderEventJournalHub;
+window.postPublicEventJournalEntry = postPublicEventJournalEntry;
+
 const MATERIAL_TIERS = {
     // Tier 1
     'Bronze': 1, 'Softwood': 1,
@@ -5155,6 +5355,25 @@ const MINE_COOLDOWN_IRON_MS = 1500;   // 1.5s
 const MINE_COOLDOWN_SILVER_MS = 1500; // 1.5s
 const MINE_COOLDOWN_GOLD_MS = 1500;   // 1.5s
 
+const MINING_GEM_DROP_RATE = 0.01;
+const MINING_GEM_POOLS = {
+  'Sand': ['Uncut Topaz', 'Uncut Jade'],
+  'Copper Ore': ['Uncut Topaz', 'Uncut Emerald', 'Uncut Jade', 'Uncut Ruby', 'Uncut Sapphire'],
+  'Coal Ore': ['Uncut Topaz', 'Uncut Diamond', 'Uncut Emerald', 'Uncut Jade', 'Uncut Ruby', 'Uncut Sapphire'],
+  'Iron Ore': ['Uncut Topaz', 'Uncut Emerald', 'Uncut Jade', 'Uncut Ruby', 'Uncut Sapphire'],
+  'Silver Ore': ['Uncut Topaz', 'Uncut Emerald', 'Uncut Jade', 'Uncut Ruby', 'Uncut Sapphire'],
+  'Gold Ore': ['Uncut Topaz', 'Uncut Emerald', 'Uncut Jade', 'Uncut Ruby', 'Uncut Sapphire', 'Uncut Amethyst']
+};
+
+function rollMiningGemDrop(resourceName) {
+  const gems = MINING_GEM_POOLS[resourceName];
+  if (!Array.isArray(gems) || !gems.length) return;
+  if (Math.random() >= MINING_GEM_DROP_RATE) return;
+  const gem = gems[Math.floor(Math.random() * gems.length)];
+  addItem(gem, 1);
+  showItemPopup(`+1 ${gem}`, 'mineProgress', 900);
+}
+
 // --- NEW: Blacksmith Level Requirements ---
 const COPPER_BAR_LVL = 1;
 const COPPER_PICKAXE_LVL = 2;
@@ -5549,8 +5768,8 @@ const ITEM_SELL_PRICES = {
   'Silver Axe': 150,
   'Copper Shortsword': 20,
   'Iron Shortsword': 65,
-  'Magic Staff': 500,
-  'Advanced Magic Staff': 2500,
+  'Magic Staff': 1500,
+  'Advanced Magic Staff': 20000,
   'Fishing Pole': 1000,
   'Mapple Fishing Pole': 2500,
   '1tapper': 0,
@@ -6997,12 +7216,14 @@ function renderInventoryGrid(){
               else if (item.name === 'Uncut Jade') imgName = 'uncutjade';
               else if (item.name === 'Uncut Ruby') imgName = 'uncutruby';
               else if (item.name === 'Uncut Sapphire') imgName = 'uncutsapphire';
+              else if (item.name === 'Uncut Amethyst') imgName = 'uncutamethyst';
               else if (item.name === 'Topaz') imgName = 'topaz';
               else if (item.name === 'Diamond') imgName = 'diamond';
               else if (item.name === 'Emerald') imgName = 'emerald';
               else if (item.name === 'Jade') imgName = 'jade';
               else if (item.name === 'Ruby') imgName = 'ruby';
               else if (item.name === 'Sapphire') imgName = 'sapphire';
+              else if (item.name === 'Amethyst') imgName = 'amethyst';
               else if (item.name === 'Gold Ring') imgName = 'goldring';
               else if (item.name === 'Diamond Ring') imgName = 'diamondring';
               else if (item.name === 'Emerald Ring') imgName = 'emeraldring';
@@ -7645,7 +7866,7 @@ async function drinkBeer() {
       if (justBecameDrunk) {
         ensureAchievementStats();
         game.achievementStats.hadBeenDrunk = true;
-        await postPlayerStatusChat('gets drunk and loves you guys.');
+        postPublicEventJournalEntry('drunk', 'got drunk and loved everybody.');
       }
     } else if (isDrunkStatusActive()) {
       game.drunkExpiresAt = game.beerBuffExpiresAt;
@@ -8593,13 +8814,7 @@ function miningLoop(timestamp, startTime) {
     showItemPopup(`+${MINE_XP} Mining XP`, 'mineProgress', 0);
     showItemPopup(`+${yieldQty} Copper Ore`, 'mineProgress', 450);
 
-    // +++ NEW GEM DROP LOGIC +++
-    if (Math.random() < 0.01) { // 1/100 Chance
-        const gems = ['Uncut Topaz', 'Uncut Diamond', 'Uncut Emerald', 'Uncut Jade', 'Uncut Ruby', 'Uncut Sapphire'];
-        const gem = gems[Math.floor(Math.random() * gems.length)];
-        addItem(gem, 1);
-        showItemPopup(`+1 ${gem}`, 'mineProgress', 900);
-    }
+    rollMiningGemDrop(MINE_ITEM);
     
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = '0%';
@@ -17984,6 +18199,11 @@ function openAchievementsHub() {
   renderAchievementsHub();
 }
 
+function openEventJournalHub() {
+  showMainScreen("hubEventJournal");
+  renderEventJournalHub();
+}
+
 function openTrophyRoomHub() {
   showMainScreen("hubTrophyRoom");
   renderTrophyRoom();
@@ -19109,13 +19329,7 @@ function sandMiningLoop(timestamp, startTime) {
     showItemPopup(`+${SAND_MINE_XP} Mining XP`, 'mineProgress', 0);
     showItemPopup(`+${yieldQty} ${SAND_MINE_ITEM}`, 'mineProgress', 450);
 
-    // +++ NEW GEM DROP LOGIC +++
-    if (Math.random() < 0.01) {
-        const gems = ['Uncut Topaz', 'Uncut Diamond', 'Uncut Emerald', 'Uncut Jade', 'Uncut Ruby', 'Uncut Sapphire'];
-        const gem = gems[Math.floor(Math.random() * gems.length)];
-        addItem(gem, 1);
-        showItemPopup(`+1 ${gem}`, 'mineProgress', 900);
-    }
+    rollMiningGemDrop(SAND_MINE_ITEM);
     
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = '0%';
@@ -19175,13 +19389,7 @@ function coalMiningLoop(timestamp, startTime) {
     showItemPopup(`+${COAL_MINE_XP} Mining XP`, 'mineProgress', 0);
     showItemPopup(`+${yieldQty} ${COAL_MINE_ITEM}`, 'mineProgress', 450);
 
-    // +++ NEW GEM DROP LOGIC +++
-    if (Math.random() < 0.01) {
-        const gems = ['Uncut Topaz', 'Uncut Diamond', 'Uncut Emerald', 'Uncut Jade', 'Uncut Ruby', 'Uncut Sapphire'];
-        const gem = gems[Math.floor(Math.random() * gems.length)];
-        addItem(gem, 1);
-        showItemPopup(`+1 ${gem}`, 'mineProgress', 900);
-    }
+    rollMiningGemDrop(COAL_MINE_ITEM);
     
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = '0%';
@@ -19274,13 +19482,7 @@ function silverMiningLoop(timestamp, startTime) {
     showItemPopup(`+${SILVER_MINE_XP} Mining XP`, 'mineProgress', 0);
     showItemPopup(`+${yieldQty} Silver Ore`, 'mineProgress', 450);
 
-    // +++ NEW GEM DROP LOGIC +++
-    if (Math.random() < 0.01) {
-        const gems = ['Uncut Topaz', 'Uncut Diamond', 'Uncut Emerald', 'Uncut Jade', 'Uncut Ruby', 'Uncut Sapphire'];
-        const gem = gems[Math.floor(Math.random() * gems.length)];
-        addItem(gem, 1);
-        showItemPopup(`+1 ${gem}`, 'mineProgress', 900);
-    }
+    rollMiningGemDrop(SILVER_MINE_ITEM);
 
     document.getElementById('mineProgress').style.width = '0%';
     const overdueTime = elapsed - SILVER_MINE_TIME_MS;
@@ -19341,13 +19543,7 @@ function goldMiningLoop(timestamp, startTime) {
     showItemPopup(`+${GOLD_MINE_XP} Mining XP`, 'mineProgress', 0);
     showItemPopup(`+${yieldQty} Gold Ore`, 'mineProgress', 450);
 
-    // +++ NEW GEM DROP LOGIC +++
-    if (Math.random() < 0.01) {
-        const gems = ['Uncut Topaz', 'Uncut Diamond', 'Uncut Emerald', 'Uncut Jade', 'Uncut Ruby', 'Uncut Sapphire'];
-        const gem = gems[Math.floor(Math.random() * gems.length)];
-        addItem(gem, 1);
-        showItemPopup(`+1 ${gem}`, 'mineProgress', 900);
-    }
+    rollMiningGemDrop(GOLD_MINE_ITEM);
 
     document.getElementById('mineProgress').style.width = '0%';
     const overdueTime = elapsed - GOLD_MINE_TIME_MS;
@@ -19401,13 +19597,7 @@ function ironMiningLoop(timestamp, startTime) {
     showItemPopup(`+${IRON_MINE_XP} Mining XP`, 'mineProgress', 0);
     showItemPopup(`+${yieldQty} ${IRON_MINE_ITEM}`, 'mineProgress', 450);
 
-    // +++ NEW GEM DROP LOGIC +++
-    if (Math.random() < 0.01) {
-        const gems = ['Uncut Topaz', 'Uncut Diamond', 'Uncut Emerald', 'Uncut Jade', 'Uncut Ruby', 'Uncut Sapphire'];
-        const gem = gems[Math.floor(Math.random() * gems.length)];
-        addItem(gem, 1);
-        showItemPopup(`+1 ${gem}`, 'mineProgress', 900);
-    }
+    rollMiningGemDrop(IRON_MINE_ITEM);
     
     const bar = document.getElementById('mineProgress');
     if (bar) bar.style.width = '0%';
@@ -20848,9 +21038,17 @@ function getPlayerDeathChatMessage(cause) {
   return specialMessages[enemyName] || `was killed by ${enemyName}.`;
 }
 
+function getPlayerDeathJournalMessage(cause) {
+  const message = getPlayerDeathChatMessage(cause);
+  if (/^was\b/i.test(message)) return 'You ' + message.replace(/^was\b/i, 'were');
+  if (/^challenged\b/i.test(message)) return 'You ' + message;
+  if (/^thought\b/i.test(message)) return 'You ' + message;
+  return 'You ' + message;
+}
+
 function handlePlayerDeath(cause = null) {
   ensureAchievementStats();
-  postPlayerStatusChat(getPlayerDeathChatMessage(cause));
+  postPublicEventJournalEntry('death', getPlayerDeathChatMessage(cause));
   game.achievementStats.deaths = Number(game.achievementStats.deaths || 0) + 1;
   game.isDirty = true;
   // 1. Wipe inventory
@@ -21303,7 +21501,7 @@ function handleEnemyDeath() {
     if (name.endsWith(' Clone')) {
       const originalName = name.replace(/ Clone$/, '');
       queueDeathPopup(`<span style="color:var(--gold); font-size:16px;">${game.name} destroyed ${originalName}.</span>`, dropDelay);
-      if (typeof postPlayerStatusChat === 'function') postPlayerStatusChat(`destroyed ${originalName} in a duel.`);
+      postPublicEventJournalEntry('duel', `destroyed ${originalName} in a duel.`);
       dropDelay += 450;
     }
     
@@ -21361,10 +21559,6 @@ function handleEnemyDeath() {
           addItem('Wild Herb', 1);
           queueDeathPopup(`+1 Wild Herb`, dropDelay + 450)
           dropDelay += 450;
-      }
-      if (Math.floor(Math.random() * 30) === 0) {
-          addItem('Magic Staff', 1);
-          queueDeathPopup(`+1 Magic Staff`, dropDelay + 450);
       }
     } else if (name === 'Golden Dragon') {
       addItem('Fire Stone', 1000);
@@ -22174,6 +22368,7 @@ function renderBankGrid() {
               else if (item.name === 'Uncut Jade') imgName = 'uncutjade';
               else if (item.name === 'Uncut Ruby') imgName = 'uncutruby';
               else if (item.name === 'Uncut Sapphire') imgName = 'uncutsapphire';
+              else if (item.name === 'Uncut Amethyst') imgName = 'uncutamethyst';
 
               // +++ NEW CUT GEMS +++
               else if (item.name === 'Topaz') imgName = 'topaz';
@@ -22182,6 +22377,7 @@ function renderBankGrid() {
               else if (item.name === 'Jade') imgName = 'jade';
               else if (item.name === 'Ruby') imgName = 'ruby';
               else if (item.name === 'Sapphire') imgName = 'sapphire';
+              else if (item.name === 'Amethyst') imgName = 'amethyst';
               else if (item.name === 'Gold Ring') imgName = 'goldring';
               else if (item.name === 'Diamond Ring') imgName = 'diamondring';
               else if (item.name === 'Emerald Ring') imgName = 'emeraldring';
@@ -22821,6 +23017,7 @@ function resetGameState() {
   game.achievementStats = { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} };
   game.goldenDragonHp = 2500;
   game.achievementStats = { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} };
+  game.eventJournal = [];
 
   game.miningActive = false;
   game.blacksmithingActive = false;
@@ -22997,7 +23194,7 @@ window.closeSettings = closeSettings;
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubAchievements', 'hubTrophyRoom', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubAchievements', 'hubEventJournal', 'hubTrophyRoom', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
 function showMainScreen(screenIdToShow) {
   // NEW: Safely return item from enchanting table if player navigates away
   if (typeof returnEnchantItem === 'function' && game.enchantSlot) {
@@ -23362,6 +23559,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
       achievementsBtn.onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Achievements</div>Track kills, deaths, and milestones');
       achievementsBtn.onmouseleave = hideTooltip;
   }
+  const eventJournalBtn = document.getElementById("eventJournalActionIcon");
+  if (eventJournalBtn) {
+      eventJournalBtn.onclick = openEventJournalHub;
+      eventJournalBtn.onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Event Journal</div>Deaths, duel results, and drunk moments');
+      eventJournalBtn.onmouseleave = hideTooltip;
+  }
   const trophyRoomBtn = document.getElementById("trophyRoomActionIcon");
   if (trophyRoomBtn) {
       trophyRoomBtn.onclick = openTrophyRoomHub;
@@ -23369,6 +23572,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       trophyRoomBtn.onmouseleave = hideTooltip;
   }
   document.getElementById("hubAchievements_ReturnBtn").onclick = backToActions;
+  document.getElementById("hubEventJournal_ReturnBtn").onclick = backToActions;
   document.getElementById("hubTrophyRoom_ReturnBtn").onclick = backToActions;
   document.getElementById('shopActionIcon').onclick = openShop;
   document.getElementById('bankActionIcon').onclick = openBank;
@@ -24778,11 +24982,159 @@ function renderInspectSkillsPanel(playerData) {
     `).join("");
 }
 
+function normalizeSavedTrophyRoomsForInspect(playerData) {
+    const savedRooms = Array.isArray((playerData || {}).trophyRooms) ? playerData.trophyRooms : [];
+    return TROPHY_ROOM_DEFS.map((def, index) => {
+        const existing = savedRooms[index] && typeof savedRooms[index] === 'object' ? savedRooms[index] : {};
+        return {
+            id: def.id,
+            name: def.name,
+            unlocked: index === 0 ? true : !!existing.unlocked,
+            unlockCost: def.unlockCost,
+            equipment: normalizeEquipmentSet(existing.equipment),
+            playerAttackStyle: typeof existing.playerAttackStyle === 'string' ? existing.playerAttackStyle : 'strength',
+            autocastSpell: typeof existing.autocastSpell === 'string' ? existing.autocastSpell : null
+        };
+    });
+}
+
+function renderInspectTrophyRoomEquipmentFrame(equipment, frame) {
+    if (!frame) return;
+    frame.innerHTML = '';
+
+    const roomEquipment = normalizeEquipmentSet(equipment);
+    EQUIPMENT_SLOT_KEYS.forEach(slotType => {
+        const actualItem = roomEquipment[slotType];
+        const displayedSourceSlot = getTrophyRoomDisplayedSourceSlot(roomEquipment, slotType);
+        const displayedItem = displayedSourceSlot ? roomEquipment[displayedSourceSlot] : null;
+        const slotEl = document.createElement('div');
+        slotEl.className = 'equipment-slot';
+        slotEl.dataset.slotType = slotType;
+
+        let imgName = TROPHY_ROOM_SLOT_ICON_MAP[slotType] || slotType;
+        let blockedMessage = '';
+
+        if (slotType === 'shield' && !actualItem && displayedSourceSlot === 'weapon' && displayedItem) {
+            imgName = getInspectItemImageName(displayedItem, imgName);
+            blockedMessage = 'Blocked by a 2H weapon';
+        } else if ((slotType === 'ring1' || slotType === 'ring2') && !actualItem && displayedSourceSlot && displayedSourceSlot !== slotType && displayedItem) {
+            imgName = getInspectItemImageName(displayedItem, 'ring');
+            blockedMessage = 'Blocked by a 2-slot accessory';
+        } else if (displayedItem) {
+            imgName = getInspectItemImageName(displayedItem, imgName);
+        }
+
+        const img = document.createElement('img');
+        img.src = `images/${imgName}.png`;
+        img.alt = slotType;
+        if (blockedMessage) {
+            img.style.opacity = '0.5';
+            img.style.filter = 'grayscale(100%)';
+        }
+        slotEl.appendChild(img);
+
+        if (displayedItem && Number(displayedItem.qty || 0) > 1) {
+            const amt = document.createElement('div');
+            amt.className = 'inv-amount';
+            amt.innerText = formatAmount(Number(displayedItem.qty || 0));
+            slotEl.appendChild(amt);
+        }
+
+        if (displayedItem) {
+            const enchantLevel = Number(displayedItem.enchantLevel || 0);
+            if (displayedItem.name === 'Gold Crown' || displayedItem.name === 'Elegant Black Cape') slotEl.classList.add('legendary-glow');
+            else if (enchantLevel > 0) slotEl.classList.add(`enchant-glow-${enchantLevel}`);
+
+            if (enchantLevel > 0) {
+                const badge = document.createElement('div');
+                badge.className = 'enchant-level-badge';
+                badge.innerText = `+${enchantLevel}`;
+                slotEl.appendChild(badge);
+            }
+        }
+
+        const tooltipContent = displayedItem
+            ? `${getInspectItemTooltipHtml(displayedItem)}${blockedMessage ? `<div style="color:#aaa; margin-top:4px; font-size:11px;">${blockedMessage}</div>` : ''}`
+            : (blockedMessage
+                ? `${blockedMessage}<div style="color:#aaa; margin-top:4px; font-size:11px;">This slot is occupied by the same item in this preset.</div>`
+                : 'Empty Slot');
+
+        slotEl.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
+        slotEl.onmouseleave = () => hideTooltip();
+        frame.appendChild(slotEl);
+    });
+}
+
+function renderInspectTrophyRoomsPanel(playerData, activeIndex = 0) {
+    const selector = document.getElementById('inspectTrophyRoomSelector');
+    const content = document.getElementById('inspectTrophyRoomContent');
+    if (!selector || !content) return;
+
+    const rooms = normalizeSavedTrophyRoomsForInspect(playerData);
+    const numericIndex = Number(activeIndex);
+    const clampedIndex = Number.isFinite(numericIndex)
+        ? Math.min(Math.max(0, Math.floor(numericIndex)), rooms.length - 1)
+        : 0;
+    const room = rooms[clampedIndex] || rooms[0];
+    const roomStyle = getLoadoutCombatStyle(room.equipment, room.autocastSpell);
+    const roomIsEmpty = isEquipmentSetEmpty(room.equipment);
+    window.lastInspectedTrophyRoomIndex = clampedIndex;
+
+    selector.innerHTML = rooms.map((entry, index) => {
+        const active = index === clampedIndex;
+        const stateLabel = entry.unlocked ? `Room ${index + 1}` : `Room ${index + 1} Locked`;
+        return `<button class="primary" type="button" data-room-index="${index}" style="background:${active ? 'var(--accent)' : '#6d452d'}; opacity:${entry.unlocked ? '1' : '0.82'};">${stateLabel}</button>`;
+    }).join('');
+
+    selector.querySelectorAll('button[data-room-index]').forEach(btn => {
+        btn.onclick = () => {
+            const nextIndex = Number(btn.dataset.roomIndex || 0);
+            renderInspectTrophyRoomsPanel(playerData, nextIndex);
+            setInspectPlayerView('trophyrooms');
+        };
+    });
+
+    if (!room.unlocked) {
+        content.innerHTML = `
+            <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:14px; display:flex; flex-direction:column; gap:10px;">
+                <div style="font-weight:bold; color:var(--gold); font-size:16px;">${room.name}</div>
+                <div style="color:#efe3cf; font-size:13px; line-height:1.35;">This player has not unlocked this trophy room yet.</div>
+                <div style="color:var(--gold); font-weight:bold;">Unlock Cost: ${Number(room.unlockCost || 0).toLocaleString()} Gold</div>
+            </div>
+        `;
+        return;
+    }
+
+    content.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:10px; min-height:0;">
+            <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:12px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                <div>
+                    <div style="font-weight:bold; color:var(--gold); font-size:15px;">${room.name}</div>
+                    <div style="color:#efe3cf; font-size:12px; margin-top:4px;">Saved Style: ${formatLoadoutStyleLabel(roomStyle)}</div>
+                    <div style="color:#9dc7ff; font-size:12px; margin-top:2px;">Autocast: ${formatAutocastSpellLabel(room.autocastSpell)}</div>
+                </div>
+                <div style="color:${roomIsEmpty ? '#cdb388' : '#8fd18f'}; font-size:12px; align-self:flex-start;">${roomIsEmpty ? 'Empty Room' : 'Preset Ready'}</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.18); border:1px solid rgba(212,163,97,0.2); border-radius:8px; padding:10px;">
+                <div style="font-weight:bold; color:var(--gold); margin-bottom:8px;">${room.name}</div>
+                <div class="equipment-character" style="border-bottom:2px solid rgba(212,163,97,0.12); padding-bottom:10px;">
+                    <div class="character-frame" id="inspectTrophyRoomPreviewFrame"></div>
+                </div>
+                <div style="margin-top:10px; color:#efe3cf; font-size:12px;">Style: ${formatLoadoutStyleLabel(roomStyle)} | Autocast: ${formatAutocastSpellLabel(room.autocastSpell)}</div>
+            </div>
+            <div style="padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#d7c9b1; font-size:12px; line-height:1.35;">Read-only admin view of the player's saved preset.</div>
+        </div>
+    `;
+
+    const roomFrame = document.getElementById('inspectTrophyRoomPreviewFrame');
+    if (roomFrame) renderInspectTrophyRoomEquipmentFrame(room.equipment || createEmptyEquipmentSet(), roomFrame);
+}
 function setInspectPlayerView(view) {
     const views = [
         { key: "equipment", panelId: "inspectEquipmentPanel", btnId: "inspectTabEquipmentBtn" },
         { key: "inventory", panelId: "inspectInventoryPanel", btnId: "inspectTabInventoryBtn" },
         { key: "bank", panelId: "inspectBankPanel", btnId: "inspectTabBankBtn" },
+        { key: "trophyrooms", panelId: "inspectTrophyRoomsPanel", btnId: "inspectTabTrophyRoomsBtn" },
         { key: "skills", panelId: "inspectSkillsPanel", btnId: "inspectTabSkillsBtn" },
         { key: "achievements", panelId: "inspectAchievementsPanel", btnId: "inspectTabAchievementsBtn" }
     ];
@@ -24844,6 +25196,7 @@ function renderInspectAdminPanels(playerData) {
     const equipmentBtn = document.getElementById("inspectTabEquipmentBtn");
     const inventoryBtn = document.getElementById("inspectTabInventoryBtn");
     const bankBtn = document.getElementById("inspectTabBankBtn");
+    const trophyRoomsBtn = document.getElementById("inspectTabTrophyRoomsBtn");
     const skillsBtn = document.getElementById("inspectTabSkillsBtn");
     const achievementsBtn = document.getElementById("inspectTabAchievementsBtn");
     const inventoryGrid = document.getElementById("inspectInventoryGrid");
@@ -24861,6 +25214,7 @@ function renderInspectAdminPanels(playerData) {
     if (equipmentBtn) equipmentBtn.onclick = () => setInspectPlayerView("equipment");
     if (inventoryBtn) inventoryBtn.onclick = () => setInspectPlayerView("inventory");
     if (bankBtn) bankBtn.onclick = () => setInspectPlayerView("bank");
+    if (trophyRoomsBtn) trophyRoomsBtn.onclick = () => setInspectPlayerView("trophyrooms");
     if (skillsBtn) skillsBtn.onclick = () => setInspectPlayerView("skills");
     if (achievementsBtn) achievementsBtn.onclick = () => setInspectPlayerView("achievements");
 
@@ -24881,8 +25235,10 @@ function renderInspectAdminPanels(playerData) {
     const inspectBankTabs = normalizeSavedBankTabsForInspect(playerData, Number(playerData.bankCapacity || 60));
     window.lastInspectedBankTabs = inspectBankTabs;
     window.lastInspectedBankTabIndex = 0;
+    window.lastInspectedTrophyRoomIndex = Number.isFinite(Number(window.lastInspectedTrophyRoomIndex)) ? Number(window.lastInspectedTrophyRoomIndex) : 0;
     renderInspectReadOnlyGrid(inspectBankTabs[0], bankGrid);
     renderInspectBankTabs(inspectBankTabs, 0, playerData);
+    renderInspectTrophyRoomsPanel(playerData, window.lastInspectedTrophyRoomIndex || 0);
     renderInspectSkillsPanel(playerData);
     renderInspectAchievementsPanel(playerData);
     setInspectPlayerView("equipment");
@@ -25362,10 +25718,43 @@ async function attemptEnchant() {
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  function isCurrentUserAdmin() {
+    function isCurrentUserAdmin() {
     return !!(auth.currentUser && auth.currentUser.uid === ADMIN_UID);
   }
   window.isCurrentUserAdmin = isCurrentUserAdmin;
+
+  const EVENT_JOURNAL_CHAT_PREFIX = '__event_journal__|';
+
+  function buildEventJournalChatPayload(type, text) {
+    const cleanedText = String(text || '').trim().slice(0, 240);
+    if (!cleanedText) return '';
+    const normalizedType = ['death', 'duel', 'drunk', 'system'].includes(type) ? type : 'system';
+    return `${EVENT_JOURNAL_CHAT_PREFIX}${normalizedType}|${cleanedText}`;
+  }
+
+  function parseEventJournalChatPayload(text) {
+    const rawText = String(text || '');
+    if (!rawText.startsWith(EVENT_JOURNAL_CHAT_PREFIX)) return null;
+    const payload = rawText.slice(EVENT_JOURNAL_CHAT_PREFIX.length);
+    const separatorIndex = payload.indexOf('|');
+    if (separatorIndex === -1) return null;
+    const type = payload.slice(0, separatorIndex).trim();
+    const detail = payload.slice(separatorIndex + 1).trim();
+    if (!detail) return null;
+    return {
+      type: ['death', 'duel', 'drunk', 'system'].includes(type) ? type : 'system',
+      text: detail.slice(0, 240)
+    };
+  }
+
+  function getMessageTimestampMs(rawTimestamp) {
+    if (rawTimestamp && typeof rawTimestamp.toMillis === 'function') return rawTimestamp.toMillis();
+    if (rawTimestamp instanceof Date) return rawTimestamp.getTime();
+    const parsedNumber = Number(rawTimestamp);
+    if (Number.isFinite(parsedNumber) && parsedNumber > 0) return parsedNumber;
+    const parsedDate = Date.parse(rawTimestamp || '');
+    return Number.isFinite(parsedDate) ? parsedDate : 0;
+  }
 
   window.__sendStatusChatMessage = async function(text) {
     const user = auth.currentUser;
@@ -25374,6 +25763,18 @@ async function attemptEnchant() {
       senderUid: user.uid,
       senderName: game.name,
       text,
+      timestamp: serverTimestamp()
+    });
+  };
+
+  window.__sendEventJournalMessage = async function(type, text) {
+    const user = auth.currentUser;
+    const payload = buildEventJournalChatPayload(type, text);
+    if (!user || !payload) return;
+    await addDoc(collection(db, "messages"), {
+      senderUid: user.uid,
+      senderName: game.name || 'System',
+      text: payload,
       timestamp: serverTimestamp()
     });
   };
@@ -25818,6 +26219,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
     const bankMeta = document.getElementById("inspectBankMeta");
     const bankTabs = document.getElementById("inspectBankTabsContainer");
     const adminTabsRow = document.getElementById("inspectAdminViewTabs");
+    const trophyRoomSelector = document.getElementById("inspectTrophyRoomSelector");
+    const trophyRoomContent = document.getElementById("inspectTrophyRoomContent");
     const skillsGrid = document.getElementById("inspectSkillsGrid");
     const skillsMeta = document.getElementById("inspectSkillsMeta");
     const achievementsMeta = document.getElementById("inspectAchievementsMeta");
@@ -25836,11 +26239,14 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
     if (achievementsMeta) achievementsMeta.innerHTML = "";
     if (achievementsGrid) achievementsGrid.innerHTML = "";
     if (achievementKillsGrid) achievementKillsGrid.innerHTML = "";
+    if (trophyRoomSelector) trophyRoomSelector.innerHTML = "";
+    if (trophyRoomContent) trophyRoomContent.innerHTML = "";
     if (adminTabsRow) adminTabsRow.style.display = "none";
     if (duelBtn) duelBtn.disabled = true;
     if (exportBtn) exportBtn.disabled = true;
     window.lastInspectedBankTabs = null;
     window.lastInspectedBankTabIndex = 0;
+    window.lastInspectedTrophyRoomIndex = 0;
     setInspectPlayerView("equipment");
     if (inspectOverlay) inspectOverlay.style.display = "flex";
 
@@ -25964,6 +26370,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           window.lastInspectedPlayerData = null;
           window.lastInspectedBankTabs = null;
           window.lastInspectedBankTabIndex = 0;
+          window.lastInspectedTrophyRoomIndex = 0;
           window.hideTooltip();
       };
 
@@ -26431,8 +26838,10 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         game.beerBuffExpiresAt = Number(data.beerBuffExpiresAt || 0);
         game.drunkExpiresAt = Number(data.drunkExpiresAt || 0);
         game.achievementStats = data.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} };
+        if (!Array.isArray(game.eventJournal)) game.eventJournal = [];
         game.bestiaryUnlocked = data.bestiaryUnlocked || {};
         ensureAchievementStats();
+        if (typeof window.ensureEventJournalState === 'function') window.ensureEventJournalState();
         syncAchievementUnlockState(false);
         
         // +++ NEW FARM LOADING & OFFLINE CALC (MULTI-CHICKEN & COWS) +++
@@ -26714,6 +27123,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       }
       
       if (started) {
+        initEventJournalListener();
         initChatListener();
         initUpdatesListener();
         initBroadcastListener(); // +++ ADD THIS LINE +++
@@ -26732,11 +27142,12 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       
       // Stop listeners and release lock
       // Trade cleanup removed
+            if (playerDocListener) playerDocListener();
       if (playerDocListener) playerDocListener();
+      if (eventJournalListenerUnsubscribe) eventJournalListenerUnsubscribe();
       if (updatesListenerUnsubscribe) updatesListenerUnsubscribe();
       if (broadcastListenerUnsubscribe) broadcastListenerUnsubscribe(); // +++ ADD THIS LINE +++
       isUpdatesHistoryLoaded = false;
-      stopSessionHeartbeat();
       // We don't release the lock, just let it go stale.
       
       window.__preserveLoadedSkills = false;
@@ -26781,6 +27192,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           window.renderLeaderboards();
           
           // Initialize listeners that were skipped during the initial "no-name" load
+          initEventJournalListener(); 
           initChatListener(); 
           initUpdatesListener(); 
           initBroadcastListener(); 
@@ -26793,6 +27205,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
   let isChatHistoryLoaded = false;
   let localMessageQueue = [];
   let chatListenerUnsubscribe = null;
+  let eventJournalListenerUnsubscribe = null;
   let isTradeRequestsLoaded = false; 
   let playerDocListener = null; 
   let updatesListenerUnsubscribe = null;
@@ -28092,6 +28505,42 @@ async function sendChatMessage() {
     });
   }
 
+  function initEventJournalListener() {
+    if (eventJournalListenerUnsubscribe) {
+      eventJournalListenerUnsubscribe();
+      eventJournalListenerUnsubscribe = null;
+    }
+    const q = query(
+      collection(db, "messages"),
+      orderBy("timestamp", "asc"),
+      limitToLast(200)
+    );
+    eventJournalListenerUnsubscribe = onSnapshot(q, (querySnapshot) => {
+      const maxEntries = Number(window.EVENT_JOURNAL_MAX_ENTRIES || 60);
+      const entries = querySnapshot.docs.map(doc => {
+        const msg = doc.data();
+        const parsed = parseEventJournalChatPayload(msg.text);
+        if (!parsed) return null;
+        return {
+          type: parsed.type,
+          senderName: String(msg.senderName || 'System').trim().slice(0, 24) || 'System',
+          text: parsed.text,
+          timestamp: getMessageTimestampMs(msg.timestamp) || Date.now()
+        };
+      }).filter(Boolean)
+        .sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0))
+        .slice(0, maxEntries);
+
+      game.eventJournal = entries;
+      if (typeof window.ensureEventJournalState === 'function') window.ensureEventJournalState();
+      if (document.getElementById('hubEventJournal')?.classList.contains('active') && typeof window.renderEventJournalHub === 'function') {
+        window.renderEventJournalHub();
+      }
+    }, (error) => {
+      console.error("Event journal listener error: ", error);
+    });
+  }
+
   function initChatListener() {
     if (chatListenerUnsubscribe) {
       chatListenerUnsubscribe();
@@ -28102,7 +28551,7 @@ async function sendChatMessage() {
     const q = query(
       collection(db, "messages"), 
       orderBy("timestamp", "asc"),
-      limitToLast(25)
+      limitToLast(100)
     );
     chatListenerUnsubscribe = onSnapshot(q, (querySnapshot) => {
       let hasAdds = false; 
@@ -28110,8 +28559,8 @@ async function sendChatMessage() {
         if (change.type === "added") {
           if (isChatHistoryLoaded) {
             hasAdds = true; 
-            const msg = change.doc.data();
-            const isDrunkChat = String(msg.text || '').trim().toLowerCase() === 'gets drunk and loves you guys.';
+                        const msg = change.doc.data();
+            if (parseEventJournalChatPayload(msg.text)) return;
 
             // +++ NEW: Quieter Chat Sound +++
             if (auth.currentUser && msg.senderUid !== auth.currentUser.uid) {
@@ -28156,8 +28605,8 @@ async function sendChatMessage() {
         let hadHistoryMessages = false;
         querySnapshot.docs.forEach(doc => {
             hadHistoryMessages = true;
-            const msg = doc.data();
-            const isDrunkChat = String(msg.text || '').trim().toLowerCase() === 'gets drunk and loves you guys.';
+                        const msg = doc.data();
+            if (parseEventJournalChatPayload(msg.text)) return;
             const msgElement = document.createElement('div');
             msgElement.style.marginBottom = '6px';
             msgElement.style.lineHeight = '1.3';
@@ -28468,6 +28917,7 @@ async function sendChatMessage() {
     // 4. +++ FIX: Unsubscribe from all listeners BEFORE signing out +++
     // This prevents "Missing Permissions" errors because the listeners won't try to read after auth is gone.
     if (typeof chatListenerUnsubscribe === 'function') { chatListenerUnsubscribe(); chatListenerUnsubscribe = null; }
+    if (typeof eventJournalListenerUnsubscribe === 'function') { eventJournalListenerUnsubscribe(); eventJournalListenerUnsubscribe = null; }
     if (typeof updatesListenerUnsubscribe === 'function') { updatesListenerUnsubscribe(); updatesListenerUnsubscribe = null; }
     if (typeof broadcastListenerUnsubscribe === 'function') { broadcastListenerUnsubscribe(); broadcastListenerUnsubscribe = null; }
     if (typeof playerDocListener === 'function') { playerDocListener(); playerDocListener = null; }
@@ -28499,7 +28949,7 @@ async function sendChatMessage() {
       'images/backpackicon.png',    // Tab Icon
       'images/skillicon.png',       // Tab Icon
       'images/questicon.png',       // Tab Icon
-      'images/questbuttonicon.jpg', // Hub Icon
+      'images/eventbuttonicon.jpg', // Event Journal Icon
 
       // --- Equipment Placeholders ---
       'images/necklace.png',
@@ -30035,6 +30485,10 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
 
 
 
