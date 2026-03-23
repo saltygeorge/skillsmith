@@ -1,4 +1,4 @@
-{
+﻿{
   "recipes": [
     {
       "id": "alchemy_vitality_potion",
@@ -180,7 +180,7 @@
       "xp": 350,
       "outputName": "Gold Shield",
       "outputQty": 1,
-      "slot": 1,
+      "slot": 2,
       "description": "A trophy-grade shield forged from gold and silver. Requires Bounty Hunting level 50 to smith."
     },
     {
@@ -209,7 +209,7 @@
       "xp": 90,
       "outputName": "Gold Helmet",
       "outputQty": 1,
-      "slot": 2,
+      "slot": 3,
       "extraSkillRequirements": [
         {
           "skill": "bountyhunting",
@@ -244,7 +244,7 @@
       "xp": 80,
       "outputName": "Gold Boots",
       "outputQty": 1,
-      "slot": 3,
+      "slot": 4,
       "extraSkillRequirements": [
         {
           "skill": "bountyhunting",
@@ -279,7 +279,7 @@
       "xp": 100,
       "outputName": "Gold Platelegs",
       "outputQty": 1,
-      "slot": 4,
+      "slot": 5,
       "extraSkillRequirements": [
         {
           "skill": "bountyhunting",
@@ -314,7 +314,7 @@
       "xp": 115,
       "outputName": "Gold Chestplate",
       "outputQty": 1,
-      "slot": 5,
+      "slot": 6,
       "extraSkillRequirements": [
         {
           "skill": "bountyhunting",
@@ -1260,9 +1260,73 @@
       "slot": 9
     },
     {
-      "id": "craft_gold_ring",
+      "id": "cut_amethyst",
       "section": "crafting",
       "skill": "crafting",
+      "level": 30,
+      "displayName": "Amethyst",
+      "image": "images/amethyst.png",
+      "requirements": [
+        {
+          "name": "Uncut Amethyst",
+          "qty": 1
+        }
+      ],
+      "time": 3000,
+      "xp": 150,
+      "outputName": "Amethyst",
+      "outputQty": 1,
+      "slot": 10
+    },
+    {
+      "id": "craft_advanced_magic_staff",
+      "section": "crafting",
+      "skill": "crafting",
+      "level": 50,
+      "displayName": "Advanced Magic Staff",
+      "image": "images/advancedmagicstaff.png",
+      "requirements": [
+        {
+          "name": "Mahogany",
+          "qty": 10
+        },
+        {
+          "name": "Amethyst",
+          "qty": 1
+        },
+        {
+          "name": "Earthstone",
+          "qty": 250
+        },
+        {
+          "name": "Airstone",
+          "qty": 250
+        },
+        {
+          "name": "Waterstone",
+          "qty": 250
+        },
+        {
+          "name": "Fire Stone",
+          "qty": 250
+        }
+      ],
+      "extraSkillRequirements": [
+        {
+          "skill": "magic",
+          "level": 60
+        }
+      ],
+      "time": 15000,
+      "xp": 1000,
+      "outputName": "Advanced Magic Staff",
+      "outputQty": 1,
+      "slot": 23
+    },
+    {
+      "id": "craft_gold_ring",
+      "section": "blacksmithing",
+      "skill": "blacksmith",
       "level": 38,
       "displayName": "Gold Ring",
       "image": "images/goldring.png",
@@ -1276,7 +1340,8 @@
       "xp": 100,
       "outputName": "Gold Ring",
       "outputQty": 1,
-      "slot": 10
+      "slot": 1,
+      "metalType": "gold"
     },
     {
       "id": "craft_diamond_ring",
@@ -1891,6 +1956,57 @@
       "description": "A simple cape woven from cloth."
     },
     {
+      "id": "tailor_ranger_chest",
+      "section": "tailoring",
+      "skill": "tailoring",
+      "level": 60,
+      "displayName": "Ranger Chest",
+      "image": "images/rangerchest.png",
+      "requirements": [
+        {
+          "name": "Leather",
+          "qty": 20
+        }
+      ],
+      "extraSkillRequirements": [
+        {
+          "skill": "ranged",
+          "level": 60
+        }
+      ],
+      "time": 7000,
+      "xp": 220,
+      "outputName": "Ranger Chest",
+      "outputQty": 1,
+      "slot": 11
+    },
+    {
+      "id": "tailor_archery_bracer",
+      "section": "tailoring",
+      "skill": "tailoring",
+      "level": 60,
+      "displayName": "Archery Bracer",
+      "image": "images/archerybracer.png",
+      "requirements": [
+        {
+          "name": "Leather",
+          "qty": 20
+        }
+      ],
+      "extraSkillRequirements": [
+        {
+          "skill": "ranged",
+          "level": 60
+        }
+      ],
+      "time": 7000,
+      "xp": 220,
+      "outputName": "Archery Bracer",
+      "outputQty": 1,
+      "slot": 12,
+      "description": "Occupies both accessory slots."
+    },
+    {
       "id": "craft_mapple_fishing_pole",
       "section": "crafting",
       "skill": "crafting",
@@ -1926,4 +2042,7 @@
     }
   ]
 }
+
+
+
 

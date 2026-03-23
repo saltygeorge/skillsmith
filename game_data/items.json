@@ -1,4 +1,4 @@
-{
+﻿{
   "items": {
     "copper_helmet": {
       "id": "copper_helmet",
@@ -286,6 +286,21 @@
         "rangedDef": 4,
         "magicDef": 8,
         "rangedAtk": 5,
+        "magicAtk": -2,
+        "armorType": "ranged"
+      }
+    },
+    "ranger_chest": {
+      "id": "ranger_chest",
+      "name": "Ranger Chest",
+      "img": "images/rangerchest.png",
+      "sellPrice": 250,
+      "unlockLevel": 1,
+      "stats": {
+        "meleeDef": 5,
+        "rangedDef": 8,
+        "magicDef": 12,
+        "rangedAtk": 10,
         "magicAtk": -2,
         "armorType": "ranged"
       }
@@ -592,6 +607,19 @@
       "stats": {
         "maxHPBonus": 2,
         "armorType": "jewelry"
+      }
+    },
+    "archery_bracer": {
+      "id": "archery_bracer",
+      "name": "Archery Bracer",
+      "img": "images/archerybracer.png",
+      "sellPrice": 2000,
+      "unlockLevel": 60,
+      "stats": {
+        "rangedStr": 5,
+        "rangedAtk": 5,
+        "armorType": "jewelry",
+        "occupiesBothRings": true
       }
     },
     "copper_bar": {
@@ -1004,6 +1032,30 @@
       "unlockLevel": 1,
       "stats": {}
     },
+    "earth_stone": {
+      "id": "earth_stone",
+      "name": "Earthstone",
+      "img": "images/earthstone.png",
+      "sellPrice": 10,
+      "unlockLevel": 1,
+      "stats": {}
+    },
+    "air_stone": {
+      "id": "air_stone",
+      "name": "Airstone",
+      "img": "images/airstone.png",
+      "sellPrice": 15,
+      "unlockLevel": 1,
+      "stats": {}
+    },
+    "water_stone": {
+      "id": "water_stone",
+      "name": "Waterstone",
+      "img": "images/waterstone.png",
+      "sellPrice": 20,
+      "unlockLevel": 1,
+      "stats": {}
+    },
     "fire_stone": {
       "id": "fire_stone",
       "name": "Fire Stone",
@@ -1083,5 +1135,36 @@
     "name": "Bleach",
     "img": "images/bleach.png",
     "sellPrice": 15
+  },
+  "advanced_magic_staff": {
+    "id": "advanced_magic_staff",
+    "name": "Advanced Magic Staff",
+    "img": "images/advancedmagicstaff.png",
+    "sellPrice": 2500,
+    "unlockLevel": 50,
+    "stats": {
+      "magicAtk": 15,
+      "magicDmg": 4,
+      "weaponType": "magic",
+      "twoHanded": true,
+      "speed": 2500
+    }
+  },
+  "uncut_amethyst": {
+    "id": "uncut_amethyst",
+    "name": "Uncut Amethyst",
+    "img": "images/uncutamethyst.png",
+    "sellPrice": 25
+  },
+  "amethyst": {
+    "id": "amethyst",
+    "name": "Amethyst",
+    "img": "images/amethyst.png",
+    "sellPrice": 100
   }
 }
+
+
+
+
+
