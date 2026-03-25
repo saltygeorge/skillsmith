@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -999,6 +999,11 @@ button.primary:hover { background: var(--accent-hover); }
 .splat-damage {
   color: #ff4d4d; /* Bright red */
   text-shadow: 0 1px 2px rgba(0,0,0,0.7); /* Simpler shadow */
+}
+
+.splat-heal {
+  color: #7dff9b;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
 }
 
 .splat-block {
@@ -3811,6 +3816,7 @@ button.primary:hover { background: var(--accent-hover); }
             <button id="inspectTabEquipmentBtn" class="primary" type="button">Equipment</button>
             <button id="inspectTabInventoryBtn" class="primary" type="button">Inventory</button>
             <button id="inspectTabBankBtn" class="primary" type="button">Bank</button>
+            <button id="inspectTabPetYardBtn" class="primary" type="button">Pet Yard</button>
             <button id="inspectTabTrophyRoomsBtn" class="primary" type="button">Trophy Rooms</button>
             <button id="inspectTabSkillsBtn" class="primary" type="button">Skills</button>
             <button id="inspectTabAchievementsBtn" class="primary" type="button">Achievements</button>
@@ -3836,7 +3842,10 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
             <div id="inspectBankMeta" style="margin-top:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#efe3cf; font-size:12px;"></div>
         </div>
-        <div id="inspectTrophyRoomsPanel" class="game-modal-content" style="display:none;">
+        <div id="inspectPetYardPanel" class="game-modal-content" style="display:none;">
+            <div id="inspectPetYardMeta" style="margin-bottom:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#efe3cf; font-size:12px;"></div>
+            <div id="inspectPetYardContent" style="max-height:320px; overflow-y:auto; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; padding-right:4px;"></div>
+        </div>        <div id="inspectTrophyRoomsPanel" class="game-modal-content" style="display:none;">
             <div id="inspectTrophyRoomSelector" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;"></div>
             <div id="inspectTrophyRoomContent" style="display:flex; flex-direction:column; gap:12px; max-height:360px; overflow-y:auto; padding-right:6px;"></div>
         </div>
@@ -5150,12 +5159,6 @@ const VALID_ITEMS = [
   'Pet Owl Egg',
   'Pet Dragon Egg',
   'Pet Chicken Egg',
-  'Pet Egg 5',
-  'Pet Owl',
-  'Pet Cat',
-  'Pet Wolf',
-  'Pet Chicken',
-  'Pet Black Chicken',
   'Sand', // +++ NEW +++
   'Empty Vial', // +++ NEW +++
   'Venom', // +++ NEW +++
@@ -7301,11 +7304,14 @@ function triggerAutoEat() {
     // Handle supported consumables
     if (game.autoEatSlot.name === 'Vitality Potion' || game.autoEatSlot.name === 'Vitality Potion+' || game.autoEatSlot.name === 'Venom') {
         const isVenom = game.autoEatSlot.name === 'Venom';
+        let autoHealAmount = 0;
         if (isVenom) {
             game.hp = Math.max(0, game.hp - 5);
         } else {
             const heal = game.autoEatSlot.name === 'Vitality Potion+' ? 20 : 10;
+            const previousHp = Number(game.hp || 0);
             game.hp = Math.min(game.maxHP, game.hp + heal);
+            autoHealAmount = Math.max(0, game.hp - previousHp);
         }
 
         game.autoEatSlot.qty--;
@@ -7317,6 +7323,7 @@ function triggerAutoEat() {
 
         game.lastAutoHealTime = now; // Update the cooldown timer
         updateHPUI();
+        if (autoHealAmount > 0) showPlayerHealSplat(autoHealAmount);
         renderAutoEatSlot();
         playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');
         if (game.hp <= 0) {
@@ -7874,8 +7881,7 @@ async function eatCookedChicken() {
 
   // Try to remove the item. If successful, heal the player.
   if (removeItem('Cooked Chicken', 1)) {
-    game.hp = Math.min(game.maxHP, game.hp + COOK_CHICKEN_HEAL); // <-- Use constant
-    updateHPUI();
+    applyPlayerHealing(COOK_CHICKEN_HEAL);
     
     // --- NEW FIX: Re-render inventory and save ---
     renderInventoryGrid();
@@ -7897,8 +7903,7 @@ async function eatCookedBeef() {
     return;
   }
   if (removeItem('Cooked Beef', 1)) {
-    game.hp = Math.min(game.maxHP, game.hp + COOK_BEEF_HEAL);
-    updateHPUI();
+    applyPlayerHealing(COOK_BEEF_HEAL);
     renderInventoryGrid();
     if (typeof window.savePlayerData === 'function') {
         window.savePlayerData();
@@ -7916,8 +7921,7 @@ async function eatCookedHerring() {
     return;
   }
   if (removeItem('Cooked Herring', 1)) {
-    game.hp = Math.min(game.maxHP, game.hp + COOK_HERRING_HEAL);
-    updateHPUI();
+    applyPlayerHealing(COOK_HERRING_HEAL);
     renderInventoryGrid();
     if (typeof window.savePlayerData === 'function') {
         window.savePlayerData();
@@ -7935,8 +7939,7 @@ async function eatCookedTrout() {
     return;
   }
   if (removeItem('Cooked Trout', 1)) {
-    game.hp = Math.min(game.maxHP, game.hp + COOK_TROUT_HEAL);
-    updateHPUI();
+    applyPlayerHealing(COOK_TROUT_HEAL);
     renderInventoryGrid();
     if (typeof window.savePlayerData === 'function') {
         window.savePlayerData();
@@ -7954,8 +7957,7 @@ async function eatCookedSalmon() {
     return;
   }
   if (removeItem('Cooked Salmon', 1)) {
-    game.hp = Math.min(game.maxHP, game.hp + COOK_SALMON_HEAL);
-    updateHPUI();
+    applyPlayerHealing(COOK_SALMON_HEAL);
     renderInventoryGrid();
     if (typeof window.savePlayerData === 'function') {
         window.savePlayerData();
@@ -7972,8 +7974,7 @@ async function eatCake() {
     return;
   }
   if (removeItem('Cake', 1)) {
-    game.hp = Math.min(game.maxHP, game.hp + 12);
-    updateHPUI();
+    applyPlayerHealing(12);
     renderInventoryGrid();
     if (typeof window.savePlayerData === 'function') {
       window.savePlayerData();
@@ -7989,9 +7990,8 @@ async function drinkVitalityPotion() {
     return;
   }
   if (removeItem('Vitality Potion', 1)) {
-    game.hp = Math.min(game.maxHP, game.hp + 10); // Heals 10 HP
+    applyPlayerHealing(10);
     addItem('Empty Vial', 1); // +++ NEW: GIVE VIAL BACK +++
-    updateHPUI();
     renderInventoryGrid();
     playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3'); 
     if (typeof window.savePlayerData === 'function') {
@@ -8007,9 +8007,8 @@ async function drinkVitalityPotionPlus() {
     return;
   }
   if (removeItem('Vitality Potion+', 1)) {
-    game.hp = Math.min(game.maxHP, game.hp + 20); // Heals 20 HP
+    applyPlayerHealing(20);
     addItem('Empty Vial', 1);
-    updateHPUI();
     renderInventoryGrid();
     playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3'); 
     if (typeof window.savePlayerData === 'function') {
@@ -8377,8 +8376,7 @@ async function eatFoodItem(itemName) {
   const healAmt = getFoodHealAmount(itemName);
   if (healAmt <= 0) return;
   if (removeItem(itemName, 1)) {
-    game.hp = Math.min(game.maxHP, game.hp + healAmt);
-    updateHPUI();
+    applyPlayerHealing(healAmt);
     hideItemContextMenu();
     renderInventoryGrid();
     game.isDirty = true;
@@ -8673,6 +8671,10 @@ function updateSkillUI(){
     if (skillDataKey === 'farming' && data.level >= 60) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Double Animal Yield</div>`);
     if (skillDataKey === 'mining' && data.level >= 80) skillBonusLines.push(`<div style="color:#aaffaa; font-weight:bold; margin-top:2px;">Double Mining Yield</div>`);
     if (skillDataKey === 'woodcutting' && data.level >= 80) skillBonusLines.push(`<div style="color:#aaffaa; font-weight:bold; margin-top:2px;">Double Woodcutting Yield</div>`);
+    if (skillDataKey === 'petmastery') {
+        if (data.level >= PET_SECRET_MASTERY_LVL) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Secret Pet Skills Unlocked</div>`);
+        else skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Secret Pet Skills: Unlock at Lvl ${PET_SECRET_MASTERY_LVL}</div>`);
+    }
     if (skillDataKey === 'magic') {
         if (data.level >= 80) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Spell Cost: 1 Stone</div>`);
         else if (data.level >= 20) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Spell Cost: 2 Stones</div>`);
@@ -15647,6 +15649,11 @@ function hatchEgg() {
     game.isDirty = true;
 }
 
+function refreshEquippedPetBonusesUI() {
+    if (typeof renderEquipment === 'function') renderEquipment();
+    if (typeof updateHPUI === 'function') updateHPUI();
+}
+
 function feedPet(petId) {
     const pet = game.pets.find(p => p.id === petId);
     if (!pet) return;
@@ -15678,6 +15685,7 @@ function feedPet(petId) {
         }
         playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         renderPetYard('pets');
+        if (game.equipment.pet && game.equipment.pet.id === petId) refreshEquippedPetBonusesUI();
         renderFarmUpgradePanels();
         game.isDirty = true;
     } else {
@@ -15698,7 +15706,7 @@ function equipPetFromYard(petId) {
     }
     
     renderPetYard('pets');
-    renderEquipment(); // Update sidebar slot
+    refreshEquippedPetBonusesUI(); // Update HP + combat stats from equipped pet
     game.isDirty = true;
 }
 
@@ -15718,7 +15726,7 @@ const sellPrice = pet.level >= 50 ? basePrice * 5 : pet.level >= 25 ? basePrice 
         // 1. Unequip if currently equipped
         if (game.equipment.pet && game.equipment.pet.id === petId) {
             game.equipment.pet = null;
-            renderEquipment();
+            refreshEquippedPetBonusesUI();
         }
         
         // 2. Remove from array
@@ -21477,7 +21485,8 @@ function revivePlayer() {
 function showDamageSplat(target, amount, type) {
   let anchorElement = null;
   if (target === 'player') {
-    anchorElement = document.getElementById('hpFill').parentElement; 
+    const hpFill = document.getElementById('hpFill');
+    anchorElement = hpFill ? hpFill.parentElement : null;
   } else if (target === 'enemy') {
     anchorElement = document.getElementById('combat-enemy-hp-bar');
   }
@@ -21489,10 +21498,14 @@ function showDamageSplat(target, amount, type) {
   
   if (type === 'special') {
     splat.classList.add('splat-special');
-
+    splat.classList.add('splat-damage');
     splat.textContent = amount || "Special";
+  } else if (type === 'damage' && amount > 0) {
     splat.classList.add('splat-damage');
     splat.textContent = amount;
+  } else if (type === 'heal' && amount > 0) {
+    splat.classList.add('splat-heal');
+    splat.textContent = `+${amount}`;
   } else if (type === 'block' || (type === 'damage' && amount === 0)) { 
     // Only show "Miss" if explicitly blocked or damage is 0
     splat.classList.add('splat-block');
@@ -21502,7 +21515,13 @@ function showDamageSplat(target, amount, type) {
     return;
   }
   
-  splat.style.right = (Math.floor(Math.random() * 20) - 40) + 'px';
+  if (type === 'heal') {
+    splat.style.left = (Math.floor(Math.random() * 14) - 18) + 'px';
+    splat.style.right = 'auto';
+    splat.style.top = '-28px';
+  } else {
+    splat.style.right = (Math.floor(Math.random() * 20) - 40) + 'px';
+  }
   
   anchorElement.appendChild(splat);
   setTimeout(() => splat.remove(), 850);
@@ -21512,6 +21531,22 @@ function showDamageSplat(target, amount, type) {
  * NEW: Recursive combat loop.
  * Allows gear switching without resetting the current cooldown.
  */
+function showPlayerHealSplat(amount) {
+  const numericAmount = Math.floor(Number(amount || 0));
+  if (numericAmount > 0) showDamageSplat('player', numericAmount, 'heal');
+}
+
+function applyPlayerHealing(amount) {
+  const numericAmount = Number(amount || 0);
+  if (numericAmount <= 0) return 0;
+  const previousHp = Number(game.hp || 0);
+  game.hp = Math.min(game.maxHP, previousHp + numericAmount);
+  const actualHeal = Math.max(0, game.hp - previousHp);
+  updateHPUI();
+  if (actualHeal > 0) showPlayerHealSplat(actualHeal);
+  return actualHeal;
+}
+
 function getAttackElementType(weaponType, activeSpell) {
   if (activeSpell && activeSpell.elementType) return activeSpell.elementType;
   if (weaponType === 'melee') return 'earth';
@@ -21714,8 +21749,7 @@ if (activeSpell) {
 
   const petHealOnAttack = getPetSecretHealOnAttackAmount();
   if (petHealOnAttack > 0 && game.hp < game.maxHP) {
-    game.hp = Math.min(game.maxHP, game.hp + petHealOnAttack);
-    updateHPUI();
+    applyPlayerHealing(petHealOnAttack);
   }
 
   if (effectiveDamage > 0) {
@@ -25422,6 +25456,94 @@ function renderInspectSkillsPanel(playerData) {
     `).join("");
 }
 
+function isInspectPetSecretBonusUnlocked(playerData) {
+    return getInspectedSavedSkillLevel(playerData, 'petmastery') >= PET_SECRET_MASTERY_LVL;
+}
+
+function getInspectPetSecretBonusText(playerData, petType, petLevel) {
+    const secretData = getPetSecretBonusData(petType, petLevel);
+    if (!secretData) {
+        if (petType === 'Chicken') return 'No Secret Skill';
+        return '';
+    }
+    if (isInspectPetSecretBonusUnlocked(playerData)) return secretData.text || 'Secret Skill Unlocked';
+    return secretData.lockedText || '??? (Locked)';
+}
+
+function renderInspectPetYardPanel(playerData) {
+    const metaEl = document.getElementById('inspectPetYardMeta');
+    const contentEl = document.getElementById('inspectPetYardContent');
+    if (!metaEl || !contentEl) return;
+
+    const pets = Array.isArray((playerData && playerData.pets)) ? playerData.pets : [];
+    const equippedPet = playerData && playerData.equipment && playerData.equipment.pet ? playerData.equipment.pet : null;
+    const equippedPetId = equippedPet && equippedPet.id ? equippedPet.id : null;
+    const equippedPetFromList = equippedPetId ? pets.find(pet => pet && pet.id === equippedPetId) : null;
+    const equippedPetLabel = equippedPetFromList ? equippedPetFromList.type : (equippedPet && (equippedPet.type || equippedPet.name) ? (equippedPet.type || equippedPet.name) : 'None');
+    const incubator = playerData && playerData.incubator && typeof playerData.incubator === 'object'
+        ? playerData.incubator
+        : { active: false, eggType: null };
+    const petMasteryLevel = getInspectedSavedSkillLevel(playerData, 'petmastery');
+    const incubatorLabel = incubator.active ? `Hatching ${incubator.eggType || 'Unknown'} Egg` : 'Idle';
+
+    metaEl.innerHTML = `
+        <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <span>Pets: ${pets.length}/6</span>
+            <span>Equipped: ${equippedPetLabel}</span>
+            <span>Pet Mastery: ${petMasteryLevel}</span>
+            <span style="color:${incubator.active ? 'var(--gold)' : '#cdb388'};">Incubator: ${incubatorLabel}</span>
+        </div>
+    `;
+
+    if (!pets.length) {
+        contentEl.innerHTML = `<div style="grid-column:1 / -1; text-align:center; color:#b89b76; padding:24px 12px; background:rgba(0,0,0,0.18); border:1px solid rgba(212,163,97,0.2); border-radius:8px;">No pets in Pet Yard.</div>`;
+        return;
+    }
+
+    const secretUnlocked = isInspectPetSecretBonusUnlocked(playerData);
+    contentEl.innerHTML = pets.map(pet => {
+        if (!pet) return '';
+        const config = PET_DATA[pet.type] || {};
+        const isEquipped = !!(equippedPetId && pet.id === equippedPetId);
+        const level = Number.isFinite(Number(pet.level)) ? Number(pet.level) : 1;
+        const hp = Number.isFinite(Number(pet.hp)) ? Number(pet.hp) : PET_MAX_HP;
+        const xp = Number.isFinite(Number(pet.xp)) ? Number(pet.xp) : 0;
+        const xpNeeded = Math.max(100, level * 100);
+        const xpPercent = Math.max(0, Math.min(100, (xp / xpNeeded) * 100));
+        const hpPercent = Math.max(0, Math.min(100, (hp / PET_MAX_HP) * 100));
+        const hpColor = hp <= 0 ? '#555' : (hp <= 3 ? '#d22' : '#44aa44');
+        const statusText = hp <= 0 ? 'Sick' : `${hp}/${PET_MAX_HP} HP`;
+        const bonusData = config && typeof config.bonus === 'function' ? config.bonus(level) : null;
+        let bonusText = formatPetBonusText(pet.type, bonusData);
+        let secretText = getInspectPetSecretBonusText(playerData, pet.type, level);
+        if (hp <= 0) {
+            bonusText = `<span style="color:#ff7d7d;">Sick (Inactive)</span>`;
+            secretText = `<span style="color:#666;">Secret Skill Inactive</span>`;
+        } else {
+            bonusText = `<span style="color:#aaffaa;">${bonusText}</span>`;
+            secretText = `<span style="color:${secretUnlocked ? '#7fd3ff' : '#888'};">${secretText}</span>`;
+        }
+        return `
+            <div style="background:rgba(0,0,0,0.24); border:1px solid ${isEquipped ? 'rgba(212,163,97,0.85)' : 'rgba(212,163,97,0.22)'}; border-radius:8px; padding:10px; box-sizing:border-box; min-height:170px;">
+                <div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start;">
+                    <div style="font-weight:bold; color:var(--gold); font-size:13px; line-height:1.25;">${pet.type} Lvl ${level}</div>
+                    <div style="font-size:10px; color:${isEquipped ? '#8fd18f' : '#b89b76'}; white-space:nowrap;">${isEquipped ? 'Equipped' : 'Stored'}</div>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center; margin-top:8px;">
+                    <img src="images/${config.img || 'petyardicon'}.png" alt="${pet.type}" style="width:48px; height:48px; object-fit:contain; opacity:${hp <= 0 ? '0.5' : '1'}; flex-shrink:0;">
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:11px; color:${hp <= 0 ? '#ff7d7d' : '#efe3cf'}; margin-bottom:4px;">${statusText}</div>
+                        <div style="background:#333; width:100%; height:5px; border-radius:3px; overflow:hidden; margin-bottom:6px;"><div style="background:${hpColor}; width:${hpPercent}%; height:100%;"></div></div>
+                        <div style="font-size:10px; color:#aaa; display:flex; justify-content:space-between; gap:8px;"><span>XP</span><span>${Math.floor(xp)} / ${xpNeeded}</span></div>
+                        <div style="width:100%; height:4px; background:#222; border-radius:2px; overflow:hidden; margin-top:2px;"><div style="height:100%; width:${xpPercent}%; background:var(--gold);"></div></div>
+                    </div>
+                </div>
+                <div style="margin-top:8px; font-size:10px; line-height:1.3; min-height:28px;">${bonusText}</div>
+                <div style="margin-top:4px; font-size:10px; line-height:1.3; min-height:26px;">${secretText}</div>
+            </div>
+        `;
+    }).join('');
+}
 function normalizeSavedTrophyRoomsForInspect(playerData) {
     const savedRooms = Array.isArray((playerData || {}).trophyRooms) ? playerData.trophyRooms : [];
     return TROPHY_ROOM_DEFS.map((def, index) => {
@@ -25573,6 +25695,7 @@ function setInspectPlayerView(view) {
         { key: "equipment", panelId: "inspectEquipmentPanel", btnId: "inspectTabEquipmentBtn" },
         { key: "inventory", panelId: "inspectInventoryPanel", btnId: "inspectTabInventoryBtn" },
         { key: "bank", panelId: "inspectBankPanel", btnId: "inspectTabBankBtn" },
+        { key: "petyard", panelId: "inspectPetYardPanel", btnId: "inspectTabPetYardBtn" },
         { key: "trophyrooms", panelId: "inspectTrophyRoomsPanel", btnId: "inspectTabTrophyRoomsBtn" },
         { key: "skills", panelId: "inspectSkillsPanel", btnId: "inspectTabSkillsBtn" },
         { key: "achievements", panelId: "inspectAchievementsPanel", btnId: "inspectTabAchievementsBtn" }
@@ -25635,6 +25758,7 @@ function renderInspectAdminPanels(playerData) {
     const equipmentBtn = document.getElementById("inspectTabEquipmentBtn");
     const inventoryBtn = document.getElementById("inspectTabInventoryBtn");
     const bankBtn = document.getElementById("inspectTabBankBtn");
+    const petYardBtn = document.getElementById("inspectTabPetYardBtn");
     const trophyRoomsBtn = document.getElementById("inspectTabTrophyRoomsBtn");
     const skillsBtn = document.getElementById("inspectTabSkillsBtn");
     const achievementsBtn = document.getElementById("inspectTabAchievementsBtn");
@@ -25653,6 +25777,7 @@ function renderInspectAdminPanels(playerData) {
     if (equipmentBtn) equipmentBtn.onclick = () => setInspectPlayerView("equipment");
     if (inventoryBtn) inventoryBtn.onclick = () => setInspectPlayerView("inventory");
     if (bankBtn) bankBtn.onclick = () => setInspectPlayerView("bank");
+    if (petYardBtn) petYardBtn.onclick = () => setInspectPlayerView("petyard");
     if (trophyRoomsBtn) trophyRoomsBtn.onclick = () => setInspectPlayerView("trophyrooms");
     if (skillsBtn) skillsBtn.onclick = () => setInspectPlayerView("skills");
     if (achievementsBtn) achievementsBtn.onclick = () => setInspectPlayerView("achievements");
@@ -25677,6 +25802,7 @@ function renderInspectAdminPanels(playerData) {
     window.lastInspectedTrophyRoomIndex = Number.isFinite(Number(window.lastInspectedTrophyRoomIndex)) ? Number(window.lastInspectedTrophyRoomIndex) : 0;
     renderInspectReadOnlyGrid(inspectBankTabs[0], bankGrid);
     renderInspectBankTabs(inspectBankTabs, 0, playerData);
+    renderInspectPetYardPanel(playerData);
     renderInspectTrophyRoomsPanel(playerData, window.lastInspectedTrophyRoomIndex || 0);
     renderInspectSkillsPanel(playerData);
     renderInspectAchievementsPanel(playerData);
@@ -27282,6 +27408,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           game.farming = { level: 1, xp: 0, totalXP: 0 }; 
         }
         game.activeBounty = data.activeBounty || null;
+        game.goldenDragonHp = Number.isFinite(Number(data.goldenDragonHp)) ? Math.max(0, Math.min(2500, Number(data.goldenDragonHp))) : 2500;
         game.bestiaryUnlocked = data.bestiaryUnlocked || {};
         game.autoEatSlot = data.autoEatSlot || null;
         game.autoEatUnlocked = data.autoEatUnlocked || false; 
@@ -31082,6 +31209,20 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
