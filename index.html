@@ -311,11 +311,6 @@ body {
 .inv-slot img[src*="rubynecklace"],
 .inv-slot img[src*="sapphirenecklace"],
 .inv-slot img[src*="topaznecklace"],
-.equipment-slot img[src*="diamondnecklace"],
-.equipment-slot img[src*="emeraldnecklace"],
-.equipment-slot img[src*="rubynecklace"],
-.equipment-slot img[src*="sapphirenecklace"],
-.equipment-slot img[src*="topaznecklace"],
 #craftingItemsContainer button img[src*="diamondnecklace"],
 #craftingItemsContainer button img[src*="emeraldnecklace"],
 #craftingItemsContainer button img[src*="rubynecklace"],
@@ -327,6 +322,17 @@ body {
 #hubDynamic img[src*="sapphirenecklace"],
 #hubDynamic img[src*="topaznecklace"] {
   transform: scale(1.4) translateY(-3px) !important;
+  transform-origin: center center;
+}
+
+/* Equipped necklaces need a larger scale than the empty placeholder icon */
+.equipment-slot img[src*="diamondnecklace"],
+.equipment-slot img[src*="emeraldnecklace"],
+.equipment-slot img[src*="rubynecklace"],
+.equipment-slot img[src*="sapphirenecklace"],
+.equipment-slot img[src*="topaznecklace"] {
+  transform: scale(1.4) translateY(-4px) !important;
+  transform-origin: center center;
 }
 
 /* Keep the empty necklace placeholder centered */
@@ -765,6 +771,28 @@ button.primary:hover { background: var(--accent-hover); }
 #sessionLockOverlay h2 {
   margin-top: 0;
   color: var(--gold);
+}
+
+#adminDisconnectOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  z-index: 5000;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+#adminDisconnectOverlay div {
+  padding: 30px 40px;
+  max-width: 420px;
+}
+#adminDisconnectOverlay h2 {
+  margin-top: 0;
+  color: #ff9b6f;
 }
 
 #deathOverlay {
@@ -2230,6 +2258,13 @@ button.primary:hover { background: var(--accent-hover); }
   box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.2) !important;
 }
 
+.wolf-rage-glow {
+  border: 2px solid rgba(255, 70, 70, 1) !important;
+  background: rgba(55, 12, 12, 0.95) !important;
+  box-shadow: inset 0 0 14px rgba(255, 90, 90, 0.18), 0 0 14px rgba(255, 70, 70, 0.65) !important;
+  filter: drop-shadow(0 0 10px rgba(255, 60, 60, 0.75));
+}
+
 .enchant-level-badge {
   position: absolute;
   top: 3px;
@@ -3187,7 +3222,7 @@ button.primary:hover { background: var(--accent-hover); }
               <!-- NEW FOREST BUTTON -->
               <button id="normalForestAreaBtn" class="primary" 
                       style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; outline: none; background: transparent; border: none; box-shadow: none; overflow: hidden;"
-                      onclick="game.lastCombatAreaHub='hubNormalForest'; showMainScreen('hubNormalForest');" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Forest</div><div>Hunt Goblins, Platypus, and Koalas.</div>')" 
+                      onclick="game.lastCombatAreaHub='hubNormalForest'; showMainScreen('hubNormalForest');" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Forest</div><div>Hunt Goblins, Platypus, Koalas, and Wolves.</div>')" 
                       onmouseleave="hideTooltip()">
                 <img src="images/normalforest.jpeg" alt="Forest Area" 
                      style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover; display: block; image-rendering: auto; backface-visibility: hidden;">
@@ -3196,7 +3231,7 @@ button.primary:hover { background: var(--accent-hover); }
               <!-- DARK FOREST BUTTON -->
               <button id="darkForestAreaBtn" class="primary" 
                       style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; outline: none; background: transparent; border: none; box-shadow: none; overflow: hidden;"
-                      onclick="game.lastCombatAreaHub='hubDarkForest'; showMainScreen('hubDarkForest');" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Dark Forest</div><div>Face Crazy Owls and The Witch.</div>')" 
+                      onclick="game.lastCombatAreaHub='hubDarkForest'; showMainScreen('hubDarkForest');" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Dark Forest</div><div>Face Crazy Owls and The Witch.</div>')"
                       onmouseleave="hideTooltip()">
                 <img src="images/darkforest.jpeg" alt="Dark Forest Area" 
                      style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover; display: block; image-rendering: auto; backface-visibility: hidden;">
@@ -3324,6 +3359,11 @@ button.primary:hover { background: var(--accent-hover); }
                    onmouseleave="hideTooltip()">
                 <img src="images/koalamonster.png" alt="Stupid Koala" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Wolf')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Wolf (Lvl 25)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/wolfmonster.png" alt="Wolf" style="height: 100px; object-fit: cover; border-radius: 8px;">
+              </div>
             
             </div>
             
@@ -3349,6 +3389,7 @@ button.primary:hover { background: var(--accent-hover); }
                    onmouseleave="hideTooltip()">
                 <img src="images/witchmonster.jpeg" alt="The Witch" style="height: 100px; object-fit: cover; border-radius: 8px;">
               </div>
+            
             
             </div>
             
@@ -3679,6 +3720,7 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="spellsPanelHeader">Magic Spells</div>
           <div id="spellsPanelContent">
               <div id="spellsIconsContainer" style="display: flex; gap: 10px; justify-content: center;">
+
               </div>
           </div>
           <div id="spellsPanelFooter">
@@ -3707,6 +3749,14 @@ button.primary:hover { background: var(--accent-hover); }
     <h2>You died!</h2>
     <p>You lost all your inventory and gold.</p>
     <button id="reviveBtn" class="primary" onclick="revivePlayer()">Revive</button>
+  </div>
+</div>
+
+<div id="adminDisconnectOverlay" style="display: none;">
+  <div>
+    <h2>Disconnected by Admin</h2>
+    <p>Your session was closed by an admin. You can return to the login screen and reconnect when ready.</p>
+    <button id="adminDisconnectOkButton" class="primary">Back to Login</button>
   </div>
 </div>
 
@@ -3869,6 +3919,7 @@ const game = {
   inCombat: false,
   playerAttackStyle: 'strength', // Default to strength
   currentEnemy: null,
+  wolfTaming: { lastAttemptDay: '' },
   playerCombatInterval: null,
   enemyCombatInterval: null,
   wasMiningBeforeCombat: false, // Renamed from 'wasMiningBeforeTrade'
@@ -4104,6 +4155,10 @@ function getTrophyRoomEquipSlot(itemName) {
     'Leather Hood': 'helmet',
     'Leather Body': 'chest',
     'Ranger Chest': 'chest',
+    'Wolf Helmet': 'helmet',
+    'Wolf Plate': 'chest',
+    'Wolf Platelegs': 'legs',
+    'Wolf Boots': 'boots',
     'Leather Chaps': 'legs',
     'Leather Boots': 'boots',
     'Wizard Hat': 'helmet',
@@ -4123,6 +4178,7 @@ function getTrophyRoomEquipSlot(itemName) {
     'Sapphire Ring': 'ring_choice',
     'Topaz Ring': 'ring_choice',
     'Archery Bracer': 'ring_choice',
+    'Wolf Necklace': 'necklace',
     'Diamond Necklace': 'necklace',
     'Emerald Necklace': 'necklace',
     'Ruby Necklace': 'necklace',
@@ -4220,6 +4276,7 @@ function canInventoryPreviewReceiveItem(previewInventory, item) {
       return true;
     }
   }
+  renderEquipment();
 
   const emptyIndex = previewInventory.findIndex(slot => slot === null);
   if (emptyIndex === -1) return false;
@@ -4301,6 +4358,12 @@ async function removeTrophyRoomItem(roomIndex, requestedSlotType) {
 
   const item = room.equipment[sourceSlotType];
   if (!item) return;
+  const itemStats = (window.ITEM_STATS && item.name) ? window.ITEM_STATS[item.name] : null;
+  if (sourceSlotType === 'pet' || (itemStats && itemStats.type === 'pet')) {
+    await showGameAlert('Pet Locked', 'Pets stored in a Trophy Room cannot be moved into your inventory. Drag another pet here to replace it, or use the swap button.');
+    return;
+  }
+
 
   if (!canReceiveItem(item.name, Number(item.enchantLevel || 0), item.dyeColor || null)) {
     await showGameAlert('Inventory Full', 'You need room in your inventory to remove that item from the Trophy Room.');
@@ -4440,7 +4503,7 @@ function renderTrophyRoomEquipmentFrame(equipment, frame, roomIndex) {
 
     const img = document.createElement('img');
     img.src = `images/${imgName}.png`;
-    img.alt = slotType;
+    img.alt = displayedItem ? displayedItem.name : slotType;
     if (blockedMessage) {
       img.style.opacity = '0.5';
       img.style.filter = 'grayscale(100%)';
@@ -4470,8 +4533,12 @@ function renderTrophyRoomEquipmentFrame(equipment, frame, roomIndex) {
     const emptyTooltip = blockedMessage
       ? `${blockedMessage}<div style="color:#aaa; margin-top:4px; font-size:11px;">Click to remove it, or drag a valid item here to replace it.</div>`
       : `Empty Slot<div style="color:#aaa; margin-top:4px; font-size:11px;">Drag matching gear here from your inventory.</div>`;
+    const displayedItemStats = (window.ITEM_STATS && displayedItem && displayedItem.name) ? window.ITEM_STATS[displayedItem.name] : null;
+    const isStoredPet = !!(displayedItem && (displayedSourceSlot === 'pet' || (displayedItemStats && displayedItemStats.type === 'pet')));
     const tooltipContent = displayedItem
-      ? `${getInspectItemTooltipHtml(displayedItem)}<div style="color:#aaa; margin-top:4px; font-size:11px;">Click to remove it, or drag from inventory to replace this slot.</div>`
+      ? (isStoredPet
+          ? `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${getItemDisplayTitle(displayedItem)}</div>`
+          : `${getInspectItemTooltipHtml(displayedItem)}<div style="color:#aaa; margin-top:4px; font-size:11px;">Click to remove it, or drag from inventory to replace this slot.</div>`)
       : emptyTooltip;
 
     slotEl.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
@@ -4487,9 +4554,12 @@ function renderTrophyRoomEquipmentFrame(equipment, frame, roomIndex) {
     slotEl.addEventListener('dragleave', () => slotEl.classList.remove('drag-over'));
     slotEl.addEventListener('drop', (e) => handleTrophyRoomSlotDrop(e, roomIndex, slotType));
 
-    if (displayedSourceSlot && displayedItem) {
+    if (displayedSourceSlot && displayedItem && !isStoredPet) {
       slotEl.style.cursor = 'pointer';
       slotEl.onclick = () => removeTrophyRoomItem(roomIndex, slotType);
+    } else {
+      slotEl.style.cursor = 'default';
+      slotEl.onclick = null;
     }
 
     frame.appendChild(slotEl);
@@ -4586,14 +4656,6 @@ function renderTrophyRoom() {
 
   content.innerHTML = `
     <div style="display:flex; flex-direction:column; gap:10px; min-height:0;">
-      <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:12px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-        <div>
-          <div style="font-weight:bold; color:var(--gold); font-size:15px;">${room.name}</div>
-          <div style="color:#efe3cf; font-size:12px; margin-top:4px;">Saved Style: ${formatLoadoutStyleLabel(roomStyle)}</div>
-          <div style="color:#9dc7ff; font-size:12px; margin-top:2px;">Autocast: ${formatAutocastSpellLabel(room.autocastSpell)}</div>
-        </div>
-        <div style="color:${roomIsEmpty ? '#cdb388' : '#8fd18f'}; font-size:12px; align-self:flex-start;">${roomIsEmpty ? 'Empty Room' : 'Preset Ready'}</div>
-      </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button id="trophyRoomSwapBtn" class="primary" type="button">${roomIsEmpty ? 'Store Current Gear Here' : 'Swap Current Gear With Room'}</button>
       </div>
@@ -4602,7 +4664,6 @@ function renderTrophyRoom() {
         <div class="equipment-character" style="border-bottom:2px solid rgba(212,163,97,0.12); padding-bottom:10px;">
           <div class="character-frame" id="trophyRoomPreviewFrame"></div>
         </div>
-        <div style="margin-top:10px; color:#efe3cf; font-size:12px;">Style: ${formatLoadoutStyleLabel(roomStyle)} | Autocast: ${formatAutocastSpellLabel(room.autocastSpell)}</div>
       </div>
       <div style="padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#d7c9b1; font-size:12px; line-height:1.35;">Drag items from your inventory into the slots to build this preset manually. The swap button still lets you trade your current gear with the whole room instantly.</div>
     </div>
@@ -5040,6 +5101,13 @@ const VALID_ITEMS = [
   
   // +++ NEW LEATHER ITEMS +++
   'Cow Hide',
+  'Wolf Pelt',
+  'Wolf Tooth',
+  'Wolf Helmet',
+  'Wolf Plate',
+  'Wolf Platelegs',
+  'Wolf Boots',
+  'Wolf Necklace',
   'Leather',
   'Leather Hood',
   'Leather Body',
@@ -5081,8 +5149,13 @@ const VALID_ITEMS = [
   'Pet Spider Egg', // +++ NEW PET EGG +++
   'Pet Owl Egg',
   'Pet Dragon Egg',
+  'Pet Chicken Egg',
+  'Pet Egg 5',
   'Pet Owl',
   'Pet Cat',
+  'Pet Wolf',
+  'Pet Chicken',
+  'Pet Black Chicken',
   'Sand', // +++ NEW +++
   'Empty Vial', // +++ NEW +++
   'Venom', // +++ NEW +++
@@ -5662,6 +5735,10 @@ const ITEM_STATS = {
   'Leather Hood': { meleeDef: 1, rangedDef: 2, magicDef: 4, rangedAtk: 2, magicAtk: -1, armorType: 'ranged' },
   'Leather Body': { meleeDef: 3, rangedDef: 4, magicDef: 8, rangedAtk: 5, magicAtk: -2, armorType: 'ranged' },
   'Ranger Chest': { meleeDef: 5, rangedDef: 8, magicDef: 12, rangedAtk: 10, magicAtk: -2, armorType: 'ranged' },
+  'Wolf Helmet': { meleeDef: 4, rangedDef: 4, magicDef: 1, armorType: 'melee' },
+  'Wolf Plate': { meleeDef: 10, rangedDef: 10, magicDef: 2, meleeStr: 1, armorType: 'melee' },
+  'Wolf Platelegs': { meleeDef: 7, rangedDef: 7, magicDef: 1, armorType: 'melee' },
+  'Wolf Boots': { meleeDef: 2, rangedDef: 2, magicDef: 1, armorType: 'melee' },
   'Leather Chaps': { meleeDef: 2, rangedDef: 3, magicDef: 6, rangedAtk: 3, magicAtk: -1, armorType: 'ranged' },
   'Leather Boots': { meleeDef: 1, rangedDef: 1, magicDef: 2, rangedAtk: 1, armorType: 'ranged' },
   
@@ -5685,6 +5762,9 @@ const ITEM_STATS = {
   'Elegant Black Cape': { meleeDef: 5, rangedDef: 7, magicDef: 8, armorType: 'hybrid' },
   '1tapper': { meleeStr: 999, meleeAtk: 999, weaponType: 'melee', twoHanded: true, speed: 500 },
   'Pet Spider': { type: 'pet' },
+  'Pet Wolf': { type: 'pet' },
+  'Pet Chicken': { type: 'pet' },
+  'Pet Black Chicken': { type: 'pet' },
   'Gold Ring': { armorType: 'jewelry' },
   'Diamond Ring': { meleeDef: 2, armorType: 'jewelry' },
   'Emerald Ring': { rangedStr: 2, armorType: 'jewelry' },
@@ -5696,6 +5776,7 @@ const ITEM_STATS = {
   'Ruby Necklace': { meleeStr: 2, armorType: 'jewelry' },
   'Sapphire Necklace': { magicDmg: 2, armorType: 'jewelry' },
   'Topaz Necklace': { maxHPBonus: 2, armorType: 'jewelry' },
+  'Wolf Necklace': { meleeStr: 4, armorType: 'jewelry' },
   'Archery Bracer': { rangedStr: 5, rangedAtk: 5, armorType: 'jewelry', occupiesBothRings: true }
 };
 window.ITEM_STATS = ITEM_STATS;
@@ -5720,6 +5801,7 @@ SHOP_INVENTORY[15] = { name: 'Green Dye', price: 25000 };
 SHOP_INVENTORY[16] = { name: 'White Dye', price: 25000 };
 SHOP_INVENTORY[17] = { name: 'Gold Dye', price: 25000 };
 SHOP_INVENTORY[18] = { name: 'Bleach', price: 25000 };
+SHOP_INVENTORY[19] = { name: 'Pet Chicken Egg', price: 10000 };
 // SHOP_INVENTORY[9] = { name: 'Wheat', price: 20 }; // Disabled from shop
 //SHOP_INVENTORY[10] = { name: 'Iron Battleaxe', price: 5000 };
 //SHOP_INVENTORY[11] = { name: 'Iron Shield', price: 5000 };
@@ -5865,11 +5947,23 @@ const ITEM_SELL_PRICES = {
   'Cake': 45,
   'Burnt Cake': 1,
   'Dirt Shroom': 5,
+  'Wolf Pelt': 20,
+  'Wolf Tooth': 35,
+  'Wolf Helmet': 220,
+  'Wolf Plate': 420,
+  'Wolf Platelegs': 320,
+  'Wolf Boots': 160,
+  'Wolf Necklace': 150,
   'Wild Herb': 25,
   'Pet Spider Egg': 5000,
   'Pet Spider': 0,
   'Pet Owl Egg': 5000,
   'Pet Dragon': 0,
+  'Pet Wolf': 0,
+  'Pet Chicken': 0,
+  'Pet Black Chicken': 0,
+  'Pet Chicken Egg': 10000,
+  'Pet Egg 5': 10000,
   'Pet Dragon Egg': 25000,
   'Cow Hide': 4,
   'Leather': 6,
@@ -5955,7 +6049,7 @@ function normalizeItemDyeColor(color) {
 
 function getItemRenderImageName(itemOrName, fallbackName = 'gearicon') {
   const item = (itemOrName && typeof itemOrName === 'object') ? itemOrName : { name: itemOrName };
-  const fallbackOverrides = { 'Copper Ore': 'copper_ore', 'Vitality Potion+': 'vitalitypotionplus', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 'Archery Bracer': 'archerybracer' };
+  const fallbackOverrides = { 'Copper Ore': 'copper_ore', 'Vitality Potion+': 'vitalitypotionplus', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 'Archery Bracer': 'archerybracer', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken', 'Pet Chicken Egg': 'petegg5', 'Pet Egg 5': 'petegg5' };
   const baseName = (window.__inspectItemImageMap && item && item.name && window.__inspectItemImageMap[item.name]) || (item && item.name && fallbackOverrides[item.name]) || String(item && item.name ? item.name : fallbackName).toLowerCase().replace(/\s+/g, '').replace(/\+/g, 'plus');
   const dyeColor = normalizeItemDyeColor(item && item.dyeColor);
   const variantMap = item && item.name ? DYE_VARIANT_IMAGE_MAP[item.name] : null;
@@ -6104,6 +6198,8 @@ const EGG_TYPES = {
     'Pet Spider Egg': 'Spider',
     'Pet Owl Egg': 'Owl',
     'Pet Dragon Egg': 'Dragon',
+    'Pet Chicken Egg': 'Chicken',
+    'Pet Egg 5': 'Chicken',
     // Future examples:
     // 'Pet Dragon Egg': 'Dragon',
     // 'Pet Rock Egg': 'Rock'
@@ -6158,6 +6254,43 @@ const PET_DATA = {
             lockedText: '??? (Locked)'
         })
     },
+    'Wolf': {
+        name: 'Wolf',
+        foodItem: 'Beef',
+        img: 'wolfpet',
+        bonus: (level) => {
+            let dmg = 1;
+            if (level >= 50) dmg = 4;
+            else if (level >= 25) dmg = 2;
+            return { physicalDamage: dmg };
+        },
+        secretBonus: () => ({
+            rageState: true,
+            text: 'Rage State: 2x dealt / 2x taken vs monsters',
+            lockedText: '??? (Locked)'
+        })
+    },
+    'Chicken': {
+        name: 'Chicken',
+        foodItem: 'Corn',
+        img: 'petchicken',
+        bonus: () => ({
+            trainingOnly: true
+        })
+    },
+    'Black Chicken': {
+        name: 'Black Chicken',
+        foodItem: 'Corn',
+        img: 'petblackchicken',
+        bonus: () => ({
+            maxHPBonus: 3
+        }),
+        secretBonus: () => ({
+            healOnAttack: 1,
+            text: '+1 Heal On Attack',
+            lockedText: '??? (Locked)'
+        })
+    },
     'Dragon': {
         name: 'Dragon',
         foodItem: 'Egg',
@@ -6179,6 +6312,9 @@ const PET_DATA = {
 
 function formatPetBonusText(petType, bonusData) {
     if (!bonusData) return 'No bonus';
+    if (petType === 'Chicken' && bonusData.trainingOnly) {
+        return 'Pet Training Only';
+    }
     if (petType === 'Owl' && bonusData.arrowRecoveryChance) {
         return Math.round(bonusData.arrowRecoveryChance * 100) + '% Arrow Recovery';
     }
@@ -6188,6 +6324,7 @@ function formatPetBonusText(petType, bonusData) {
     if (petType === 'Dragon' && bonusData.overallDamage) {
         return '+' + bonusData.overallDamage + ' Overall';
     }
+    if (bonusData.maxHPBonus) return '+' + bonusData.maxHPBonus + ' Max HP';
     if (bonusData.physicalDamage) return '+' + bonusData.physicalDamage + ' Phys Dmg';
     return 'No bonus';
 }
@@ -6204,9 +6341,89 @@ function getPetSecretBonusData(petType, petLevel) {
 
 function getPetSecretBonusText(petType, petLevel) {
     const secretData = getPetSecretBonusData(petType, petLevel);
-    if (!secretData) return '';
+    if (!secretData) {
+        if (petType === 'Chicken') return 'No Secret Skill';
+        return '';
+    }
     if (isPetSecretBonusUnlocked()) return secretData.text || 'Secret Skill Unlocked';
     return secretData.lockedText || '??? (Locked)';
+}
+
+function getWolfTamingDayKey() {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return now.getFullYear() + '-' + month + '-' + day;
+}
+
+function ensureWolfTamingState() {
+    if (!game.wolfTaming || typeof game.wolfTaming.lastAttemptDay !== 'string') {
+        game.wolfTaming = { lastAttemptDay: '' };
+    }
+}
+
+function isWolfTamingContextActive() {
+    const combatHub = document.getElementById('hubActiveCombat');
+    return !!(combatHub && combatHub.classList.contains('active') && game.currentEnemy && game.currentEnemy.name === 'Wolf' && Number(game.currentEnemy.currentHp || 0) > 0);
+}
+
+async function attemptWolfTameWithRawChicken() {
+    hideItemContextMenu();
+    if (!isWolfTamingContextActive()) return;
+
+    if (game.inCombat) {
+        await showGameAlert('Too Late', 'You need to offer the Raw Chicken before the fight begins.');
+        return;
+    }
+
+    ensureWolfTamingState();
+    const dayKey = getWolfTamingDayKey();
+    if (game.wolfTaming.lastAttemptDay === dayKey) {
+        await showGameAlert('Wolf Taming', 'You can only try to tame this wolf once per day.');
+        return;
+    }
+
+    if (!removeItem('Raw Chicken', 1)) {
+        await showGameAlert('No Food', 'You need 1 Raw Chicken to offer the wolf.');
+        return;
+    }
+
+    game.wolfTaming.lastAttemptDay = dayKey;
+    game.isDirty = true;
+    renderInventoryGrid();
+
+    const tamed = Math.random() < 0.1;
+    if (!tamed) {
+        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        await showGameAlert('Wolf Taming', 'The wolf devours the Raw Chicken, but keeps its distance.');
+        return;
+    }
+
+    if (!Array.isArray(game.pets)) game.pets = [];
+    if (game.pets.length >= 6) {
+        if (typeof window.savePlayerData === 'function') window.savePlayerData();
+        game.currentEnemy = null;
+        await showGameAlert('Pet Yard Full', 'He would have followed you to the ends of the world, but there is no more room for him.');
+        returnToCombatArea();
+        return;
+    }
+
+    const newPet = {
+        id: 'pet_' + Date.now(),
+        type: 'Wolf',
+        level: 1,
+        xp: 0,
+        hp: PET_MAX_HP,
+        lastCalcTime: Date.now()
+    };
+
+    game.pets.push(newPet);
+    game.isDirty = true;
+    playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+    game.currentEnemy = null;
+    await showGameAlert('Wolf Tamed!', 'The wolf accepts your offering and joins your Pet Yard.');
+    returnToCombatArea();
 }
 
 function getCatScratchDamage() {
@@ -6223,6 +6440,30 @@ function triggerCatScratchPopup(damage) {
         showItemPopup('Scratch Attack!', null, 0);
         showDamageSplat('enemy', damage, 'special');
     }, 250);
+}
+
+function getEquippedActivePetData() {
+    if (!game.equipment.pet) return null;
+    const petData = game.pets.find(p => p.id === game.equipment.pet.id);
+    if (!petData || petData.hp <= 0) return null;
+    return petData;
+}
+
+function getPetSecretHealOnAttackAmount() {
+    if (!isPetSecretBonusUnlocked()) return 0;
+    const petData = getEquippedActivePetData();
+    if (!petData || petData.type !== 'Black Chicken') return 0;
+    const secretData = getPetSecretBonusData(petData.type, petData.level);
+    return Number((secretData && secretData.healOnAttack) || 0);
+}
+
+function isWolfRageStateActiveForEnemy(enemy = game.currentEnemy) {
+    if (!game.inCombat || !enemy || enemy.isLeaderboardClone || enemy.name === 'Dummy Target') return false;
+    if (!isPetSecretBonusUnlocked()) return false;
+    const petData = getEquippedActivePetData();
+    if (!petData || petData.type !== 'Wolf') return false;
+    const secretData = getPetSecretBonusData('Wolf', petData.level);
+    return !!(secretData && secretData.rageState);
 }
 
 const CROPS = {
@@ -6543,6 +6784,7 @@ function getPlayerCombatStats() {
           if (def && def.bonus) {
               const bonuses = def.bonus(petData.level);
               if (bonuses.physicalDamage) stats.meleeStr += bonuses.physicalDamage;
+              if (bonuses.maxHPBonus) stats.maxHPBonus += bonuses.maxHPBonus;
               if (bonuses.overallDamage) {
                   stats.meleeStr += bonuses.overallDamage;
                   stats.rangedStr += bonuses.overallDamage;
@@ -6632,8 +6874,8 @@ function renderEquipment() {
   'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 'Copper Arrow': 'copperarrow', 'Copper Arrow Poisoned': 'copperarrowpoisonned',
   'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 'Leather Boots': 'leatherboots',
   'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Advanced Magic Staff': 'advancedmagicstaff',
-  'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat',
-  'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach',
+  'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken',
+  'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace',
   'Gold Ring': 'goldring', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
   'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace', 'Archery Bracer': 'archerybracer',
   'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch',
@@ -6692,7 +6934,7 @@ function renderEquipment() {
     const displayedItem = item || blockedDisplayItem;
     let img = document.createElement('img');
     img.src = `images/${displayedItem ? getItemRenderImageName(displayedItem, imgName) : imgName}.png`;
-    img.alt = slotType;
+    img.alt = displayedItem ? displayedItem.name : slotType;
     if (isTwoHandedBlock || isTwoAccessoryBlock) { img.style.opacity = '0.5'; img.style.filter = 'grayscale(100%)'; }
     mainSlotEl.appendChild(img);
 
@@ -6710,6 +6952,9 @@ function renderEquipment() {
             mainSlotEl.classList.add('legendary-glow');
         } else if (eLvl > 0) {
             mainSlotEl.classList.add(`enchant-glow-${eLvl}`);
+        }
+        if (slotType === 'pet' && item && item.name === 'Pet Wolf' && isWolfRageStateActiveForEnemy()) {
+            mainSlotEl.classList.add('wolf-rage-glow');
         }
 
         if (eLvl > 0) {
@@ -7165,12 +7410,24 @@ function renderInventoryGrid(){
               else if (item.name === 'Pet Spider Egg') imgName = 'petegg1';
               else if (item.name === 'Pet Owl Egg') imgName = 'petegg2';
               else if (item.name === 'Pet Dragon Egg') imgName = 'petegg3';
+              else if (item.name === 'Pet Chicken Egg') imgName = 'petegg5';
+              else if (item.name === 'Pet Egg 5') imgName = 'petegg5';
+              else if (item.name === 'Pet Wolf') imgName = 'wolfpet';
+              else if (item.name === 'Pet Chicken') imgName = 'petchicken';
+              else if (item.name === 'Pet Black Chicken') imgName = 'petblackchicken';
               else if (item.name === 'Rat Tail') imgName = 'rattail';
               else if (item.name === 'Sand') imgName = 'sand';
               else if (item.name === 'Empty Vial') imgName = 'emptyvial';
               else if (item.name === 'Venom') imgName = 'venom';
               else if (item.name === 'Salt') imgName = 'salt';
               else if (item.name === 'Lottery Ticket') imgName = 'lotteryticket';
+              else if (item.name === 'Wolf Pelt') imgName = 'wolfpelt';
+              else if (item.name === 'Wolf Tooth') imgName = 'wolfteeth';
+              else if (item.name === 'Wolf Helmet') imgName = 'wolfhelmet';
+              else if (item.name === 'Wolf Plate') imgName = 'wolfplate';
+              else if (item.name === 'Wolf Platelegs') imgName = 'wolfplatelegs';
+              else if (item.name === 'Wolf Boots') imgName = 'wolfboot';
+              else if (item.name === 'Wolf Necklace') imgName = 'wolfnecklace';
               else if (item.name === 'Fire Stone') imgName = 'firestone';
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
               else if (item.name === 'Air Crystal Shard') imgName = 'aircrystalshard';
@@ -7522,11 +7779,17 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
       if (handleEnchantItemClick(itemData, slotIndex)) return;
   }
 
+  if (itemName === 'Raw Chicken' && isWolfTamingContextActive()) {
+    attemptWolfTameWithRawChicken();
+    return;
+  }
+
   const equipableItems = {
     'Copper Helmet': 'helmet', 'Copper Chestplate': 'chest', 'Copper Shortsword': 'weapon', 'Copper Boots': 'boots',
     'Iron Helmet': 'helmet', 'Iron Chestplate': 'chest', 'Iron Shortsword': 'weapon', 'Iron Boots': 'boots',
     'Copper Platelegs': 'legs', 'Iron Platelegs': 'legs', 'Softwood Bow': 'weapon', 'Oak Bow': 'weapon',
     'Copper Arrow': 'arrows', 'Copper Arrow Poisoned': 'arrows', 'Leather Hood': 'helmet', 'Leather Body': 'chest', 'Ranger Chest': 'chest', 'Leather Chaps': 'legs',
+    'Wolf Helmet': 'helmet', 'Wolf Plate': 'chest', 'Wolf Platelegs': 'legs', 'Wolf Boots': 'boots',
     'Leather Boots': 'boots', 'Wizard Hat': 'helmet', 'Wizard Robe': 'chest', 'Wizard Trousers': 'legs',
     'Wizard Boots': 'boots', 'Magic Staff': 'weapon', 'Advanced Magic Staff': 'weapon', 'Gold Crown': 'helmet', 'Elegant Black Cape': 'cape',
     'Cloth Cape': 'cape',
@@ -14809,6 +15072,7 @@ function maybeSpawnFarmCat() {
   strayCat.lastCheckTime = now;
   if (Math.floor(Math.random() * FARM_STRAY_CAT_CHANCE_DENOM) === 0) {
     strayCat.visible = true;
+    unlockAchievementDirect('Find the Cat');
     playGlobalSound('sounds/soundeffects/catsoundeffect.mp3');
   }
 }
@@ -14831,6 +15095,7 @@ function maybeSpawnGardenTomb() {
   tomb.lastCheckTime = now;
   if (Math.floor(Math.random() * GARDEN_TOMB_CHANCE_DENOM) === 0) {
     tomb.visible = true;
+    unlockAchievementDirect('Find the Spirit');
   }
 }
 
@@ -15004,6 +15269,7 @@ async function offerGardenTombGift() {
   if (gift.name === 'Jade') {
     addItem('Lottery Ticket', 3);
     showItemPopup('+3 Lottery Ticket', null, 0);
+    unlockAchievementDirect('Spirit in Peace');
     await showGameAlert('The Spirit Is Happy', 'The spirit accepts your jade with quiet joy and leaves 3 Lottery Tickets behind.');
   } else {
     await showGameAlert('The Spirit Does Not Like Your Gift', 'The spirit turns away from your offering.');
@@ -15245,6 +15511,7 @@ function renderPetYard(tab) {
             if (game.incubator.eggType === 'Spider') overlayEggImg = 'petegg1.png';
             else if (game.incubator.eggType === 'Owl') overlayEggImg = 'petegg2.png';
             else if (game.incubator.eggType === 'Dragon') overlayEggImg = 'petegg3.png';
+            else if (game.incubator.eggType === 'Chicken') overlayEggImg = 'petegg5.png';
         }
         let buttonHtml = '';
         let timerHtml = '';
@@ -15287,9 +15554,9 @@ function renderPetYard(tab) {
             imgClass = 'shake-animation'; // +++ NEW: Add shake class +++
         } else {
             const remaining = PET_HATCH_TIME_MS - elapsed;
-            const seconds = Math.max(1, Math.ceil(remaining / 1000));
+            const minutes = Math.max(1, Math.ceil(remaining / 60000));
             buttonHtml = `<button class="primary" disabled style="background:#555; opacity:0.7;">Incubating...</button>`;
-            timerHtml = `<div style="color:var(--gold); font-weight:bold; margin-bottom:10px;">Time left: ${seconds}s</div>`;
+            timerHtml = `<div style="color:var(--gold); font-weight:bold; margin-bottom:10px;">Time left: ${minutes} min</div>`;
         }
 
         // Vertical Center Fix: Height 320px matches the inventory grid exactly
@@ -15345,11 +15612,16 @@ function hatchEgg() {
         showGameAlert("Pet Yard Full", "Your Pet Yard is full (6/6). Sell or remove a pet before hatching.");
         return;
     }
+
+    let hatchedType = game.incubator.eggType;
+    if (hatchedType === 'Chicken' && Math.floor(Math.random() * 25) === 0) {
+        hatchedType = 'Black Chicken';
+    }
     
     // Create new Pet
     const newPet = {
         id: 'pet_' + Date.now(),
-        type: game.incubator.eggType,
+        type: hatchedType,
         level: 1,
         xp: 0,
         hp: PET_MAX_HP,
@@ -15357,6 +15629,9 @@ function hatchEgg() {
     };
     
     game.pets.push(newPet);
+    if (hatchedType === 'Black Chicken') {
+        unlockAchievementDirect('BBC Big Black Chicken');
+    }
     
     // Reset Incubator
     game.incubator.active = false;
@@ -15365,7 +15640,8 @@ function hatchEgg() {
     
     addXP('petmastery', PET_HATCH_XP);
     playGlobalSound('sounds/soundeffects/levelupsound.mp3');
-    showGameAlert("Hatched!", `You hatched a level 1 ${newPet.type}!`);
+    if (hatchedType === 'Black Chicken') showGameAlert("Rare Hatch!", 'You hatched a level 1 Black Chicken!');
+    else showGameAlert("Hatched!", `You hatched a level 1 ${newPet.type}!`);
     
     renderPetYard('pets'); // Switch to pets tab
     game.isDirty = true;
@@ -15382,22 +15658,27 @@ function feedPet(petId) {
     
     const config = PET_DATA[pet.type];
     const food = config.foodItem;
-    if (removeItem(food, 1)) {
+    const consumeFood = food === 'Corn' ? consumeSiloFood(food, 1) : removeItem(food, 1);
+    if (consumeFood) {
         pet.hp++;
         addXP('petmastery', PET_FEED_XP);
         if (pet.level < 50) {
             pet.xp += PET_DIRECT_FEED_XP;
+            let petLeveledUp = false;
             while (pet.level < 50) {
                 const xpNeeded = pet.level * 100;
                 if (pet.xp < xpNeeded) break;
                 pet.xp -= xpNeeded;
                 pet.level++;
+                petLeveledUp = true;
                 showItemPopup(`Pet Lvl Up: ${pet.level}!`, null, 600);
                 playGlobalSound('sounds/soundeffects/levelupsound.mp3');
             }
+            if (petLeveledUp) syncAchievementUnlockState(true);
         }
         playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         renderPetYard('pets');
+        renderFarmUpgradePanels();
         game.isDirty = true;
     } else {
         showGameAlert("No Food", `This pet eats ${food}.`);
@@ -20333,6 +20614,7 @@ function getCombatMobDefinitions() {
     'Stupid Koala': { name: 'Stupid Koala', level: 9, maxHp: 28, style: 'melee', maxHit: 4, attackLvl: 9, defenceLvl: 7, img: 'images/koalamonster.png', resists: ['earth'], weaks: ['fire'] },
     'Crazy Owl': { name: 'Crazy Owl', level: 10, maxHp: 45, style: 'ranged', maxHit: 5, attackLvl: 12, defenceLvl: 8, img: 'images/crazyowlmonster.jpeg', resists: ['earth'], weaks: ['air', 'poison'] },
     'The Witch': { name: 'The Witch', level: 15, maxHp: 60, style: 'magic', maxHit: 8, attackLvl: 15, defenceLvl: 5, img: 'images/witchmonster.jpeg', resists: ['fire', 'poison'], weaks: ['earth'] },
+    'Wolf': { name: 'Wolf', level: 25, maxHp: 70, style: 'melee', maxHit: 7, attackLvl: 26, defenceLvl: 22, img: 'images/wolfmonster.png', resists: ['earth'], weaks: ['fire'] },
     'Madmax': { name: 'Madmax', level: 69, maxHp: 500, style: 'melee', maxHit: 15, attackLvl: 60, defenceLvl: 50, img: 'images/madmaxmonster.jpeg', lastSpecialTime: Date.now(), resists: ['earth'], weaks: ['water'] },
     'Golden Dragon': { name: 'Golden Dragon', level: 100, maxHp: 2500, style: 'magic', maxHit: 25, attackLvl: 80, defenceLvl: 80, img: 'images/golddragon.png', resists: ['fire'], weaks: ['water'] },
     'Centipede': { name: 'Centipede', level: 5, maxHp: 20, style: 'melee', maxHit: 4, attackLvl: 5, defenceLvl: 5, img: 'images/centipedemonster.jpeg', resists: ['poison'], weaks: ['fire'] }
@@ -20436,6 +20718,74 @@ function hasBareHandsEquipped() {
   return !weapon && !game.autocastSpell;
 }
 
+const PET_LEVEL_ACHIEVEMENT_DEFS = [
+  { type: 'Spider', title: 'Spider Pet Level 50' },
+  { type: 'Owl', title: 'Owl Pet Level 50' },
+  { type: 'Cat', title: 'Cat Pet Level 50' },
+  { type: 'Dragon', title: 'Dragon Pet Level 50' },
+  { type: 'Chicken', title: 'Chicken Level 50' },
+  { type: 'Black Chicken', title: 'Black Chicken Level 50' },
+  { type: 'Wolf', title: 'Wolf Level 50' }
+];
+
+function getBestPetAchievementLevel(pets, type) {
+  return Math.max(0, ...((Array.isArray(pets) ? pets : []).filter(p => p.type === type).map(p => Number(p.level || 0))));
+}
+
+function getCurrentEventAchievementState(title) {
+  ensureAchievementStats();
+  const unlockedMap = game.achievementStats.unlocked || {};
+  const pets = Array.isArray(game.pets) ? game.pets : [];
+  const farm = game.farm || {};
+  const strayCat = farm.strayCat || {};
+  const tomb = farm.gardenTomb || {};
+
+  if (title === 'Find the Cat') return !!unlockedMap[title] || strayCat.visible === true || pets.some(p => p.type === 'Cat');
+  if (title === 'Find the Spirit') return !!unlockedMap[title] || tomb.visible === true || !!tomb.lastGiftDay;
+  if (title === 'Spirit in Peace') return !!unlockedMap[title];
+  if (title === 'Find the Wolf') return !!unlockedMap[title] || pets.some(p => p.type === 'Wolf') || getAchievementKillCount('Wolf') > 0;
+  return !!unlockedMap[title];
+}
+
+function getInspectEventAchievementState(playerData, title) {
+  const achievementStats = getInspectAchievementStats(playerData);
+  const unlockedMap = achievementStats.unlocked || {};
+  const pets = Array.isArray(playerData && playerData.pets) ? playerData.pets : [];
+  const farm = (playerData && playerData.farm) || {};
+  const strayCat = farm.strayCat || {};
+  const tomb = farm.gardenTomb || {};
+
+  if (title === 'Find the Cat') return !!unlockedMap[title] || strayCat.visible === true || pets.some(p => p.type === 'Cat');
+  if (title === 'Find the Spirit') return !!unlockedMap[title] || tomb.visible === true || !!tomb.lastGiftDay;
+  if (title === 'Spirit in Peace') return !!unlockedMap[title];
+  if (title === 'Find the Wolf') return !!unlockedMap[title] || pets.some(p => p.type === 'Wolf') || Number(achievementStats.kills['Wolf'] || 0) > 0;
+  return !!unlockedMap[title];
+}
+
+function getEventAchievementDetail(title, unlocked) {
+  if (title === 'Find the Cat') return unlocked ? 'Found' : 'Discover the stray cat';
+  if (title === 'Find the Spirit') return unlocked ? 'Found' : 'Discover the Whispering Grave';
+  if (title === 'Spirit in Peace') return unlocked ? 'Right offering given' : 'Give the right offering';
+  if (title === 'Find the Wolf') return unlocked ? 'Found' : 'Encounter the wolf in the forest';
+  return unlocked ? 'Completed' : 'Not yet';
+}
+
+function hasBigBlackChickenAchievement(pets, unlockedMap = {}) {
+  return !!(unlockedMap && unlockedMap['BBC Big Black Chicken']) || (Array.isArray(pets) && pets.some(p => p && p.type === 'Black Chicken'));
+}
+
+function unlockAchievementDirect(title, showPopup = true) {
+  ensureAchievementStats();
+  if (!title || game.achievementStats.unlocked[title]) return false;
+  game.achievementStats.unlocked[title] = true;
+  game.isDirty = true;
+  if (showPopup) queueAchievementPopup(title);
+  if (document.getElementById('hubAchievements')?.classList.contains('active')) {
+    renderAchievementsHub();
+  }
+  return true;
+}
+
 function getAchievementImage(title) {
   const skillImages = {
     'Mining': 'images/miningskillicon.png',
@@ -20467,6 +20817,14 @@ function getAchievementImage(title) {
   if (title === 'Owl Pet Level 50') return 'images/petowl.png';
   if (title === 'Cat Pet Level 50') return 'images/petcat.png';
   if (title === 'Dragon Pet Level 50') return 'images/petdragon.png';
+  if (title === 'Chicken Level 50') return 'images/petchicken.png';
+  if (title === 'Black Chicken Level 50') return 'images/petblackchicken.png';
+  if (title === 'Wolf Level 50') return 'images/wolfpet.png';
+  if (title === 'BBC Big Black Chicken') return 'images/petblackchicken.png';
+  if (title === 'Find the Cat') return 'images/petcat.png';
+  if (title === 'Find the Spirit') return 'images/tomb.png';
+  if (title === 'Spirit in Peace') return 'images/tomb.png';
+  if (title === 'Find the Wolf') return 'images/wolfpet.png';
   if (title === 'Madmax Slayer') return 'images/madmaxmonster.jpeg';
   if (title === 'Golden Dragon Slayer') return 'images/golddragon.png';
   if (title === 'Drunk Night') return 'images/beer.png';
@@ -20490,19 +20848,29 @@ function renderAchievementsTab() {
   const totalDeaths = Number(game.achievementStats.deaths || 0);
   const totalLotteryRolls = Number(game.achievementStats.lotteryRolls || 0);
   const millionaireUnlocked = !!((game.achievementStats.unlocked || {})['Millionaire']) || Number(game.gold || 0) >= 1000000;
+  const findCatUnlocked = getCurrentEventAchievementState('Find the Cat');
+  const findSpiritUnlocked = getCurrentEventAchievementState('Find the Spirit');
+  const spiritInPeaceUnlocked = getCurrentEventAchievementState('Spirit in Peace');
+  const findWolfUnlocked = getCurrentEventAchievementState('Find the Wolf');
+  const bbcUnlocked = hasBigBlackChickenAchievement(game.pets, game.achievementStats.unlocked || {});
   const skillAchievements = getTrackedSkillEntries().map(([label, key]) => ({
     title: `${label} Level 100`,
     unlocked: Number((game[key] && game[key].level) || 1) >= 100,
     detail: `${Math.min(100, Number((game[key] && game[key].level) || 1))}/100`
   }));
-  const petAchievements = ['Spider', 'Owl', 'Cat', 'Dragon'].map(type => {
-    const bestLevel = Math.max(0, ...((game.pets || []).filter(p => p.type === type).map(p => Number(p.level || 0))));
-    return { title: `${type} Pet Level 50`, unlocked: bestLevel >= 50, detail: `${bestLevel}/50` };
+  const petAchievements = PET_LEVEL_ACHIEVEMENT_DEFS.map(def => {
+    const bestLevel = getBestPetAchievementLevel(game.pets, def.type);
+    return { title: def.title, unlocked: bestLevel >= 50, detail: `${bestLevel}/50` };
   });
   const specialAchievements = [
     { title: 'Madmax Slayer', unlocked: getAchievementKillCount('Madmax') > 0, detail: `${getAchievementKillCount('Madmax')} kill` },
     { title: 'Golden Dragon Slayer', unlocked: getAchievementKillCount('Golden Dragon') > 0, detail: `${getAchievementKillCount('Golden Dragon')} kill` },
     { title: 'Drunk Night', unlocked: !!game.achievementStats.hadBeenDrunk, detail: game.achievementStats.hadBeenDrunk ? 'Completed' : 'Not yet' },
+    { title: 'Find the Cat', unlocked: findCatUnlocked, detail: getEventAchievementDetail('Find the Cat', findCatUnlocked) },
+    { title: 'Find the Spirit', unlocked: findSpiritUnlocked, detail: getEventAchievementDetail('Find the Spirit', findSpiritUnlocked) },
+    { title: 'Spirit in Peace', unlocked: spiritInPeaceUnlocked, detail: getEventAchievementDetail('Spirit in Peace', spiritInPeaceUnlocked) },
+    { title: 'Find the Wolf', unlocked: findWolfUnlocked, detail: getEventAchievementDetail('Find the Wolf', findWolfUnlocked) },
+    { title: 'BBC Big Black Chicken', unlocked: bbcUnlocked, detail: bbcUnlocked ? 'Rare hatch found' : 'Hatch a Black Chicken' },
     { title: 'Millionaire', unlocked: millionaireUnlocked, detail: millionaireUnlocked ? 'Unlocked' : `${Number(game.gold || 0).toLocaleString()} / 1,000,000` },
     { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown'), detail: ownsItemAnywhere('Gold Crown') ? 'Owned' : 'Not yet' },
     { title: 'Elegant Black Cape Owner', unlocked: ownsItemAnywhere('Elegant Black Cape'), detail: ownsItemAnywhere('Elegant Black Cape') ? 'Owned' : 'Not yet' },
@@ -20548,19 +20916,30 @@ function renderAchievementsTab() {
 function getAchievementEntriesForTracking() {
   ensureAchievementStats();
   const maxEnchantLevel = getHighestEnchantLevelOwned();
+  const millionaireUnlocked = !!((game.achievementStats.unlocked || {})['Millionaire']) || Number(game.gold || 0) >= 1000000;
+  const findCatUnlocked = getCurrentEventAchievementState('Find the Cat');
+  const findSpiritUnlocked = getCurrentEventAchievementState('Find the Spirit');
+  const spiritInPeaceUnlocked = getCurrentEventAchievementState('Spirit in Peace');
+  const findWolfUnlocked = getCurrentEventAchievementState('Find the Wolf');
+  const bbcUnlocked = hasBigBlackChickenAchievement(game.pets, game.achievementStats.unlocked || {});
   const skillAchievements = getTrackedSkillEntries().map(([label, key]) => ({
     title: `${label} Level 100`,
     unlocked: Number((game[key] && game[key].level) || 1) >= 100
   }));
-  const petAchievements = ['Spider', 'Owl', 'Cat', 'Dragon'].map(type => {
-    const bestLevel = Math.max(0, ...((game.pets || []).filter(p => p.type === type).map(p => Number(p.level || 0))));
-    return { title: `${type} Pet Level 50`, unlocked: bestLevel >= 50 };
+  const petAchievements = PET_LEVEL_ACHIEVEMENT_DEFS.map(def => {
+    const bestLevel = getBestPetAchievementLevel(game.pets, def.type);
+    return { title: def.title, unlocked: bestLevel >= 50 };
   });
   const specialAchievements = [
     { title: 'Madmax Slayer', unlocked: getAchievementKillCount('Madmax') > 0 },
     { title: 'Golden Dragon Slayer', unlocked: getAchievementKillCount('Golden Dragon') > 0 },
     { title: 'Drunk Night', unlocked: !!game.achievementStats.hadBeenDrunk },
-    { title: 'Millionaire', unlocked: !!((game.achievementStats.unlocked || {})['Millionaire']) || Number(game.gold || 0) >= 1000000 },
+    { title: 'Find the Cat', unlocked: findCatUnlocked },
+    { title: 'Find the Spirit', unlocked: findSpiritUnlocked },
+    { title: 'Spirit in Peace', unlocked: spiritInPeaceUnlocked },
+    { title: 'Find the Wolf', unlocked: findWolfUnlocked },
+    { title: 'BBC Big Black Chicken', unlocked: bbcUnlocked },
+    { title: 'Millionaire', unlocked: millionaireUnlocked },
     { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown') },
     { title: 'Elegant Black Cape Owner', unlocked: ownsItemAnywhere('Elegant Black Cape') },
     { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4 },
@@ -20717,6 +21096,8 @@ function openCombatInterface(enemyName) {
   const def = mobs[enemyName];
   if (!def) { console.error('Unknown enemy:', enemyName); return; }
 
+  if (enemyName === 'Wolf') unlockAchievementDirect('Find the Wolf');
+
   const startingHp = enemyName === 'Golden Dragon' ? Math.max(0, Math.min(def.maxHp, Number(game.goldenDragonHp || def.maxHp))) : def.maxHp;
   game.currentEnemy = { ...def, currentHp: startingHp };
 
@@ -20829,6 +21210,7 @@ function beginCombat() {
   }
 
   game.inCombat = true;
+  renderEquipment();
 
   // +++ FIX: Reset Madmax's timer when the fight ACTUALLY starts +++
   // This prevents the timer from counting down while you are sitting in the menu.
@@ -20945,6 +21327,7 @@ function returnToCombatArea() { // +++ RENAMED FUNCTION +++
 
   // 1. Go back to the correct combat hub screen
   showMainScreen(game.lastCombatAreaHub); 
+  renderEquipment();
   
   // 2. Check if we need to resume skilling
   if (game.wasMiningBeforeCombat) {
@@ -21031,6 +21414,7 @@ function getPlayerDeathChatMessage(cause) {
     'Stupid Koala': 'was driven mad by a Stupid Koala.',
     'Crazy Owl': 'was torn apart by a Crazy Owl.',
     'The Witch': 'was cursed by The Witch.',
+    'Wolf': 'was mauled by a Wolf.',
     'Madmax': 'was crushed by Madmax.',
     'Golden Dragon': 'was reduced to ashes by the Golden Dragon.',
     'Dummy Target': 'was defeated by a Dummy Target.'
@@ -21278,6 +21662,9 @@ if (activeSpell) {
   if (damage > 0 && typeModifier.multiplier !== 1) {
     damage = Math.floor(damage * typeModifier.multiplier);
   }
+  if (damage > 0 && isWolfRageStateActiveForEnemy(enemy)) {
+    damage *= 2;
+  }
 
   // --- OVERKILL CAP FIX ---
   // If the damage is higher than the enemy's remaining health, cap it.
@@ -21325,6 +21712,12 @@ if (activeSpell) {
     renderEquipment();
   }
 
+  const petHealOnAttack = getPetSecretHealOnAttackAmount();
+  if (petHealOnAttack > 0 && game.hp < game.maxHP) {
+    game.hp = Math.min(game.maxHP, game.hp + petHealOnAttack);
+    updateHPUI();
+  }
+
   if (effectiveDamage > 0) {
     const isDummyTarget = enemy.name === 'Dummy Target';
     const xp = isDummyTarget ? Number(enemy.grantsFlatCombatXp || 1) : effectiveDamage * 4;
@@ -21365,6 +21758,7 @@ if (activeSpell) {
             pet.level++;
             showItemPopup(`Pet Lvl Up: ${pet.level}!`, null, 600);
             playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+            syncAchievementUnlockState(true);
             game.isDirty = true;
           }
         }
@@ -21445,6 +21839,9 @@ function enemyAttackTurn() {
 
   if (roll < hitChance) {
       damage = Math.floor(Math.random() * (enemy.maxHit + 1));
+      if (damage > 0 && isWolfRageStateActiveForEnemy(enemy)) {
+          damage *= 2;
+      }
       showDamageSplat('player', damage, 'damage');
   } else {
       showDamageSplat('player', 0, 'block');
@@ -21550,6 +21947,14 @@ function handleEnemyDeath() {
           addItem('Pet Owl Egg', 1);
           queueDeathPopup('<span style="color:#ff4d4d; font-size:16px;">EGG DROP!</span>', dropDelay + 200);
           if (typeof addLocalChatMessage === 'function') addLocalChatMessage("You found a rare Pet Owl Egg!", "trade");
+      }
+    } else if (name === 'Wolf') {
+      addItem('Wolf Pelt', 1);
+      queueDeathPopup(`+1 Wolf Pelt`, dropDelay);
+      if (Math.random() < 0.2) {
+          addItem('Wolf Tooth', 1);
+          queueDeathPopup(`+1 Wolf Tooth`, dropDelay + 450);
+          dropDelay += 450;
       }
     } else if (name === 'The Witch') {
       addItem('Empty Vial', 2);
@@ -22045,6 +22450,10 @@ function renderBankTabs() {
                 'pet_spider_egg': 'petegg1', // +++ NEW PET EGG +++
                 'pet_owl_egg': 'petegg2',
                 'pet_dragon_egg': 'petegg3',
+                'pet_chicken_egg': 'petegg5',
+                'pet_egg_5': 'petegg5',
+                'pet_chicken': 'petchicken',
+                'pet_black_chicken': 'petblackchicken',
                 'rat_tail': 'rattail', 'sand': 'sand', 'empty_vial': 'emptyvial',
                 'venom': 'venom', 'lottery_ticket': 'lotteryticket', 'earth_crystal_shard': 'earthcrystalshard',
                 'air_crystal_shard': 'aircrystalshard', 'water_crystal_shard': 'watercrystalshard', 'bow_string': 'bowstring',
@@ -22272,6 +22681,10 @@ function renderBankGrid() {
               else if (item.name === 'Pet Spider Egg') imgName = 'petegg1';
               else if (item.name === 'Pet Owl Egg') imgName = 'petegg2'; // +++ FIX: ADD PET EGG +++
               else if (item.name === 'Pet Dragon Egg') imgName = 'petegg3';
+              else if (item.name === 'Pet Chicken Egg') imgName = 'petegg5';
+              else if (item.name === 'Pet Egg 5') imgName = 'petegg5';
+              else if (item.name === 'Pet Chicken') imgName = 'petchicken';
+              else if (item.name === 'Pet Black Chicken') imgName = 'petblackchicken';
               else if (item.name === 'Rat Tail') imgName = 'rattail'; // +++ NEW ITEM +++
               else if (item.name === 'Sand') imgName = 'sand'; // +++ NEW +++
               else if (item.name === 'Empty Vial') imgName = 'emptyvial'; // +++ NEW +++
@@ -22281,6 +22694,13 @@ function renderBankGrid() {
               else if (item.name === 'Fire Stone') imgName = 'firestone';
               
               
+              else if (item.name === 'Wolf Pelt') imgName = 'wolfpelt';
+              else if (item.name === 'Wolf Tooth') imgName = 'wolfteeth';
+              else if (item.name === 'Wolf Helmet') imgName = 'wolfhelmet';
+              else if (item.name === 'Wolf Plate') imgName = 'wolfplate';
+              else if (item.name === 'Wolf Platelegs') imgName = 'wolfplatelegs';
+              else if (item.name === 'Wolf Boots') imgName = 'wolfboot';
+              else if (item.name === 'Wolf Necklace') imgName = 'wolfnecklace';
               else if (item.name === 'Earth Crystal Shard') imgName = 'earthcrystalshard';
               else if (item.name === 'Air Crystal Shard') imgName = 'aircrystalshard';
               else if (item.name === 'Water Crystal Shard') imgName = 'watercrystalshard';
@@ -22309,6 +22729,14 @@ function renderBankGrid() {
                   imgName = 'leatherarmor';
               } else if (item.name === 'Ranger Chest') {
                   imgName = 'rangerchest';
+              } else if (item.name === 'Wolf Helmet') {
+                  imgName = 'wolfhelmet';
+              } else if (item.name === 'Wolf Plate') {
+                  imgName = 'wolfplate';
+              } else if (item.name === 'Wolf Platelegs') {
+                  imgName = 'wolfplatelegs';
+              } else if (item.name === 'Wolf Boots') {
+                  imgName = 'wolfboot';
               } else if (item.name === 'Leather Chaps') {
                   imgName = 'leatherpants';
               } else if (item.name === 'Leather Boots') {
@@ -23382,6 +23810,8 @@ function renderShopGrid() {
       else if (item.name === 'Silo') imgName = 'silo';
       else if (item.name === 'Hand Pump Well') imgName = 'automaticwell';
       else if (item.name === 'Advanced Magic Staff') imgName = 'advancedmagicstaff';
+      else if (item.name === 'Pet Chicken Egg') imgName = 'petegg5';
+      else if (item.name === 'Pet Egg 5') imgName = 'petegg5';
       else if (item.name === 'Red Dye') imgName = 'reddye';
       else if (item.name === 'Blue Dye') imgName = 'bluedye';
       else if (item.name === 'Black Dye') imgName = 'blackdye';
@@ -24565,7 +24995,7 @@ function renderInspectEquipment(equipment, frame) {
         'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 
         'Copper Arrow': 'copperarrow', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
-        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Advanced Magic Staff': 'advancedmagicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', 'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Dragon': 'petdragon', 'Pet Spider Egg': 'petegg1', 'Pet Owl Egg': 'petegg2', 'Pet Dragon Egg': 'petegg3', 'Fire Stone': 'firestone',
+        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Advanced Magic Staff': 'advancedmagicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', 'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Dragon': 'petdragon', 'Pet Spider Egg': 'petegg1', 'Pet Owl Egg': 'petegg2', 'Pet Dragon Egg': 'petegg3', 'Pet Chicken Egg': 'petegg5', 'Pet Egg 5': 'petegg5', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken', 'Fire Stone': 'firestone',
         'Empty Bucket': 'emptybucket', 'Empty Glass': 'emptyglass', 'Beer': 'beer', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Wheat Seed': 'wheatseed', 'Wheat': 'wheat', 'flour': 'flour', 'Bread': 'bread', 'Burnt Bread': 'burntbread', 'Cheese': 'cheese', 'Salt Herring': 'saltherring', 'Salt Trout': 'salttrout', 'Salt Salmon': 'saltsalmon', 'Cake': 'cake', 'Burnt Cake': 'burntcake', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
         'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
         'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace', 'Archery Bracer': 'archerybracer',
@@ -24888,6 +25318,10 @@ function getInspectAchievementEntries(playerData) {
     const totalLotteryRolls = achievementStats.lotteryRolls;
     const maxEnchantLevel = getInspectHighestEnchantLevel(playerData);
     const millionaireUnlocked = !!achievementStats.unlocked['Millionaire'] || Number((playerData && playerData.gold) || 0) >= 1000000;
+    const findCatUnlocked = getInspectEventAchievementState(playerData, 'Find the Cat');
+    const findSpiritUnlocked = getInspectEventAchievementState(playerData, 'Find the Spirit');
+    const spiritInPeaceUnlocked = getInspectEventAchievementState(playerData, 'Spirit in Peace');
+    const findWolfUnlocked = getInspectEventAchievementState(playerData, 'Find the Wolf');
     const skillAchievements = getTrackedSkillEntries().map(([label, key]) => {
         const level = getInspectedSavedSkillLevel(playerData, key);
         return {
@@ -24897,9 +25331,10 @@ function getInspectAchievementEntries(playerData) {
         };
     });
     const pets = Array.isArray(playerData && playerData.pets) ? playerData.pets : [];
-    const petAchievements = ['Spider', 'Owl', 'Cat', 'Dragon'].map(type => {
-        const bestLevel = Math.max(0, ...pets.filter(p => p.type === type).map(p => Number(p.level || 0)));
-        return { title: `${type} Pet Level 50`, unlocked: bestLevel >= 50, detail: `${bestLevel}/50` };
+    const bbcUnlocked = hasBigBlackChickenAchievement(pets, achievementStats.unlocked || {});
+    const petAchievements = PET_LEVEL_ACHIEVEMENT_DEFS.map(def => {
+        const bestLevel = getBestPetAchievementLevel(pets, def.type);
+        return { title: def.title, unlocked: bestLevel >= 50, detail: `${bestLevel}/50` };
     });
     const getKillCount = (enemyName) => Number(achievementStats.kills[enemyName] || 0);
     const hasGoldCrown = inspectPlayerOwnsItemAnywhere(playerData, 'Gold Crown');
@@ -24908,6 +25343,11 @@ function getInspectAchievementEntries(playerData) {
         { title: 'Madmax Slayer', unlocked: getKillCount('Madmax') > 0, detail: `${getKillCount('Madmax')} kill` },
         { title: 'Golden Dragon Slayer', unlocked: getKillCount('Golden Dragon') > 0, detail: `${getKillCount('Golden Dragon')} kill` },
         { title: 'Drunk Night', unlocked: achievementStats.hadBeenDrunk, detail: achievementStats.hadBeenDrunk ? 'Completed' : 'Not yet' },
+        { title: 'Find the Cat', unlocked: findCatUnlocked, detail: getEventAchievementDetail('Find the Cat', findCatUnlocked) },
+        { title: 'Find the Spirit', unlocked: findSpiritUnlocked, detail: getEventAchievementDetail('Find the Spirit', findSpiritUnlocked) },
+        { title: 'Spirit in Peace', unlocked: spiritInPeaceUnlocked, detail: getEventAchievementDetail('Spirit in Peace', spiritInPeaceUnlocked) },
+        { title: 'Find the Wolf', unlocked: findWolfUnlocked, detail: getEventAchievementDetail('Find the Wolf', findWolfUnlocked) },
+        { title: 'BBC Big Black Chicken', unlocked: bbcUnlocked, detail: bbcUnlocked ? 'Rare hatch found' : 'Hatch a Black Chicken' },
         { title: 'Millionaire', unlocked: millionaireUnlocked, detail: millionaireUnlocked ? 'Unlocked' : `${Number((playerData && playerData.gold) || 0).toLocaleString()} / 1,000,000` },
         { title: 'Gold Crown Owner', unlocked: hasGoldCrown, detail: hasGoldCrown ? 'Owned' : 'Not yet' },
         { title: 'Elegant Black Cape Owner', unlocked: hasElegantCape, detail: hasElegantCape ? 'Owned' : 'Not yet' },
@@ -25026,7 +25466,7 @@ function renderInspectTrophyRoomEquipmentFrame(equipment, frame) {
 
         const img = document.createElement('img');
         img.src = `images/${imgName}.png`;
-        img.alt = slotType;
+        img.alt = displayedItem ? displayedItem.name : slotType;
         if (blockedMessage) {
             img.style.opacity = '0.5';
             img.style.filter = 'grayscale(100%)';
@@ -25120,7 +25560,6 @@ function renderInspectTrophyRoomsPanel(playerData, activeIndex = 0) {
                 <div class="equipment-character" style="border-bottom:2px solid rgba(212,163,97,0.12); padding-bottom:10px;">
                     <div class="character-frame" id="inspectTrophyRoomPreviewFrame"></div>
                 </div>
-                <div style="margin-top:10px; color:#efe3cf; font-size:12px;">Style: ${formatLoadoutStyleLabel(roomStyle)} | Autocast: ${formatAutocastSpellLabel(room.autocastSpell)}</div>
             </div>
             <div style="padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#d7c9b1; font-size:12px; line-height:1.35;">Read-only admin view of the player's saved preset.</div>
         </div>
@@ -25783,6 +26222,16 @@ async function attemptEnchant() {
   const startScreen = document.getElementById('startScreen');
   const gameScreen = document.getElementById('gameScreen');
   const registerBtn = document.getElementById('registerBtn');
+
+  function showAdminDisconnectOverlay() {
+    const overlay = document.getElementById('adminDisconnectOverlay');
+    if (overlay) overlay.style.display = 'flex';
+  }
+
+  function hideAdminDisconnectOverlay() {
+    const overlay = document.getElementById('adminDisconnectOverlay');
+    if (overlay) overlay.style.display = 'none';
+  }
   const loginBtn = document.getElementById('loginBtn');
   const refreshLeaderboardBtn = document.getElementById('refreshLeaderboardBtn'); 
 
@@ -25871,7 +26320,6 @@ async function attemptEnchant() {
       console.error("Failed to release lock:", e);
     }
   }
-  
   /**
    * Tries to acquire the session lock using a transaction.
    * This is called when a lock is free or stale, or when user clicks "Take Control".
@@ -25906,11 +26354,12 @@ async function attemptEnchant() {
         
         // Take the lock
         const newLock = { id: sessionId, timestamp: now };
-        transaction.update(playerRef, { activeSession: newLock });
+        transaction.update(playerRef, { activeSession: newLock, forceDisconnectAt: 0, forceDisconnectSessionId: "" });
       });
       
       game.isSessionActive = true;
       hideSessionLockOverlay();
+      hideAdminDisconnectOverlay();
       return true;
       
     } catch (e) {
@@ -25991,6 +26440,7 @@ async function attemptEnchant() {
         petmastery: game.petmastery,
         pets: game.pets,
         incubator: game.incubator,
+        wolfTaming: game.wolfTaming || { lastAttemptDay: '' },
         activeBounty: game.activeBounty || null,
         autoEatSlot: game.autoEatSlot || null,
         farm: game.farm,
@@ -26423,12 +26873,20 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
 
         // --- ADMIN FORCED DISCONNECT ---
         const forcedAt = Number(data.forceDisconnectAt || 0);
-        if (!game.isForceDisconnecting && forcedAt > Number(game.lastForceDisconnectAtHandled || 0)) {
+        const forcedSessionId = String(data.forceDisconnectSessionId || '');
+        const currentSessionId = String(game.sessionLockId || sessionStorage.getItem('gameSessionId') || '');
+        const isForcedForThisSession = !forcedSessionId || !currentSessionId || forcedSessionId === currentSessionId;
+        if (forcedAt <= 0) {
+          game.isForceDisconnecting = false;
+          game.lastForceDisconnectAtHandled = 0;
+          hideAdminDisconnectOverlay();
+        }
+        if (!game.isForceDisconnecting && isForcedForThisSession && forcedAt > Number(game.lastForceDisconnectAtHandled || 0)) {
           game.lastForceDisconnectAtHandled = forcedAt;
           game.isForceDisconnecting = true;
           game.isSessionActive = false;
           stopSessionHeartbeat();
-          showSessionLockOverlay();
+          showAdminDisconnectOverlay();
 
           if (typeof stopMining === 'function') stopMining();
           if (typeof stopBlacksmithing === 'function') stopBlacksmithing();
@@ -26441,6 +26899,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           const newSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
           sessionStorage.setItem('gameSessionId', newSessionId);
           game.sessionLockId = newSessionId;
+
+
 
           (async () => {
             try {
@@ -26480,6 +26940,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           // We have the lock. We are ACTIVE.
           game.isSessionActive = true;
           hideSessionLockOverlay();
+          hideAdminDisconnectOverlay();
         }
 
         // --- 2. DATA SYNC LOGIC ---
@@ -26797,19 +27258,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           tailoring: data.tailoring,
           blacksmith: data.blacksmith
         };
-        console.log('[SAVE LOAD V4] skills from data', {
-          crafting: data.crafting,
-          fletching: data.fletching,
-          tailoring: data.tailoring,
-          blacksmith: data.blacksmith
-        });
         window.__preserveLoadedSkills = true;
-        console.log('[SAVE LOAD V4] runtime skills after assignment', {
-          crafting: game.crafting,
-          fletching: game.fletching,
-          tailoring: game.tailoring,
-          blacksmith: game.blacksmith
-        });
 
         // +++ NEW PET LOAD +++
         if (data.petmastery) {
@@ -26821,6 +27270,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         }
         game.pets = data.pets || [];
         game.incubator = data.incubator || { active: false, startTime: 0, eggType: null };
+        game.wolfTaming = data.wolfTaming || { lastAttemptDay: '' };
+        if (typeof game.wolfTaming.lastAttemptDay !== 'string') game.wolfTaming.lastAttemptDay = '';
 
         // +++ NEW FARMING LOAD +++
         if (data.farming) {
@@ -26992,12 +27443,6 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           totalXP: (typeof data.blacksmith?.totalXP === 'number') ? data.blacksmith.totalXP : 0
         };
 
-        console.log('[FINAL RUNTIME SKILLS]', {
-          crafting: game.crafting,
-          fletching: game.fletching,
-          tailoring: game.tailoring,
-          blacksmith: game.blacksmith
-        });
 
         updateSkillUI();
         updateGoldUI(); 
@@ -27099,14 +27544,18 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
     const password = document.getElementById('authPassword').value;
     if (!email || !password) { await showGameAlert("Error", "Please enter an email and password."); return; }
     try {
+      hideAdminDisconnectOverlay();
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      await showGameAlert("Login Failed", err.message || "An unknown error occurred during login.");
+      if (playerDocListener) playerDocListener();
+      if (chatListenerUnsubscribe) chatListenerUnsubscribe();
+      if (eventJournalListenerUnsubscribe) eventJournalListenerUnsubscribe();
+      if (updatesListenerUnsubscribe) updatesListenerUnsubscribe();
+      if (broadcastListenerUnsubscribe) broadcastListenerUnsubscribe();
+      await showGameAlert("Login Failed", err.message || "Invalid email or password.");
       console.error(err);
     }
   };
-
-  // --- MODIFIED: Handles session cleanup ---
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       // Trade cleanup removed
@@ -27116,7 +27565,6 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       
       if (user.uid === ADMIN_UID) {
         game.isAdmin = true;
-        console.log("Admin status granted.");
       } else {
         game.isAdmin = false;
         game.playerAttackStyle = 'strength';
@@ -27302,6 +27750,31 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           .slice(0, 6);
   }
 
+  const ADMIN_PET_TYPES = ['Spider', 'Owl', 'Cat', 'Wolf', 'Dragon', 'Chicken', 'Black Chicken'];
+
+  function getAdminPetTypeMatches(partial) {
+      const lowered = String(partial || '').trim().toLowerCase();
+      return ADMIN_PET_TYPES
+          .filter(type => !lowered || type.toLowerCase().includes(lowered))
+          .slice(0, 6);
+  }
+
+  function normalizeAdminPetType(rawValue) {
+      const lowered = String(rawValue || '').trim().toLowerCase();
+      return ADMIN_PET_TYPES.find(type => type.toLowerCase() === lowered) || null;
+  }
+
+  function createAdminPet(petType) {
+      return {
+          id: 'pet_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+          type: petType,
+          level: 1,
+          xp: 0,
+          hp: PET_MAX_HP,
+          lastCalcTime: Date.now()
+      };
+  }
+
   function summarizeSavedInventoryData(savedInvData) {
       const items = Array.isArray(savedInvData)
           ? savedInvData.filter(item => item)
@@ -27446,10 +27919,12 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 '/helpadmin - Show this help list',
                 '/givegold [playername] [amount]',
                 '/giveitem [playername] [item name] [amount]',
+                '/givepet [playername] [pet type]',
                 '/setlevel [playername] [skill] [level]',
                 '/forget [quest name]',
                 '/disconnect [playername] - Disconnect one active session',
                 '/disconnectall - Disconnect all active sessions (except you)',
+                '/clearforcedisconnect [playername] - Clear stale forced-disconnect flags',
                 '/removebuff [playername] - Remove beer/drunk buffs',
                 '/addbuff drunk [playername] - Apply drunk status',
                 '/testachievement [name] - Show an achievement popup',
@@ -27663,6 +28138,59 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             return true;
         }
 
+        // --- COMMAND: /givepet player pettype ---
+        if (command === 'givepet') {
+            const targetName = args[0] ? args[0].toLowerCase() : '';
+            const petType = normalizeAdminPetType(args.slice(1).join(' '));
+
+            if (!targetName || !petType) {
+                addLocalChatMessage('Usage: /givepet [playername] [pet type] | Types: ' + ADMIN_PET_TYPES.join(', '), 'error');
+                return true;
+            }
+
+            if (targetName === game.name.toLowerCase()) {
+                game.pets = Array.isArray(game.pets) ? game.pets : [];
+                if (game.pets.length >= 6) {
+                    addLocalChatMessage('Your Pet Yard is full (6/6).', 'error');
+                    return true;
+                }
+
+                const newPet = createAdminPet(petType);
+                game.pets.push(newPet);
+                game.isDirty = true;
+                if (typeof renderPetYard === 'function' && document.getElementById('hubPetYard') && document.getElementById('hubPetYard').classList.contains('active')) {
+                    renderPetYard('pets');
+                }
+                if (typeof window.savePlayerData === 'function') await window.savePlayerData();
+                addLocalChatMessage('Admin: Added level 1 ' + petType + ' to your Pet Yard.', 'system');
+                return true;
+            }
+
+            try {
+                const targetDoc = await findPlayerDocByAdminName(targetName);
+                if (!targetDoc) {
+                    addLocalChatMessage('Player not found: ' + args[0], 'error');
+                    return true;
+                }
+
+                const playerData = targetDoc.data() || {};
+                const exactName = (playerData.name || '').trim() || args[0];
+                const pets = Array.isArray(playerData.pets) ? playerData.pets.slice() : [];
+                if (pets.length >= 6) {
+                    addLocalChatMessage(exactName + "'s Pet Yard is full (6/6).", 'error');
+                    return true;
+                }
+
+                pets.push(createAdminPet(petType));
+                await updateDoc(doc(db, 'players', targetDoc.id), { pets });
+                addLocalChatMessage('Admin: Added level 1 ' + petType + ' to ' + exactName + "'s Pet Yard.", 'system');
+            } catch (e) {
+                console.error('Error giving pet:', e);
+                addLocalChatMessage('Error giving pet: ' + e.message, 'error');
+            }
+            return true;
+        }
+
         // --- COMMAND: /update message ---
         if (command === 'update') {
             const messageText = args.join(' ');
@@ -27736,7 +28264,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
 
                 if (targetDoc.id === user.uid) {
                     game.isSessionActive = false;
-                    if (typeof showSessionLockOverlay === 'function') showSessionLockOverlay();
+                    if (typeof showAdminDisconnectOverlay === 'function') showAdminDisconnectOverlay();
                 }
 
                 addLocalChatMessage(`Admin: Disconnected ${exactName}.`, 'system');
@@ -27746,6 +28274,42 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             }
             return true;
         }
+        // --- COMMAND: /clearforcedisconnect playername ---
+        if (command === 'clearforcedisconnect') {
+            const targetName = args.join(' ').trim().toLowerCase();
+            if (!targetName) {
+                addLocalChatMessage('Usage: /clearforcedisconnect [playername]', 'error');
+                return true;
+            }
+
+            try {
+                const targetDoc = await findPlayerDocByAdminName(targetName);
+                if (!targetDoc) {
+                    addLocalChatMessage('Player not found: ' + targetName, 'error');
+                    return true;
+                }
+
+                const targetData = targetDoc.data() || {};
+                const exactName = (targetData.name || '').trim() || targetName;
+                await updateDoc(doc(db, 'players', targetDoc.id), {
+                    forceDisconnectAt: 0,
+                    forceDisconnectSessionId: ''
+                });
+
+                if (targetDoc.id === user.uid) {
+                    game.isForceDisconnecting = false;
+                    game.lastForceDisconnectAtHandled = 0;
+                    if (typeof hideAdminDisconnectOverlay === 'function') hideAdminDisconnectOverlay();
+                }
+
+                addLocalChatMessage('Admin: Cleared force disconnect for ' + exactName + '.', 'system');
+            } catch (e) {
+                console.error('Error clearing force disconnect:', e);
+                addLocalChatMessage('Error clearing force disconnect: ' + e.message, 'error');
+            }
+            return true;
+        }
+
 
         // --- COMMAND: /disconnectall ---
         if (command === 'disconnectall' || command === 'deconnectall') {
@@ -28182,17 +28746,16 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
     return false; 
   }
 
-
-
-
   const CHAT_COMMAND_SUGGESTIONS = [
   { command: '/helpadmin', desc: 'Show the admin help list' },
   { command: '/givegold ', desc: 'Give gold to a player' },
   { command: '/giveitem ', desc: 'Give an item to a player' },
+  { command: '/givepet ', desc: 'Give a living pet directly to a Pet Yard' },
   { command: '/setlevel ', desc: 'Set a player skill level' },
   { command: '/forget ', desc: 'Forget a quest line entry' },
   { command: '/disconnect ', desc: 'Disconnect one active player' },
   { command: '/disconnectall', desc: 'Disconnect all active players except you' },
+  { command: '/clearforcedisconnect ', desc: 'Clear stale forced-disconnect flags' },
   { command: '/removebuff ', desc: 'Remove beer or drunk buffs' },
   { command: '/inspect ', desc: 'Open the full player inspect popup' },
   { command: '/inspectlottery ', desc: "Inspect a player's lottery stats" },
@@ -28216,8 +28779,7 @@ function getChatCommandMatches(value) {
   const parts = trimmed.slice(1).split(' ');
   const command = (parts[0] || '').toLowerCase();
 
-  const playerCommands = new Set(['givegold', 'inspect', 'inspectlottery', 'inspectdeath', 'disconnect', 'clear', 'removebuff']);
-
+  const playerCommands = new Set(['givegold', 'inspect', 'inspectlottery', 'inspectdeath', 'disconnect', 'clearforcedisconnect', 'clear', 'removebuff']);
   if (playerCommands.has(command)) {
     const prefix = '/' + command + ' ';
     if (lower.startsWith(prefix)) {
@@ -28249,6 +28811,26 @@ function getChatCommandMatches(value) {
         desc: 'Item name'
       }));
     }
+  }
+
+  if (command === 'givepet') {
+    const prefix = '/givepet ';
+    const rest = trimmed.slice(prefix.length);
+    if (!rest.length) {
+      return getCachedAdminPlayerNameMatches('').map(name => ({ command: prefix + name + ' ', desc: 'Player name' }));
+    }
+
+    const firstSpace = rest.indexOf(' ');
+    if (firstSpace === -1) {
+      return getCachedAdminPlayerNameMatches(rest).map(name => ({ command: prefix + name + ' ', desc: 'Player name' }));
+    }
+
+    const playerName = rest.slice(0, firstSpace).trim();
+    const petPartial = rest.slice(firstSpace + 1).trim();
+    return getAdminPetTypeMatches(petPartial).map(petType => ({
+      command: prefix + playerName + ' ' + petType,
+      desc: 'Pet type'
+    }));
   }
 
   return CHAT_COMMAND_SUGGESTIONS.filter(entry => entry.command.toLowerCase().startsWith(lower)).slice(0, 6);
@@ -28290,10 +28872,14 @@ function updateChatCommandSuggestions() {
   box.style.display = 'flex';
 
   box.querySelectorAll('.chat-command-suggestion').forEach(btn => {
-    btn.onclick = () => {
+    btn.onmousedown = (e) => {
+      e.preventDefault();
       const idx = Number(btn.getAttribute('data-command-index'));
       const entry = activeChatCommandSuggestions[idx];
       if (entry) applyChatCommandSuggestion(entry.command);
+    };
+    btn.onclick = (e) => {
+      e.preventDefault();
     };
   });
 }
@@ -28759,9 +29345,16 @@ async function sendChatMessage() {
   
   // --- MODIFIED: Added Session Lock Button ---
   document.addEventListener('DOMContentLoaded', () => {
+    const adminDisconnectOkBtn = document.getElementById('adminDisconnectOkButton');
+    if (adminDisconnectOkBtn) {
+      adminDisconnectOkBtn.onclick = () => {
+        if (typeof hideAdminDisconnectOverlay === 'function') hideAdminDisconnectOverlay();
+      };
+    }
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const chatInput = document.getElementById('chatInput');
     if (refreshLeaderboardBtn) {
         refreshLeaderboardBtn.onclick = async () => {
-          // --- NEW: Disable button and show loading text ---
           refreshLeaderboardBtn.disabled = true;
           refreshLeaderboardBtn.textContent = '...'; // Use '...' as it's small
 
@@ -28777,8 +29370,6 @@ async function sendChatMessage() {
           refreshLeaderboardBtn.textContent = 'Refresh';
         };
     }
-    const chatSendBtn = document.getElementById('chatSendBtn');
-    const chatInput = document.getElementById('chatInput');
     if (chatSendBtn) {
       chatSendBtn.onclick = () => {
         hideChatCommandSuggestions();
@@ -28851,7 +29442,6 @@ async function sendChatMessage() {
   setInterval(async () => {
     const user = auth.currentUser;
     if (user && game.isSessionActive && !document.hidden && game.isDirty) {
-      console.log("Batched save triggered...");
       await window.savePlayerData();
     }
   }, 60000);
@@ -28936,7 +29526,6 @@ async function sendChatMessage() {
   }
 };
 
-  (function() {
     // --- This is the new master preloader ---
 
     // Define all critical images your game needs to start
@@ -28991,6 +29580,7 @@ async function sendChatMessage() {
       'images/darkforest.jpeg',
       'images/crazyowlmonster.jpeg',
       'images/witchmonster.jpeg',
+      'images/wolfmonster.png',
       'images/goblinmonster.jpeg',
       'images/platypusmonster.jpeg',
       'images/salt.png',
@@ -29001,7 +29591,11 @@ async function sendChatMessage() {
       'images/petegg1.png',
       'images/petegg2.png',
       'images/petegg3.png',
+      'images/petegg5.png',
       'images/petowl.png',
+      'images/wolfpet.png',
+      'images/petchicken.png',
+      'images/petblackchicken.png',
       'images/petcat.png',
       'images/cat.png',
       'images/tomb.png',
@@ -29117,6 +29711,13 @@ async function sendChatMessage() {
       'images/waterstone.png',
       'images/firestone.png',
       'images/magicstaff.png',
+      'images/wolfpelt.png',
+      'images/wolfteeth.png',
+      'images/wolfhelmet.png',
+      'images/wolfplate.png',
+      'images/wolfplatelegs.png',
+      'images/wolfboot.png',
+      'images/wolfnecklace.png',
       'images/wizardhat.png',
       'images/wizardrobe.png',
       'images/wizardtrousers.png',
@@ -29292,7 +29893,6 @@ async function sendChatMessage() {
 
     // Run the preloader
     preloadAllAssets(MASTER_ASSET_LIST).then(() => {
-      console.log('[Preloader] All assets loaded.');
 
       // +++ FIX: FORCE-DECODE ALL MONSTER ANIMATIONS +++
       // We define the list of animations explicitly here to ensure they are cached.
@@ -29344,7 +29944,6 @@ async function sendChatMessage() {
 
     });
 
-  })();
   });
 
 
@@ -29360,7 +29959,6 @@ async function sendChatMessage() {
       .then(r => r.json())
       .then(data => {
         window.JSON_CRAFTING.recipes = Array.isArray(data) ? data : (Array.isArray(data.recipes) ? data.recipes : []);
-        console.log('[CRAFT JSON] loaded', window.JSON_CRAFTING.recipes.length, 'recipes');
       })
       .catch(err => console.error('[CRAFT JSON] load failed', err));
   }
@@ -30437,7 +31035,6 @@ window.getCraftJsonDebugSnapshot = function(){
         window.JSON_CRAFTING.recipes = Array.isArray(data)
           ? data
           : (Array.isArray(data.recipes) ? data.recipes : []);
-        console.log('[CRAFT JSON MIGRATED] loaded', window.JSON_CRAFTING.recipes.length, 'recipes');
         rerenderCurrentHub();
       })
       .catch(err => {
@@ -30485,13 +31082,6 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
-
-
-
-
-
-
-
 
 
 
