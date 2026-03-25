@@ -1,4 +1,4 @@
-﻿{
+{
   "recipes": [
     {
       "id": "alchemy_vitality_potion",
@@ -2007,6 +2007,134 @@
       "description": "Occupies both accessory slots."
     },
     {
+      "id": "tailor_wolf_boots",
+      "section": "tailoring",
+      "skill": "tailoring",
+      "level": 18,
+      "displayName": "Wolf Boots",
+      "image": "images/wolfboot.png",
+      "requirements": [
+        {
+          "name": "Wolf Pelt",
+          "qty": 6
+        },
+        {
+          "name": "Leather",
+          "qty": 4
+        }
+      ],
+      "time": 5000,
+      "xp": 120,
+      "outputName": "Wolf Boots",
+      "outputQty": 1,
+      "slot": 13,
+      "description": "Light boots stitched from wolf pelt."
+    },
+    {
+      "id": "tailor_wolf_helmet",
+      "section": "tailoring",
+      "skill": "tailoring",
+      "level": 20,
+      "displayName": "Wolf Helmet",
+      "image": "images/wolfhelmet.png",
+      "requirements": [
+        {
+          "name": "Wolf Pelt",
+          "qty": 10
+        },
+        {
+          "name": "Leather",
+          "qty": 6
+        },
+        {
+          "name": "Wolf Tooth",
+          "qty": 12
+        }
+      ],
+      "time": 5500,
+      "xp": 140,
+      "outputName": "Wolf Helmet",
+      "outputQty": 1,
+      "slot": 14,
+      "description": "A rugged helm lined with wolf hide."
+    },
+    {
+      "id": "tailor_wolf_necklace",
+      "section": "tailoring",
+      "skill": "tailoring",
+      "level": 22,
+      "displayName": "Wolf Necklace",
+      "image": "images/wolfnecklace.png",
+      "requirements": [
+        {
+          "name": "Wolf Tooth",
+          "qty": 2
+        },
+        {
+          "name": "Leather",
+          "qty": 2
+        }
+      ],
+      "time": 5000,
+      "xp": 130,
+      "outputName": "Wolf Necklace",
+      "outputQty": 1,
+      "slot": 15,
+      "description": "A necklace strung from sharpened wolf teeth."
+    },
+    {
+      "id": "tailor_wolf_platelegs",
+      "section": "tailoring",
+      "skill": "tailoring",
+      "level": 24,
+      "displayName": "Wolf Platelegs",
+      "image": "images/wolfplatelegs.png",
+      "requirements": [
+        {
+          "name": "Wolf Pelt",
+          "qty": 14
+        },
+        {
+          "name": "Leather",
+          "qty": 8
+        }
+      ],
+      "time": 6500,
+      "xp": 170,
+      "outputName": "Wolf Platelegs",
+      "outputQty": 1,
+      "slot": 16,
+      "description": "Reinforced leggings made from layered wolf pelt."
+    },
+    {
+      "id": "tailor_wolf_plate",
+      "section": "tailoring",
+      "skill": "tailoring",
+      "level": 26,
+      "displayName": "Wolf Plate",
+      "image": "images/wolfplate.png",
+      "requirements": [
+        {
+          "name": "Wolf Pelt",
+          "qty": 18
+        },
+        {
+          "name": "Leather",
+          "qty": 10
+        },
+        {
+          "name": "Wolf Tooth",
+          "qty": 16
+        }
+      ],
+      "time": 7000,
+      "xp": 200,
+      "outputName": "Wolf Plate",
+      "outputQty": 1,
+      "slot": 17,
+      "description": "A heavy chestpiece woven from hardened wolf pelt."
+    },
+    {
       "id": "craft_mapple_fishing_pole",
       "section": "crafting",
       "skill": "crafting",
@@ -2042,7 +2170,3 @@
     }
   ]
 }
-
-
-
-
