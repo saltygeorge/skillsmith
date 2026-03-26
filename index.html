@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -25632,8 +25632,8 @@ function renderInspectAdminPanels(playerData) {
     const inventoryMeta = document.getElementById("inspectInventoryMeta");
     const bankGrid = document.getElementById("inspectBankGrid");
 
-    const isAdminView = typeof window.isCurrentUserAdmin === "function" && window.isCurrentUserAdmin();
-    if (!isAdminView) {
+    const canModerateView = typeof window.currentUserCanModerate === "function" && window.currentUserCanModerate();
+    if (!canModerateView) {
         if (tabsRow) tabsRow.style.display = "none";
         setInspectPlayerView("equipment");
         return;
@@ -26167,8 +26167,39 @@ async function attemptEnchant() {
     return '';
   }
 
-  function currentUserHasStaffPrivileges(playerData = null) {
+  const MODERATOR_ALLOWED_COMMANDS = new Set([
+    'helpadmin',
+    'inspect',
+    'inspectlottery',
+    'inspectdeath',
+    'disconnect',
+    'clear',
+    'clearall',
+    'clearlast',
+    'clearlastme'
+  ]);
+
+  function currentUserCanModerate(playerData = null) {
     return !!getCurrentUserStaffRole(playerData);
+  }
+
+  function currentUserHasStaffPrivileges(playerData = null) {
+    return currentUserCanModerate(playerData);
+  }
+
+  function normalizeStaffCommandName(commandValue) {
+    const normalized = String(commandValue || '').trim().toLowerCase();
+    if (normalized === 'deconnect') return 'disconnect';
+    if (normalized === 'deconnectall') return 'disconnectall';
+    return normalized;
+  }
+
+  function canCurrentUserRunStaffCommand(commandValue, playerData = null) {
+    const normalizedCommand = normalizeStaffCommandName(commandValue);
+    const staffRole = getCurrentUserStaffRole(playerData);
+    if (staffRole === 'admin') return true;
+    if (staffRole !== 'moderator') return false;
+    return MODERATOR_ALLOWED_COMMANDS.has(normalizedCommand);
   }
 
   function isStaffMessage(msg) {
@@ -26177,13 +26208,16 @@ async function attemptEnchant() {
     return senderRole === 'admin' || senderRole === 'moderator';
   }
 
-  function isCurrentUserAdmin() {
-    return currentUserHasStaffPrivileges(game);
+  function isCurrentUserAdmin(playerData = null) {
+    return getCurrentUserStaffRole(playerData) === 'admin';
   }
   window.normalizeStaffRole = normalizeStaffRole;
   window.isCurrentUserSuperAdmin = isCurrentUserSuperAdmin;
   window.getCurrentUserStaffRole = getCurrentUserStaffRole;
+  window.currentUserCanModerate = currentUserCanModerate;
   window.currentUserHasStaffPrivileges = currentUserHasStaffPrivileges;
+  window.normalizeStaffCommandName = normalizeStaffCommandName;
+  window.canCurrentUserRunStaffCommand = canCurrentUserRunStaffCommand;
   window.isCurrentUserAdmin = isCurrentUserAdmin;
 
   const EVENT_JOURNAL_CHAT_PREFIX = '__event_journal__|';
@@ -26887,7 +26921,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
 
         game.superAdmin = isCurrentUserSuperAdmin(data);
         game.staffRole = getCurrentUserStaffRole(data);
-        game.isAdmin = !!game.staffRole;
+        game.isAdmin = game.staffRole === 'admin';
 
         // --- ADMIN FORCED DISCONNECT ---
         const forcedAt = Number(data.forceDisconnectAt || 0);
@@ -27541,7 +27575,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       game.superAdmin = isCurrentUserSuperAdmin();
       const resolvedStaffRole = getCurrentUserStaffRole(game);
       game.staffRole = resolvedStaffRole;
-      game.isAdmin = !!resolvedStaffRole;
+      game.isAdmin = resolvedStaffRole === 'admin';
       if (!resolvedStaffRole) {
         game.playerAttackStyle = 'strength';
       }
@@ -27685,7 +27719,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
   let adminPlayerNameRefreshPromise = null;
 
   async function refreshAdminPlayerNameCache(force = false) {
-      if (!isCurrentUserAdmin() || !auth.currentUser) return adminPlayerNameCache;
+      if (!currentUserCanModerate() || !auth.currentUser) return adminPlayerNameCache;
       const now = Date.now();
       if (!force && adminPlayerNameCache.length && (now - adminPlayerNameCacheLoadedAt) < 300000) return adminPlayerNameCache;
       if (adminPlayerNameRefreshPromise && !force) return adminPlayerNameRefreshPromise;
@@ -27879,41 +27913,60 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
     const user = auth.currentUser;
     if (!user) return false;
 
-    // 1. Check if Admin
-    if (isCurrentUserAdmin() && messageText.startsWith('/')) {
-                const parts = messageText.substring(1).split(' ');
+    // 1. Check if staff
+    if (currentUserCanModerate() && messageText.startsWith('/')) {
+        const parts = messageText.substring(1).split(' ');
         const command = parts[0].toLowerCase();
+        const normalizedCommand = normalizeStaffCommandName(command);
         const args = parts.slice(1);
 
+        if (!canCurrentUserRunStaffCommand(normalizedCommand)) {
+            addLocalChatMessage('Moderator access is limited to /inspect, /disconnect, and /clear commands.', 'error');
+            return true;
+        }
+
         // --- COMMAND: /helpadmin ---
-        if (command === 'helpadmin') {
-            const helpLines = [
-                'Admin Commands:',
-                '/helpadmin - Show this help list',
-                '/givegold [playername] [amount]',
-                '/giveitem [playername] [item name] [amount]',
-                '/givepet [playername] [pet type]',
-                '/setlevel [playername] [skill] [level]',
-                '/setrole [playername] [admin|moderator|player]',
-                '/forget [quest name]',
-                '/disconnect [playername] - Disconnect one active session',
-                '/disconnectall - Disconnect all active sessions (except you)',
-                '/clearforcedisconnect [playername] - Clear stale forced-disconnect flags',
-                '/removebuff [playername] - Remove beer/drunk buffs',
-                '/addbuff drunk [playername] - Apply drunk status',
-                '/testachievement [name] - Show an achievement popup',
-                '/inspect [playername]',
-                '/inspectlottery [playername]',
-                '/inspectdeath [playername]',
-                '/refresh - Refresh cached player names for autocomplete',
-                '/clear [playername] - Delete one player\'s chat messages',
-                '/clearall - Delete all chat messages',
-                '/clearlast - Delete last global chat message',
-                '/clearlastme - Delete your last chat message',
-                '/update [message]',
-                '/messageall [message]',
-                '/godmode'
-            ];
+        if (normalizedCommand === 'helpadmin') {
+            const helpLines = isCurrentUserAdmin()
+                ? [
+                    'Admin Commands:',
+                    '/helpadmin - Show this help list',
+                    '/givegold [playername] [amount]',
+                    '/giveitem [playername] [item name] [amount]',
+                    '/givepet [playername] [pet type]',
+                    '/setlevel [playername] [skill] [level]',
+                    '/setrole [playername] [admin|moderator|player]',
+                    '/forget [quest name]',
+                    '/disconnect [playername] - Disconnect one active session',
+                    '/disconnectall - Disconnect all active sessions (except you)',
+                    '/clearforcedisconnect [playername] - Clear stale forced-disconnect flags',
+                    '/removebuff [playername] - Remove beer/drunk buffs',
+                    '/addbuff drunk [playername] - Apply drunk status',
+                    '/testachievement [name] - Show an achievement popup',
+                    '/inspect [playername]',
+                    '/inspectlottery [playername]',
+                    '/inspectdeath [playername]',
+                    '/refresh - Refresh cached player names for autocomplete',
+                    '/clear [playername] - Delete one player\'s chat messages',
+                    '/clearall - Delete all chat messages',
+                    '/clearlast - Delete last global chat message',
+                    '/clearlastme - Delete your last chat message',
+                    '/update [message]',
+                    '/messageall [message]',
+                    '/godmode'
+                ]
+                : [
+                    'Moderator Commands:',
+                    '/helpadmin - Show this help list',
+                    '/inspect [playername]',
+                    '/inspectlottery [playername]',
+                    '/inspectdeath [playername]',
+                    '/disconnect [playername] - Disconnect one active session',
+                    '/clear [playername] - Delete one player\'s chat messages',
+                    '/clearall - Delete all chat messages',
+                    '/clearlast - Delete last global chat message',
+                    '/clearlastme - Delete your last chat message'
+                ];
             helpLines.slice().reverse().forEach(line => addLocalChatMessage(line, 'system'));
             return true;
         }
@@ -28731,7 +28784,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
 
                 if (targetDoc.id === user.uid) {
                     game.staffRole = nextRole;
-                    game.isAdmin = !!nextRole;
+                    game.isAdmin = nextRole === 'admin';
                 }
 
                 addLocalChatMessage(
@@ -28787,15 +28840,17 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
 let activeChatCommandSuggestions = [];
 
 function getChatCommandMatches(value) {
-  if (!game || !isCurrentUserAdmin()) return [];
+  if (!game || !currentUserCanModerate()) return [];
   const trimmed = String(value || '').trimStart();
   if (!trimmed.startsWith('/')) return [];
   const lower = trimmed.toLowerCase();
   const parts = trimmed.slice(1).split(' ');
   const command = (parts[0] || '').toLowerCase();
+  const normalizedCommand = normalizeStaffCommandName(command);
+  if (command && !canCurrentUserRunStaffCommand(normalizedCommand)) return [];
 
   const playerCommands = new Set(['givegold', 'inspect', 'inspectlottery', 'inspectdeath', 'disconnect', 'clearforcedisconnect', 'clear', 'removebuff']);
-  if (playerCommands.has(command)) {
+  if (playerCommands.has(normalizedCommand)) {
     const prefix = '/' + command + ' ';
     if (lower.startsWith(prefix)) {
       const partialPlayer = trimmed.slice(prefix.length);
@@ -28870,7 +28925,13 @@ function getChatCommandMatches(value) {
     }));
   }
 
-  return CHAT_COMMAND_SUGGESTIONS.filter(entry => entry.command.toLowerCase().startsWith(lower)).slice(0, 6);
+  return CHAT_COMMAND_SUGGESTIONS
+    .filter(entry => {
+      const entryCommand = normalizeStaffCommandName(String(entry.command || '').trim().replace(/^\//, '').split(' ')[0]);
+      return canCurrentUserRunStaffCommand(entryCommand);
+    })
+    .filter(entry => entry.command.toLowerCase().startsWith(lower))
+    .slice(0, 6);
 }
 
 function hideChatCommandSuggestions() {
@@ -29913,9 +29974,63 @@ async function sendChatMessage() {
 
       return Promise.all(promises);
     }
+    function collectImagePathsFromText(text) {
+      const matches = String(text || '').match(/images\/[A-Za-z0-9_./-]+\.(?:png|jpe?g|gif|webp)/gi) || [];
+      return matches.map(src => src.replace(/\\/g, '/'));
+    }
+
+    function collectImagePathsFromJsonValue(value, acc = new Set()) {
+      if (typeof value === 'string') {
+        const normalized = String(value || '').trim().replace(/\\/g, '/');
+        if (/^images\/[A-Za-z0-9_./-]+\.(?:png|jpe?g|gif|webp)$/i.test(normalized)) {
+          acc.add(normalized);
+        }
+        return acc;
+      }
+
+      if (Array.isArray(value)) {
+        value.forEach(entry => collectImagePathsFromJsonValue(entry, acc));
+        return acc;
+      }
+
+      if (value && typeof value === 'object') {
+        Object.values(value).forEach(entry => collectImagePathsFromJsonValue(entry, acc));
+      }
+      return acc;
+    }
+
+    async function buildPreloadAssetList() {
+      const assets = new Set(MASTER_ASSET_LIST);
+
+      try {
+        collectImagePathsFromText(document.documentElement ? document.documentElement.outerHTML : '').forEach(src => assets.add(src));
+      } catch (e) {
+        console.warn('[Preloader] Could not inspect document HTML for assets:', e);
+      }
+
+      const dataSources = ['game_data/items.json', 'game_data/crafting.json'];
+      await Promise.all(dataSources.map(async (src) => {
+        try {
+          const response = await fetch(src, { cache: 'no-store' });
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          const data = await response.json();
+          collectImagePathsFromJsonValue(data).forEach(path => assets.add(path));
+        } catch (e) {
+          console.warn('[Preloader] Could not inspect ' + src + ':', e);
+        }
+      }));
+
+      return Array.from(assets);
+    }
 
     // Run the preloader
-    preloadAllAssets(MASTER_ASSET_LIST).then(() => {
+    buildPreloadAssetList()
+      .catch((e) => {
+        console.warn('[Preloader] Falling back to master asset list:', e);
+        return MASTER_ASSET_LIST.slice();
+      })
+      .then(preloadAllAssets)
+      .then(() => {
 
       // +++ FIX: FORCE-DECODE ALL MONSTER ANIMATIONS +++
       // We define the list of animations explicitly here to ensure they are cached.
