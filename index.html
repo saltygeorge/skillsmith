@@ -393,6 +393,49 @@ body {
   background: var(--accent-hover);
 }
 
+#inspectAchievementsGrid,
+#inspectAchievementKillsGrid,
+#inspectPetYardContent,
+#inspectTrophyRoomContent,
+#inspectSkillsGrid {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--panel-bg);
+}
+
+#inspectAchievementsGrid::-webkit-scrollbar,
+#inspectAchievementKillsGrid::-webkit-scrollbar,
+#inspectPetYardContent::-webkit-scrollbar,
+#inspectTrophyRoomContent::-webkit-scrollbar,
+#inspectSkillsGrid::-webkit-scrollbar {
+  width: 8px;
+}
+
+#inspectAchievementsGrid::-webkit-scrollbar-track,
+#inspectAchievementKillsGrid::-webkit-scrollbar-track,
+#inspectPetYardContent::-webkit-scrollbar-track,
+#inspectTrophyRoomContent::-webkit-scrollbar-track,
+#inspectSkillsGrid::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+
+#inspectAchievementsGrid::-webkit-scrollbar-thumb,
+#inspectAchievementKillsGrid::-webkit-scrollbar-thumb,
+#inspectPetYardContent::-webkit-scrollbar-thumb,
+#inspectTrophyRoomContent::-webkit-scrollbar-thumb,
+#inspectSkillsGrid::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+#inspectAchievementsGrid::-webkit-scrollbar-thumb:hover,
+#inspectAchievementKillsGrid::-webkit-scrollbar-thumb:hover,
+#inspectPetYardContent::-webkit-scrollbar-thumb:hover,
+#inspectTrophyRoomContent::-webkit-scrollbar-thumb:hover,
+#inspectSkillsGrid::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
+}
+
 /* --- Main area --- */
 .main {
   flex: 1;
@@ -741,6 +784,17 @@ button.primary:hover { background: var(--accent-hover); }
   border-color: var(--gold);
   border-style: dashed;
   background: rgba(181, 166, 66, 0.1);
+}
+#millInSlot.drag-over {
+  border-color: #f0d36d !important;
+  border-style: solid !important;
+  background: rgba(181, 166, 66, 0.18) !important;
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.18), 0 0 16px rgba(255, 215, 0, 0.24);
+}
+#millInSlot.drag-over #millInBody {
+  color: #ffe39a !important;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.22);
 }
 
 .equipment-slot.drag-valid {
@@ -2389,7 +2443,6 @@ button.primary:hover { background: var(--accent-hover); }
   <div class="container">
     
     <div id="top-row-panels">
-      
       <div class="sidebar">
         <div class="char-header" style="position: relative;">
           <h2 id="charName">Player</h2>
@@ -2466,35 +2519,27 @@ button.primary:hover { background: var(--accent-hover); }
     <button class="primary" id="toggleStatsBtn">Stats</button> <button class="primary" id="toggleSpellsBtn">Spells</button>
 </div>
             </div>
-          
-          <div id="inventoryTab" style="display:none;">
+              <div id="inventoryTab" style="display:none;">
             <div class="inventory-grid-wrap" id="inventoryGridWrap">
               <div class="inventory-grid" id="inventoryGrid"></div>
             </div>
-            
-            <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
-            
-  <div id="goldDisplay" style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 0px 8px;">
+                  <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+        <div id="goldDisplay" style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 0px 8px;">
     <img src="images/goldpouch.png" alt="Gold" style="width: 40px; height: 40px; object-fit: contain;">
     <span id="goldAmountText" style="font-weight: bold; font-size: 16px; color: var(--gold); padding-top: 0px;">0</span>
   </div>
-              
-</div>
-            
-          </div>
-          
-          <div id="skillsTab" style="display:none; flex-direction: column; flex-grow: 1; overflow: hidden;">
+        </div>
+                </div>
+              <div id="skillsTab" style="display:none; flex-direction: column; flex-grow: 1; overflow: hidden;">
             </div>
-          
-          <div id="questsTab" style="display:none; flex-direction: column; flex-grow: 1;">
+              <div id="questsTab" style="display:none; flex-direction: column; flex-grow: 1;">
             <div class="sub-tabs">
               <button id="showQuestsBtn" class="active" onclick="showQuestSubTab('quests')">Quests</button>
               <button id="showMissionsBtn" onclick="showQuestSubTab('missions')">Missions</button>
             </div>
 
             <div id="questTabContentWrapper" class="quest-scroll-container" style="flex-grow: 1; padding-right: 0;">
-            
-              <div id="questsSubTabContent" style="display: block;">
+                    <div id="questsSubTabContent" style="display: block;">
                 </div>
 
               <div id="missionsSubTabContent" style="display: none;">
@@ -2503,9 +2548,7 @@ button.primary:hover { background: var(--accent-hover); }
 
             </div>
           <div id="achievementsTab" style="display:none; flex-direction: column; flex-grow: 1; overflow: hidden;"></div>
-          
-          
-        </div>
+                </div>
       </div>
 
       <div class="main" id="mainArea">
@@ -2520,8 +2563,7 @@ button.primary:hover { background: var(--accent-hover); }
         </div>
 
         <div id="mainContentWrapper">
-        
-          <div id="hubActions" class="hub-screen">
+            <div id="hubActions" class="hub-screen">
             <div id="actionScreen" style="display: flex; gap: 10px; flex-wrap: wrap;">
               <img id="minesActionIcon" src="images/mines.png" alt="Mines" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="crystalMineActionIcon" src="images/crystalmine.jpeg" alt="Crystal Mine" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
@@ -2590,8 +2632,7 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubHuntingBoard" class="hub-screen">
             <h2>Hunting Board</h2>
             <div style="margin-top:8px; color:#efe3cf;">Accept bounties to earn gold and experience.</div>
-            
-            <div id="bountyContent" style="margin-top: 4px; display: flex; flex-direction: column; gap: 6px; align-items: center;">
+                  <div id="bountyContent" style="margin-top: 4px; display: flex; flex-direction: column; gap: 6px; align-items: center;">
                 </div>
 
             <div class="action-buttons" style="margin-top: 10px;">
@@ -2601,16 +2642,11 @@ button.primary:hover { background: var(--accent-hover); }
 
           <div id="hubPersonalFarm" class="hub-screen">
             <h2>My Farm</h2>
-          
-            
-            <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
-                
-                <div class="interactive-container">
+                      <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
+                          <div class="interactive-container">
                     <img id="personalFarmSceneImg" src="images/personalfarm.webp" alt="Personal Farm" class="interactive-bg">
-                    
-                    <svg class="interactive-overlay" viewBox="0 0 488 300" preserveAspectRatio="none">
-                        
-                        <defs>
+                                  <svg class="interactive-overlay" viewBox="0 0 488 300" preserveAspectRatio="none">
+                                          <defs>
                           <radialGradient id="goldHoverGradient" cx="50%" cy="50%" r="70%" fx="50%" fy="50%">
                             <stop offset="0%" style="stop-color:rgb(255, 215, 0); stop-opacity:0" />
                             <stop offset="100%" style="stop-color:rgb(255, 215, 0); stop-opacity:0.5" />
@@ -2629,8 +2665,7 @@ button.primary:hover { background: var(--accent-hover); }
                                  onclick="handleCellarClick(); playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');" 
                                  onmouseenter="showTooltip(event, '<div style=\'color:var(--gold); font-weight:bold;\'>Cellar</div>Grow Mushrooms');" 
                                 onmouseleave="hideTooltip()">
-                                </polygon>                       
-
+                                </polygon>                 
                         <polygon class="farm-zone" 
                                  points="18,218 105,190 105,276 18,276" 
                                  onclick="handleChickenCoopClick(); playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');" 
@@ -2661,8 +2696,7 @@ button.primary:hover { background: var(--accent-hover); }
                 </div>
 
                 <div id="farmUpgradesPanel" style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px; margin-top:12px;"></div>
-                
-            </div>
+                      </div>
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
               <button id="hubPersonalFarm_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="dismissFarmCat(); backToActions()">Return</button>
@@ -2670,8 +2704,7 @@ button.primary:hover { background: var(--accent-hover); }
           </div>
 <div id="hubPetYard" class="hub-screen">
             <h2>Pet Yard</h2>
-            
-            <div id="petYardContent" style="margin-top: 10px;"></div>
+                  <div id="petYardContent" style="margin-top: 10px;"></div>
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
               <button id="hubPetYard_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="backToActions()">Return</button>
@@ -2725,20 +2758,15 @@ button.primary:hover { background: var(--accent-hover); }
 
           <div id="hubGarden" class="hub-screen">
             <h2>The Garden</h2>
-            
-            <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
-                
-                <div class="interactive-container" style="height: 320px;">
+                  <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
+                          <div class="interactive-container" style="height: 320px;">
                     <img src="images/cropfield.jpeg" alt="The Garden" class="interactive-bg" style="width: 100%; height: 100%; object-fit: cover; object-position: top;">
-                    
-                    <svg class="interactive-overlay" viewBox="0 0 600 400" preserveAspectRatio="none">
-                        
-                        <polygon id="garden-poly-0" 
+                                  <svg class="interactive-overlay" viewBox="0 0 600 400" preserveAspectRatio="none">
+                                          <polygon id="garden-poly-0" 
                                  points="113,192 199,192 191,225 98,225" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 0)"></polygon>
-                        
-                        <image id="garden-img-0" 
+                                          <image id="garden-img-0" 
                                href="" 
                                x="101" y="152" width="100" height="100" 
                                class="crop-svg-img" 
@@ -2748,8 +2776,7 @@ button.primary:hover { background: var(--accent-hover); }
                                  points="212,192 296,192 296,225 205,225" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 1)"></polygon>
-                        
-                        <image id="garden-img-1" 
+                                          <image id="garden-img-1" 
                                href="" 
                                x="204" y="152" width="100" height="100" 
                                class="crop-svg-img" 
@@ -2759,8 +2786,7 @@ button.primary:hover { background: var(--accent-hover); }
                                  points="309,192 394,192 402,225 309,225" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 2)"></polygon>
-                        
-                        <image id="garden-img-2" 
+                                          <image id="garden-img-2" 
                                href="" 
                                x="305" y="152" width="100" height="100" 
                                class="crop-svg-img" 
@@ -2770,8 +2796,7 @@ button.primary:hover { background: var(--accent-hover); }
                                  points="406,192 492,192 507,225 415,225" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 3)"></polygon>
-                        
-                        <image id="garden-img-3" 
+                                          <image id="garden-img-3" 
                                href="" 
                                x="407" y="152" width="100" height="100" 
                                class="crop-svg-img" 
@@ -2781,8 +2806,7 @@ button.primary:hover { background: var(--accent-hover); }
                                  points="92,236 189,236 181,273 73,273" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 4)"></polygon>
-                        
-                        <image id="garden-img-4" 
+                                          <image id="garden-img-4" 
                                href="" 
                                x="85" y="198" width="100" height="100" 
                                class="crop-svg-img" 
@@ -2792,123 +2816,99 @@ button.primary:hover { background: var(--accent-hover); }
                                  points="203,236 296,236 296,272 194,272" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 5)"></polygon>
-                        
-                        <image id="garden-img-5" 
+                                          <image id="garden-img-5" 
                                href="" 
                                x="200" y="198" width="100" height="100" 
                                class="crop-svg-img" 
-                               style="display:none;"></image>       
-                        
-                        <polygon id="garden-poly-6" 
+                               style="display:none;"></image>                                           <polygon id="garden-poly-6" 
                                  points="308,236 405,236 414,272 308,272" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 6)"></polygon>
-                        
-                        <image id="garden-img-6" 
+                                          <image id="garden-img-6" 
                                href="" 
                                x="309" y="198" width="100" height="100" 
                                class="crop-svg-img" 
-                               style="display:none;"></image>       
-                         
-                        <polygon id="garden-poly-7" 
+                               style="display:none;"></image>                                            <polygon id="garden-poly-7" 
                                  points="418,236 514,236 530,272 429,272" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 7)"></polygon>
-                        
-                        <image id="garden-img-7" 
+                                          <image id="garden-img-7" 
                                href="" 
                                x="423" y="198" width="100" height="100" 
                                class="crop-svg-img" 
                                style="display:none;"></image>   
-                               
-                        <polygon id="garden-poly-8" 
+                                                 <polygon id="garden-poly-8" 
                                  points="68,282 178,282 167,327 46,327" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 8)"></polygon>
-                        
-                        <image id="garden-img-8" 
+                                          <image id="garden-img-8" 
                                href="" 
                                x="62" y="241" width="110" height="110" 
                                class="crop-svg-img" 
                                style="display:none;"></image>    
-                               
-                        <polygon id="garden-poly-9" 
+                                                 <polygon id="garden-poly-9" 
                                  points="189,282 298,282 298,327 179,327" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 9)"></polygon>
-                        
-                        <image id="garden-img-9" 
+                                          <image id="garden-img-9" 
                                href="" 
                                x="189" y="241" width="110" height="110" 
                                class="crop-svg-img" 
                                style="display:none;"></image>   
-                               
-                        <polygon id="garden-poly-10" 
+                                                 <polygon id="garden-poly-10" 
                                  points="308,282 418,282 429,327 308,327" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 10)"></polygon>
-                        
-                        <image id="garden-img-10" 
+                                          <image id="garden-img-10" 
                                href="" 
                                x="310" y="241" width="110" height="110" 
                                class="crop-svg-img" 
                                style="display:none;"></image>     
-                               
-                        <polygon id="garden-poly-11" 
+                                                 <polygon id="garden-poly-11" 
                                  points="430,282 538,282 558,327 440,327" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 11)"></polygon>
-                        
-                        <image id="garden-img-11" 
+                                          <image id="garden-img-11" 
                                href="" 
                                x="435" y="241" width="110" height="110" 
                                class="crop-svg-img" 
-                               style="display:none;"></image>       
-
+                               style="display:none;"></image> 
                         <polygon id="garden-poly-12" 
                                  points="39,336 162,336 144,400 6,400" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 12)"></polygon>
-                        
-                        <image id="garden-img-12" 
+                                          <image id="garden-img-12" 
                                href="" 
                                x="25" y="300" width="130" height="130" 
                                class="crop-svg-img" 
                                style="display:none;"></image>    
-                               
-                        <polygon id="garden-poly-13" 
+                                                 <polygon id="garden-poly-13" 
                                  points="175,336 298,336 298,400 161,400" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 13)"></polygon>
-                        
-                        <image id="garden-img-13" 
+                                          <image id="garden-img-13" 
                                href="" 
                                x="173" y="300" width="130" height="130" 
                                class="crop-svg-img" 
                                style="display:none;"></image>     
-                               
-                        <polygon id="garden-poly-14" 
+                                                 <polygon id="garden-poly-14" 
                                  points="308,336 430,336 446,400 308,400" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 14)"></polygon>
-                        
-                        <image id="garden-img-14" 
+                                          <image id="garden-img-14" 
                                href="" 
                                x="310" y="300" width="130" height="130" 
                                class="crop-svg-img" 
                                style="display:none;"></image>    
-                               
-                        <polygon id="garden-poly-15" 
+                                                 <polygon id="garden-poly-15" 
                                  points="444,336 566,336 601,400 461,400" 
                                  class="garden-zone"
                                  onclick="handleGardenSlotClick(event, 15)"></polygon>
-                        
-                        <image id="garden-img-15" 
+                                          <image id="garden-img-15" 
                                href="" 
                                x="454" y="300" width="130" height="130" 
                                class="crop-svg-img" 
-                               style="display:none;"></image>       
-
+                               style="display:none;"></image> 
                     </svg>
                     <div id="gardenTombOverlay"></div>
                     <div id="gardenHandPumpOverlay"></div>
@@ -2928,8 +2928,7 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="hubGarden_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
-         
-         <div id="hubCellar" class="hub-screen">
+            <div id="hubCellar" class="hub-screen">
             <h2>The Cellar</h2>
             <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
                 <div class="interactive-container" style="height: 320px;">
@@ -2986,8 +2985,7 @@ button.primary:hover { background: var(--accent-hover); }
 
           <div id="hubBarn" class="hub-screen">
             <h2>The Barn</h2>
-            
-            <div style="margin-top: 20px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; width: 90%; max-width: 400px; display: flex; align-items: center; justify-content: space-between; margin-left: auto; margin-right: auto;">
+                  <div style="margin-top: 20px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; width: 90%; max-width: 400px; display: flex; align-items: center; justify-content: space-between; margin-left: auto; margin-right: auto;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <img src="images/bucketofmilk.png" style="width: 32px; height: 32px; margin-top: 4px;">
                     <span id="milkReadyDisplay" style="font-size: 16px; font-weight: bold; color: var(--gold);">0 Ready</span>
@@ -3035,10 +3033,8 @@ button.primary:hover { background: var(--accent-hover); }
 
           <div id="hubQuestLine" class="hub-screen">
             <h2 id="questLineTitle" style="color: #fff; flex-shrink: 0;">Quest Line Title</h2>
-            
-            <div class="quest-scroll-container">
-                
-                <div id="activeQuestContainer" style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--accent);">
+                  <div class="quest-scroll-container">
+                          <div id="activeQuestContainer" style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--accent);">
                 </div>
 
                 <div id="completedQuestsSection" style="margin-top: 15px; display:none; background: rgba(0,0,0,0.15); padding: 10px; border-radius: 8px;">
@@ -3046,8 +3042,7 @@ button.primary:hover { background: var(--accent-hover); }
                     <div id="completedQuestsList">
                     </div>
                 </div>
-            
-            </div>
+                  </div>
 
             <div class="action-buttons" style="margin-top: 20px; flex-shrink: 0;">
               <button id="questLine_ReturnBtn" class="primary" style="background:#666;">Return</button>
@@ -3073,16 +3068,14 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="hubElementalForge_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
-          
-          <div id="hubMine" class="hub-screen">
+              <div id="hubMine" class="hub-screen">
             <h2>Mine</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose a vein to mine.</div>
             <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
               <button id="sandVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/sandvein.jpeg" alt="Sand" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
-              
-              <button id="copperVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                      <button id="copperVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/coppervein.png" alt="Copper Vein" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
               <button id="coalVeinBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
@@ -3121,8 +3114,7 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="hubCrystalMine_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
-          
-          <div id="hubBlacksmith" class="hub-screen">
+              <div id="hubBlacksmith" class="hub-screen">
             <h2>Blacksmithing</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose an item to smith.</div>
             <div class="tabs" style="margin-top: 14px; margin-bottom: 14px; width: 100%;">
@@ -3147,8 +3139,7 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="hubFletching_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
-          
-          <div id="hubForest" class="hub-screen">
+              <div id="hubForest" class="hub-screen">
     <h2>Forest</h2>
     <div style="margin-top:8px; color:#efe3cf;">Choose a tree to chop.</div>
     
@@ -3156,7 +3147,6 @@ button.primary:hover { background: var(--accent-hover); }
       <button id="softwoodTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/softwood.png" alt="Softwood Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
-      
       <button id="oakTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/oak.png" alt="Oak Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
@@ -3164,11 +3154,9 @@ button.primary:hover { background: var(--accent-hover); }
       <button id="birchTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/birch.png" alt="Birch Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
-      
       <button id="mapleTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/maple.png" alt="Maple Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
-      
       <button id="mahoganyTreeBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
         <img src="images/mahogany.png" alt="Mahogany Tree" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
       </button>
@@ -3178,14 +3166,11 @@ button.primary:hover { background: var(--accent-hover); }
       <button id="hubForest_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
     </div>
 </div>
-          
-          
-          <div id="hubKitchen" class="hub-screen">
+                  <div id="hubKitchen" class="hub-screen">
             <h2>Kitchen</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose something to cook.</div>
             <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
-              
-              <button id="cookChickenBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                      <button id="cookChickenBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/cookedchicken.png" alt="Cooked Chicken" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
 
@@ -3196,12 +3181,10 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="cookHerringBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/cookedherring.png" alt="Cooked Herring" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
-              
-              <button id="cookTroutBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                      <button id="cookTroutBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/cookedtrout.png" alt="Cooked Trout" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
-              
-              <button id="cookSalmonBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
+                      <button id="cookSalmonBtn" class="primary" style="width: var(--slot-size); height: var(--slot-size); display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/cookedsalmon.png" alt="Cooked Salmon" style="width: 60px; height: 60px; border-radius: 4px; object-fit: contain;">
               </button>
 
@@ -3210,17 +3193,14 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="hubKitchen_ReturnBtn" class="primary" style="background:#666; margin-top: 20px;">Return</button>
             </div>
           </div>
-          
-          <div id="hubCombat" class="hub-screen">
+              <div id="hubCombat" class="hub-screen">
             <h2>Combat Areas</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose an area to start fighting.</div>
-            
-            <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
+                  <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:row; flex-wrap: wrap; align-items:flex-start; gap: 10px;">
               <button id="farmAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;" onclick="openFarmCombatArea()" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Farm</div><div>Face Chickens, Cows, and a training dummy.</div>')" onmouseleave="hideTooltip()">
                 <img src="images/farm.png" alt="Farm Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
               </button>
-              
-              <button id="caveAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;" onclick="openCaveCombatArea()" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Cave</div><div>Fight Rats, Spiders, and Centipedes.</div>')" onmouseleave="hideTooltip()">
+                      <button id="caveAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;" onclick="openCaveCombatArea()" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Cave</div><div>Fight Rats, Spiders, and Centipedes.</div>')" onmouseleave="hideTooltip()">
                 <img src="images/cave.png" alt="Cave Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
               </button>
 
@@ -3241,8 +3221,7 @@ button.primary:hover { background: var(--accent-hover); }
                 <img src="images/darkforest.jpeg" alt="Dark Forest Area" 
                      style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover; display: block; image-rendering: auto; backface-visibility: hidden;">
               </button>
-              
-              <button id="madmaxCastleBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; border: 2px solid #900;" onclick="openMadmaxCastle()" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:red;\'>Madmax Castle</div><div>A brutal arena for a late-game boss fight.</div>')" onmouseleave="hideTooltip()">
+                      <button id="madmaxCastleBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; border: 2px solid #900;" onclick="openMadmaxCastle()" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:red;\'>Madmax Castle</div><div>A brutal arena for a late-game boss fight.</div>')" onmouseleave="hideTooltip()">
                 <img src="images/madmaxcastle.jpeg" alt="Madmax Castle" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
               </button>
 
@@ -3269,13 +3248,10 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="hubBestiary_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
-          
-          
-          <div id="hubDragonNest" class="hub-screen">
+                  <div id="hubDragonNest" class="hub-screen">
             <h2 style="color:#c98a1d;">Dragon Nest</h2>
             <div style="margin-top:8px; color:#efe3cf;">A blazing lair where an ancient wyrm hoards its wrath.</div>
-            
-            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+                  <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
               <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Golden Dragon')" 
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:#f4c542;\'>Golden Dragon (Lvl 100)</div>')"
                    onmouseleave="hideTooltip()">
@@ -3288,26 +3264,21 @@ button.primary:hover { background: var(--accent-hover); }
               <button id="hubDragonNest_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
-          
-          <div id="hubCave" class="hub-screen">
+              <div id="hubCave" class="hub-screen">
             <h2>The Cave</h2>
             <div style="margin-top:8px; color:#efe3cf;">A dark, damp cave.</div>
-            
-            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
-              
-              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Rat')" 
+                  <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+                      <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Rat')" 
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Rat (Lvl 1)</div>')"
                    onmouseleave="hideTooltip()">
                 <img src="images/ratmonster.jpeg" alt="Rat" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
-              
-              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Spider')"
+                      <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Spider')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Spider (Lvl 2)</div>')"
                    onmouseleave="hideTooltip()">
                 <img src="images/spidermonster.jpeg" alt="Spider" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
-              
-              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Centipede')"
+                      <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Centipede')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Centipede (Lvl 5)</div>')"
                    onmouseleave="hideTooltip()">
                 <img src="images/centipedemonster.jpeg" alt="Centipede" style="height: 100px; object-fit: cover; object-position: center;">
@@ -3319,10 +3290,8 @@ button.primary:hover { background: var(--accent-hover); }
                    onmouseleave="hideTooltip()">
                 <img src="images/goblinmonster.jpeg" alt="Goblin" style="height: 100px; object-fit: cover; object-position: center;">
               </div>
-            
-            </div>
-            
-            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+                  </div>
+                  <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubCave_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
@@ -3330,18 +3299,14 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubMadmaxCastle" class="hub-screen">
             <h2 style="color:#ff4d4d;">Madmax Castle</h2>
             <div style="margin-top:8px; color:#efe3cf;">The lair of the beast. Tread carefully.</div>
-            
-            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
-              
-              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Madmax')" 
+                  <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+                      <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Madmax')" 
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:red;\'>Madmax (Lvl 69)</div>')"
                    onmouseleave="hideTooltip()">
                 <img src="images/madmaxmonster.jpeg" alt="Madmax" style="height: 120px; border: 2px solid red; border-radius: 8px;">
               </div>
-            
-            </div>
-            
-            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+                  </div>
+                  <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubMadmaxCastle_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
@@ -3350,10 +3315,8 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubNormalForest" class="hub-screen">
             <h2>The Forest</h2>
             <div style="margin-top:8px; color:#efe3cf;">A dense forest filled with strange creatures.</div>
-            
-            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
-              
-              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Platypus')"
+                  <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+                      <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Platypus')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Platypus (Lvl 5)</div>')"
                    onmouseleave="hideTooltip()">
                 <img src="images/platypusmonster.jpeg" alt="Platypus" style="height: 100px; object-fit: cover; object-position: center;">
@@ -3369,10 +3332,8 @@ button.primary:hover { background: var(--accent-hover); }
                    onmouseleave="hideTooltip()">
                 <img src="images/wolfmonster.png" alt="Wolf" style="height: 100px; object-fit: cover; border-radius: 8px;">
               </div>
-            
-            </div>
-            
-            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+                  </div>
+                  <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubNormalForest_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
@@ -3380,10 +3341,8 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubDarkForest" class="hub-screen">
             <h2>The Dark Forest</h2>
             <div style="margin-top:8px; color:#efe3cf;">The trees seem to watch you as you walk...</div>
-            
-            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
-              
-              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Crazy Owl')"
+                  <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+                      <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Crazy Owl')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Crazy Owl (Lvl 10)</div>')"
                    onmouseleave="hideTooltip()">
                 <img src="images/crazyowlmonster.jpeg" alt="Crazy Owl" style="height: 100px; object-fit: cover; border-radius: 8px;">
@@ -3394,11 +3353,8 @@ button.primary:hover { background: var(--accent-hover); }
                    onmouseleave="hideTooltip()">
                 <img src="images/witchmonster.jpeg" alt="The Witch" style="height: 100px; object-fit: cover; border-radius: 8px;">
               </div>
-            
-            
-            </div>
-            
-            <div class="action-buttons" style="margin-top: 24px;">
+                        </div>
+                  <div class="action-buttons" style="margin-top: 24px;">
               <button id="hubDarkForest_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
@@ -3406,8 +3362,7 @@ button.primary:hover { background: var(--accent-hover); }
             <h2>Enchanting Altar</h2>
             <div style="position: relative; width: 300px; height: 250px; margin: 20px auto;">
                 <img src="images/enchantingtable.png" alt="Enchanting Table" style="width: 100%; height: 100%; object-fit: contain; margin-top: 40px;">
-                
-                <div id="enchant-slot-container">
+                          <div id="enchant-slot-container">
                     <div id="enchantSlot" class="inv-slot" style="width: 70px; height: 70px; background: rgba(0,0,0,0.5); border: 2px dashed var(--gold);" onclick="returnEnchantItem()">
                         <!-- Item appears here -->
                     </div>
@@ -3426,38 +3381,30 @@ button.primary:hover { background: var(--accent-hover); }
 
           <div id="hubShop" class="hub-screen">
             <h2>General Store</h2>
-            
-            <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 16px; width: 100%;">
-            
-              <div style="background:rgba(0,0,0,0.1); border-radius:6px; padding: 10px 15px; display: flex; flex-direction: column;">
+                  <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 16px; width: 100%;">
+                    <div style="background:rgba(0,0,0,0.1); border-radius:6px; padding: 10px 15px; display: flex; flex-direction: column;">
                 <h3 style="margin:0 0 10px 0; color: var(--gold); text-align: center;">Items for Sale</h3>
-                
-                <div class="inventory-grid-wrap" id="shopGridWrap">
+                          <div class="inventory-grid-wrap" id="shopGridWrap">
                   <div class="inventory-grid" id="shopGrid">
                     </div>
                 </div>
               </div>
-              
-            </div>
-            
-            <div class="action-buttons" style="margin-top:20px;">
+                    </div>
+                  <div class="action-buttons" style="margin-top:20px;">
               <button id="hubShop_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="backToActions()">Return</button>
             </div>
           </div>
-          
-          <div id="hubBank" class="hub-screen">
+              <div id="hubBank" class="hub-screen">
             <div id="bankContainer" style="width: 100%;">
               <div class="bank-content-wrapper"> 
                 <div id="bankGoldPanel">
                   <div style="display: flex; align-items: center; gap: 5px;">
                     <input type="number" id="bankGoldInput" min="0" style="width: 70px;">
-                    
-                    <button id="bankDepositGoldBtn" class="primary" style="padding: 8px 12px;">Deposit</button>
+                                  <button id="bankDepositGoldBtn" class="primary" style="padding: 8px 12px;">Deposit</button>
                     <button id="bankDepositAllGoldBtn" class="primary" style="padding: 4px 8px; display:flex; align-items:center;" onmouseenter="showTooltip(event, 'Deposit All Gold')" onmouseleave="hideTooltip()">
                         <img src="images/goldpouch.png" style="width: 24px; height: 24px;">
                     </button>
-                    
-                    <div style="width: 1px; height: 25px; background: #555; margin: 0 5px;"></div>
+                                  <div style="width: 1px; height: 25px; background: #555; margin: 0 5px;"></div>
 
                     <button id="bankWithdrawGoldBtn" class="primary" style="padding: 8px 12px;">Withdraw</button>
                     <button id="bankWithdrawAllGoldBtn" class="primary" style="padding: 4px 8px; display:flex; align-items:center; background: #900;" onmouseenter="showTooltip(event, 'Withdraw All Gold')" onmouseleave="hideTooltip()">
@@ -3468,10 +3415,8 @@ button.primary:hover { background: var(--accent-hover); }
 
                 <div id="bankPanel">
                   <h3></h3>
-                  
-                  <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--accent); margin-bottom: 5px; padding-bottom: 5px;">
-                    
-                    <div class="bank-tabs" id="bankTabsContainer" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+                              <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--accent); margin-bottom: 5px; padding-bottom: 5px;">
+                                  <div class="bank-tabs" id="bankTabsContainer" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 5px; margin-right: 5px;">
@@ -3495,16 +3440,13 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubFarm" class="hub-screen">
             <h2>The Farm</h2>
             <div style="margin-top:8px; color:#efe3cf;">A peaceful farm, mostly.</div>
-            
-            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
-              
-              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Chicken')"
+                  <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+                      <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Chicken')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Chicken (Lvl 1)</div>')"
                    onmouseleave="hideTooltip()">
                 <img src="images/chickenmonster.jpeg" alt="Chicken" style="height: 100px;">
               </div>
-              
-              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Cow')"
+                      <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Cow')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Cow (Lvl 2)</div>')"
                    onmouseleave="hideTooltip()">
                 <img src="images/cowmonster.png" alt="Cow" style="height: 100px;">
@@ -3515,10 +3457,8 @@ button.primary:hover { background: var(--accent-hover); }
                    onmouseleave="hideTooltip()">
                 <img src="images/dummytarget.png" alt="Dummy Target" style="height: 100px; object-fit: contain;">
               </div>
-            
-            </div>
-            
-            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+                  </div>
+                  <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubFarm_ReturnBtn" class="primary" style="background:#666;" onclick="openCombatHub()">Return</button>
             </div>
           </div>
@@ -3529,56 +3469,39 @@ button.primary:hover { background: var(--accent-hover); }
             <h2>Fishing Areas</h2>
             <div style="margin-top:8px; color:#efe3cf;">Choose an area to start fishing.</div>
             <div class="action-buttons" style="margin-top:14px; display:flex; flex-direction:column; align-items:flex-start;">
-              
-              <button id="oceanAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;">
+                      <button id="oceanAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0;">
                 <img src="images/oceanbutton.png" alt="Ocean Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
               </button>
-              
-              <button id="riverAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; margin-top: 10px;">
+                      <button id="riverAreaBtn" class="primary" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; margin-top: 10px;">
                 <img src="images/riverbutton.jpeg" alt="River Area" style="width: 80px; height: 80px; border-radius: 4px; object-fit: contain;">
               </button>
-              
-              <button id="hubFishingAreas_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
+                      <button id="hubFishingAreas_ReturnBtn" class="primary" style="background:#666; margin-top: 30px;">Return</button>
             </div>
           </div>
-          
-          <div id="hubOcean" class="hub-screen">
+              <div id="hubOcean" class="hub-screen">
             <h2>The Ocean</h2>
             <div style="margin-top:8px; color:#efe3cf;">The vast, open ocean.</div>
-            
-            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
-              
-              <div id="fishHerringBtn" style="text-align:center; cursor:pointer;" onclick="openFishHerring()">
+                  <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+                      <div id="fishHerringBtn" style="text-align:center; cursor:pointer;" onclick="openFishHerring()">
                 <img src="images/herring.png" alt="Herring" style="height: 100px;">
-                
-              </div>
-            
-            </div>
-            
-            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+                        </div>
+                  </div>
+                  <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubOcean_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
-          
-          <div id="hubRiver" class="hub-screen">
+              <div id="hubRiver" class="hub-screen">
             <h2>The River</h2>
             <div style="margin-top:8px; color:#efe3cf;">A fast-flowing river.</div>
-            
-            <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
-              
-              <div id="fishTroutBtn" style="text-align:center; cursor:pointer;" onclick="openFishTrout()">
+                  <div style="margin-top:20px; display:flex; justify-content: center; align-items: flex-end; gap: 40px; flex-wrap: wrap;">
+                      <div id="fishTroutBtn" style="text-align:center; cursor:pointer;" onclick="openFishTrout()">
                 <img src="images/trout.png" alt="Trout" style="height: 100px;">
-              
-              </div>
-              
-              <div id="fishSalmonBtn" style="text-align:center; cursor:pointer;" onclick="openFishSalmon()">
+                      </div>
+                      <div id="fishSalmonBtn" style="text-align:center; cursor:pointer;" onclick="openFishSalmon()">
                 <img src="images/salmon.png" alt="Salmon" style="height: 100px;">
-                
-              </div>
-            
-            </div>
-            
-            <div class="action-buttons" style="margin-top: 14px; width: 100%;">
+                        </div>
+                  </div>
+                  <div class="action-buttons" style="margin-top: 14px; width: 100%;">
               <button id="hubRiver_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
@@ -3593,8 +3516,7 @@ button.primary:hover { background: var(--accent-hover); }
                     Item changes in: <span id="lotteryTimer" style="font-family: monospace; font-weight: bold; color: #fff;">00h 00m 00s</span>
                 </div>
             </div>
-            
-            <div style="margin-top: 30px; margin-bottom: 30px;">
+                  <div style="margin-top: 30px; margin-bottom: 30px;">
                 <div class="lottery-window">
                     <div class="lottery-pointer"></div>
                     <div id="lotteryReel" class="lottery-reel"></div>
@@ -3612,8 +3534,7 @@ button.primary:hover { background: var(--accent-hover); }
 
           <div id="hubActiveCombat" class="hub-screen">
             <div id="combat-main-container">
-              
-              <div id="combat-enemy-area">
+                      <div id="combat-enemy-area">
                 <img id="combat-enemy-img" src="" alt="Enemy">
                 <div id="combat-enemy-name" style="margin: 6px 0 8px; min-height: 18px; text-align: center; font-weight: bold; color: var(--gold);"></div>
                 <div id="combat-enemy-hp-bar">
@@ -3621,8 +3542,7 @@ button.primary:hover { background: var(--accent-hover); }
                   <div id="combat-enemy-hp-text">10 / 10 HP</div>
                 </div>
               </div>
-              
-              <div id="combat-player-area">
+                      <div id="combat-player-area">
                 <div id="combat-action-panel">
                   <p style="margin: 0 0 10px 0; font-weight: bold;">Combat Style:</p>
                   <div id="combat-styles">
@@ -3630,8 +3550,7 @@ button.primary:hover { background: var(--accent-hover); }
                     <button id="style-strength" class="primary" onclick="setAttackStyle('strength')">Aggressive</button>
                     <button id="style-defence" class="primary" onclick="setAttackStyle('defence')">Defensive</button>
                   </div>
-                  
-                  <div id="combat-main-actions">
+                              <div id="combat-main-actions">
                     <button id="combat-fight-btn" class="primary" style="background:#900;" onclick="beginCombat()">Fight</button>
                     <button id="combat-run-btn" class="primary" style="background:#080; display:none;" onclick="runFromCombat()">Run</button>
                     <button id="combat-return-btn" class="primary" style="background:#555;" onclick="returnToCombatArea()">Return</button>
@@ -3641,8 +3560,7 @@ button.primary:hover { background: var(--accent-hover); }
 
             </div>
           </div>
-          
-          </div> 
+              </div> 
       </div>
 
       <div class="sidebar" id="leaderboardPanel">
@@ -3662,10 +3580,8 @@ button.primary:hover { background: var(--accent-hover); }
         <div id="updatesContent">
           <div style="text-align:center; margin-top: 10px; color: #fff; opacity: 0.7;">Loading updates...</div>
         </div>
-        
-        <div style="height: 24px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-          
-          <a href="https://discord.gg/XMAB2e5Xd4" target="_blank" style="display: flex; align-items: center; height: 100%;">
+          <div style="height: 24px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+              <a href="https://discord.gg/XMAB2e5Xd4" target="_blank" style="display: flex; align-items: center; height: 100%;">
             <img src="images/discordbutton.png" alt="Join Discord" style="height: 24px; width: auto; border-radius: 4px; cursor: pointer;">
           </a>
 
@@ -3674,8 +3590,7 @@ button.primary:hover { background: var(--accent-hover); }
           </div>
 
         </div>
-        
-        </div>
+          </div>
 
     </div> 
     
@@ -3693,8 +3608,7 @@ button.primary:hover { background: var(--accent-hover); }
             <div class="stat-row"><span class="stat-label">Ranged Strength</span><span class="stat-value" id="stat-r-str" style="color:#44aa44;">0</span></div>
             <div class="stat-row"><span class="stat-label">Magic Damage</span><span class="stat-value" id="stat-mag-dmg" style="color:#4da6ff;">0</span></div>
           </div>
-          
-          <!-- Right Column: Defense -->
+              <!-- Right Column: Defense -->
           <div class="stats-column" style="border-left: 1px solid rgba(109, 69, 45, 0.5); padding-left: 10px;">
             <div class="stat-row"><span class="stat-label">Melee Defense</span><span class="stat-value" id="stat-m-def" style="color:#e38a42;">0</span></div>
             <div class="stat-row"><span class="stat-label">Ranged Defense</span><span class="stat-value" id="stat-r-def" style="color:#aaffaa;">0</span></div>
@@ -3711,8 +3625,7 @@ button.primary:hover { background: var(--accent-hover); }
       <div class="chat-panel" id="chatPanel">
         <div id="chatMessages">
           </div>
-        
-        <div id="chatInputContainer">
+          <div id="chatInputContainer">
           <div id="chatInputWrap">
             <div id="chatCommandSuggestions"></div>
             <input id="chatInput" type="text" placeholder="Type message...">
@@ -3858,7 +3771,7 @@ button.primary:hover { background: var(--accent-hover); }
             <div id="inspectAchievementsGrid" style="max-height:220px; overflow-y:auto; display:grid; grid-template-columns:1fr; gap:8px;"></div>
             <div style="margin-top:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#efe3cf; font-size:12px;">
                 <div style="font-weight:bold; color:var(--gold); margin-bottom:8px;">Monster Kills</div>
-                <div id="inspectAchievementKillsGrid" style="max-height:120px; overflow-y:auto;"></div>
+                <div id="inspectAchievementKillsGrid" style="max-height:120px; overflow-y:auto; padding-right:12px; box-sizing:border-box; scrollbar-gutter:stable;"></div>
             </div>
         </div>
         <div class="game-modal-buttons">
@@ -4034,9 +3947,7 @@ const game = {
 })(),
 lockHeartbeat: null,    
 isSessionActive: false, 
-isDragging: false,      
-  enchantSlot: null,      
-  enchantingActive: false,
+isDragging: false,  enchantSlot: null,  enchantingActive: false,
   isForceDisconnecting: false,
   lastForceDisconnectAtHandled: 0,
   isDirty: false
@@ -6572,7 +6483,6 @@ const QUEST_LINES = {
         reqSkill: { skill: 'attack', level: 10 },
         rewards: { gold: 1000 }
       },
-      
       // --- River Bounty (Moved Up) ---
       {
         id: "tut_2_fishing",
@@ -6738,7 +6648,6 @@ function getPlayerCombatStats() {
     if (item && ITEM_STATS[item.name]) {
       const def = ITEM_STATS[item.name];
       const enchantLvl = item.enchantLevel || 0;
-      
       // Calculate two different types of scaling
       const standardBonus = enchantLvl;
       const penalizedBonus = Math.floor(enchantLvl / 2);
@@ -6746,13 +6655,11 @@ function getPlayerCombatStats() {
       stats.meleeAtk += def.meleeAtk || 0;
       stats.rangedAtk += def.rangedAtk || 0;
       stats.magicAtk += def.magicAtk || 0;
-      
       // Offense and HP always use standard scaling
       stats.meleeStr += (def.meleeStr || 0) + (def.meleeStr ? standardBonus : 0);
       stats.rangedStr += (def.rangedStr || 0) + (def.rangedStr ? standardBonus : 0);
       stats.magicDmg += (def.magicDmg || 0) + (def.magicDmg ? standardBonus : 0);
       stats.maxHPBonus += (def.maxHPBonus || 0) + (def.maxHPBonus ? standardBonus : 0);
-      
       // DEFENSE SCALING BASED ON ARMOR TYPE
       if (def.armorType === 'melee') {
           stats.meleeDef += (def.meleeDef || 0) + standardBonus;
@@ -6972,8 +6879,7 @@ function renderEquipment() {
         const eLvl = item.enchantLevel || 0;
         const def = ITEM_STATS[item.name];
         let html = `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name} ${eLvl > 0 ? `+${eLvl}` : ''}</div>`;
-        
-        if (def) {
+          if (def) {
             // Standard Bonus: +1 per upgrade level
             const stdB = eLvl; 
             // Penalized Bonus: +1 every 2 upgrades
@@ -6985,8 +6891,7 @@ function renderEquipment() {
             if (def.meleeStr) html += `<div style="color:#ff4d4d;">+${def.meleeStr + stdB} Melee Strength</div>`;
             if (def.rangedStr) html += `<div style="color:#44aa44;">+${def.rangedStr + stdB} Ranged Strength</div>`;
             if (def.magicDmg) html += `<div style="color:#4da6ff;">+${def.magicDmg + stdB} Magic Damage</div>`;
-            
-            // Logic to decide which stats are penalized based on the armor type
+                  // Logic to decide which stats are penalized based on the armor type
             let mBonus = stdB, rBonus = stdB, magBonus = stdB;
             if (def.armorType === 'melee') {
                 magBonus = penB; // Melee armor is bad at Magic Def
@@ -7003,8 +6908,7 @@ function renderEquipment() {
             if (def.speed) html += `<div style="color:var(--gold);">Speed: ${(def.speed / 1000).toFixed(1)}s</div>`;
         }
         html += `<div style="color:#ffaaaa; margin-top:5px; font-size:11px;">Click to unequip</div>`;
-        
-        mainSlotEl.onclick = () => unequipItem(slotType);
+          mainSlotEl.onclick = () => unequipItem(slotType);
         if (slotType === 'pet' && game.equipment.pet && typeof showPetTooltip === 'function') {
             mainSlotEl.onmouseenter = (e) => showPetTooltip(e, game.equipment.pet.id);
         } else {
@@ -7278,11 +7182,9 @@ function unequipAutoEat() {
     if (canReceiveItem(game.autoEatSlot.name)) {
         // 1. Add to inventory
         addItem(game.autoEatSlot.name, game.autoEatSlot.qty);
-        
-        // 2. Clear the slot (This was being skipped before!)
+          // 2. Clear the slot (This was being skipped before!)
         game.autoEatSlot = null;
-        
-        // 3. Update UI & Save
+          // 3. Update UI & Save
         renderAutoEatSlot();
         renderInventoryGrid();
         hideTooltip();
@@ -7510,7 +7412,6 @@ function renderInventoryGrid(){
 
       img.src = `images/${getItemRenderImageName(item, imgName)}.png`;
       img.alt = item.name;
-      
       const eLvl = item.enchantLevel || 0;
       if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
           slot.classList.add('legendary-glow');
@@ -7530,12 +7431,10 @@ function renderInventoryGrid(){
       }
       img.onerror = function(){ this.style.opacity='0.08'; this.style.filter='grayscale(90%)'; };
       slot.appendChild(img);
-      
       const amt = document.createElement('div');
       amt.className = 'inv-amount';
       amt.innerText = formatAmount(item.qty); 
       slot.appendChild(amt);
-      
       const itemName = item.name;
       const stats = ITEM_STATS[itemName];
       let itemStats = '';
@@ -7552,8 +7451,7 @@ function renderInventoryGrid(){
         if (stats.meleeStr) itemStats += `<div style="color:#ff4d4d;">+${stats.meleeStr + stdB} Melee Strength</div>`;
         if (stats.rangedStr) itemStats += `<div style="color:#44aa44;">+${stats.rangedStr + stdB} Ranged Strength</div>`;
         if (stats.magicDmg) itemStats += `<div style="color:#4da6ff;">+${stats.magicDmg + stdB} Magic Damage</div>`;
-        
-        // Define which bonus to use per stat based on armor type
+          // Define which bonus to use per stat based on armor type
         let mBonus = stdB, rBonus = stdB, magBonus = stdB;
         if (stats.armorType === 'melee') magBonus = penB;
         else if (stats.armorType === 'ranged' || stats.armorType === 'magic') mBonus = penB;
@@ -7565,14 +7463,11 @@ function renderInventoryGrid(){
         if (stats.maxHPBonus) itemStats += `<div style="color:#ffaaaa;">+${stats.maxHPBonus + stdB} Max HP</div>`;
         // --- ADDED SPEED DISPLAY ---
         if (stats.speed) itemStats += `<div style="color:var(--gold);">Speed: ${(stats.speed / 1000).toFixed(1)}s</div>`;
-        
-        clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Click to equip</div>';
+          clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Click to equip</div>';
       } else if (getFoodHealAmount(itemName) > 0) {
         // Consumables logic
         const healAmt = getFoodHealAmount(itemName);
-        
-        
-        itemStats = `<div style="color:#aaffaa;">+${healAmt} HP</div>`;
+            itemStats = `<div style="color:#aaffaa;">+${healAmt} HP</div>`;
         clickAction = '<div style="color:#aaffaa; margin-top: 5px; font-size:11px;">Click to eat</div>';
       } else if (itemName === 'Vitality Potion') {
         itemStats = `<div style="color:#aaffaa;">+10 HP</div>`;
@@ -7600,7 +7495,6 @@ function renderInventoryGrid(){
 
       slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
       slot.onmouseleave = () => hideTooltip();
-      
       const itemQty = item.qty; 
       const slotIndex = i; 
       slot.onclick = (event) => handleItemClick(event, itemName, itemQty, slotIndex);
@@ -7769,8 +7663,7 @@ async function handleSellItemClick(slotIndex) {
         hideTooltip(); 
         renderInventoryGrid();
         if (document.getElementById('hubBank').classList.contains('active')) renderBankGrid();
-        
-        await showGameAlert("Sale Complete", `You received ${totalGold.toLocaleString()} Gold.`);
+          await showGameAlert("Sale Complete", `You received ${totalGold.toLocaleString()} Gold.`);
         game.isDirty = true;
     } else {
         await showGameAlert("Error", "Something went wrong, the sale did not complete.");
@@ -7803,7 +7696,7 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     '1tapper': 'weapon', 'Gold Ring': 'ring_choice', 'Diamond Ring': 'ring_choice', 'Emerald Ring': 'ring_choice',
     'Ruby Ring': 'ring_choice', 'Sapphire Ring': 'ring_choice', 'Topaz Ring': 'ring_choice', 'Archery Bracer': 'ring_choice',
     'Diamond Necklace': 'necklace', 'Emerald Necklace': 'necklace', 'Ruby Necklace': 'necklace',
-    'Sapphire Necklace': 'necklace', 'Topaz Necklace': 'necklace',
+    'Sapphire Necklace': 'necklace', 'Topaz Necklace': 'necklace', 'Wolf Necklace': 'necklace',
     'Silver Fangs of the Fallen Monarch': 'weapon', 'Iron Battleaxe': 'weapon', 'Iron Shield': 'shield',
     'Gold Helmet': 'helmet', 'Gold Chestplate': 'chest', 'Gold Platelegs': 'legs', 'Gold Boots': 'boots', 'Gold Shield': 'shield',
   };
@@ -8457,8 +8350,7 @@ function renderSpellsPanel() {
         const isLocked = magicLvl < spell.level;
         const isActive = game.autocastSpell === spell.name;
         const iconWrapper = document.createElement('button');
-        
-        iconWrapper.id = `spell-btn-${spell.name.replace(/\s+/g, '')}`;
+          iconWrapper.id = `spell-btn-${spell.name.replace(/\s+/g, '')}`;
         iconWrapper.className = `primary ${isLocked ? 'locked-item' : ''}`;
         iconWrapper.style.cssText = `
             width: 50px; 
@@ -8506,8 +8398,7 @@ function renderSpellsPanel() {
                 showAutocastContextMenu(e, spell.name);
             };
         }
-        
-        // FIX: Tooltip handlers moved OUTSIDE the isLocked check
+          // FIX: Tooltip handlers moved OUTSIDE the isLocked check
         iconWrapper.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
         iconWrapper.onmouseleave = hideTooltip;
 
@@ -8535,8 +8426,7 @@ function showAutocastContextMenu(event, spellName) {
     if (menuContent) {
         menu.innerHTML = menuContent;
         menu.style.display = 'block';
-        
-        const rect = document.body.getBoundingClientRect();
+          const rect = document.body.getBoundingClientRect();
         // FIX: Subtract 145px to show further left of the cursor
         menu.style.left = (event.clientX - rect.left - 145) + 'px';
         menu.style.top = (event.clientY - rect.top + 5) + 'px';
@@ -8687,7 +8577,6 @@ function updateSkillUI(){
       <div style="font-size: 14px; margin-bottom: 6px;">Level: <span style="font-weight: bold;">${data.level}</span></div>
       <div>${xpText}</div>
       ${skillBonusHtml}
-      
       <div style="width: 100%; height: 8px; background: #555; border-radius: 4px; margin-top: 8px; border: 1px solid #333;">
         <div style="height: 100%; width: ${progressPercent}%; background: ${barColor}; border-radius: 4px; transition: width 0.2s;"></div>
       </div>
@@ -8818,11 +8707,9 @@ hideTooltip();
         // Clear timers so they don't fire later if we clicked early
         if (game.levelUpTimeout) clearTimeout(game.levelUpTimeout);
         if (game.levelUpFadeTimeout) clearTimeout(game.levelUpFadeTimeout);
-        
-        // Start Fade Out
+          // Start Fade Out
         overlay.classList.remove('visible');
-        
-        // Remove from display after transition completes (0.5s)
+          // Remove from display after transition completes (0.5s)
         game.levelUpFadeTimeout = setTimeout(() => {
             overlay.style.display = 'none';
             overlay.onclick = null; // Clean up listener
@@ -9019,8 +8906,7 @@ function miningCooldownLoop(timestamp, startTime, duration, progressTextId, next
     // --- NEW: Calculate "overdue" time ---
     const overdueTime = -remainingMs; // (elapsed - duration)
     const newActionStartTime = Date.now() - overdueTime;
-            
-    // --- THIS IS THE FIX: Immediately call the next loop ---
+          // --- THIS IS THE FIX: Immediately call the next loop ---
     return nextLoopFunction(Date.now(), newActionStartTime);
     
   } else {
@@ -9087,8 +8973,7 @@ function miningLoop(timestamp, startTime) {
     // --- NEW: Calculate "overdue" time ---
     const overdueTime = elapsed - MINE_TIME_MS;
     const newCooldownStartTime = Date.now() - overdueTime;
-            
-    // --- THIS IS THE FIX: Immediately call the cooldown loop ---
+          // --- THIS IS THE FIX: Immediately call the cooldown loop ---
     return miningCooldownLoop(Date.now(), newCooldownStartTime, MINE_COOLDOWN_COPPER_MS, 'mineProgressText', miningLoop);
     
   } else {
@@ -11199,14 +11084,11 @@ async function silverBarLoop(ts, startTime) {
       removeItem('Silver Ore', SILVER_BAR_ORE_COST);
       removeItem('Coal Ore', SILVER_BAR_COAL_COST);
       addItem('Silver Bar', 1);
-      
       // AWARD XP
       addXP('blacksmith', SILVER_BAR_XP);
-      
       // VISUAL FEEDBACK (Since addXP hides blacksmith popups)
       showItemPopup(`+${SILVER_BAR_XP} Blacksmith XP`, 'smithProgress', 0);
       showItemPopup(`+1 Silver Bar`, 'smithProgress', 450);
-      
       document.getElementById('smithProgress').style.width = '0%';
 
       // Check for next loop
@@ -11295,14 +11177,11 @@ async function goldBarLoop(ts, startTime) {
       removeItem('Gold Ore', GOLD_BAR_ORE_COST);
       removeItem('Coal Ore', GOLD_BAR_COAL_COST);
       addItem('Gold Bar', 1);
-      
       // AWARD XP
       addXP('blacksmith', GOLD_BAR_XP);
-      
       // VISUAL FEEDBACK
       showItemPopup(`+${GOLD_BAR_XP} Blacksmith XP`, 'smithProgress', 0);
       showItemPopup(`+1 Gold Bar`, 'smithProgress', 450);
-      
       document.getElementById('smithProgress').style.width = '0%';
 
       // Check for next loop
@@ -15021,12 +14900,10 @@ function renderElementalForgeItems() {
       const btn = document.getElementById(id);
       if(btn) {
         const nameHtml = `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${name}</div>`;
-        
-        // Set color: Red if locked, White if unlocked
+          // Set color: Red if locked, White if unlocked
         const reqColor = locked ? '#ff8888' : '#fff';
         const levelHtml = `<div style="color:${reqColor};">Requires Stone Forging Lvl: ${levelReq}</div>`;
-        
-        if (locked) {
+          if (locked) {
           btn.onclick = null;
           // Locked: Show Name + Red Level Requirement
           btn.onmouseenter = (e) => showTooltip(e, nameHtml + levelHtml);
@@ -15426,8 +15303,7 @@ function updatePetTimers() {
                 const elapsed = now - (pet.lastCalcTime || now);
                 const remaining = Math.max(0, PET_HP_DECAY_MS - elapsed);
                 const timeStr = formatPetTime(remaining);
-                
-                // Color it red if less than 1 hour remains
+                          // Color it red if less than 1 hour remains
                 const color = remaining < 3600000 ? "#ffaaaa" : "#ccc";
                 el.innerHTML = `Hunger in: <span style='color:${color}'>${timeStr}</span>`;
             }
@@ -15451,15 +15327,13 @@ function renderPetYard(tab) {
             html += `<div style="text-align:center; color:#888; padding: 20px;">You have no pets yet. Visit the Hatchery!</div>`;
         } else {
             html += `<div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">`;
-            
-            game.pets.forEach((pet, index) => {
+                  game.pets.forEach((pet, index) => {
                 const config = PET_DATA[pet.type];
                 const isEquipped = game.equipment.pet && game.equipment.pet.id === pet.id;
                 const hpPercent = (pet.hp / PET_MAX_HP) * 100;
                 const hpColor = pet.hp <= 0 ? '#555' : (pet.hp <= 3 ? '#d22' : '#44aa44');
                 const status = pet.hp <= 0 ? '<div style="color:#ff4d4d; font-size:10px;">(SICK)</div>' : '';
-                
-                // Bonus Text
+                          // Bonus Text
                 let bonusText = "No bonus";
                 const petBonusDef = PET_DATA[pet.type];
                 if (petBonusDef && petBonusDef.bonus) {
@@ -15475,15 +15349,12 @@ function renderPetYard(tab) {
                     onmouseleave="hideTooltip()"
                 >
                     <div style="font-weight:bold; color:var(--gold); font-size:12px; margin-bottom:2px;">${pet.type} Lvl ${pet.level}</div>
-                    
-                    <img src="images/${config.img}.png" style="width:48px; height:48px; object-fit:contain; opacity:${pet.hp <= 0 ? '0.5' : '1'};">
+                                  <img src="images/${config.img}.png" style="width:48px; height:48px; object-fit:contain; opacity:${pet.hp <= 0 ? '0.5' : '1'};">
                     ${status}
-                    
-                    <div style="background:#333; width:100%; height:4px; border-radius:2px; margin:4px 0;">
+                                  <div style="background:#333; width:100%; height:4px; border-radius:2px; margin:4px 0;">
                         <div style="background:${hpColor}; width:${hpPercent}%; height:100%; border-radius:2px;"></div>
                     </div>
-                    
-                    <div style="font-size:10px; color:#aaa; margin-top:-2px;">${pet.hp}/${PET_MAX_HP} HP</div>
+                                  <div style="font-size:10px; color:#aaa; margin-top:-2px;">${pet.hp}/${PET_MAX_HP} HP</div>
                     <div style="font-size:10px; color:#aaffaa; margin:2px 0;">${bonusText}</div>
                     <div style="font-size:9px; color:${secretBonusColor}; margin:1px 0 3px 0;">${secretBonusText}</div>
 
@@ -15506,8 +15377,7 @@ function renderPetYard(tab) {
         const isActive = game.incubator.active;
         const elapsed = isActive ? now - game.incubator.startTime : 0;
         const isReady = isActive && elapsed >= PET_HATCH_TIME_MS;
-        
-        let displayImg = 'incubator_empty.png';
+          let displayImg = 'incubator_empty.png';
         let overlayEggImg = '';
         if (isActive) {
             if (game.incubator.eggType === 'Spider') overlayEggImg = 'petegg1.png';
@@ -15540,17 +15410,14 @@ function renderPetYard(tab) {
                 // Eggs found: Create a button for each type
                 timerHtml = `<div style="color:#efe3cf; margin-bottom:10px;">Select an egg to incubate:</div>`;
                 buttonHtml = `<div style="display:flex; flex-direction:column; gap:5px; align-items:center;">`;
-                
-                availableEggs.forEach(eggName => {
+                          availableEggs.forEach(eggName => {
                     // Passes the specific Item Name to the start function
                     buttonHtml += `<button class="primary" onclick="startIncubation('${eggName}')">Incubate ${eggName}</button>`;
                 });
-                
-                buttonHtml += `</div>`;
+                          buttonHtml += `</div>`;
             }
             // +++ END NEW +++
-            
-        } else if (isReady) {
+              } else if (isReady) {
             buttonHtml = `<button class="primary" style="background:#44aa44; box-shadow:0 0 10px #44aa44;" onclick="hatchEgg()">HATCH!</button>`;
             timerHtml = `<div style="color:#aaffaa; font-weight:bold; margin-bottom:10px;">Ready to Hatch!</div>`;
             imgClass = 'shake-animation'; // +++ NEW: Add shake class +++
@@ -15572,8 +15439,7 @@ function renderPetYard(tab) {
                 ${buttonHtml}
             </div>
         `;
-        
-        // Auto-refresh UI if incubating
+          // Auto-refresh UI if incubating
         if(isActive && !isReady) {
             setTimeout(() => {
                 if(document.getElementById('hubPetYard').classList.contains('active')) renderPetYard('hatchery');
@@ -15728,14 +15594,11 @@ const sellPrice = pet.level >= 50 ? basePrice * 5 : pet.level >= 25 ? basePrice 
             game.equipment.pet = null;
             refreshEquippedPetBonusesUI();
         }
-        
-        // 2. Remove from array
+          // 2. Remove from array
         game.pets.splice(petIndex, 1);
-        
-        // 3. Add Gold
+          // 3. Add Gold
         addGold(sellPrice);
-        
-        // 4. Save & Update
+          // 4. Save & Update
         game.isDirty = true;
         renderPetYard('pets');
         await showGameAlert("Pet Sold", `You sold your pet for ${sellPrice} Gold.`);
@@ -15771,8 +15634,7 @@ async function handleCellarClick() {
                game.farm.buildings.cellar = true;
                game.isDirty = true;
                await showGameAlert("Success", "You now have access to the Cellar!");
-               
-               // Open after purchase
+                        // Open after purchase
                stopMining();
                stopBlacksmithing();
                stopCombat();
@@ -15823,8 +15685,7 @@ async function handleChickenCoopClick() {
                game.farm.buildings.coop = true;
                game.isDirty = true;
                await showGameAlert("Success", "You purchased the Chicken Coop!");
-               
-               // Open after purchase
+                        // Open after purchase
                showMainScreen('hubChickenCoop');
                updateCoopUI(); 
                renderFarmUpgradePanels(); 
@@ -15883,8 +15744,7 @@ function feedChicken(index) {
 
     if (consumeSiloFood('Corn', 3)) {
         c.hp = Math.min(CHICKEN_MAX_HP, c.hp + 1); // Heal 1 HP
-        
-        // Visual feedback
+          // Visual feedback
         playGlobalSound('sounds/soundeffects/inventorysound.mp3'); // Using generic eat sound
         updateCoopUI();
         renderFarmUpgradePanels();
@@ -15905,8 +15765,7 @@ function collectEggs() {
         if (remainingCap > 0) {
             const available = Math.floor(c.storedEggs);
             const take = Math.min(available, remainingCap);
-            
-            if (take > 0) {
+                  if (take > 0) {
                 c.storedEggs -= take; // Remove taken eggs
                 remainingCap -= take;
                 eggsToCollect += take;
@@ -15958,19 +15817,16 @@ function updateCoopUI() {
         // Calculate visuals
         const hpPercent = (c.hp / CHICKEN_MAX_HP) * 100;
         const hpColor = c.hp < 5 ? "#d22" : "#44aa44";
-        
-        const div = document.createElement('div');
+          const div = document.createElement('div');
         div.className = 'chicken-slot';
         div.innerHTML = `
             <div style="background: #333; width: 80px; height: 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid #000;">
                 <div style="width: ${hpPercent}%; height: 100%; background: ${hpColor}; border-radius: 4px;"></div>
             </div>
-            
-            <img src="images/personalchicken.png" class="chicken-img-active"
+                  <img src="images/personalchicken.png" class="chicken-img-active"
                  onmouseenter="showChickenTooltip(event, ${index})" 
                  onmouseleave="hideTooltip()">
-            
-            <button class="primary feed-btn" onclick="feedChicken(${index})" 
+                  <button class="primary feed-btn" onclick="feedChicken(${index})" 
                     onmouseenter="showTooltip(event, 'Feed 3 Corn')" onmouseleave="hideTooltip()">
                 Feed
             </button>
@@ -15983,8 +15839,7 @@ function updateCoopUI() {
         const div = document.createElement('div');
         div.className = 'chicken-slot';
         div.style.borderColor = "#444"; // Dimmer border to indicate inactive
-        
-        div.innerHTML = `
+          div.innerHTML = `
             <div style="height: 8px; margin-bottom: 5px;"></div> <img src="images/personalchicken.png" class="chicken-img-locked">
             <button class="primary feed-btn" style="background:var(--gold); color:black; font-weight:bold;" onclick="buyChicken()">
                 Buy (${CHICKEN_COST}g)
@@ -16083,8 +15938,7 @@ async function handleBarnClick() {
                game.farm.buildings.barn = true;
                game.isDirty = true;
                await showGameAlert("Success", "You purchased the Barn!");
-               
-               // Open after purchase
+                        // Open after purchase
                showMainScreen('hubBarn');
                updateBarnUI();
                renderFarmUpgradePanels();
@@ -16184,8 +16038,7 @@ function collectMilk() {
     // 4. Process logic
     if (cowsToGather > 0 && removeItem('Empty Bucket', amountToGather)) {
         addItem('Bucket of Milk', amountToGather);
-        
-        // Award Farming XP
+          // Award Farming XP
         const xpGained = amountToGather * COLLECT_MILK_XP;
         addXP('farming', xpGained);
         showItemPopup(`+${xpGained} Farming XP`, 'collectMilkBtn', 0);
@@ -16205,8 +16058,7 @@ function collectMilk() {
         updateBarnUI();
         renderFarmUpgradePanels();
         game.isDirty = true;
-        
-        if (cowsToGather < milkReadyCount) {
+          if (cowsToGather < milkReadyCount) {
              showGameAlert("Partial Collection", `You collected ${amountToGather} milk, but ran out of buckets for the rest.`);
         }
     }
@@ -16238,7 +16090,6 @@ function renderGarden() {
 
     if (slotData) {
       const cropDef = CROPS[slotData.crop];
-      
       if (!slotData.watered) {
          if (imgEl) imgEl.style.display = 'none';
          poly.onmouseenter = (e) => showTooltip(e, `<div style="color:#ffaaaa;">Needs Water!</div>Click to water`);
@@ -16248,8 +16099,7 @@ function renderGarden() {
         if (elapsed >= FARM_STAGE_3_TIME) stageIndex = 2;
         else if (elapsed >= FARM_STAGE_2_TIME) stageIndex = 1;
         stageIndex = Math.min(stageIndex, cropDef.stages - 1);
-        
-        const imgName = cropDef.images[stageIndex];
+          const imgName = cropDef.images[stageIndex];
 
         if (!imgEl.hasAttribute('data-base-x')) {
             imgEl.setAttribute('data-base-x', imgEl.getAttribute('x'));
@@ -16271,8 +16121,7 @@ function renderGarden() {
 
         imgEl.style.display = 'block';
         imgEl.setAttribute('href', `images/${imgName}`); 
-        
-        if (elapsed >= FARM_HARVEST_TIME) {
+          if (elapsed >= FARM_HARVEST_TIME) {
            imgEl.style.filter = "drop-shadow(0 0 3px #44aa44)";
         } else {
            imgEl.style.filter = "none";
@@ -16307,7 +16156,6 @@ function renderCellar() {
 
       if (elapsed >= FARM_STAGE_3_TIME) stageIndex = 2;
       else if (elapsed >= FARM_STAGE_2_TIME) stageIndex = 1;
-      
       const imgName = shroomDef.images[stageIndex];
 
       // --- COORDINATE LOGIC ---
@@ -16338,7 +16186,6 @@ function renderCellar() {
       // --- VISUALS ---
       imgEl.style.display = 'block';
       imgEl.setAttribute('href', `images/${imgName}`); 
-      
       if (elapsed >= FARM_HARVEST_TIME) {
          imgEl.style.filter = "drop-shadow(0 0 5px #b300ff)"; 
       } else {
@@ -16526,14 +16373,12 @@ function showPlantingMenu(event, index) {
 
       if (seedCount >= opt.cost) {
          hasOptions = true;
-         
-         // +++ Level Requirement Logic +++
+            // +++ Level Requirement Logic +++
          const reqLevel = CROPS[opt.name] ? CROPS[opt.name].levelReq : 1;
          const playerLevel = game.farming.level;
          const isLocked = playerLevel < reqLevel;
          const reqColor = isLocked ? '#ff8888' : '#fff'; // Red if locked, White if valid
-         
-         // Disable click if locked
+            // Disable click if locked
          const clickAction = isLocked ? '' : `onclick="plantSeed(${index}, '${opt.name}', '${opt.seed}', ${opt.cost})"`;
          const styleAttr = isLocked ? 'cursor:not-allowed; opacity:0.6;' : '';
 
@@ -16667,7 +16512,6 @@ function processGardenGrowth(now) {
     if (slot && slot.watered) {
       const elapsed = now - slot.waterTime;
       let calculatedStage = 0;
-      
       // Map time to integer stage for save data consistency
       if (elapsed >= FARM_STAGE_3_TIME) calculatedStage = 2;
       else if (elapsed >= FARM_STAGE_2_TIME) calculatedStage = 1;
@@ -16696,8 +16540,7 @@ function showPetTooltip(e, petId) {
         const now = Date.now();
         const elapsed = now - (pet.lastCalcTime || now);
         const remaining = Math.max(0, PET_HP_DECAY_MS - elapsed);
-        
-        // Format time logic (replicated here for safety)
+          // Format time logic (replicated here for safety)
         const totalSec = Math.ceil(remaining / 1000);
         const h = Math.floor(totalSec / 3600);
         const m = Math.floor((totalSec % 3600) / 60);
@@ -16706,11 +16549,9 @@ function showPetTooltip(e, petId) {
 
         const xpNeeded = pet.level * 100;
         const xpPercent = Math.min(100, (pet.xp / xpNeeded) * 100);
-        
-        // HP Color Logic
+          // HP Color Logic
         const hpColor = pet.hp <= 0 ? '#ff4d4d' : (pet.hp <= 3 ? '#d22' : '#44aa44');
-        
-        // Bonus Text Logic
+          // Bonus Text Logic
         let bonusStr = "No bonus";
         const petDef = PET_DATA[pet.type];
         if (petDef && petDef.bonus) {
@@ -16718,8 +16559,7 @@ function showPetTooltip(e, petId) {
             bonusStr = formatPetBonusText(pet.type, b);
         }
         let secretBonusStr = getPetSecretBonusText(pet.type, pet.level);
-        
-        // Override bonus text if sick
+          // Override bonus text if sick
         if (pet.hp <= 0) {
             bonusStr = "<span style='color:#ff4d4d;'>Sick (Inactive)</span>";
             secretBonusStr = "<span style='color:#666;'>Secret Skill Inactive</span>";
@@ -16735,8 +16575,7 @@ function showPetTooltip(e, petId) {
             <div style="font-size:12px; margin-bottom:4px;">${bonusStr}</div>
             <div style="font-size:11px; margin-bottom:6px;">${secretBonusStr}</div>
             <div style="font-size:11px; color:#ccc; margin-bottom:6px;">Hunger in: <span style="color:${timeColor}">${timeStr}</span></div>
-            
-            <div style="font-size:10px; color:#aaa; display:flex; justify-content:space-between;">
+                  <div style="font-size:10px; color:#aaa; display:flex; justify-content:space-between;">
                 <span>XP</span>
                 <span>${Math.floor(pet.xp)} / ${xpNeeded}</span>
             </div>
@@ -16834,8 +16673,7 @@ function showCropTooltip(e, index) {
 
         const cropDef = CROPS[slot.crop];
         const elapsed = Date.now() - slot.waterTime;
-        
-        let remaining = 0;
+          let remaining = 0;
         let statusText = "";
         let timerColor = "#fff";
 
@@ -16948,8 +16786,7 @@ function showChickenTooltip(e, index) {
     tooltipInterval = setInterval(() => {
         const newContent = getTooltipContent();
         const tooltipEl = document.getElementById('tooltip');
-        
-        if (newContent && tooltipEl && tooltipEl.style.display !== 'none') {
+          if (newContent && tooltipEl && tooltipEl.style.display !== 'none') {
             tooltipEl.innerHTML = newContent;
         } else {
             hideTooltip();
@@ -17065,6 +16902,16 @@ function processFarmLogic() {
     }
 }
 
+function startFarmLogicLoop() {
+  if (window.__farmLogicLoopStarted) return;
+  window.__farmLogicLoopStarted = true;
+  window.__farmLogicInterval = setInterval(() => {
+    if (typeof game === 'undefined' || !game) return;
+    if (!game.isSessionActive) return;
+    processFarmLogic();
+  }, 1000);
+}
+
 function processCellarGrowth(now) {
   if (!game.farm.cellar) return;
   const isCellarOpen = document.getElementById('hubCellar').classList.contains('active');
@@ -17152,13 +16999,13 @@ function openMillHub() {
       <div>
         <div style="font-size:12px; color:#bfa58f; margin-bottom:6px;">Input (Wheat)</div>
         <div id="millInSlot" class="inv-slot" style="width:var(--slot-size); height:var(--slot-size); margin:0 auto; border:2px dashed #8a6b4a; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; border-radius:8px;">
-          <div id="millInBody" style="color:#888; font-size:12px; text-align:center;">Drop Wheat</div>
+          <div id="millInBody" style="color:#888; font-size:12px; text-align:center; pointer-events:none; user-select:none;">Drop Wheat</div>
         </div>
       </div>
       <div>
         <div style="font-size:12px; color:#bfa58f; margin-bottom:6px;">Output (Flour)</div>
         <div id="millOutSlot" class="inv-slot" style="width:var(--slot-size); height:var(--slot-size); margin:0 auto; border:2px solid #4f7f58; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; border-radius:8px; cursor:pointer;">
-          <div id="millOutBody" style="color:#888; font-size:12px; text-align:center;">No Flour</div>
+          <div id="millOutBody" style="color:#888; font-size:12px; text-align:center; pointer-events:none; user-select:none;">No Flour</div>
         </div>
         <div style="font-size:11px; color:#9f9f9f; margin-top:6px; text-align:center;">Drag output to inventory or click to collect</div>
       </div>
@@ -17178,14 +17025,35 @@ function openMillHub() {
 
   const inSlot = document.getElementById('millInSlot');
   if (inSlot) {
-    inSlot.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      inSlot.classList.add('drag-over');
-    });
+    const restoreMillInputDraggableState = () => {
+      ensureFarmState();
+      inSlot.draggable = Math.floor(game.farm.mill.inputWheat || 0) > 0;
+    };
+    const updateMillDropHoverState = (e) => {
+      const dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+      const draggedItem = (dragIndex !== null && dragIndex >= 0) ? game.inventory[dragIndex] : (window.__lastInventoryDragSnapshot?.item || null);
+      const isValidWheatDrag = !!draggedItem && draggedItem.name === 'Wheat' && draggedItem.qty > 0;
+      if (isValidWheatDrag) {
+        e.preventDefault();
+        inSlot.draggable = false;
+        inSlot.classList.add('drag-over');
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      } else {
+        inSlot.classList.remove('drag-over');
+        restoreMillInputDraggableState();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'none';
+      }
+    };
+    inSlot.addEventListener('dragenter', updateMillDropHoverState);
+    inSlot.addEventListener('dragover', updateMillDropHoverState);
     inSlot.addEventListener('dragleave', () => {
       inSlot.classList.remove('drag-over');
+      restoreMillInputDraggableState();
     });
-    inSlot.addEventListener('drop', handleMillInDrop);
+    inSlot.addEventListener('drop', (e) => {
+      restoreMillInputDraggableState();
+      handleMillInDrop(e);
+    });
     inSlot.addEventListener('dragstart', handleMillInDragStart);
   }
 
@@ -17229,10 +17097,21 @@ function handleMillInDrop(e) {
 
   ensureFarmState();
 
-  const dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+  let dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+  if ((dragIndex === null || dragIndex < 0) && draggedBankItem && draggedBankItem.source !== 'bank' && typeof draggedBankItem.fromIndex === 'number') {
+    dragIndex = draggedBankItem.fromIndex;
+  }
+  if ((dragIndex === null || dragIndex < 0) && e.dataTransfer) {
+    const dragPayload = e.dataTransfer.getData('text/plain') || '';
+    const match = dragPayload.match(/^inventory_slot:(\d+)$/);
+    if (match) dragIndex = parseInt(match[1], 10);
+  }
   if (dragIndex === null || dragIndex < 0) return;
 
-  const src = game.inventory[dragIndex];
+  const src = game.inventory[dragIndex]
+    || ((draggedBankItem && draggedBankItem.source !== 'bank' && draggedBankItem.fromIndex === dragIndex) ? draggedBankItem.item : null)
+    || window.__lastInventoryDragSnapshot?.item
+    || null;
   if (!src || src.name !== 'Wheat' || src.qty < 1) {
     showGameAlert('Invalid Item', 'Only Wheat can be placed in the mill input.');
     return;
@@ -17255,6 +17134,7 @@ function handleMillInDrop(e) {
   if (draggingEl) draggingEl.classList.remove('dragging');
   window.__draggedInventoryIndex = null;
   window.__millDraggedFlourQty = 0;
+  window.__lastInventoryDragSnapshot = null;
   game.isDragging = false;
 
   updateMillUI();
@@ -17318,7 +17198,7 @@ function updateMillUI() {
 
   if (inBody) {
     if (input > 0) {
-      inBody.innerHTML = `<img src="images/wheat.png"><div class="inv-amount">${formatAmount(input)}</div>`;
+      inBody.innerHTML = `<img src="images/wheat.png" draggable="false" style="pointer-events:none;"><div class="inv-amount" style="pointer-events:none;">${formatAmount(input)}</div>`;
     } else {
       inBody.innerHTML = `<div style="color:#888; font-size:12px; text-align:center;">Drop Wheat</div>`;
     }
@@ -17332,7 +17212,7 @@ function updateMillUI() {
 
   if (outBody) {
     if (output > 0) {
-      outBody.innerHTML = `<img src="images/flour.png"><div class="inv-amount">${formatAmount(output)}</div>`;
+      outBody.innerHTML = `<img src="images/flour.png" draggable="false" style="pointer-events:none;"><div class="inv-amount" style="pointer-events:none;">${formatAmount(output)}</div>`;
     } else {
       outBody.innerHTML = `<div style="color:#888; font-size:12px; text-align:center;">No Flour</div>`;
     }
@@ -17394,8 +17274,7 @@ async function handleWellClick() {
                game.farm.buildings.well = true;
                game.isDirty = true;
                await showGameAlert("Success", "You restored the Well!");
-               
-               // Open after purchase
+                        // Open after purchase
                openWellHub();
            } else {
                await showGameAlert("Not Enough Gold", `You need ${formatAmount(WELL_COST)} Gold.`);
@@ -17428,8 +17307,7 @@ async function handleGardenClick() {
                game.farm.buildings.garden = true;
                game.isDirty = true;
                await showGameAlert("Success", "You purchased the Garden!");
-               
-               // Open after purchase
+                        // Open after purchase
                showMainScreen('hubGarden');
                maybeSpawnGardenTomb();
                renderGarden();
@@ -17479,7 +17357,6 @@ function openWellHub() {
     <div class="action-buttons" style="margin-top: 10px;">
       <button id="startWaterBtn" class="primary">Gather Water</button>
       <button id="stopWaterBtn" class="primary" style="background:#555; display:none;">Stop</button>
-      ${game.farm.buildings.handPumpWell ? '<button id="handPumpWaterAllBtn" class="primary" style="background:#4d7f5a;">Water All Plots</button>' : ''}
       <button id="hubWell_ReturnBtn" class="primary" style="background:#666;">Return</button>
     </div>
   `;
@@ -17487,8 +17364,6 @@ function openWellHub() {
   // Re-attach listeners
   document.getElementById('startWaterBtn').onclick = startGatheringWater;
   document.getElementById('stopWaterBtn').onclick = stopGatheringWater;
-  const handPumpWaterAllBtn = document.getElementById('handPumpWaterAllBtn');
-  if (handPumpWaterAllBtn) handPumpWaterAllBtn.onclick = waterAllGardenPlots;
   document.getElementById('hubWell_ReturnBtn').onclick = openPersonalFarmHub; // Return to Farm view
 
   showMainScreen('hubWell');
@@ -18009,7 +17884,6 @@ function brewLoop(ts, startTime) {
       addXP('alchemy', VITALITY_POTION_XP);
       showItemPopup(`+${VITALITY_POTION_XP} Alchemy XP`, 'brewProgress', 0);
       showItemPopup(`+1 Vitality Potion`, 'brewProgress', 450);
-      
       // Check for next loop
       let s = 0, h = 0, v = 0;
       game.inventory.forEach(slot => {
@@ -18065,6 +17939,20 @@ function openRiverFishingArea() {
 /**
  * Generic function to stop any fishing action
  */
+function getFishingAreaVisualMarkup(areaType) {
+  const isOcean = areaType === 'ocean';
+  const imageName = isOcean ? 'oceanbutton.png' : 'riverbutton.jpeg';
+  const label = isOcean ? 'Ocean Waters' : 'River Waters';
+  return `
+    <div style="margin-top:14px; display:flex; justify-content:center;">
+      <div style="width:min(100%, 260px); padding:14px; border-radius:14px; background:rgba(0,0,0,0.18); border:1px solid rgba(216,183,115,0.26); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); display:flex; flex-direction:column; align-items:center; gap:8px;">
+        <img src="images/${imageName}" alt="${label}" style="width:110px; height:110px; object-fit:contain; display:block; filter:drop-shadow(0 6px 12px rgba(0,0,0,0.28));">
+        <div style="color:#d8c49c; font-size:12px; letter-spacing:0.4px;">${label}</div>
+      </div>
+    </div>
+  `;
+}
+
 function stopFishing(progressId = 'fishProgress', startBtnId = 'startFishBtn', stopBtnId = 'stopFishBtn') {
   game.fishingActive = false;
   game.activeFishingPole = null;
@@ -18092,6 +17980,7 @@ function openFishHerring(){
   wrapper.innerHTML = `
     <h2>Fishing - Herring</h2>
     <div style="margin-top:8px; color:#efe3cf;">A common ocean fish.</div>
+    ${getFishingAreaVisualMarkup('ocean')}
     <div style="margin-top:16px;">
       <div class="progress-container">
         <div class="progress-fill" id="fishProgress"></div>
@@ -18223,6 +18112,7 @@ function openFishTrout(){
   wrapper.innerHTML = `
     <h2>Fishing - Trout</h2>
     <div style="margin-top:8px; color:#efe3cf;">A common river fish.</div>
+    ${getFishingAreaVisualMarkup('river')}
     <div style="margin-top:16px;">
       <div class="progress-container">
         <div class="progress-fill" id="fishProgress"></div>
@@ -18354,6 +18244,7 @@ function openFishSalmon(){
   wrapper.innerHTML = `
     <h2>Fishing - Salmon</h2>
     <div style="margin-top:8px; color:#efe3cf;">A large, strong river fish.</div>
+    ${getFishingAreaVisualMarkup('river')}
     <div style="margin-top:16px;">
       <div class="progress-container">
         <div class="progress-fill" id="fishProgress"></div>
@@ -18523,8 +18414,7 @@ function getQuestProgress(lineId) {
     // This prevents the game from using the old 'step' value to wipe your new progress on reload.
     if (typeof data.step === 'number' && !data.completed) {
         data.completed = [];
-        
-        // +++ SPECIFIC PATCH FOR 'TUTORIAL' LINE +++
+          // +++ SPECIFIC PATCH FOR 'TUTORIAL' LINE +++
         if (lineId === 'tutorial') {
             if (data.step >= 1) data.completed.push('tut_1'); // Foundation
             if (data.step >= 2) data.completed.push('tut_2'); // Chickens
@@ -18537,8 +18427,7 @@ function getQuestProgress(lineId) {
                 }
             }
         }
-        
-        data.activeQuestId = null; 
+          data.activeQuestId = null; 
     }
 
     // Always delete the old 'step' from local memory so it doesn't cause issues during this session
@@ -18669,12 +18558,10 @@ function renderBountyDetails() {
             <div style="font-weight: bold; color: var(--gold); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 ${missionTitle}
             </div>
-            
-            <div style="font-weight: bold; color: ${statusColor}; margin-bottom: 10px;">
+                  <div style="font-weight: bold; color: ${statusColor}; margin-bottom: 10px;">
                 Status: ${statusText}
             </div>
-            
-            <div style="margin-bottom: 10px;">
+                  <div style="margin-bottom: 10px;">
                Progress: <span style="color: #fff; font-weight: bold;">${progress.current} / ${progress.required}</span>
             </div>
             <div style="width: 100%; height: 10px; background: #333; border-radius: 5px; overflow: hidden; margin-bottom: 10px;">
@@ -18915,10 +18802,8 @@ function updateQuestKillCount(enemyName) {
     
     for (const [lineId, lineData] of Object.entries(QUEST_LINES)) {
         const { data, activeQuest } = getQuestProgress(lineId);
-        
-        if (!activeQuest) continue;
-        
-        // Is this a kill quest for this enemy?
+          if (!activeQuest) continue;
+          // Is this a kill quest for this enemy?
         if (activeQuest.type === 'kill' && activeQuest.targetEnemy === enemyName) {
             if (data.kills < activeQuest.targetCount) {
                 data.kills++;
@@ -20198,15 +20083,12 @@ function woodcutBirchLoop(timestamp, startTime) {
       addXP('woodcutting', BIRCH_XP);
       showItemPopup(`+${BIRCH_XP} Woodcutting XP`, 'woodcutProgress', 0);
       showItemPopup(`+${yieldQty} Birch`, 'woodcutProgress', 450);
-      
       document.getElementById('woodcutProgress').style.width = '0%';
-      
       if (!canReceiveItem('Birch')) {
           showGameAlert("Inventory Full", "Inventory is full.");
           stopWoodcutting();
           return;
       }
-      
       const overdueTime = elapsed - BIRCH_TIME_MS;
       const newStartTime = Date.now() - overdueTime;
       return woodcutBirchLoop(Date.now(), newStartTime);
@@ -20284,15 +20166,12 @@ function woodcutMapleLoop(timestamp, startTime) {
       addXP('woodcutting', MAPLE_XP);
       showItemPopup(`+${MAPLE_XP} Woodcutting XP`, 'woodcutProgress', 0);
       showItemPopup(`+${yieldQty} Maple`, 'woodcutProgress', 450);
-      
       document.getElementById('woodcutProgress').style.width = '0%';
-      
       if (!canReceiveItem('Maple')) {
           showGameAlert("Inventory Full", "Inventory is full.");
           stopWoodcutting();
           return;
       }
-      
       const overdueTime = elapsed - MAPLE_TIME_MS;
       const newStartTime = Date.now() - overdueTime;
       return woodcutMapleLoop(Date.now(), newStartTime);
@@ -20370,15 +20249,12 @@ function woodcutMahoganyLoop(timestamp, startTime) {
       addXP('woodcutting', MAHOGANY_XP);
       showItemPopup(`+${MAHOGANY_XP} Woodcutting XP`, 'woodcutProgress', 0);
       showItemPopup(`+${yieldQty} Mahogany`, 'woodcutProgress', 450);
-      
       document.getElementById('woodcutProgress').style.width = '0%';
-      
       if (!canReceiveItem('Mahogany')) {
           showGameAlert("Inventory Full", "Inventory is full.");
           stopWoodcutting();
           return;
       }
-      
       const overdueTime = elapsed - MAHOGANY_TIME_MS;
       const newStartTime = Date.now() - overdueTime;
       return woodcutMahoganyLoop(Date.now(), newStartTime);
@@ -20437,8 +20313,7 @@ function woodcuttingCooldownLoop(timestamp, startTime, duration, progressTextId,
     
     const overdueTime = -remainingMs;
     const newActionStartTime = Date.now() - overdueTime;
-            
-    // --- THIS IS THE FIX: Immediately call the next loop ---
+          // --- THIS IS THE FIX: Immediately call the next loop ---
     return nextLoopFunction(Date.now(), newActionStartTime);
     
   } else {
@@ -21825,12 +21700,10 @@ function enemyAttackTurn() {
       if (now - enemy.lastSpecialTime >= 20000) {
           let specDmg = Math.floor(Math.random() * 40) + 10;
           game.hp -= specDmg;
-          
-          updateHPUI(); // Show damage immediately
+              updateHPUI(); // Show damage immediately
           showDamageSplat('player', specDmg, 'special');
           enemy.lastSpecialTime = now;
-          
-          // --- DELAYED AUTO EAT (0.2s) ---
+              // --- DELAYED AUTO EAT (0.2s) ---
           setTimeout(() => {
               const threshold = (game.autoEatThreshold || 20) / 100;
               // Changed while to if to allow cooldown check in triggerAutoEat
@@ -21847,8 +21720,7 @@ function enemyAttackTurn() {
                   updateHPUI(); // Update UI if healed
               }
           }, 200);
-          
-          return;
+              return;
       }
   }
 
@@ -21993,7 +21865,6 @@ function handleEnemyDeath() {
     } else if (name === 'The Witch') {
       addItem('Empty Vial', 2);
       queueDeathPopup(`+2 Empty Vial`, dropDelay);
-      
       if (Math.random() < 0.5) {
           addItem('Wild Herb', 1);
           queueDeathPopup(`+1 Wild Herb`, dropDelay + 450)
@@ -22137,8 +22008,7 @@ function openLotteryHub() {
         if (item.name === 'Elegant Black Cape') imgName = 'elegantblackcape';
         if (item.name === 'Gold Crown') imgName = 'goldcrown';
 
-        
-        slot.innerHTML = `<img src="images/${imgName}.png"><span class="qty-badge">${formatAmount(item.qty)}</span>`;
+          slot.innerHTML = `<img src="images/${imgName}.png"><span class="qty-badge">${formatAmount(item.qty)}</span>`;
         if (item.name === jackpot.name) {
             slot.style.background = "radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(0,0,0,0) 70%)";
         }
@@ -22232,19 +22102,16 @@ async function buyLotteryTicket() {
         } else {
             itemDisplay = (Math.random() < 0.05) ? { name: jackpot.name, qty: 1 } : getRandomLotteryFiller();
         }
-        
-        const slot = document.createElement('div');
+          const slot = document.createElement('div');
         slot.className = 'lottery-slot';
         let imgName = (window.__inspectItemImageMap && window.__inspectItemImageMap[itemDisplay.name]) || getItemRenderImageName(itemDisplay);
         if (itemDisplay.name === 'Gold Crown') imgName = 'goldcrown';
         if (itemDisplay.name === 'Elegant Black Cape') imgName = 'elegantblackcape';
         if (itemDisplay.name === 'Gold') imgName = 'goldpouch'; 
 
-        
-        const scaleStyle = (itemDisplay.name === 'Diamond' || itemDisplay.name === 'Uncut Diamond') ? 'style="transform: scale(0.93);"' : '';
+          const scaleStyle = (itemDisplay.name === 'Diamond' || itemDisplay.name === 'Uncut Diamond') ? 'style="transform: scale(0.93);"' : '';
         slot.innerHTML = `<img src="images/${imgName}.png" ${scaleStyle}><span class="qty-badge">${formatAmount(itemDisplay.qty)}</span>`;
-        
-        if (itemDisplay.name === jackpot.name) {
+          if (itemDisplay.name === jackpot.name) {
             slot.style.background = "radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(0,0,0,0) 70%)";
         }
         reel.appendChild(slot);
@@ -22278,16 +22145,13 @@ async function buyLotteryTicket() {
             resultMsg.innerHTML = `Won: ${wonItemQty.toLocaleString()} ${wonItemName}`;
             playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         }
-        
-        buyBtn.disabled = false;
+          buyBtn.disabled = false;
         returnBtn.disabled = false;
-        
-        let remainingTickets = 0;
+          let remainingTickets = 0;
         for(const slot of game.inventory) {
             if(slot && slot.name === 'Lottery Ticket') remainingTickets += slot.qty;
         }
-        
-        if (remainingTickets > 0) {
+          if (remainingTickets > 0) {
             buyBtn.textContent = `Use Ticket (${remainingTickets})`;
             buyBtn.style.background = '#b300ff';
             buyBtn.style.color = '#fff';
@@ -22296,8 +22160,7 @@ async function buyLotteryTicket() {
             buyBtn.style.background = 'var(--gold)';
             buyBtn.style.color = '#000';
         }
-        
-        game.isDirty = true; 
+          game.isDirty = true; 
     }, 4100);
 }
 
@@ -22349,12 +22212,10 @@ function _createModal(title, contentHtml, buttons) {
         if (inputEl && btnConfig.value !== null) { 
           resolveValue = inputEl.value; // Resolve with the input's value instead
         }
-        
-        overlay.remove();
+          overlay.remove();
         resolve(resolveValue); // Resolve with either the input value or the button value
       };
       // --- END MODIFICATION ---
-      
       buttonEl.appendChild(button);
     });
 
@@ -22463,8 +22324,7 @@ function renderBankTabs() {
 
         if (firstItem) {
             imgName = firstItem.name.toLowerCase().replace(/\s+/g,'_');
-            
-            const overrides = {
+                  const overrides = {
                 'copper_bar': 'copperbar', 'copper_chestplate': 'copperchestplate', 'copper_shortsword': 'coppershortsword',
                 'copper_helmet': 'copperhelmet', 'copper_boots': 'copperboots', 'raw_chicken': 'rawchicken',
                 'cooked_chicken': 'cookedchicken', 'burnt_chicken': 'burntchicken', 'cooked_herring': 'cookedherring',
@@ -22499,16 +22359,14 @@ function renderBankTabs() {
                 'bucket_of_water': 'bucketofwater', 'grass_seed': 'grassseed', 'corn_seed': 'cornseed',
                 'vitality_potion': 'vitalitypotion', 'gold_ring': 'goldring'
             };
-            
-            if (overrides[imgName]) {
+                  if (overrides[imgName]) {
                 imgName = overrides[imgName];
             }
         }
 
         // Render the image (Item or Chest)
         btn.innerHTML = `<img src="images/${imgName}.png" alt="Tab">`;
-        
-        // Styles
+          // Styles
         btn.style.padding = "0 6px"; 
         btn.style.display = "flex";
         btn.style.alignItems = "center";
@@ -22582,8 +22440,7 @@ async function buyBankTab() {
           game.bankTabs.push(new Array(game.bankCapacity).fill(null));
           // Switch to it
           game.activeBankTabIndex = game.bankTabs.length - 1;
-          
-          renderBankTabs();
+              renderBankTabs();
           renderBankGrid();
           game.isDirty = true;
       }
@@ -22620,7 +22477,6 @@ function renderBankGrid() {
     
     if(slotData) {
       const item = slotData;
-      
       slot.draggable = true; 
       slot.addEventListener('dragstart', (e) => handleBankWithdrawDragStart(e, item, i));
       slot.addEventListener('dragend', () => {
@@ -22629,7 +22485,6 @@ function renderBankGrid() {
         const draggingEl = document.querySelector('.inv-slot.dragging');
         if (draggingEl) draggingEl.classList.remove('dragging');
       });
-      
       slot.onclick = () => withdrawItem(i); 
 
       const img = document.createElement('img');
@@ -22644,9 +22499,7 @@ function renderBankGrid() {
               else if (item.name === 'Raw Chicken') imgName = 'rawchicken';
               else if (item.name === 'Cooked Chicken') imgName = 'cookedchicken';
               else if (item.name === 'Burnt Chicken') imgName = 'burntchicken';
-              
-              
-              else if (item.name === 'Cooked Herring') imgName = 'cookedherring';
+                              else if (item.name === 'Cooked Herring') imgName = 'cookedherring';
               else if (item.name === 'Burnt Herring') imgName = 'burntherring';
               else if (item.name === 'Cooked Trout') imgName = 'cookedtrout';
               else if (item.name === 'Burnt Trout') imgName = 'burnttrout';
@@ -22655,14 +22508,11 @@ function renderBankGrid() {
               else if (item.name === 'Salt Herring') imgName = 'saltherring';
               else if (item.name === 'Salt Trout') imgName = 'salttrout';
               else if (item.name === 'Salt Salmon') imgName = 'saltsalmon';
-              
-              
-              else if (item.name === 'Beef') imgName = 'beef';
+                              else if (item.name === 'Beef') imgName = 'beef';
               else if (item.name === 'Cooked Beef') imgName = 'cookedbeef';
               else if (item.name === 'Burnt Beef') imgName = 'burntbeef';
 
-              
-              else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
+                      else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
               else if (item.name === 'Elegant Black Cape') imgName = 'elegantblackcape';
 
               else if (item.name === 'Iron Battleaxe') imgName = 'ironbattleaxe';
@@ -22672,8 +22522,7 @@ function renderBankGrid() {
               else if (item.name === 'Gold Platelegs') imgName = 'goldplatelegs';
               else if (item.name === 'Gold Boots') imgName = 'goldboots';
               else if (item.name === 'Gold Shield') imgName = 'goldshield';
-       
-              else if (item.name === 'Coal Ore') imgName = 'coalore';
+               else if (item.name === 'Coal Ore') imgName = 'coalore';
               else if (item.name === 'Iron Ore') imgName = 'ironore';
               else if (item.name === 'Iron Bar') imgName = 'ironbar';
               else if (item.name === 'Silver Bar') imgName = 'silverbar';
@@ -22702,8 +22551,7 @@ function renderBankGrid() {
               else if (item.name === 'Copper Arrow Poisoned') imgName = 'copperarrowpoisonned'; // +++ NEW +++
               else if (item.name === 'Silk') imgName = 'silk'; // +++ NEW +++
 
-              
-              else if (item.name === 'Cloth') imgName = 'cloth';
+                      else if (item.name === 'Cloth') imgName = 'cloth';
               else if (item.name === 'Wizard Hat') imgName = 'wizardhat';
               else if (item.name === 'Wizard Robe') imgName = 'wizardrobe';
               else if (item.name === 'Wizard Trousers') imgName = 'wizardtrousers';
@@ -22726,9 +22574,7 @@ function renderBankGrid() {
               else if (item.name === 'Salt') imgName = 'salt'; // +++ NEW +++
               else if (item.name === 'Lottery Ticket') imgName = 'lotteryticket'; // +++ NEW +++
               else if (item.name === 'Fire Stone') imgName = 'firestone';
-              
-              
-              else if (item.name === 'Wolf Pelt') imgName = 'wolfpelt';
+                              else if (item.name === 'Wolf Pelt') imgName = 'wolfpelt';
               else if (item.name === 'Wolf Tooth') imgName = 'wolfteeth';
               else if (item.name === 'Wolf Helmet') imgName = 'wolfhelmet';
               else if (item.name === 'Wolf Plate') imgName = 'wolfplate';
@@ -22739,8 +22585,7 @@ function renderBankGrid() {
               else if (item.name === 'Air Crystal Shard') imgName = 'aircrystalshard';
               else if (item.name === 'Water Crystal Shard') imgName = 'watercrystalshard';
 
-              
-              else if (item.name === 'Bow String') {
+                      else if (item.name === 'Bow String') {
                   imgName = 'bowstring';
               } else if (item.name === 'Unstrung Softwood Bow') {
                   imgName = 'unstrungsoftwoodbow';
@@ -22822,8 +22667,7 @@ function renderBankGrid() {
                   imgName = 'wildherb'; }
               else if (item.name === 'Vitality Potion') {
                   imgName = 'vitalitypotion'; }
-              
-              // +++ NEW GEMS +++
+                      // +++ NEW GEMS +++
               else if (item.name === 'Uncut Topaz') imgName = 'uncuttopaz';
               else if (item.name === 'Uncut Diamond') imgName = 'uncutdiamond';
               else if (item.name === 'Uncut Emerald') imgName = 'uncutemerald';
@@ -22856,7 +22700,6 @@ function renderBankGrid() {
               // --- END OF FIX ---
               img.src = `images/${getItemRenderImageName(item, imgName)}.png`;
       img.alt = item.name;
-      
       // Apply Enchantment Glows
       const eLvl = item.enchantLevel || 0;
       if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
@@ -22879,12 +22722,10 @@ function renderBankGrid() {
       }
       img.onerror = function(){ this.style.opacity='0.08'; };
       slot.appendChild(img);
-      
       const amt = document.createElement('div');
       amt.className = 'inv-amount';
       amt.innerText = formatAmount(item.qty); 
       slot.appendChild(amt);
-      
       // --- UPDATED: Generate Correct Stat Tooltip ---
       const itemName = item.name;
       const stats = ITEM_STATS[itemName];
@@ -22898,8 +22739,7 @@ function renderBankGrid() {
         if (stats.meleeStr) itemStats += `<div style="color:#ff4d4d;">+${stats.meleeStr + stdB} Melee Strength</div>`;
         if (stats.rangedStr) itemStats += `<div style="color:#44aa44;">+${stats.rangedStr + stdB} Ranged Strength</div>`;
         if (stats.magicDmg) itemStats += `<div style="color:#4da6ff;">+${stats.magicDmg + stdB} Magic Damage</div>`;
-        
-        // Match Defense scaling logic
+          // Match Defense scaling logic
         let mBonus = stdB, rBonus = stdB, magBonus = stdB;
         if (stats.armorType === 'melee') magBonus = penB;
         else if (stats.armorType === 'ranged' || stats.armorType === 'magic') mBonus = penB;
@@ -22909,8 +22749,7 @@ function renderBankGrid() {
         if (stats.magicDef !== undefined) itemStats += `<div style="color:#6dafff;">+${stats.magicDef + magBonus} Magic Def</div>`;
 
         if (stats.maxHPBonus) itemStats += `<div style="color:#ffaaaa;">+${stats.maxHPBonus + stdB} Max HP</div>`;
-        
-        // --- ADDED SPEED DISPLAY ---
+          // --- ADDED SPEED DISPLAY ---
         if (stats.speed) itemStats += `<div style="color:var(--gold);">Speed: ${(stats.speed / 1000).toFixed(1)}s</div>`;
         if (itemName === 'Mapple Fishing Pole') itemStats += `<div style="color:#7fd3ff;">-5s Fishing Time</div>`;
       }
@@ -23023,8 +22862,7 @@ async function handleBankDrop(e) {
 
       // --- MODIFIED: Handle Shift-Click to move specific amount ---
       if (e.shiftKey && dragItemBeforePrompt) { 
-        
-        if (dropItem && (dropItem.name !== dragItemBeforePrompt.name || (dropItem.enchantLevel || 0) !== (dragItemBeforePrompt.enchantLevel || 0))) {
+          if (dropItem && (dropItem.name !== dragItemBeforePrompt.name || (dropItem.enchantLevel || 0) !== (dragItemBeforePrompt.enchantLevel || 0))) {
           await showGameAlert("Invalid Slot", "You can only move onto an empty slot or a stack of the same item.");
         } else {
           const input = await showGamePrompt(
@@ -23040,22 +22878,18 @@ async function handleBankDrop(e) {
             }
           } else {
             const itemAfterPrompt = currentTab[fromIndex];
-            
-            if (!itemAfterPrompt || itemAfterPrompt.name !== dragItemBeforePrompt.name) {
+                  if (!itemAfterPrompt || itemAfterPrompt.name !== dragItemBeforePrompt.name) {
               draggedBankItem = null;
               game.isDragging = false;
               return;
             }
-            
-            const splitAmount = parseInt(input);
+                  const splitAmount = parseInt(input);
 
             if (isNaN(splitAmount) || splitAmount <= 0) { /* Invalid */ }
-            
-            else if (splitAmount > itemAfterPrompt.qty) { 
+                  else if (splitAmount > itemAfterPrompt.qty) { 
               await showGameAlert("Invalid Amount", "You don't have that many.");
             } 
-            
-            else if (splitAmount === itemAfterPrompt.qty) { 
+                  else if (splitAmount === itemAfterPrompt.qty) { 
               if (itemAfterPrompt && dropItem && itemAfterPrompt.name === dropItem.name && (itemAfterPrompt.enchantLevel || 0) === (dropItem.enchantLevel || 0)) {
                 dropItem.qty += itemAfterPrompt.qty;
                 currentTab[fromIndex] = null;
@@ -23066,8 +22900,7 @@ async function handleBankDrop(e) {
               renderBankGrid();
               if (typeof window.savePlayerData === 'function') savePlayerData();
             }
-            
-            else {
+                  else {
               if (dropItem) { 
                 dropItem.qty += splitAmount;
               } else { 
@@ -23853,10 +23686,8 @@ function renderShopGrid() {
       else if (item.name === 'White Dye') imgName = 'whitedye';
       else if (item.name === 'Gold Dye') imgName = 'golddye';
       else if (item.name === 'Bleach') imgName = 'bleach';
-      
       img.src = `images/${imgName}.png`;
       img.alt = item.name;
-      
       const eLvl = item.enchantLevel || 0;
       if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
           slot.classList.add('legendary-glow');
@@ -23969,21 +23800,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
       isDraggingPanel = true;
 
       // --- THIS IS THE FIX ---
-      
       // 1. Get the panel's VISUAL position on screen
       const rect = statsPanel.getBoundingClientRect();
-      
       // 2. Calculate the mouse's offset from the panel's top-left corner
       panelOffsetX = e.clientX - rect.left;
       panelOffsetY = e.clientY - rect.top;
-      
       // 3. ATOMICALLY (all at once):
       //    a) Clear the transform that was centering it
       //    b) Set the top/left to the exact pixel values it was just at
       statsPanel.style.transform = ''; 
       statsPanel.style.top = rect.top + 'px';
       statsPanel.style.left = rect.left + 'px';
-      
       e.preventDefault();
     });
   }
@@ -24625,27 +24452,28 @@ if (bankGridWrap) {
 
   inventoryGrid.addEventListener('dragstart', (e) => {
     hideTooltip(); // <--- ADDED THIS LINE
-    if (e.target && e.target.classList.contains('inv-slot') && e.target.draggable) {
-      draggedItemIndex = parseInt(e.target.dataset.slotIndex);
+    const slotEl = e.target?.closest?.('.inv-slot');
+    if (slotEl && slotEl.draggable) {
+      draggedItemIndex = parseInt(slotEl.dataset.slotIndex);
       window.__draggedInventoryIndex = draggedItemIndex;
       window.__millDraggedWheatQty = 0;
       window.__millDraggedFlourQty = 0;
       e.dataTransfer.effectAllowed = 'move';
-      
+      if (e.dataTransfer) e.dataTransfer.setData('text/plain', 'inventory_slot:' + draggedItemIndex);
       // +++ NEW: Link to bank drag system +++
       const item = game.inventory[draggedItemIndex];
       if (item) {
         // Use the script-global draggedBankItem
         draggedBankItem = { item: { ...item }, fromIndex: draggedItemIndex };
+        window.__lastInventoryDragSnapshot = { fromIndex: draggedItemIndex, item: { ...item } };
       }
       // +++ END NEW +++
 
       // +++ NEW: Set dragging flag +++
       game.isDragging = true;
       updateTrophyRoomDragHighlights();
-      
       setTimeout(() => {
-        e.target.classList.add('dragging');
+        slotEl.classList.add('dragging');
       }, 0);
     }
   });
@@ -24807,7 +24635,6 @@ inventoryGrid.addEventListener('dragend', (e) => {
     } else if (draggedItemIndex !== null) {
       const fromIndex = draggedItemIndex;
       const toIndex = dropIndex;
-      
       if (fromIndex !== toIndex) { 
         const dragItemBeforePrompt = game.inventory[fromIndex];
         const dropItem = game.inventory[toIndex];
@@ -24821,8 +24648,7 @@ inventoryGrid.addEventListener('dragend', (e) => {
               `How many to move? (You have: ${dragItemBeforePrompt.qty})`,
               ""
             );
-            
-            if (input === null) { 
+                  if (input === null) { 
               const originalSlotEl = document.querySelector(`#inventoryGrid .inv-slot[data-slot-index="${fromIndex}"]`);
               if (originalSlotEl) originalSlotEl.classList.remove('dragging');
             } else {
@@ -24836,8 +24662,7 @@ inventoryGrid.addEventListener('dragend', (e) => {
                 game.isDragging = false;
                 return;
               }
-            
-              const splitAmount = parseInt(input);
+                    const splitAmount = parseInt(input);
               if (isNaN(splitAmount) || splitAmount <= 0) { /* Invalid */ }
               else if (splitAmount > itemAfterPrompt.qty) { 
                 await showGameAlert("Invalid Amount", "You don't have that many.");
@@ -24975,8 +24800,7 @@ inventoryGrid.addEventListener('dragend', (e) => {
     if (target) {
        // If it is a real HTML button, don't play sound if it's disabled
        if (target.tagName === 'BUTTON' && target.disabled) return;
-       
-       playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');
+        playGlobalSound('sounds/soundeffects/buttonsoundeffect.mp3');
     }
   });
   
@@ -25043,11 +24867,9 @@ function renderInspectEquipment(equipment, frame) {
         const item = equipment[slotType];
         const slotEl = document.createElement('div');
         slotEl.className = 'equipment-slot';
-        
-        let imgName = '';
+          let imgName = '';
         let isTwoHandedBlock = false;
-        
-        if (item) {
+          if (item) {
             imgName = getItemRenderImageName(item, itemImageMap[item.name] || item.name.toLowerCase().replace(/\s+/g,'_'));
         } else {
             if (slotType === 'helmet') imgName = 'helmet'; else if (slotType === 'chest') imgName = 'chestplate';
@@ -25065,12 +24887,10 @@ function renderInspectEquipment(equipment, frame) {
                 imgName = getItemRenderImageName(equipment.weapon, itemImageMap[equipment.weapon.name] || 'weapon');
             }
         }
-        
-        let extraStyle = '';
+          let extraStyle = '';
         if (item && (item.name === 'Diamond' || item.name === 'Uncut Diamond')) extraStyle = 'transform: scale(0.93);';
         slotEl.innerHTML = `<img src="images/${imgName}.png" alt="${slotType}" loading="eager" style="${isTwoHandedBlock ? 'opacity: 0.5; filter: grayscale(50%);' : ''} ${extraStyle}">`;
-        
-        if (item) {
+          if (item) {
             const enchantLvl = item.enchantLevel || 0;
             if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
                 slotEl.classList.add('legendary-glow');
@@ -25087,13 +24907,11 @@ function renderInspectEquipment(equipment, frame) {
 
             const itemStats = getStats(item.name);
             let statsHtml = '';
-            
-            // --- SYNCED CALCULATION LOGIC ---
+                  // --- SYNCED CALCULATION LOGIC ---
             let tier = 1;
             const MATERIAL_TIERS = { 'Bronze': 1, 'Softwood': 1, 'Copper': 2, 'Leather': 2, 'Iron': 3, 'Cloth': 3, 'Wizard': 3, 'Oak': 3, 'Silver': 4, 'Birch': 4, 'Gold': 5, 'Maple': 5, 'Mahogany': 5, 'Ring': 5 };
             for (let [mat, val] of Object.entries(MATERIAL_TIERS)) { if (item.name.includes(mat)) { tier = val; break; } }
-            
-            let bonus = 0;
+                  let bonus = 0;
             if (item.name.includes("Ring") || item.name.includes("Necklace") || item.name.includes("Wizard")) {
                 bonus = enchantLvl; // +1 per level for Wizard, Rings, and Necklaces
             } else {
@@ -25111,16 +24929,14 @@ function renderInspectEquipment(equipment, frame) {
                 if (itemStats.meleeStr) statsHtml += `<div style="color:#ff4d4d;">+${itemStats.meleeStr + stdB} Melee Strength</div>`;
                 if (itemStats.rangedStr) statsHtml += `<div style="color:#44aa44;">+${itemStats.rangedStr + stdB} Ranged Strength</div>`;
                 if (itemStats.magicDmg) statsHtml += `<div style="color:#4da6ff;">+${itemStats.magicDmg + stdB} Magic Damage</div>`;
-                
-                let mBonus = stdB, rBonus = stdB, magBonus = stdB;
+                          let mBonus = stdB, rBonus = stdB, magBonus = stdB;
                 if (itemStats.armorType === 'melee') magBonus = penB;
                 else if (itemStats.armorType === 'ranged' || itemStats.armorType === 'magic') mBonus = penB;
 
                 if (itemStats.meleeDef !== undefined) statsHtml += `<div style="color:#e38a42;">+${itemStats.meleeDef + mBonus} Melee Def</div>`;
                 if (itemStats.rangedDef !== undefined) statsHtml += `<div style="color:#aaffaa;">+${itemStats.rangedDef + rBonus} Ranged Def</div>`;
                 if (itemStats.magicDef !== undefined) statsHtml += `<div style="color:#6dafff;">+${itemStats.magicDef + magBonus} Magic Def</div>`;
-                
-                if (itemStats.maxHPBonus) statsHtml += `<div style="color:#ffaaaa;">+${itemStats.maxHPBonus + stdB} Max HP</div>`;
+                          if (itemStats.maxHPBonus) statsHtml += `<div style="color:#ffaaaa;">+${itemStats.maxHPBonus + stdB} Max HP</div>`;
             }
 
             const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name} ${enchantLvl > 0 ? `+${enchantLvl}` : ''}</div>${statsHtml}`;
@@ -25844,8 +25660,7 @@ function refreshThievingTargets() {
     while (game.thievingTargets.length < 4) {
         const available = THIEVING_TARGET_DEFS.filter(d => d.level <= game.thieving.level);
         const randomDef = available[Math.floor(Math.random() * available.length)];
-        
-        game.thievingTargets.push({
+          game.thievingTargets.push({
             ...randomDef,
             instanceId: Math.random().toString(36).substr(2, 9),
             expiresAt: now + THIEVING_REFRESH_TIME
@@ -25891,8 +25706,7 @@ async function attemptSteal(instanceId) {
     if (roll < target.failRate) {
         // FAIL
         game.hp = Math.max(0, game.hp - target.dmg);
-        
-        // --- INSTANT AUTO EAT CHECK FOR THIEVING ---
+          // --- INSTANT AUTO EAT CHECK FOR THIEVING ---
         const threshold = (game.autoEatThreshold || 20) / 100;
         if (game.hp > 0 && (game.hp / game.maxHP) <= threshold && game.autoEatSlot) {
             triggerAutoEat();
@@ -25929,8 +25743,7 @@ async function attemptSteal(instanceId) {
             });
             if (!itemsFound && !target.reward.gold) showWarningPopup("Nothing of value found...");
         }
-        
-        playGlobalSound('sounds/soundeffects/inventorysound.mp3');
+          playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         game.thievingTargets.splice(targetIndex, 1);
         refreshThievingTargets();
     }
@@ -26124,11 +25937,9 @@ function runEnchantParticles(durationMs) {
                 p.angle += p.speed;
                 // Spiral in slightly
                 p.radius = 60 + Math.sin(now * 0.005) * 10; 
-                
-                const x = centerX + Math.cos(p.angle) * p.radius;
+                          const x = centerX + Math.cos(p.angle) * p.radius;
                 const y = centerY + Math.sin(p.angle) * p.radius;
-                
-                p.el.style.left = (x - 3) + 'px';
+                          p.el.style.left = (x - 3) + 'px';
                 p.el.style.top = (y - 3) + 'px';
             });
             animFrame = requestAnimationFrame(animate);
@@ -26143,18 +25954,15 @@ function runEnchantParticles(durationMs) {
                     p.vy = Math.sin(p.angle) * 15;
                     p.opacity = 1;
                 }
-                
-                // Move outward
+                          // Move outward
                 const currentLeft = parseFloat(p.el.style.left);
                 const currentTop = parseFloat(p.el.style.top);
                 p.el.style.left = (currentLeft + p.vx) + 'px';
                 p.el.style.top = (currentTop + p.vy) + 'px';
-                
-                // Fade out
+                          // Fade out
                 p.opacity -= 0.03;
                 p.el.style.opacity = p.opacity;
-                
-                if (p.opacity > 0) stillAnimating = true;
+                          if (p.opacity > 0) stillAnimating = true;
                 else p.el.style.display = 'none';
             });
 
@@ -26213,8 +26021,7 @@ async function attemptEnchant() {
         // Apply Logic
         addGold(-cost);
         game.enchantSlot.enchantLevel = (game.enchantSlot.enchantLevel || 0) + 1;
-        
-        renderEnchantSlot();
+          renderEnchantSlot();
         game.isDirty = true;
 
         // Show Success Popup (Slight delay to let explosion start)
@@ -26438,7 +26245,6 @@ async function attemptEnchant() {
           transaction.update(playerRef, { activeSession: null });
         }
       });
-      
       if (isAsync) {
         await promise;
       }
@@ -26458,8 +26264,7 @@ async function attemptEnchant() {
       await runTransaction(db, async (transaction) => {
         const snap = await transaction.get(playerRef);
         if (!snap.exists()) throw new Error("Player doc does not exist.");
-        
-        const data = snap.data();
+          const data = snap.data();
         const lock = data.activeSession;
         const now = Date.now();
 
@@ -26477,17 +26282,14 @@ async function attemptEnchant() {
         if (!force && lock && lock.id !== sessionId && (now - lock.timestamp) < LOCK_STALE_TIME_MS) {
           throw new Error("Lock is still fresh and held by another session.");
         }
-        
-        // Take the lock
+          // Take the lock
         const newLock = { id: sessionId, timestamp: now };
         transaction.update(playerRef, { activeSession: newLock, forceDisconnectAt: 0, forceDisconnectSessionId: "" });
       });
-      
       game.isSessionActive = true;
       hideSessionLockOverlay();
       hideAdminDisconnectOverlay();
       return true;
-      
     } catch (e) {
       console.error("Failed to acquire lock:", e.message);
       return false;
@@ -26500,7 +26302,6 @@ async function attemptEnchant() {
     try {
       const user = auth.currentUser;
       if (!user || !game.isSessionActive || !game.isDirty) return;
-      
       const inventoryToSave = [];
       game.inventory.forEach((item, index) => {
           if (item) {
@@ -26513,7 +26314,6 @@ async function attemptEnchant() {
               });
           }
       });
-      
       const bankTabsToSave = {}; 
       game.bankTabs.forEach((tabArray, i) => {
           const tabData = [];
@@ -26530,7 +26330,6 @@ async function attemptEnchant() {
           });
           bankTabsToSave[i.toString()] = tabData;
       });
-      
       const payload = {
         name: game.name || "",
         name_lowercase: (game.name || "").toLowerCase(),
@@ -26877,8 +26676,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                   meleeStr += (def.meleeStr || 0) + (def.meleeStr ? stdB : 0);
                   rangedStr += (def.rangedStr || 0) + (def.rangedStr ? stdB : 0);
                   magicDmg += (def.magicDmg || 0) + (def.magicDmg ? stdB : 0);
-                  
-                  if (def.armorType === "melee") {
+                              if (def.armorType === "melee") {
                       meleeDef += (def.meleeDef || 0) + stdB;
                       rangedDef += (def.rangedDef || 0) + stdB;
                       magicDef += (def.magicDef || 0) + penB;
@@ -26964,7 +26762,6 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         playerDocListener();
         playerDocListener = null;
       }
-      
       if (updatesListenerUnsubscribe) {
         updatesListenerUnsubscribe();
         updatesListenerUnsubscribe = null;
@@ -26973,10 +26770,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
 
       const ref = doc(db, "players", user.uid);
       let isFirstLoad = true; 
-      
       playerDocListener = onSnapshot(ref, (snap) => {
-        
-        if (!snap.exists()) {
+          if (!snap.exists()) {
           console.log("Player document doesn't exist, showing start screen.");
           authScreen.style.display = 'none';
           startScreen.style.display = 'block'; 
@@ -27070,28 +26865,23 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         }
 
         // --- 2. DATA SYNC LOGIC ---
-        
-        // Ignore our own "echo" saves
+          // Ignore our own "echo" saves
         if (snap.metadata.hasPendingWrites) {
           return;
         }
-        
-        // If we are the active tab, AND we are busy (mining, dragging, etc.),
+          // If we are the active tab, AND we are busy (mining, dragging, etc.),
         // do not sync data. This prevents rollbacks.
         if (game.isSessionActive && (game.miningActive || game.blacksmithingActive || game.cookingActive || game.woodcuttingActive || game.fletchingActive || game.isDragging)) {
           return;
         }
-        
-        // If we are INACTIVE, OR we are ACTIVE and IDLE, sync the data.
+          // If we are INACTIVE, OR we are ACTIVE and IDLE, sync the data.
         game.playerAttackStyle = data.playerAttackStyle || 'strength';
-        
-        // +++ NEW: Load Autocast Spell +++
+          // +++ NEW: Load Autocast Spell +++
         game.autocastSpell = data.autocastSpell || null;
         // Update the visual border on the spell icons immediately
         if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
         // +++ END NEW +++
-        
-        // +++ NEW: Load Equipment +++
+          // +++ NEW: Load Equipment +++
         game.equipment = data.equipment || { helmet: null, chest: null, weapon: null, boots: null };
         game.trophyRooms = Array.isArray(data.trophyRooms) ? data.trophyRooms : [];
         game.activeTrophyRoomIndex = Number.isFinite(Number(data.activeTrophyRoomIndex)) ? Number(data.activeTrophyRoomIndex) : 0;
@@ -27110,8 +26900,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         game.name = data.name || game.name || "Adventurer";
         game.hp = (typeof data.hp === 'number') ? data.hp : game.hp;
         game.maxHP = (typeof data.maxHP === 'number') ? data.maxHP : game.maxHP;
-        
-        let loadedInventoryData = data.inventory || [];
+          let loadedInventoryData = data.inventory || [];
         game.inventory = new Array(game.inventoryCapacity).fill(null);
         if (Array.isArray(loadedInventoryData)) {
             if (loadedInventoryData.length > 0 && typeof loadedInventoryData[0].slot === 'number') {
@@ -27140,8 +26929,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 game.inventory[i] = { name: entries[i][0], qty: entries[i][1] };
             }
         }
-        
-        game.gold = (typeof data.gold === 'number') ? data.gold : 0; 
+          game.gold = (typeof data.gold === 'number') ? data.gold : 0; 
         game.bankGold = (typeof data.bankGold === 'number') ? data.bankGold : 0;
         game.questLines = data.questLines || {}; 
         game.bestiaryUnlocked = data.bestiaryUnlocked || {};
@@ -27155,8 +26943,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         } else {
             game.enchantSlot = null;
         } 
-        
-        // --- NEW: Bank Tabs Loading & Migration ---
+          // --- NEW: Bank Tabs Loading & Migration ---
         game.activeBankTabIndex = 0;
         game.bankTabs = [];
 
@@ -27164,8 +26951,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         if (data.bankTabs && typeof data.bankTabs === 'object' && !Array.isArray(data.bankTabs)) {
             // Sort keys to ensure tabs load in order (0, 1, 2...)
             const sortedKeys = Object.keys(data.bankTabs).sort((a, b) => parseInt(a) - parseInt(b));
-            
-            sortedKeys.forEach(key => {
+                  sortedKeys.forEach(key => {
                 const tabData = data.bankTabs[key]; // This is the array of items
                 const newTab = new Array(game.bankCapacity).fill(null);
                 if (Array.isArray(tabData)) {
@@ -27197,22 +26983,19 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             }
             game.bankTabs.push(firstTab);
         }
-        
-        // Ensure at least one tab exists
+          // Ensure at least one tab exists
         if (game.bankTabs.length === 0) {
             game.bankTabs.push(new Array(game.bankCapacity).fill(null));
         }
         // --- END NEW ---
-        
-        if (data.mining) {
+          if (data.mining) {
           game.mining.level = data.mining.level || 1;
           game.mining.xp = data.mining.xp || 0;
           game.mining.totalXP = data.mining.totalXP || getTotalXPForLevel(data.mining.level - 1) + data.mining.xp || 0; 
         } else {
           game.mining = { level: 1, xp: 0, totalXP: 0 }; 
         }
-        
-        game.blacksmith = {
+          game.blacksmith = {
           level: (typeof data.blacksmith?.level === 'number') ? data.blacksmith.level : 1,
           xp: (typeof data.blacksmith?.xp === 'number') ? data.blacksmith.xp : 0,
           totalXP: (typeof data.blacksmith?.totalXP === 'number') ? data.blacksmith.totalXP : (
@@ -27220,8 +27003,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
              (typeof data.blacksmith?.xp === 'number' ? data.blacksmith.xp : 0))
           )
         };
-        
-        // +++ NEW ATTACK LOADING LOGIC +++
+          // +++ NEW ATTACK LOADING LOGIC +++
         if (data.attack) {
           game.attack.level = data.attack.level || 1;
           game.attack.xp = data.attack.xp || 0;
@@ -27230,8 +27012,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           game.attack = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW ATTACK LOADING LOGIC +++
-        
-        // +++ NEW STRENGTH LOADING LOGIC +++
+          // +++ NEW STRENGTH LOADING LOGIC +++
         if (data.strength) {
           game.strength.level = data.strength.level || 1;
           game.strength.xp = data.strength.xp || 0;
@@ -27240,8 +27021,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           game.strength = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW STRENGTH LOADING LOGIC +++
-        
-        // +++ NEW DEFENCE LOADING LOGIC +++
+          // +++ NEW DEFENCE LOADING LOGIC +++
         if (data.defence) {
           game.defence.level = data.defence.level || 1;
           game.defence.xp = data.defence.xp || 0;
@@ -27261,8 +27041,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           game.vitality = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW VITALITY LOADING LOGIC +++
-        
-        // +++ NEW COOKING LOADING LOGIC +++
+          // +++ NEW COOKING LOADING LOGIC +++
         if (data.cooking) {
           game.cooking.level = data.cooking.level || 1;
           game.cooking.xp = data.cooking.xp || 0;
@@ -27271,8 +27050,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           game.cooking = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW VITALITY LOADING LOGIC +++
-        
-        // +++ NEW WOODCUTTING LOADING LOGIC +++
+          // +++ NEW WOODCUTTING LOADING LOGIC +++
         if (data.woodcutting) {
           game.woodcutting.level = data.woodcutting.level || 1;
           game.woodcutting.xp = data.woodcutting.xp || 0;
@@ -27281,8 +27059,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           game.woodcutting = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW WOODCUTTING LOADING LOGIC +++
-        
-        // +++ NEW FLETCHING LOADING LOGIC +++
+          // +++ NEW FLETCHING LOADING LOGIC +++
         game.fletching = {
           level: (typeof data.fletching?.level === 'number') ? data.fletching.level : 1,
           xp: (typeof data.fletching?.xp === 'number') ? data.fletching.xp : 0,
@@ -27292,8 +27069,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           )
         };
         // +++ END NEW FLETCHING LOADING LOGIC +++
-        
-        // +++ NEW CRAFTING LOADING LOGIC +++
+          // +++ NEW CRAFTING LOADING LOGIC +++
         game.crafting = {
           level: (typeof data.crafting?.level === 'number') ? data.crafting.level : 1,
           xp: (typeof data.crafting?.xp === 'number') ? data.crafting.xp : 0,
@@ -27303,8 +27079,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           )
         };
         // +++ END NEW CRAFTING LOADING LOGIC +++
-        
-        // +++ NEW RANGED LOADING LOGIC +++
+          // +++ NEW RANGED LOADING LOGIC +++
         if (data.ranged) {
           game.ranged.level = data.ranged.level || 1;
           game.ranged.xp = data.ranged.xp || 0;
@@ -27313,8 +27088,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           game.ranged = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW RANGED LOADING LOGIC +++
-        
-        // +++ NEW MAGIC LOADING LOGIC +++
+          // +++ NEW MAGIC LOADING LOGIC +++
         if (data.magic) {
           game.magic.level = data.magic.level || 1;
           game.magic.xp = data.magic.xp || 0;
@@ -27323,8 +27097,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           game.magic = { level: 1, xp: 0, totalXP: 0 }; 
         }
         // +++ END NEW MAGIC LOADING LOGIC +++
-        
-        // +++ NEW FISHING LOADING LOGIC +++
+          // +++ NEW FISHING LOADING LOGIC +++
         if (data.fishing) {
           game.fishing.level = data.fishing.level || 1;
           game.fishing.xp = data.fishing.xp || 0;
@@ -27332,8 +27105,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         } else {
           game.fishing = { level: 1, xp: 0, totalXP: 0 }; 
         }
-        
-        // +++ NEW STONE FORGING LOADING LOGIC +++
+          // +++ NEW STONE FORGING LOADING LOGIC +++
         if (data.stoneforging) {
           game.stoneforging.level = data.stoneforging.level || 1;
           game.stoneforging.xp = data.stoneforging.xp || 0;
@@ -27341,8 +27113,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         } else {
           game.stoneforging = { level: 1, xp: 0, totalXP: 0 }; 
         }
-        
-        // +++ NEW BOUNTY LOADING LOGIC +++
+          // +++ NEW BOUNTY LOADING LOGIC +++
         if (data.bountyhunting) {
           game.bountyhunting.level = data.bountyhunting.level || 1;
           game.bountyhunting.xp = data.bountyhunting.xp || 0;
@@ -27359,8 +27130,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         } else {
           game.alchemy = { level: 1, xp: 0, totalXP: 0 }; 
         }
-        
-        if (data.thieving) {
+          if (data.thieving) {
           game.thieving.level = data.thieving.level || 1;
           game.thieving.xp = data.thieving.xp || 0;
           game.thieving.totalXP = data.thieving.totalXP || getTotalXPForLevel(data.thieving.level - 1) + data.thieving.xp || 0; 
@@ -27377,8 +27147,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           )
         };
 
-         
-        window.__lastLoadedSkillData = {
+           window.__lastLoadedSkillData = {
           crafting: data.crafting,
           fletching: data.fletching,
           tailoring: data.tailoring,
@@ -27421,8 +27190,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         ensureAchievementStats();
         if (typeof window.ensureEventJournalState === 'function') window.ensureEventJournalState();
         syncAchievementUnlockState(false);
-        
-        // +++ NEW FARM LOADING & OFFLINE CALC (MULTI-CHICKEN & COWS) +++
+          // +++ NEW FARM LOADING & OFFLINE CALC (MULTI-CHICKEN & COWS) +++
         game.farm = data.farm || { 
             chickens: [], 
             cows: [], 
@@ -27436,8 +27204,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
         };
         ensureFarmState();
-        
-        // Define constants locally
+          // Define constants locally
         const _HP_DECAY_MS = 43200000; // 12 Hours
         const _EGG_TIMER_MS = 43200000; 
         const _COW_HP_DECAY = 43200000;
@@ -27457,8 +27224,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
 
         // OFFLINE CALCULATION LOOP
         // (Variable 'now' is already defined at the top of this function)
-        
-        // Loop backwards to safely handle deaths
+          // Loop backwards to safely handle deaths
         for (let i = game.farm.chickens.length - 1; i >= 0; i--) {
             const c = game.farm.chickens[i];
             const lastCalc = c.lastCalcTime || now;
@@ -27467,11 +27233,9 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             if (diff > 1000) {
                 // 1. Calculate HP Loss using local constant
                 const hpLost = Math.floor(diff / _HP_DECAY_MS);
-                
-                const startHp = c.hp;
+                          const startHp = c.hp;
                 const endHp = startHp - hpLost;
-                
-                if (endHp <= 0) {
+                          if (endHp <= 0) {
                     // Chicken died while offline
                     game.farm.chickens.splice(i, 1);
                     console.log(`Chicken #${i} died while offline.`);
@@ -27479,8 +27243,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                     // Chicken survived. Update HP.
                     c.hp = endHp;
                     c.lastCalcTime = now;
-                    
-                    // 2. Calculate Eggs using local constant
+                                  // 2. Calculate Eggs using local constant
                     // Simplified: Only if it ended healthy do we award eggs for the full duration
                     if (endHp >= 5) {
                         const eggsGained = Math.floor(diff / _EGG_TIMER_MS) * getFarmAnimalYieldMultiplier();
@@ -27499,18 +27262,15 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             if (diff > 1000) {
                 // 1. Calculate HP Loss
                 const hpLost = Math.floor(diff / _COW_HP_DECAY);
-                
-                const startHp = c.hp;
+                          const startHp = c.hp;
                 const endHp = startHp - hpLost;
-                
-                if (endHp <= 0) {
+                          if (endHp <= 0) {
                     game.farm.cows.splice(i, 1);
                     console.log(`Cow #${i} died while offline.`);
                 } else {
                     c.hp = endHp;
                     c.lastCalcTime = now;
-                    
-                    // 2. Calculate Milk (Only until full)
+                                  // 2. Calculate Milk (Only until full)
                     // If it was already full, nothing happens.
                     // If not full, check if time passed exceeds required time.
                     if (!c.hasMilk && endHp >= 5) {
@@ -27573,8 +27333,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
 
         updateSkillUI();
         updateGoldUI(); 
-        
-        // +++ NEW: Pre-render the bank UI on load +++
+          // +++ NEW: Pre-render the bank UI on load +++
         renderBankGrid();
         updateBankGoldUI();
         // +++ END NEW +++
@@ -27582,14 +27341,11 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         // +++ NEW: Pre-render the Shop UI on load +++
         renderShopGrid();
         // +++ END NEW +++
-        
-        if (isFirstLoad) {
+          if (isFirstLoad) {
           window.renderLeaderboards(); 
-          isFirstLoad = false;         
-          backToActions(); 
+          isFirstLoad = false;             backToActions(); 
         }
-        
-        startScreen.style.display = 'none';
+          startScreen.style.display = 'none';
         authScreen.style.display = 'none';
         gameScreen.style.display = 'block';
         loadSettings();
@@ -27599,7 +27355,6 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         console.error("Player listener error:", error);
         await showGameAlert("Load Error", "Error loading player data. Please refresh the page.");
       });
-      
       const initialSnap = await getDoc(ref);
       if (!initialSnap.exists() || !initialSnap.data().name) {
         authScreen.style.display = 'none';
@@ -27609,7 +27364,6 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       }
 
       return true; 
-      
     } catch (e) {
       console.error("Load failed:", e);
       return false;
@@ -27646,16 +27400,14 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         cooking: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW COOKING FOR NEW ACCOUNTS +++
         woodcutting: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW WOODCUTTING FOR NEW ACCOUNTS +++
         fletching: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW FLETCHING FOR NEW ACCOUNTS +++
-        
-        // +++ NEW SKILLS FOR NEW ACCOUNTS +++
+          // +++ NEW SKILLS FOR NEW ACCOUNTS +++
         crafting: { level: 1, xp: 0, totalXP: 0 },
         ranged: { level: 1, xp: 0, totalXP: 0 },
         fishing: { level: 1, xp: 0, totalXP: 0 },
         stoneforging: { level: 1, xp: 0, totalXP: 0 },
         magic: { level: 1, xp: 0, totalXP: 0 }, 
         alchemy: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW +++ 
-        
-        playerAttackStyle: 'strength',
+          playerAttackStyle: 'strength',
         activeSession: null, // +++ ADD THIS
         createdAt: new Date().toISOString()
       });
@@ -27689,14 +27441,12 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       if (playerDocListener) playerDocListener();
 
       const started = await loadPlayerDataAndStart(user);
-      
       if (user.uid === ADMIN_UID) {
         game.isAdmin = true;
       } else {
         game.isAdmin = false;
         game.playerAttackStyle = 'strength';
       }
-      
       if (started) {
         initEventJournalListener();
         initChatListener();
@@ -27714,7 +27464,6 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       authScreen.style.display = 'flex';
       startScreen.style.display = 'none';
       gameScreen.style.display = 'none';
-      
       // Stop listeners and release lock
       // Trade cleanup removed
             if (playerDocListener) playerDocListener();
@@ -27724,7 +27473,6 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       if (broadcastListenerUnsubscribe) broadcastListenerUnsubscribe(); // +++ ADD THIS LINE +++
       isUpdatesHistoryLoaded = false;
       // We don't release the lock, just let it go stale.
-      
       window.__preserveLoadedSkills = false;
       if (window.resetGameState) {
         window.resetGameState();
@@ -27750,10 +27498,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           console.error("Name check failed:", e);
            await showGameAlert("Error", "An error occurred while checking the name. Please try again."); return;
         }
-        
-        originalCreate(); // Sets game.name locally
-        
-        const user = auth.currentUser;
+          originalCreate(); // Sets game.name locally
+          const user = auth.currentUser;
         if (user) {
           // Acquire the session lock so we are authorized to save
           if (typeof window.acquireSessionLock === 'function') {
@@ -27765,8 +27511,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
 
           await window.savePlayerData(); // This saves the name to Firestore
           window.renderLeaderboards();
-          
-          // Initialize listeners that were skipped during the initial "no-name" load
+              // Initialize listeners that were skipped during the initial "no-name" load
           initEventJournalListener(); 
           initChatListener(); 
           initUpdatesListener(); 
@@ -28203,11 +27948,9 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         if (command === 'giveitem') {
             const targetName = args[0] ? args[0].toLowerCase() : '';
             const qty = parseInt(args[args.length - 1]);
-            
-            // Extract the raw name parts
+                  // Extract the raw name parts
             const rawNameParts = args.slice(1, -1);
-            
-            if (!targetName || rawNameParts.length === 0 || isNaN(qty) || qty <= 0) {
+                  if (!targetName || rawNameParts.length === 0 || isNaN(qty) || qty <= 0) {
                 addLocalChatMessage("Usage: /giveitem [playername] [Item Name] [amount]", 'error');
                 return true;
             }
@@ -28230,8 +27973,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 return true;
             }
             // +++ END FIX +++
-            
-            // Case A: Give to Self
+                  // Case A: Give to Self
             if (targetName === game.name.toLowerCase()) {
                 if (typeof window.addItem === 'function') {
                     window.addItem(itemName, qty); 
@@ -28251,12 +27993,10 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 }
                 const playerDoc = querySnapshot.docs[0];
                 const playerData = playerDoc.data();
-                
-                let currentLocalInv = convertSavedInvToLocal(playerData.inventory || []);
+                          let currentLocalInv = convertSavedInvToLocal(playerData.inventory || []);
                 const newLocalInv = modifyInventory(currentLocalInv, itemName, qty);
                 const newSavedInv = convertLocalInvToSaved(newLocalInv);
-                
-                await updateDoc(doc(db, "players", playerDoc.id), { inventory: newSavedInv });
+                          await updateDoc(doc(db, "players", playerDoc.id), { inventory: newSavedInv });
                 addLocalChatMessage(`Admin: Gave ${qty}x ${itemName} to ${playerData.name}.`, 'system');
             } catch (e) {
                 console.error(e);
@@ -28796,8 +28536,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         if (command === 'forget') {
             const inputName = args.join(' ');
             if (!inputName) return true;
-            
-            let targetId = inputName;
+                  let targetId = inputName;
             let foundName = inputName;
             if (window.QUEST_LINES) {
                 for (const lineId in window.QUEST_LINES) {
@@ -28830,8 +28569,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             else addLocalChatMessage(`Quest '${foundName}' not found in history.`, 'error');
             return true;
         }
-        
-        // --- COMMAND: /setlevel player skill level ---
+          // --- COMMAND: /setlevel player skill level ---
         if (command === 'setlevel') {
             const targetName = args[0] ? args[0].toLowerCase() : '';
             const skill = args[1] ? args[1].toLowerCase() : '';
@@ -28859,8 +28597,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             } catch (e) { console.error(e); }
             return true;
         }
-        
-        // --- COMMAND: /godmode ---
+          // --- COMMAND: /godmode ---
         if (command === 'godmode') {
            game.hp = 9999;
            game.maxHP = 9999;
@@ -29154,7 +28891,6 @@ async function sendChatMessage() {
       while (contentContainer.childElementCount > 20) {
         contentContainer.lastChild.remove(); // Remove from the bottom
       }
-      
     }, (error) => {
       console.error("Updates listener error: ", error);
       contentContainer.innerHTML = '<div style="color: red; text-align: center;">Error loading updates.</div>';
@@ -29202,7 +28938,6 @@ async function sendChatMessage() {
       // 1. It's not the first page load check.
       // 2. The timestamp is NEW.
       // This is a genuine, real-time update.
-      
       lastBroadcastTimestamp = timestamp; // Store the new timestamp
 
       const overlay = document.getElementById('broadcastOverlay');
@@ -29297,15 +29032,13 @@ async function sendChatMessage() {
             msgElement.dataset.senderLc = (msg.senderName || '').toLowerCase();
             msgElement.dataset.msgId = change.doc.id;
             const sender = document.createElement('strong');
-            
-            // Admin Color Check
+                  // Admin Color Check
             if (msg.senderUid === ADMIN_UID) {
               sender.style.color = '#ff4d4d'; // Admin Red
             } else {
               sender.style.color = 'var(--gold)'; // Default Gold
             }
-            
-            sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
+                  sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
             const text = document.createTextNode(msg.text);
             msgElement.appendChild(sender);
             msgElement.appendChild(text);
@@ -29327,14 +29060,12 @@ async function sendChatMessage() {
             msgElement.dataset.senderLc = (msg.senderName || '').toLowerCase();
             msgElement.dataset.msgId = doc.id;
             const sender = document.createElement('strong');
-            
-            if (msg.senderUid === ADMIN_UID) {
+                  if (msg.senderUid === ADMIN_UID) {
               sender.style.color = '#ff4d4d'; // Admin Red
             } else {
               sender.style.color = 'var(--gold)'; // Default Gold
             }
-            
-            sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
+                  sender.textContent = msg.senderName ? `${msg.senderName}: ` : 'System: ';
             const text = document.createTextNode(msg.text);
             msgElement.appendChild(sender);
             msgElement.appendChild(text);
@@ -29381,8 +29112,7 @@ async function sendChatMessage() {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         if (!data.name || data.name === "") return;
-        
-        // --- THIS IS THE FIX ---
+          // --- THIS IS THE FIX ---
         // We now get the totalXP from *all* skills and add them together.
         const miningXp = data.mining?.totalXP || 0; 
         const blacksmithXp = data.blacksmith?.totalXP || 0;
@@ -29488,11 +29218,9 @@ async function sendChatMessage() {
           if (typeof window.savePlayerData === 'function') {
             await window.savePlayerData();
           }
-          
-          // --- NEW: Await the render so we can re-enable the button ---
+              // --- NEW: Await the render so we can re-enable the button ---
           await window.renderLeaderboards(); 
-          
-          // --- NEW: Re-enable button ---
+              // --- NEW: Re-enable button ---
           refreshLeaderboardBtn.disabled = false;
           refreshLeaderboardBtn.textContent = 'Refresh';
         };
@@ -29849,7 +29577,6 @@ async function sendChatMessage() {
       'images/wizardrobe.png',
       'images/wizardtrousers.png',
       'images/wizardboots.png',
-      
       // --- Spell Icons (Were Missing) ---
       'images/earthbolt.jpeg',
       'images/airbolt.jpeg',
@@ -29898,11 +29625,9 @@ async function sendChatMessage() {
       'images/thievingskillicon.jpeg',
       'images/tailoringtable.png',
       'images/tailoringskillicon.jpeg',
-      
       // --- Items: Fishing ---
       'images/fishingpole.png',
       'images/fishingbait.png',
-      
       // --- Farm Items ---
       'images/personalchicken.png',
       'images/egg.png',
@@ -29967,10 +29692,8 @@ async function sendChatMessage() {
 
       const loadingScreen = document.getElementById('loadingScreen');
       loadingScreen.style.display = 'flex'; 
-      
       const progressBarFill = document.getElementById('loading-bar-fill');
       const progressPercentText = document.getElementById('loading-progress-percent');
-      
       const cacheContainer = document.getElementById('asset-cache');
 
       if (cacheContainer) {
@@ -29985,8 +29708,7 @@ async function sendChatMessage() {
       const promises = assetList.map(src => {
         return new Promise((resolve) => {
           const img = new Image();
-          
-          // +++ CHANGED: Use .onload instead of .decode() +++
+              // +++ CHANGED: Use .onload instead of .decode() +++
           // This is the standard way to load images. It is much less strict
           // and will accept your files exactly as they are.
           img.onload = () => {
@@ -30034,23 +29756,19 @@ async function sendChatMessage() {
       ];
 
       const cacheContainer = document.getElementById('asset-cache');
-      
       monsterAnims.forEach(src => {
           // Create a new image element for the cache
           const img = new Image();
           img.src = src;
-          
-          // Apply styles to keep it hidden but active in the DOM
+              // Apply styles to keep it hidden but active in the DOM
           img.style.position = 'absolute';
           img.style.top = '-9999px';
           img.style.left = '-9999px';
           img.style.width = '1px'; 
           img.style.height = '1px';
-          
-          // 'eager' tells the browser to load this immediately, even if off-screen
+              // 'eager' tells the browser to load this immediately, even if off-screen
           img.setAttribute('loading', 'eager'); 
-          
-          // Append to the hidden cache container (or body if container is missing)
+              // Append to the hidden cache container (or body if container is missing)
           if (cacheContainer) {
               cacheContainer.appendChild(img);
           } else {
@@ -30058,9 +29776,7 @@ async function sendChatMessage() {
           }
       });
       // +++ END FIX +++
-      
       const loadingScreen = document.getElementById('loadingScreen');
-      
       if (loadingScreen) {
         loadingScreen.style.display = 'none'; // Hide loading
       }
@@ -30270,6 +29986,7 @@ async function sendChatMessage() {
 
   // Periodic sync in case Firestore load lands late
   setInterval(syncCraftHubLevels, 1000);
+  startFarmLogicLoop();
 
   // Wrap hub openers so they always render with current runtime level
   const oldOpenCraftingHub = window.openCraftingHub;
@@ -31209,6 +30926,19 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
