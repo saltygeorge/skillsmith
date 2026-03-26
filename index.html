@@ -27953,6 +27953,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                     '/clearlastme - Delete your last chat message',
                     '/update [message]',
                     '/messageall [message]',
+                    '/admin [message] - Post an admin-tagged chat message',
                     '/godmode'
                 ]
                 : [
@@ -28209,6 +28210,32 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             } catch (e) {
                 console.error('Error giving pet:', e);
                 addLocalChatMessage('Error giving pet: ' + e.message, 'error');
+            }
+            return true;
+        }
+
+        // --- COMMAND: /admin message ---
+        if (command === 'admin') {
+            const adminMessage = args.join(' ').trim();
+            if (!adminMessage) {
+                addLocalChatMessage('Usage: /admin [message]', 'error');
+                return true;
+            }
+            if (adminMessage.length > 256) {
+                addLocalChatMessage('Admin message is too long (max 256 chars).', 'error');
+                return true;
+            }
+            try {
+              await addDoc(collection(db, "messages"), {
+                senderUid: user.uid,
+                senderName: game.name,
+                senderRole: 'admin',
+                text: '[ADMIN] ' + adminMessage,
+                timestamp: serverTimestamp()
+              });
+            } catch (e) {
+              console.error('Error sending admin chat message:', e);
+              addLocalChatMessage('Error sending admin message: ' + e.message, 'error');
             }
             return true;
         }
@@ -28835,6 +28862,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
   { command: '/clearlastme', desc: 'Delete your last chat message' },
   { command: '/update ', desc: 'Post an update message' },
   { command: '/messageall ', desc: 'Broadcast a message to everyone' },
+  { command: '/admin ', desc: 'Post an admin-tagged chat message' },
   { command: '/godmode', desc: 'Toggle god mode' }
 ];
 let activeChatCommandSuggestions = [];
@@ -29268,7 +29296,9 @@ async function sendChatMessage() {
             msgElement.dataset.msgId = change.doc.id;
             const sender = document.createElement('strong');
                   // Admin Color Check
-            if (isStaffMessage(msg)) {
+            if (String(msg.text || '').startsWith('[ADMIN] ')) {
+              sender.style.color = '#66b3ff';
+            } else if (isStaffMessage(msg)) {
               sender.style.color = '#ff4d4d'; // Staff Red
             } else {
               sender.style.color = 'var(--gold)'; // Default Gold
@@ -29295,7 +29325,9 @@ async function sendChatMessage() {
             msgElement.dataset.senderLc = (msg.senderName || '').toLowerCase();
             msgElement.dataset.msgId = doc.id;
             const sender = document.createElement('strong');
-                  if (isStaffMessage(msg)) {
+                  if (String(msg.text || '').startsWith('[ADMIN] ')) {
+              sender.style.color = '#66b3ff';
+            } else if (isStaffMessage(msg)) {
               sender.style.color = '#ff4d4d'; // Staff Red
             } else {
               sender.style.color = 'var(--gold)'; // Default Gold
