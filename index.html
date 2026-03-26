@@ -3837,6 +3837,8 @@ const game = {
   progressFrame: null,
   wasMiningBeforeTrade: false,
   shopOpen: false, 
+  superAdmin: false,
+  staffRole: '',
   isAdmin: false,
   inCombat: false,
   playerAttackStyle: 'strength', // Default to strength
@@ -5694,6 +5696,52 @@ const ITEM_STATS = {
   'Archery Bracer': { rangedStr: 5, rangedAtk: 5, armorType: 'jewelry', occupiesBothRings: true }
 };
 window.ITEM_STATS = ITEM_STATS;
+window.JSON_ITEMS = { itemsById: {}, itemsByName: {}, loaded: false };
+
+function getNormalizedItemsJsonMap(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return {};
+  const nestedItems = (data.items && typeof data.items === 'object' && !Array.isArray(data.items)) ? data.items : {};
+  const merged = { ...nestedItems };
+  Object.entries(data).forEach(([key, value]) => {
+    if (key === 'items') return;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return;
+    if (!('id' in value) && !('name' in value) && !('img' in value) && !('stats' in value) && !('sellPrice' in value)) return;
+    merged[key] = value;
+  });
+  return merged;
+}
+
+function applyItemsJsonData(data) {
+  const mergedItems = getNormalizedItemsJsonMap(data);
+  window.JSON_ITEMS.itemsById = mergedItems;
+  window.JSON_ITEMS.itemsByName = {};
+
+  Object.entries(mergedItems).forEach(([id, def]) => {
+    if (!def || typeof def !== 'object' || Array.isArray(def)) return;
+    const itemName = def.name || id;
+    window.JSON_ITEMS.itemsByName[itemName] = def;
+    if (def.stats && typeof def.stats === 'object' && !Array.isArray(def.stats) && Object.keys(def.stats).length > 0) {
+      ITEM_STATS[itemName] = { ...def.stats };
+    }
+  });
+
+  window.JSON_ITEMS.loaded = true;
+  window.ITEM_STATS = ITEM_STATS;
+  return mergedItems;
+}
+window.applyItemsJsonData = applyItemsJsonData;
+
+function loadItemsJsonData() {
+  const paths = ['game_data/items.json', 'items.json'];
+  return paths.reduce((promise, nextPath) => promise.catch(() => fetch(nextPath).then(response => {
+    if (!response.ok) throw new Error('HTTP ' + response.status + ' for ' + nextPath);
+    return response.json();
+  })), Promise.reject())
+    .then(data => applyItemsJsonData(data))
+    .catch(() => null);
+}
+window.loadItemsJsonData = loadItemsJsonData;
+loadItemsJsonData();
 
 const SHOP_INVENTORY = new Array(24).fill(null);
 SHOP_INVENTORY[0] = { name: 'Bronze Pickaxe', price: 10 };
@@ -23332,6 +23380,8 @@ function resetGameState() {
   game.thieving = { level: 1, xp: 0, totalXP: 0 };
   game.thievingTargets = [];
   game.shopOpen = false;
+  game.superAdmin = false;
+  game.staffRole = '';
   game.isAdmin = false;
   
   game.isSessionActive = false;
@@ -26065,7 +26115,7 @@ async function attemptEnchant() {
     
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  const ADMIN_UID = "4HaiQgCEFjOapbcsFKmEAxqoLQk1";
+  const SUPER_ADMIN_UIDS = ["4HaiQgCEFjOapbcsFKmEAxqoLQk1"];
 
   // +++ NEW: Stub function for resetGameState +++
   // The real function is defined in the non-module script
@@ -26090,9 +26140,50 @@ async function attemptEnchant() {
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-    function isCurrentUserAdmin() {
-    return !!(auth.currentUser && auth.currentUser.uid === ADMIN_UID);
+  function normalizeStaffRole(roleValue) {
+    const normalized = String(roleValue || '').trim().toLowerCase();
+    if (normalized === 'admin') return 'admin';
+    if (normalized === 'moderator' || normalized === 'mod') return 'moderator';
+    return '';
   }
+
+  function isCurrentUserSuperAdmin(playerData = null) {
+    const currentUid = auth.currentUser && auth.currentUser.uid;
+    if (currentUid && SUPER_ADMIN_UIDS.includes(currentUid)) return true;
+    if (playerData && playerData.superAdmin === true) return true;
+    if (!playerData && game && game.superAdmin === true) return true;
+    return false;
+  }
+
+  function getCurrentUserStaffRole(playerData = null) {
+    if (isCurrentUserSuperAdmin(playerData)) return 'admin';
+    const explicitRole = normalizeStaffRole(playerData && playerData.role);
+    if (explicitRole) return explicitRole;
+    if (playerData && playerData.isAdmin === true) return 'admin';
+    if (playerData && (playerData.isModerator === true || playerData.moderator === true)) return 'moderator';
+    const gameRole = normalizeStaffRole(game && game.staffRole);
+    if (gameRole) return gameRole;
+    if (game && game.isAdmin) return 'admin';
+    return '';
+  }
+
+  function currentUserHasStaffPrivileges(playerData = null) {
+    return !!getCurrentUserStaffRole(playerData);
+  }
+
+  function isStaffMessage(msg) {
+    if (msg && msg.senderUid && SUPER_ADMIN_UIDS.includes(msg.senderUid)) return true;
+    const senderRole = normalizeStaffRole(msg && msg.senderRole);
+    return senderRole === 'admin' || senderRole === 'moderator';
+  }
+
+  function isCurrentUserAdmin() {
+    return currentUserHasStaffPrivileges(game);
+  }
+  window.normalizeStaffRole = normalizeStaffRole;
+  window.isCurrentUserSuperAdmin = isCurrentUserSuperAdmin;
+  window.getCurrentUserStaffRole = getCurrentUserStaffRole;
+  window.currentUserHasStaffPrivileges = currentUserHasStaffPrivileges;
   window.isCurrentUserAdmin = isCurrentUserAdmin;
 
   const EVENT_JOURNAL_CHAT_PREFIX = '__event_journal__|';
@@ -26134,6 +26225,7 @@ async function attemptEnchant() {
     await addDoc(collection(db, "messages"), {
       senderUid: user.uid,
       senderName: game.name,
+      senderRole: getCurrentUserStaffRole(game) || '',
       text,
       timestamp: serverTimestamp()
     });
@@ -26146,6 +26238,7 @@ async function attemptEnchant() {
     await addDoc(collection(db, "messages"), {
       senderUid: user.uid,
       senderName: game.name || 'System',
+      senderRole: getCurrentUserStaffRole(game) || '',
       text: payload,
       timestamp: serverTimestamp()
     });
@@ -26791,6 +26884,10 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           return; // Stop here!
         }
         // +++ END FIX +++
+
+        game.superAdmin = isCurrentUserSuperAdmin(data);
+        game.staffRole = getCurrentUserStaffRole(data);
+        game.isAdmin = !!game.staffRole;
 
         // --- ADMIN FORCED DISCONNECT ---
         const forcedAt = Number(data.forceDisconnectAt || 0);
@@ -27441,10 +27538,11 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       if (playerDocListener) playerDocListener();
 
       const started = await loadPlayerDataAndStart(user);
-      if (user.uid === ADMIN_UID) {
-        game.isAdmin = true;
-      } else {
-        game.isAdmin = false;
+      game.superAdmin = isCurrentUserSuperAdmin();
+      const resolvedStaffRole = getCurrentUserStaffRole(game);
+      game.staffRole = resolvedStaffRole;
+      game.isAdmin = !!resolvedStaffRole;
+      if (!resolvedStaffRole) {
         game.playerAttackStyle = 'strength';
       }
       if (started) {
@@ -27461,6 +27559,9 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       }
     } else {
       // User is logged out
+      game.superAdmin = false;
+      game.staffRole = '';
+      game.isAdmin = false;
       authScreen.style.display = 'flex';
       startScreen.style.display = 'none';
       gameScreen.style.display = 'none';
@@ -27793,6 +27894,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 '/giveitem [playername] [item name] [amount]',
                 '/givepet [playername] [pet type]',
                 '/setlevel [playername] [skill] [level]',
+                '/setrole [playername] [admin|moderator|player]',
                 '/forget [quest name]',
                 '/disconnect [playername] - Disconnect one active session',
                 '/disconnectall - Disconnect all active sessions (except you)',
@@ -28006,7 +28108,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         }
 
         // --- COMMAND: /givepet player pettype ---
-        if (command === 'givepet') {
+  if (command === 'givepet') {
             const targetName = args[0] ? args[0].toLowerCase() : '';
             const petType = normalizeAdminPetType(args.slice(1).join(' '));
 
@@ -28597,7 +28699,55 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             } catch (e) { console.error(e); }
             return true;
         }
-          // --- COMMAND: /godmode ---
+          // --- COMMAND: /setrole player role ---
+        if (command === 'setrole') {
+            const targetName = args[0] ? args[0].toLowerCase() : '';
+            const requestedRole = normalizeStaffRole(args[1]);
+            const clearRole = String(args[1] || '').trim().toLowerCase() === 'player' || String(args[1] || '').trim().toLowerCase() === 'none';
+
+            if (!targetName || (!requestedRole && !clearRole)) {
+                addLocalChatMessage('Usage: /setrole [playername] [admin|moderator|player]', 'error');
+                return true;
+            }
+
+            try {
+                const targetDoc = await findPlayerDocByAdminName(targetName);
+                if (!targetDoc) {
+                    addLocalChatMessage('Player not found: ' + targetName, 'error');
+                    return true;
+                }
+
+                const targetData = targetDoc.data() || {};
+                const exactName = (targetData.name || '').trim() || targetName;
+                const nextRole = clearRole ? '' : requestedRole;
+                const payload = {
+                    role: nextRole,
+                    isAdmin: nextRole === 'admin',
+                    isModerator: nextRole === 'moderator',
+                    moderator: nextRole === 'moderator'
+                };
+
+                await updateDoc(doc(db, 'players', targetDoc.id), payload);
+
+                if (targetDoc.id === user.uid) {
+                    game.staffRole = nextRole;
+                    game.isAdmin = !!nextRole;
+                }
+
+                addLocalChatMessage(
+                    nextRole
+                        ? ('Admin: Set ' + exactName + ' role to ' + nextRole + '.')
+                        : ('Admin: Cleared role for ' + exactName + '.'),
+                    'system'
+                );
+            } catch (e) {
+                console.error('Error setting role:', e);
+                addLocalChatMessage('Error setting role: ' + e.message, 'error');
+            }
+            return true;
+        }
+
+        // --- COMMAND: /godmode ---
         if (command === 'godmode') {
            game.hp = 9999;
            game.maxHP = 9999;
@@ -28616,6 +28766,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
   { command: '/giveitem ', desc: 'Give an item to a player' },
   { command: '/givepet ', desc: 'Give a living pet directly to a Pet Yard' },
   { command: '/setlevel ', desc: 'Set a player skill level' },
+  { command: '/setrole ', desc: 'Set a player role to admin or moderator' },
   { command: '/forget ', desc: 'Forget a quest line entry' },
   { command: '/disconnect ', desc: 'Disconnect one active player' },
   { command: '/disconnectall', desc: 'Disconnect all active players except you' },
@@ -28675,6 +28826,28 @@ function getChatCommandMatches(value) {
         desc: 'Item name'
       }));
     }
+  }
+
+  if (command === 'setrole') {
+    const prefix = '/setrole ';
+    const rest = trimmed.slice(prefix.length);
+    if (!rest.length) {
+      return getCachedAdminPlayerNameMatches('').map(name => ({ command: prefix + name + ' ', desc: 'Player name' }));
+    }
+
+    const firstSpace = rest.indexOf(' ');
+    if (firstSpace === -1) {
+      return getCachedAdminPlayerNameMatches(rest).map(name => ({ command: prefix + name + ' ', desc: 'Player name' }));
+    }
+
+    const playerName = rest.slice(0, firstSpace).trim();
+    const rolePartial = rest.slice(firstSpace + 1).trim().toLowerCase();
+    return ['admin', 'moderator', 'player']
+      .filter(role => role.startsWith(rolePartial))
+      .map(role => ({
+        command: prefix + playerName + ' ' + role,
+        desc: role === 'player' ? 'Clear staff role' : 'Staff role'
+      }));
   }
 
   if (command === 'givepet') {
@@ -28777,6 +28950,7 @@ async function sendChatMessage() {
       await addDoc(collection(db, "messages"), {
         senderUid: user.uid,
         senderName: game.name,
+        senderRole: getCurrentUserStaffRole(game) || '',
         text: messageText,
         timestamp: serverTimestamp()
       });
@@ -29033,8 +29207,8 @@ async function sendChatMessage() {
             msgElement.dataset.msgId = change.doc.id;
             const sender = document.createElement('strong');
                   // Admin Color Check
-            if (msg.senderUid === ADMIN_UID) {
-              sender.style.color = '#ff4d4d'; // Admin Red
+            if (isStaffMessage(msg)) {
+              sender.style.color = '#ff4d4d'; // Staff Red
             } else {
               sender.style.color = 'var(--gold)'; // Default Gold
             }
@@ -29060,8 +29234,8 @@ async function sendChatMessage() {
             msgElement.dataset.senderLc = (msg.senderName || '').toLowerCase();
             msgElement.dataset.msgId = doc.id;
             const sender = document.createElement('strong');
-                  if (msg.senderUid === ADMIN_UID) {
-              sender.style.color = '#ff4d4d'; // Admin Red
+                  if (isStaffMessage(msg)) {
+              sender.style.color = '#ff4d4d'; // Staff Red
             } else {
               sender.style.color = 'var(--gold)'; // Default Gold
             }
@@ -29252,7 +29426,7 @@ async function sendChatMessage() {
     if (chatInput) {
       chatInput.addEventListener('input', () => {
         const currentValue = String(chatInput.value || '').trimStart().toLowerCase();
-        if (currentValue.startsWith('/give') || currentValue.startsWith('/inspect') || currentValue.startsWith('/disconnect') || currentValue.startsWith('/clear') || currentValue.startsWith('/removebuff')) {
+        if (currentValue.startsWith('/give') || currentValue.startsWith('/inspect') || currentValue.startsWith('/disconnect') || currentValue.startsWith('/clear') || currentValue.startsWith('/removebuff') || currentValue.startsWith('/setrole')) {
           refreshAdminPlayerNameCache().then(() => updateChatCommandSuggestions());
         }
         updateChatCommandSuggestions();
