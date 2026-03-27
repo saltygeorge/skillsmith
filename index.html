@@ -27954,13 +27954,13 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                     '/clearlastme - Delete your last chat message',
                     '/update [message]',
                     '/messageall [message]',
-                    '/modo [message] - Post a moderator-tagged chat message',
+                    '/modo [message] - Post a [MODO]-tagged chat message',
                     '/admin [message] - Post an admin-tagged chat message',
                     '/godmode'
                 ]
                 : [
                     '/helpadmin - Show this help list',
-                    '/modo [message] - Post a moderator-tagged chat message',
+                    '/modo [message] - Post a [MODO]-tagged chat message',
                     '/inspect [playername]',
                     '/inspectlottery [playername]',
                     '/inspectdeath [playername]',
@@ -28258,7 +28258,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 senderUid: user.uid,
                 senderName: game.name,
                 senderRole: getCurrentUserStaffRole(game) || 'moderator',
-                text: '(modo) ' + modoMessage,
+                text: '[MODO] ' + modoMessage,
                 timestamp: serverTimestamp()
               });
             } catch (e) {
@@ -28890,7 +28890,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
   { command: '/clearlastme', desc: 'Delete your last chat message' },
   { command: '/update ', desc: 'Post an update message' },
   { command: '/messageall ', desc: 'Broadcast a message to everyone' },
-  { command: '/modo ', desc: 'Post a moderator-tagged chat message' },
+  { command: '/modo ', desc: 'Post a [MODO]-tagged chat message' },
   { command: '/admin ', desc: 'Post an admin-tagged chat message' },
   { command: '/godmode', desc: 'Toggle god mode' }
 ];
@@ -29327,7 +29327,7 @@ async function sendChatMessage() {
                   // Admin Color Check
             if (String(msg.text || '').startsWith('[ADMIN] ')) {
               sender.style.color = '#66b3ff';
-            } else if (String(msg.text || '').startsWith('(modo) ')) {
+            } else if (String(msg.text || '').startsWith('[MODO] ')) {
               sender.style.color = '#ff9c42';
             } else if (isStaffMessage(msg)) {
               sender.style.color = '#ff4d4d'; // Staff Red
@@ -29358,7 +29358,7 @@ async function sendChatMessage() {
             const sender = document.createElement('strong');
                   if (String(msg.text || '').startsWith('[ADMIN] ')) {
               sender.style.color = '#66b3ff';
-            } else if (String(msg.text || '').startsWith('(modo) ')) {
+            } else if (String(msg.text || '').startsWith('[MODO] ')) {
               sender.style.color = '#ff9c42';
             } else if (isStaffMessage(msg)) {
               sender.style.color = '#ff4d4d'; // Staff Red
