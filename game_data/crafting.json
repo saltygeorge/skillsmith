@@ -57,6 +57,30 @@
       "description": "Restores 20 HP."
     },
     {
+      "id": "alchemy_fire_resist",
+      "section": "alchemy",
+      "skill": "alchemy",
+      "level": 25,
+      "displayName": "Fire Resist",
+      "image": "images/fireresist.png",
+      "requirements": [
+        {
+          "name": "Venom",
+          "qty": 1
+        },
+        {
+          "name": "Fire Stone",
+          "qty": 25
+        }
+      ],
+      "time": 6000,
+      "xp": 160,
+      "outputName": "Fire Resist",
+      "outputQty": 1,
+      "slot": 2,
+      "description": "A potent anti-fire concoction."
+    },
+    {
       "id": "smith_copper_bar",
       "section": "blacksmithing",
       "metalType": "copper",

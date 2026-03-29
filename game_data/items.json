@@ -1288,6 +1288,18 @@
         "twoHanded": true,
         "speed": 500
       }
+    },
+    "fire_resist": {
+      "id": "fire_resist",
+      "name": "Fire Resist",
+      "img": "images/fireresist.png",
+      "sellPrice": 400,
+      "unlockLevel": 25,
+      "stats": {},
+      "effects": {
+        "preventBurn": true,
+        "durationMs": 60000
+      }
     }
   }
 }
