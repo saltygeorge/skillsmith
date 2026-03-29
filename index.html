@@ -507,7 +507,7 @@ body {
 #chatInputContainer { 
   display: flex; 
   gap: 8px; 
-  margin-top: 10px;
+  margin-top: 8px;
 }
 #chatInputWrap {
   position: relative;
@@ -529,7 +529,7 @@ body {
   bottom: calc(100% + 6px);
   display: none;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   padding: 6px;
   border: 1px solid rgba(214, 139, 46, 0.55);
   border-radius: 8px;
@@ -744,7 +744,7 @@ button.primary:hover { background: var(--accent-hover); }
 .trade-offer-layout { display: flex; gap: 20px; }
 .trade-offer-box { flex: 1; display: flex; flex-direction: column; }
 .trade-gold-input {
-  margin-top: 10px;
+  margin-top: 8px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -761,7 +761,7 @@ button.primary:hover { background: var(--accent-hover); }
   font-size: 14px;
 }
 #tradeAcceptBtn {
-  margin-top: 15px;
+  margin-top: 8px;
   background: var(--accent);
   font-size: 16px;
 }
@@ -771,7 +771,7 @@ button.primary:hover { background: var(--accent-hover); }
   cursor: not-allowed;
 }
 .trade-status-indicator {
-  margin-top: 10px;
+  margin-top: 8px;
   text-align: center;
   font-weight: bold;
   padding: 8px;
@@ -1026,7 +1026,7 @@ button.primary:hover { background: var(--accent-hover); }
 
 #combat-styles button {
   flex: 1;
-  padding: 12px;
+  padding: 10px;
   border: 2px solid var(--accent);
   background: var(--accent);
   opacity: 0.7;
@@ -1509,8 +1509,8 @@ button.primary:hover { background: var(--accent-hover); }
 
 /* --- NEW: Spells Panel (Mirrors Stats Panel) --- */
 #spellsPanel {
-  display: flex; /* Always flex so layout works inside */
-  visibility: hidden; /* Hidden visually, but keeps the space reserved */
+  display: none; /* Hidden until opened so chat can reclaim the width */
+  visibility: hidden;
   
   /* This width perfectly matches the .sidebar panel above it */
   width: calc((var(--slot-size) * 4) + (var(--slot-gap) * 3) + 32px + 8px);
@@ -1528,7 +1528,7 @@ button.primary:hover { background: var(--accent-hover); }
   font-size: 18px;
   font-weight: bold;
   color: #fff; /* <-- CHANGED TO WHITE */
-  margin: -5px -5px 10px -5px;
+  margin: -5px -5px 8px -5px;
   padding: 5px 10px;
   border-bottom: 2px solid var(--accent);
 }
@@ -1543,33 +1543,33 @@ button.primary:hover { background: var(--accent-hover); }
   display: flex;
   justify-content: space-between; /* To put the autocast text on the left */
   align-items: center;
-  margin-top: 15px;
+  margin-top: 8px;
 }
 /* --- END: Spells Panel --- */
 
 /* --- NEW: Stats Panel --- */
 #statsPanel {
-  display: flex;
+  display: none;
   visibility: hidden;
   width: calc((var(--slot-size) * 4) + (var(--slot-gap) * 3) + 32px + 8px);
-  min-height: 200px; 
-  padding: 16px;
+  min-height: 0; 
+  padding: 10px;
   box-sizing: border-box;
   flex-direction: column;
   flex-shrink: 0;
-  justify-content: space-between; 
+  justify-content: flex-start; 
   align-items: stretch; /* Changed from center to stretch so children fill width */
 }
 #statsPanelHeader {
   font-size: 18px;
   font-weight: bold;
   color: #fff; /* <-- CHANGED TO WHITE */
-  margin: -5px -5px 10px -5px;
+  margin: -5px -5px 8px -5px;
   padding: 5px 10px;
   border-bottom: 2px solid var(--accent);
 }
 #statsPanelContent {
-  padding: 12px;
+  padding: 10px;
   background: rgba(0,0,0,0.15);
   border-radius: 6px;
   display: flex;
@@ -1577,14 +1577,14 @@ button.primary:hover { background: var(--accent-hover); }
   justify-content: center;
   /* Centering Logic */
   width: 100%;             /* Ensures the box fills the panel width */
-  margin: auto 0;          /* Pushes the box to the vertical center of the panel */
+  margin: 0;               /* Keep the panel compact instead of vertically centering it */
   box-sizing: border-box;
 }
 .stats-column {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 .stat-row {
   display: flex;
@@ -1609,7 +1609,7 @@ button.primary:hover { background: var(--accent-hover); }
   display: flex;
   justify-content: flex-end; 
   align-items: center;
-  margin-top: 15px;
+  margin-top: 8px;
   width: 100%;            /* Added to span the full width */
   box-sizing: border-box; /* Ensures padding doesn't cause overflow */
 }
@@ -1661,7 +1661,7 @@ button.primary:hover { background: var(--accent-hover); }
   border: 2px solid var(--accent);
   border-radius: 8px;
   padding: 3px;
-  margin-top: 15px;
+  margin-top: 8px;
   box-sizing: border-box;
   position: relative;
   height: 28px;
@@ -2057,7 +2057,7 @@ button.primary:hover { background: var(--accent-hover); }
   transform: translate(-50%, -50%);
   width: calc(100% - 28px);
   max-width: 360px;
-  padding: 14px;
+  padding: 10px;
   border: 2px solid #6c5130;
   border-radius: 12px;
   background: rgba(36, 22, 12, 0.96);
@@ -2098,7 +2098,7 @@ button.primary:hover { background: var(--accent-hover); }
 }
 
 .garden-tomb-offer-hint {
-  margin-top: 10px;
+  margin-top: 8px;
   color: #d8c39b;
   font-size: 13px;
   text-align: center;
@@ -2283,7 +2283,7 @@ button.primary:hover { background: var(--accent-hover); }
   background: rgba(0,0,0,0.3);
   border: 2px solid var(--accent);
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -2413,6 +2413,142 @@ button.primary:hover { background: var(--accent-hover); }
   z-index: 5005; /* Above everything */
 }
 
+
+
+@media screen and (max-width: 1100px) and (hover: none) and (pointer: coarse) {
+  :root {
+    --slot-size: 52px;
+    --slot-gap: 8px;
+  }
+
+  html, body {
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  body {
+    display: block;
+    background-attachment: scroll;
+  }
+
+  #startScreen, #gameScreen {
+    align-items: flex-start;
+    min-height: 100dvh;
+    padding: 8px 0 18px;
+    box-sizing: border-box;
+  }
+
+  .container {
+    max-width: none;
+    padding: 10px;
+    gap: 12px;
+  }
+
+  #top-row-panels,
+  #bottom-row-chat,
+  #bankGridPanels,
+  .trade-main-area {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sidebar,
+  .main,
+  .chat-panel,
+  #statsPanel,
+  #spellsPanel,
+  #bankPanel,
+  #bankInventoryPanel,
+  .trade-content {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .sidebar-spacer {
+    display: none;
+  }
+
+  .sidebar,
+  .main,
+  .chat-panel,
+  #statsPanel,
+  #spellsPanel {
+    padding: 10px;
+  }
+
+  .main {
+    min-height: 0;
+  }
+
+  #mainContentWrapper {
+    overflow-x: visible;
+  }
+
+  #chatMessages {
+    height: 180px;
+  }
+
+  #chatInputContainer {
+    flex-wrap: wrap;
+  }
+
+  #chatInputWrap {
+    width: 100%;
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  #actionScreen {
+    justify-content: center;
+  }
+
+  #bankPanel,
+  #bankInventoryPanel {
+    padding: 10px;
+  }
+
+  .trade-content {
+    min-height: 0;
+    padding: 10px;
+  }
+
+  #tradeMyOfferGrid,
+  #tradeTheirOfferGrid {
+    justify-content: center;
+  }
+
+  #combat-player-area {
+    gap: 12px;
+    padding: 10px;
+    flex-wrap: wrap;
+  }
+
+  #combat-styles {
+    flex-wrap: wrap;
+  }
+
+  .beer-buff-timer {
+    top: 8px;
+    right: 8px;
+    min-width: 138px;
+  }
+}
+
+@media screen and (max-width: 1050px) {
+  #leaderboardPanel {
+    display: none;
+  }
+
+  #statsPanel:not([style*="visibility: visible"]),
+  #spellsPanel:not([style*="visibility: visible"]) {
+    display: none;
+  }
+}
 
 </style>
 </head>
@@ -3617,10 +3753,10 @@ button.primary:hover { background: var(--accent-hover); }
             <div class="stat-row"><span class="stat-label">Magic Attack</span><span class="stat-value" id="stat-mag-atk" style="color:#7fbfff;">0</span></div>
             <div class="stat-row"><span class="stat-label">Melee Strength</span><span class="stat-value" id="stat-m-str" style="color:#ff4d4d;">0</span></div>
             <div class="stat-row"><span class="stat-label">Ranged Strength</span><span class="stat-value" id="stat-r-str" style="color:#44aa44;">0</span></div>
-            <div class="stat-row"><span class="stat-label">Magic Damage</span><span class="stat-value" id="stat-mag-dmg" style="color:#4da6ff;">0</span></div>
           </div>
               <!-- Right Column: Defense -->
           <div class="stats-column" style="border-left: 1px solid rgba(109, 69, 45, 0.5); padding-left: 10px;">
+            <div class="stat-row"><span class="stat-label">Magic Damage</span><span class="stat-value" id="stat-mag-dmg" style="color:#4da6ff;">0</span></div>
             <div class="stat-row"><span class="stat-label">Melee Defense</span><span class="stat-value" id="stat-m-def" style="color:#e38a42;">0</span></div>
             <div class="stat-row"><span class="stat-label">Ranged Defense</span><span class="stat-value" id="stat-r-def" style="color:#aaffaa;">0</span></div>
             <div class="stat-row"><span class="stat-label">Magic Defense</span><span class="stat-value" id="stat-mag-def" style="color:#6dafff;">0</span></div>
@@ -24068,20 +24204,32 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const spellsPanel = document.getElementById('spellsPanel');
   // --- END NEW ---
 
+  function setBottomAuxPanelVisibility(panel, isVisible) {
+    if (!panel) return;
+    panel.style.display = isVisible ? 'flex' : 'none';
+    panel.style.visibility = isVisible ? 'visible' : 'hidden';
+  }
+
+  function isBottomAuxPanelVisible(panel) {
+    return !!panel && panel.style.visibility === 'visible';
+  }
+
+  setBottomAuxPanelVisibility(statsPanel, false);
+  setBottomAuxPanelVisibility(spellsPanel, false);
+
   if (toggleStatsBtn) {
     toggleStatsBtn.onclick = () => {
       if (statsPanel) {
         if (typeof renderEquipment === 'function') {
             renderEquipment();
         }
-        // Simply toggle visibility. Do NOT close the Spells panel.
-        statsPanel.style.visibility = (statsPanel.style.visibility === 'visible') ? 'hidden' : 'visible';
+        setBottomAuxPanelVisibility(statsPanel, !isBottomAuxPanelVisible(statsPanel));
       }
     };
   }
   if (closeStatsBtn) {
     closeStatsBtn.onclick = () => {
-      if (statsPanel) statsPanel.style.visibility = 'hidden'; 
+      setBottomAuxPanelVisibility(statsPanel, false);
     };
   }
 
@@ -24089,15 +24237,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if (toggleSpellsBtn) {
     toggleSpellsBtn.onclick = () => {
        if (spellsPanel) {
-          // Check if currently hidden or visible
-          if (spellsPanel.style.visibility !== 'visible') {
-              // Opening
+          if (!isBottomAuxPanelVisible(spellsPanel)) {
               if (typeof renderSpellsPanel === 'function') renderSpellsPanel();
-              spellsPanel.style.visibility = 'visible';
+              setBottomAuxPanelVisibility(spellsPanel, true);
           } else {
-              // Closing
-              spellsPanel.style.visibility = 'hidden';
-              // FIX: Clear icons immediately to prevent visual lag
+              setBottomAuxPanelVisibility(spellsPanel, false);
               const container = document.getElementById('spellsIconsContainer');
               if (container) container.innerHTML = ''; 
           }
@@ -24108,8 +24252,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if (closeSpellsBtn) {
     closeSpellsBtn.onclick = () => {
       if (spellsPanel) {
-          spellsPanel.style.visibility = 'hidden'; 
-          // FIX: Clear icons immediately to prevent visual lag
+          setBottomAuxPanelVisibility(spellsPanel, false);
           const container = document.getElementById('spellsIconsContainer');
           if (container) container.innerHTML = ''; 
       }
@@ -31567,6 +31710,23 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
