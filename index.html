@@ -2415,6 +2415,28 @@ button.primary:hover { background: var(--accent-hover); }
 
 
 
+@media screen and (max-width: 1320px) {
+  html, body {
+    min-height: 100%;
+    overflow-y: auto;
+  }
+
+  body {
+    display: block;
+    min-height: 100vh;
+    height: auto;
+    overflow-y: auto;
+  }
+
+  #startScreen,
+  #gameScreen {
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px 0 18px;
+    box-sizing: border-box;
+  }
+}
+
 @media screen and (max-width: 1100px) and (hover: none) and (pointer: coarse) {
   :root {
     --slot-size: 52px;
@@ -6772,6 +6794,23 @@ function formatAmount(n) {
   return parseFloat((n / 1000000).toFixed(2)) + 'M';
 }
 
+
+function ensureGameTopVisible() {
+  if (window.innerWidth > 1320) return;
+  const gameScreenEl = document.getElementById('gameScreen');
+  if (!gameScreenEl) return;
+  if (getComputedStyle(gameScreenEl).display === 'none') return;
+
+  window.requestAnimationFrame(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  });
+}
+
+window.addEventListener('resize', ensureGameTopVisible, { passive: true });
+window.addEventListener('orientationchange', () => setTimeout(ensureGameTopVisible, 60));
+window.addEventListener('pageshow', ensureGameTopVisible);
 function createCharacter(){
   const name = document.getElementById('playerName').value.trim();
   if(!name) return; 
@@ -6779,7 +6818,9 @@ function createCharacter(){
   game.isDirty = true; // Flag for save
   document.getElementById('charName').innerText = name;
   document.getElementById('startScreen').style.display = 'none';
-  document.getElementById('gameScreen').style.display = 'block';
+  document.getElementById('gameScreen').style.display = 'flex';
+  
+  ensureGameTopVisible();
   updateHPUI();
   renderInventoryGrid();
   updateSkillUI();
@@ -27328,7 +27369,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           if (!snap.exists()) {
           console.log("Player document doesn't exist, showing start screen.");
           authScreen.style.display = 'none';
-          startScreen.style.display = 'block'; 
+          startScreen.style.display = 'flex'; 
           gameScreen.style.display = 'none';
           return; 
         }
@@ -27340,7 +27381,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         // We must NOT attempt to acquire a session lock yet, or it will error.
         if (!data.name) {
           authScreen.style.display = 'none';
-          startScreen.style.display = 'block'; 
+          startScreen.style.display = 'flex'; 
           gameScreen.style.display = 'none';
           return; // Stop here!
         }
@@ -27450,7 +27491,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         if (!data.name) {
           // This handles the case right after registration
           authScreen.style.display = 'none';
-          startScreen.style.display = 'block'; 
+          startScreen.style.display = 'flex'; 
           gameScreen.style.display = 'none';
           return;
         }
@@ -27909,7 +27950,9 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         }
           startScreen.style.display = 'none';
         authScreen.style.display = 'none';
-        gameScreen.style.display = 'block';
+        gameScreen.style.display = 'flex';
+        
+        ensureGameTopVisible();
         loadSettings();
         startMusicPlaylist();
 
@@ -27920,7 +27963,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       const initialSnap = await getDoc(ref);
       if (!initialSnap.exists() || !initialSnap.data().name) {
         authScreen.style.display = 'none';
-        startScreen.style.display = 'block';
+        startScreen.style.display = 'flex';
         gameScreen.style.display = 'none';
         return false; 
       }
@@ -28018,7 +28061,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         // The loadPlayerDataAndStart listener will automatically handle
         // acquiring the lock on first load.
       } else {
-        startScreen.style.display = 'block';
+        startScreen.style.display = 'flex';
         gameScreen.style.display = 'none';
         authScreen.style.display = 'none';
       }
@@ -31710,6 +31753,11 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
 
 
 
