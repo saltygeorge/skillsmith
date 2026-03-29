@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -150,11 +150,13 @@ body {
 .hp-bar { background: #772222; border-radius: 6px; margin-bottom: 12px; position: relative; height: 28px; }
 .hp-fill { height: 100%; background: #d22; width: 100%; transition: width 0.25s; }
 .hp-text { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: bold; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.7); font-size: 13px; }
-.beer-buff-timer { display: none; position: absolute; top: 18px; right: 18px; z-index: 1200; min-width: 132px; flex-direction: column; gap: 4px; align-items: stretch; padding: 6px 8px; border: 1px solid rgba(214, 170, 72, 0.55); border-radius: 8px; background: rgba(69, 42, 18, 0.78); box-shadow: 0 8px 18px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08); pointer-events: auto; }
+.beer-buff-timer { display: none; position: absolute; top: 18px; right: 8px; z-index: 1200; min-width: 154px; flex-direction: column; gap: 6px; align-items: stretch; padding: 6px 8px; border: 1px solid rgba(214, 170, 72, 0.55); border-radius: 8px; background: rgba(69, 42, 18, 0.78); box-shadow: 0 8px 18px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08); pointer-events: auto; }
+.beer-buff-timer-group-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.beer-buff-timer-group-title { font-size: 11px; font-weight: 700; color: #f2d489; letter-spacing: 0.2px; white-space: nowrap; }
+.beer-buff-timer-entry { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
 .beer-buff-timer-label { font-size: 11px; font-weight: 700; color: #f2d489; text-align: center; letter-spacing: 0.2px; white-space: nowrap; }
 .beer-buff-timer-track { height: 5px; border-radius: 999px; background: rgba(0,0,0,0.28); overflow: hidden; }
 .beer-buff-timer-fill { height: 100%; width: 100%; border-radius: inherit; background: linear-gradient(90deg, #c89f2b 0%, #f0d27a 100%); transition: width 0.2s linear; }
-.beer-buff-timer-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .beer-buff-timer-close { width: 18px; height: 18px; border: 0; border-radius: 999px; background: rgba(255,255,255,0.08); color: #f2d489; cursor: pointer; font-size: 12px; font-weight: 700; line-height: 18px; padding: 0; }
 .beer-buff-timer-close:hover { background: rgba(255,255,255,0.16); }
 .combat-effect-popup {
@@ -662,6 +664,23 @@ button.primary:hover { background: var(--accent-hover); }
   animation: fadeOutWarning 3000ms ease-out forwards; /* 3 second animation */
   box-shadow: 0 8px 18px rgba(0,0,0,0.35);
   text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.enemy-status-popup {
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 46px;
+  max-width: 190px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(221, 68, 68, 0.92);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  pointer-events: none;
+  z-index: 1655;
+  text-align: center;
+  animation: fadeOutWarning 3000ms ease-out forwards;
 }
 @keyframes fadeOutWarning {
   0% { transform: translateY(0); opacity: 1; }
@@ -2552,15 +2571,7 @@ button.primary:hover { background: var(--accent-hover); }
       </div>
 
       <div class="main" id="mainArea">
-        <div id="beerBuffTimer" class="beer-buff-timer">
-          <div class="beer-buff-timer-header">
-            <div id="beerBuffTimerLabel" class="beer-buff-timer-label">Beer Buff: 60s</div>
-            <button type="button" class="beer-buff-timer-close" onclick="dismissBeerBuffTimer()">x</button>
-          </div>
-          <div class="beer-buff-timer-track">
-            <div id="beerBuffTimerFill" class="beer-buff-timer-fill"></div>
-          </div>
-        </div>
+        <div id="beerBuffTimer" class="beer-buff-timer"></div>
 
         <div id="mainContentWrapper">
             <div id="hubActions" class="hub-screen">
@@ -3930,6 +3941,10 @@ const game = {
   lastAutoHealTime: 0, // Track the last time a potion was used
   beerBuffExpiresAt: 0,
   drunkExpiresAt: 0,
+  fireResistExpiresAt: 0,
+  burnExpiresAt: 0,
+  lastBurnTickAt: 0,
+  burnSource: '',
   goldenDragonHp: 2500,
   achievementStats: { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} },
   eventJournal: [],
@@ -5082,6 +5097,7 @@ const VALID_ITEMS = [
   'Beer',
   'Bucket of Milk', // +++ NEW +++
   'Bucket of Water', // +++ NEW +++
+  'Fire Resist',
   'Grass Seed',      // +++ NEW +++
   'Grass',
   'Corn Seed',
@@ -5899,6 +5915,7 @@ const ITEM_SELL_PRICES = {
   'Beer': 18,
   'Bucket of Milk': 15,
   'Bucket of Water': 5,
+  'Fire Resist': 400,
   'Grass Seed': 2,
   'Grass': 5,
   'Corn Seed': 5,
@@ -6011,7 +6028,7 @@ function normalizeItemDyeColor(color) {
 
 function getItemRenderImageName(itemOrName, fallbackName = 'gearicon') {
   const item = (itemOrName && typeof itemOrName === 'object') ? itemOrName : { name: itemOrName };
-  const fallbackOverrides = { 'Copper Ore': 'copper_ore', 'Vitality Potion+': 'vitalitypotionplus', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 'Archery Bracer': 'archerybracer', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken', 'Pet Chicken Egg': 'petegg5', 'Pet Egg 5': 'petegg5' };
+  const fallbackOverrides = { 'Copper Ore': 'copper_ore', 'Vitality Potion+': 'vitalitypotionplus', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 'Archery Bracer': 'archerybracer', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken', 'Pet Chicken Egg': 'petegg5', 'Pet Egg 5': 'petegg5', 'Fire Resist': 'fireresist' };
   const baseName = (window.__inspectItemImageMap && item && item.name && window.__inspectItemImageMap[item.name]) || (item && item.name && fallbackOverrides[item.name]) || String(item && item.name ? item.name : fallbackName).toLowerCase().replace(/\s+/g, '').replace(/\+/g, 'plus');
   const dyeColor = normalizeItemDyeColor(item && item.dyeColor);
   const variantMap = item && item.name ? DYE_VARIANT_IMAGE_MAP[item.name] : null;
@@ -7424,6 +7441,7 @@ function renderInventoryGrid(){
               else if (item.name === 'Wild Herb') imgName = 'wildherb';
               else if (item.name === 'Vitality Potion') imgName = 'vitalitypotion';
               else if (item.name === 'Vitality Potion+') imgName = 'vitalitypotionplus';
+              else if (item.name === 'Fire Resist') imgName = 'fireresist';
               else if (item.name === 'Uncut Topaz') imgName = 'uncuttopaz';
               else if (item.name === 'Uncut Diamond') imgName = 'uncutdiamond';
               else if (item.name === 'Uncut Emerald') imgName = 'uncutemerald';
@@ -7529,6 +7547,10 @@ function renderInventoryGrid(){
       } else if (itemName === 'Beer') {
         itemStats = `<div style="color:#e38a42;">+10 Melee Def (60s)</div>`;
         clickAction = '<div style="color:#aaffaa; margin-top: 5px; font-size:11px;">Click to drink</div>';
+      } else if (itemName === 'Bucket of Water') {
+      } else if (itemName === 'Fire Resist') {
+        itemStats = `<div style="color:#ffb85c;">Burn Immune (60s)</div>`;
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px; font-size:11px;">Click to use</div>';
       } else if (itemName === 'Mapple Fishing Pole') {
         itemStats = `<div style="color:#7fd3ff;">-5s Fishing Time</div>`;
         clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Used automatically while fishing</div>';
@@ -7755,7 +7777,7 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     handleSellItemClick(slotIndex);
   } else if (itemSlotType) {
     equipItem(itemSlotType, slotIndex);
-  } else if (getFoodHealAmount(itemName) > 0 || itemName === 'Vitality Potion' || itemName === 'Vitality Potion+' || itemName === 'Venom' || itemName === 'Beer' || typeof getDyeColorFromItemName(itemName) !== 'undefined') {
+  } else if (getFoodHealAmount(itemName) > 0 || itemName === 'Vitality Potion' || itemName === 'Vitality Potion+' || itemName === 'Venom' || itemName === 'Beer' || itemName === 'Bucket of Water' || itemName === 'Fire Resist' || typeof getDyeColorFromItemName(itemName) !== 'undefined') {
     if (typeof getDyeColorFromItemName(itemName) !== 'undefined') useDyeItem(itemName);
     else showItemContextMenu(event, itemName);
   }
@@ -7781,7 +7803,10 @@ function showItemContextMenu(event, itemName) {
     menuContent += `<button class="context-menu-btn" onclick="equipToAutoEat('Venom')">Equip Auto-Heal</button>`;
   } else if (itemName === 'Beer') {
     menuContent += `<button class="context-menu-btn" onclick="drinkBeer()">Drink</button>`;
-  
+  } else if (itemName === 'Bucket of Water') {
+    menuContent += `<button class="context-menu-btn" onclick="useBucketOfWater()">Use</button>`;
+  } else if (itemName === 'Fire Resist') {
+    menuContent += `<button class="context-menu-btn" onclick="useFireResist()">Use</button>`;
   }
   // We can add other options here later (e.g., "Drop")
   
@@ -7978,6 +8003,7 @@ async function drinkVenom() {
 
 const BEER_BUFF_DURATION_MS = 60000;
 const DRUNK_STATUS_THRESHOLD_MS = 180000;
+const FIRE_RESIST_DURATION_MS = 60000;
 let lastBeerBuffActive = false;
 let isBeerBuffTimerDismissed = false;
 
@@ -7993,6 +8019,98 @@ function isDrunkStatusActive() {
   return getDrunkRemainingMs() > 0;
 }
 
+function getFireResistRemainingMs() {
+  return Math.max(0, Number(game.fireResistExpiresAt || 0) - Date.now());
+}
+
+function isFireResistActive() {
+  return getFireResistRemainingMs() > 0;
+}
+
+const BURN_DURATION_MS = 10000;
+const BURN_TICK_MS = 1000;
+
+function getBurnRemainingMs() {
+  return Math.max(0, Number(game.burnExpiresAt || 0) - Date.now());
+}
+
+function isBurnStatusActive() {
+  return getBurnRemainingMs() > 0;
+}
+
+function clearBurnStatus(showPopup = false, persistImmediately = false) {
+  const hadBurn = Number(game.burnExpiresAt || 0) > 0 || Number(game.lastBurnTickAt || 0) > 0 || !!game.burnSource;
+  game.burnExpiresAt = 0;
+  game.lastBurnTickAt = 0;
+  game.burnSource = '';
+  if (hadBurn) game.isDirty = true;
+  if (showPopup) showWarningPopup('The flames are extinguished.');
+  if (persistImmediately && typeof window.savePlayerData === 'function') {
+    window.savePlayerData();
+  }
+  return hadBurn;
+}
+
+function applyBurnStatus(sourceName = 'Golden Dragon', durationMs = BURN_DURATION_MS) {
+  const now = Date.now();
+  game.burnSource = sourceName;
+  game.burnExpiresAt = now + Math.max(BURN_TICK_MS, Number(durationMs || BURN_DURATION_MS));
+  game.lastBurnTickAt = now;
+  game.isDirty = true;
+  isBeerBuffTimerDismissed = false;
+  if (typeof updateBeerBuffTimerUI === 'function') updateBeerBuffTimerUI();
+  if (game.inCombat && game.currentEnemy && game.currentEnemy.name === sourceName) {
+    showEnemyStatusPopup('Burning! Use 1 Bucket of Water to extinguish the flames.');
+  } else {
+    showWarningPopup('Burning! Use 1 Bucket of Water to extinguish the flames.');
+  }
+  if (typeof window.savePlayerData === 'function') {
+    window.savePlayerData();
+  }
+}
+
+function processBurnStatusTick() {
+  if (typeof game === 'undefined' || !game || !game.name || !game.isSessionActive || Number(game.hp || 0) <= 0) return;
+  const burnExpiresAt = Number(game.burnExpiresAt || 0);
+  if (burnExpiresAt <= 0) return;
+
+  const now = Date.now();
+  const lastTickAt = Number(game.lastBurnTickAt || (burnExpiresAt - BURN_DURATION_MS));
+  const tickEnd = Math.min(now, burnExpiresAt);
+  const ticksDue = Math.floor((tickEnd - lastTickAt) / BURN_TICK_MS);
+
+  if (ticksDue <= 0) {
+    if (now >= burnExpiresAt) clearBurnStatus(false, false);
+    return;
+  }
+
+  game.lastBurnTickAt = lastTickAt + (ticksDue * BURN_TICK_MS);
+  game.hp = Math.max(0, Number(game.hp || 0) - ticksDue);
+  game.isDirty = true;
+  updateHPUI();
+  showDamageSplat('player', ticksDue, 'damage');
+
+  if (game.hp <= 0) {
+    clearBurnStatus(false, false);
+    if (game.inCombat) runFromCombat(true);
+    handlePlayerDeath({ type: 'burn', sourceName: game.burnSource || 'Golden Dragon' });
+    return;
+  }
+
+  if (now >= burnExpiresAt) clearBurnStatus(false, false);
+}
+
+if (!window.__burnStatusLoopStarted) {
+  window.__burnStatusLoopStarted = true;
+  setInterval(() => {
+    try {
+      processBurnStatusTick();
+    } catch (e) {
+      console.error('Burn tick failed:', e);
+    }
+  }, 1000);
+}
+
 function dismissBeerBuffTimer() {
   isBeerBuffTimerDismissed = true;
   updateBeerBuffTimerUI();
@@ -8000,21 +8118,48 @@ function dismissBeerBuffTimer() {
 
 function updateBeerBuffTimerUI() {
   const timer = document.getElementById('beerBuffTimer');
-  const label = document.getElementById('beerBuffTimerLabel');
-  const fill = document.getElementById('beerBuffTimerFill');
   const remainingMs = getBeerBuffRemainingMs();
   const drunkRemainingMs = getDrunkRemainingMs();
-  const isDrunk = drunkRemainingMs > 0;
-  const isActive = remainingMs > 0;
+  const fireResistRemainingMs = getFireResistRemainingMs();
+  const burnRemainingMs = getBurnRemainingMs();
+  const activeEffects = [];
 
-  if (timer) timer.style.display = (isActive && !isBeerBuffTimerDismissed) ? 'flex' : 'none';
+  if (burnRemainingMs > 0) {
+    activeEffects.push({ label: 'Burn', remainingMs: burnRemainingMs, durationMs: BURN_DURATION_MS, fillColor: '#ff6b3d' });
+  }
+  if (fireResistRemainingMs > 0) {
+    activeEffects.push({ label: 'Fire Resist', remainingMs: fireResistRemainingMs, durationMs: FIRE_RESIST_DURATION_MS, fillColor: '#ffb85c' });
+  }
+  if (drunkRemainingMs > 0) {
+    activeEffects.push({ label: 'Drunk', remainingMs: drunkRemainingMs, durationMs: BEER_BUFF_DURATION_MS, fillColor: '#d68b2e' });
+  } else if (remainingMs > 0) {
+    activeEffects.push({ label: 'Beer Buff', remainingMs: remainingMs, durationMs: BEER_BUFF_DURATION_MS, fillColor: '' });
+  }
 
-  if (isActive) {
-    const displayMs = isDrunk ? drunkRemainingMs : remainingMs;
-    if (label) label.innerText = (isDrunk ? 'Drunk: ' : 'Beer Buff: ') + Math.ceil(displayMs / 1000) + 's';
-    if (fill) {
-      fill.style.width = Math.max(0, Math.min(100, (displayMs / BEER_BUFF_DURATION_MS) * 100)) + '%';
-      fill.style.background = isDrunk ? '#d68b2e' : '';
+  const isActive = activeEffects.length > 0;
+
+  if (timer) {
+    timer.style.display = (isActive && !isBeerBuffTimerDismissed) ? 'flex' : 'none';
+    if (isActive && !isBeerBuffTimerDismissed) {
+      const timerHtml = [
+        '<div class="beer-buff-timer-group-header">',
+        '  <div class="beer-buff-timer-group-title">Active Effects</div>',
+        '  <button type="button" class="beer-buff-timer-close" onclick="dismissBeerBuffTimer()">x</button>',
+        '</div>'
+      ];
+      activeEffects.forEach(effect => {
+        const width = Math.max(0, Math.min(100, (effect.remainingMs / effect.durationMs) * 100));
+        const bg = effect.fillColor || 'linear-gradient(90deg, #c89f2b 0%, #f0d27a 100%)';
+        timerHtml.push('<div class="beer-buff-timer-entry">');
+        timerHtml.push('  <div class="beer-buff-timer-label">' + effect.label + ': ' + Math.ceil(effect.remainingMs / 1000) + 's</div>');
+        timerHtml.push('  <div class="beer-buff-timer-track">');
+        timerHtml.push('    <div class="beer-buff-timer-fill" style="width:' + width + '%; background:' + bg + ';"></div>');
+        timerHtml.push('  </div>');
+        timerHtml.push('</div>');
+      });
+      timer.innerHTML = timerHtml.join('');
+    } else {
+      timer.innerHTML = '';
     }
   }
 
@@ -8088,6 +8233,46 @@ async function drinkBeer() {
   }
 }
 
+async function useBucketOfWater() {
+  hideItemContextMenu();
+  if (!isBurnStatusActive()) {
+    await showGameAlert('No Burn', 'You are not burning.');
+    return;
+  }
+
+  const freesSlotOnUse = game.inventory.some(slot => slot && slot.name === 'Bucket of Water' && Number(slot.qty || 0) === 1);
+  if (!canReceiveItem('Empty Bucket') && !freesSlotOnUse) {
+    await showGameAlert('Inventory Full', 'You need room for the Empty Bucket.');
+    return;
+  }
+
+  if (removeItem('Bucket of Water', 1)) {
+    addItem('Empty Bucket', 1);
+    clearBurnStatus(true, false);
+    renderInventoryGrid();
+    playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');
+    game.isDirty = true;
+    if (typeof window.savePlayerData === 'function') {
+      window.savePlayerData();
+    }
+  }
+}
+
+async function useFireResist() {
+  hideItemContextMenu();
+  if (removeItem('Fire Resist', 1)) {
+    game.fireResistExpiresAt = Date.now() + FIRE_RESIST_DURATION_MS;
+    game.isDirty = true;
+    isBeerBuffTimerDismissed = false;
+    renderInventoryGrid();
+    if (typeof updateBeerBuffTimerUI === 'function') updateBeerBuffTimerUI();
+    showWarningPopup('Fire Resist: Burn immunity (60s)');
+    playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');
+    if (typeof window.savePlayerData === 'function') {
+      window.savePlayerData();
+    }
+  }
+}
 
 /**
  * Equips an item from the inventory.
@@ -8854,6 +9039,49 @@ function showWarningPopup(text) {
     
     // Remove after animation (3s)
     setTimeout(() => popup.remove(), 2950);
+}
+
+function showEnemyStatusPopup(text, extraClass = '', topOffset = 46) {
+    const main = document.getElementById('mainArea');
+    const enemyArea = document.getElementById('combat-enemy-area');
+    if (!main || !enemyArea) {
+        showWarningPopup(text);
+        return;
+    }
+    const popup = document.createElement('div');
+    popup.className = 'enemy-status-popup' + (extraClass ? ' ' + extraClass : '');
+    popup.innerHTML = text;
+    popup.style.visibility = 'hidden';
+    main.appendChild(popup);
+
+    const mainRect = main.getBoundingClientRect();
+    const enemyRect = enemyArea.getBoundingClientRect();
+    const popupRect = popup.getBoundingClientRect();
+    const left = Math.max(8, (enemyRect.left - mainRect.left) - popupRect.width - 12);
+    const top = Math.max(8, (enemyRect.top - mainRect.top) + Number(topOffset || 46));
+
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+    popup.style.right = 'auto';
+    popup.style.visibility = 'visible';
+    setTimeout(() => popup.remove(), 2950);
+}
+
+function setTemporaryCombatEnemyImage(tempImg, durationMs = 10000) {
+    if (!game.currentEnemy) return;
+    const enemyRef = game.currentEnemy;
+    if (!enemyRef.__baseImg) enemyRef.__baseImg = enemyRef.img;
+    if (enemyRef.__tempImageTimeout) clearTimeout(enemyRef.__tempImageTimeout);
+    enemyRef.img = tempImg;
+    const imgEl = document.getElementById('combat-enemy-img');
+    if (imgEl) imgEl.src = tempImg;
+    enemyRef.__tempImageTimeout = setTimeout(() => {
+        if (!game.currentEnemy || game.currentEnemy !== enemyRef) return;
+        enemyRef.img = enemyRef.__baseImg || enemyRef.img;
+        enemyRef.__tempImageTimeout = null;
+        const liveImgEl = document.getElementById('combat-enemy-img');
+        if (liveImgEl) liveImgEl.src = enemyRef.img;
+    }, Math.max(1000, Number(durationMs || 10000)));
 }
 // --- END NEW ---
 
@@ -21143,9 +21371,9 @@ function beginCombat() {
   game.inCombat = true;
   renderEquipment();
 
-  // +++ FIX: Reset Madmax's timer when the fight ACTUALLY starts +++
+  // +++ FIX: Reset boss special timers when the fight ACTUALLY starts +++
   // This prevents the timer from counting down while you are sitting in the menu.
-  if (game.currentEnemy && game.currentEnemy.name === 'Madmax') {
+  if (game.currentEnemy && (game.currentEnemy.name === 'Madmax' || game.currentEnemy.name === 'Golden Dragon')) {
       game.currentEnemy.lastSpecialTime = Date.now();
   }
   // +++ END FIX +++
@@ -21329,6 +21557,11 @@ function getPlayerDeathChatMessage(cause) {
   if (cause && cause.type === 'poison') {
     return "thought it was a potion. It wasn't.";
   }
+  if (cause && cause.type === 'burn') {
+    const sourceName = cause.sourceName || 'something fiery';
+    if (sourceName === 'Golden Dragon') return 'burned to death after the Golden Dragon set them ablaze.';
+    return 'burned to death after being set ablaze by ' + sourceName + '.';
+  }
   const enemyName = (cause && cause.enemyName) || (game.currentEnemy && game.currentEnemy.name) || 'an unknown force';
   if (enemyName.endsWith(' Clone')) {
     const originalName = enemyName.replace(/ Clone$/, '');
@@ -21362,6 +21595,7 @@ function getPlayerDeathJournalMessage(cause) {
 }
 
 function handlePlayerDeath(cause = null) {
+  clearBurnStatus(false, false);
   ensureAchievementStats();
   postPublicEventJournalEntry('death', getPlayerDeathChatMessage(cause));
   game.achievementStats.deaths = Number(game.achievementStats.deaths || 0) + 1;
@@ -21769,6 +22003,46 @@ function enemyAttackTurn() {
               }
           }, 200);
               return;
+      }
+  }
+
+  if (enemy.name === 'Golden Dragon') {
+      const now = Date.now();
+      if (now - Number(enemy.lastSpecialTime || 0) >= 20000) {
+          let specDmg = Math.floor(Math.random() * Math.max(1, enemy.maxHit)) + 1;
+          game.hp -= specDmg;
+          updateHPUI();
+          showDamageSplat('player', specDmg, 'special');
+          if (!isFireResistActive()) {
+              applyBurnStatus('Golden Dragon', BURN_DURATION_MS);
+          }
+          enemy.lastSpecialTime = now;
+          setTimeout(() => {
+              const threshold = (game.autoEatThreshold || 20) / 100;
+              if (game.hp > 0 && (game.hp / game.maxHP) <= threshold && game.autoEatSlot) {
+                  triggerAutoEat();
+              }
+
+              if (game.hp <= 0) {
+                  game.hp = 0;
+                  updateHPUI();
+                  runFromCombat(true);
+                  handlePlayerDeath({ enemyName: 'Golden Dragon' });
+              } else {
+                  updateHPUI();
+              }
+          }, 200);
+          return;
+      }
+  }
+
+  if (enemy.name === 'Stupid Koala') {
+      const hasBeer = Array.isArray(game.inventory) && game.inventory.some(slot => slot && slot.name === 'Beer' && Number(slot.qty || 0) > 0);
+      if (hasBeer && Math.floor(Math.random() * 10) === 0 && removeItem('Beer', 1)) {
+          game.isDirty = true;
+          if (typeof renderInventoryGrid === 'function') renderInventoryGrid();
+          setTemporaryCombatEnemyImage('images/happykoalamonster.png', 10000);
+          showEnemyStatusPopup('Coco is happy he stole you a beer', '', 84);
       }
   }
 
@@ -22404,7 +22678,7 @@ function renderBankTabs() {
                 'leather_body': 'leatherarmor', 'leather_chaps': 'leatherpants', 'leather_boots': 'leatherboots',
                 'herring': 'herring', 'trout': 'trout', 'salmon': 'salmon', 'fishing_pole': 'fishingpole',
                 'fishing_bait': 'fishingbait', 'empty_bucket': 'emptybucket', 'bucket_of_milk': 'bucketofmilk', 
-                'bucket_of_water': 'bucketofwater', 'grass_seed': 'grassseed', 'corn_seed': 'cornseed',
+                'bucket_of_water': 'bucketofwater', 'fire_resist': 'fireresist', 'grass_seed': 'grassseed', 'corn_seed': 'cornseed',
                 'vitality_potion': 'vitalitypotion', 'gold_ring': 'goldring'
             };
                   if (overrides[imgName]) {
@@ -23357,9 +23631,13 @@ function resetGameState() {
   game.autoEatUnlocked = false;
   game.lastAutoHealTime = 0;
   game.beerBuffExpiresAt = 0;
+  game.drunkExpiresAt = 0;
+  game.fireResistExpiresAt = 0;
+  game.burnExpiresAt = 0;
+  game.lastBurnTickAt = 0;
+  game.burnSource = '';
   game.achievementStats = { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} };
   game.goldenDragonHp = 2500;
-  game.achievementStats = { kills: {}, deaths: 0, hadBeenDrunk: false, unlocked: {} };
   game.eventJournal = [];
 
   game.miningActive = false;
@@ -24904,7 +25182,7 @@ function renderInspectEquipment(equipment, frame) {
         'Copper Arrow': 'copperarrow', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
         'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Advanced Magic Staff': 'advancedmagicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', 'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Dragon': 'petdragon', 'Pet Spider Egg': 'petegg1', 'Pet Owl Egg': 'petegg2', 'Pet Dragon Egg': 'petegg3', 'Pet Chicken Egg': 'petegg5', 'Pet Egg 5': 'petegg5', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken', 'Fire Stone': 'firestone',
-        'Empty Bucket': 'emptybucket', 'Empty Glass': 'emptyglass', 'Beer': 'beer', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Wheat Seed': 'wheatseed', 'Wheat': 'wheat', 'flour': 'flour', 'Bread': 'bread', 'Burnt Bread': 'burntbread', 'Cheese': 'cheese', 'Salt Herring': 'saltherring', 'Salt Trout': 'salttrout', 'Salt Salmon': 'saltsalmon', 'Cake': 'cake', 'Burnt Cake': 'burntcake', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
+        'Empty Bucket': 'emptybucket', 'Empty Glass': 'emptyglass', 'Beer': 'beer', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Fire Resist': 'fireresist', 'Wheat Seed': 'wheatseed', 'Wheat': 'wheat', 'flour': 'flour', 'Bread': 'bread', 'Burnt Bread': 'burntbread', 'Cheese': 'cheese', 'Salt Herring': 'saltherring', 'Salt Trout': 'salttrout', 'Salt Salmon': 'saltsalmon', 'Cake': 'cake', 'Burnt Cake': 'burntcake', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
         'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
         'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace', 'Archery Bracer': 'archerybracer',
         'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch', 'Iron Battleaxe': 'ironbattleaxe', 'Iron Shield': 'ironshield',
@@ -26505,6 +26783,11 @@ async function attemptEnchant() {
         autoEatThreshold: game.autoEatThreshold || 20,
         lastAutoHealTime: game.lastAutoHealTime || 0,
         beerBuffExpiresAt: game.beerBuffExpiresAt || 0,
+        drunkExpiresAt: game.drunkExpiresAt || 0,
+        fireResistExpiresAt: game.fireResistExpiresAt || 0,
+        burnExpiresAt: game.burnExpiresAt || 0,
+        lastBurnTickAt: game.lastBurnTickAt || 0,
+        burnSource: game.burnSource || '',
         achievementStats: game.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} },
         goldenDragonHp: Number(game.goldenDragonHp || 2500),
         updatedAt: new Date().toISOString()
@@ -27316,6 +27599,10 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         game.autoEatThreshold = data.autoEatThreshold || 20; // Load the slider value
         game.beerBuffExpiresAt = Number(data.beerBuffExpiresAt || 0);
         game.drunkExpiresAt = Number(data.drunkExpiresAt || 0);
+        game.fireResistExpiresAt = Number(data.fireResistExpiresAt || 0);
+        game.burnExpiresAt = Number(data.burnExpiresAt || 0);
+        game.lastBurnTickAt = Number(data.lastBurnTickAt || 0);
+        game.burnSource = String(data.burnSource || '');
         game.achievementStats = data.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} };
         if (!Array.isArray(game.eventJournal)) game.eventJournal = [];
         game.bestiaryUnlocked = data.bestiaryUnlocked || {};
@@ -31280,6 +31567,11 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
 
 
 
