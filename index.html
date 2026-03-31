@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -205,6 +205,12 @@ body {
   display: block;
 }
 /* --- END NEW RULE --- */
+.hub-icon-button { position: relative; display: inline-flex; width: 60px; height: 60px; cursor: pointer; flex: 0 0 auto; }
+.hub-icon-button img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+.daily-bonus-streak-badge { position: absolute; right: -8px; bottom: -5px; min-width: 24px; padding: 1px 6px; border-radius: 999px; background: linear-gradient(180deg, #7c5836 0%, #4f341f 100%); border: 2px solid #d9b56e; color: #fff3cc; font-size: 11px; line-height: 16px; font-weight: 700; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.35); pointer-events: none; }
+.daily-bonus-hub-icon.claim-ready .daily-bonus-streak-badge { background: linear-gradient(180deg, #4fbf63 0%, #2e8a43 100%); color: #f7fff7; border-color: #d6ff9d; }
+.daily-bonus-hub-icon.claimed-today .daily-bonus-streak-badge { background: linear-gradient(180deg, #7c5836 0%, #4f341f 100%); color: #fff3cc; border-color: #d9b56e; opacity: 0.92; }
+.daily-bonus-hub-icon.pending-reward .daily-bonus-streak-badge { background: linear-gradient(180deg, #4f95d8 0%, #295a8f 100%); color: #f4fbff; border-color: #9fd9ff; }
 
 .tabs button:hover { background: var(--accent-hover); }
 
@@ -2750,6 +2756,10 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="questsActionIcon" src="images/questbuttonicon.jpg" alt="Quests" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="achievementsActionIcon" src="images/questicon.png" alt="Achievements" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openAchievementsHub()">
               <img id="eventJournalActionIcon" src="images/eventbuttonicon.jpg" alt="Event Journal" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <div id="dailyBonusActionIcon" class="hub-icon-button daily-bonus-hub-icon" style="margin-top: 10px;" aria-label="Daily Bonus">
+                <img src="images/bottlexpicon.png" alt="Daily Bonus" style="width: 60px; height: 60px; object-fit: contain;">
+                <span class="daily-bonus-streak-badge">1</span>
+              </div>
               <img id="trophyRoomActionIcon" src="images/equipmenticon.png" alt="Trophy Rooms" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openTrophyRoomHub()">
               <img id="huntingBoardActionIcon" src="images/huntingboard.jpeg" alt="Hunting Board" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="personalFarmActionIcon" src="images/farmicon.jpeg" alt="My Farm" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openPersonalFarmHub()">
@@ -3936,7 +3946,7 @@ button.primary:hover { background: var(--accent-hover); }
             <div id="inspectSkillsGrid" style="max-height:320px; overflow-y:auto; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px;"></div>
         </div>
         <div id="inspectAchievementsPanel" class="game-modal-content" style="display:none;">
-            <div id="inspectAchievementsMeta" style="margin-bottom:12px; display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px;"></div>
+            <div id="inspectAchievementsMeta" style="margin-bottom:12px; display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:8px;"></div>
             <div id="inspectAchievementsGrid" style="max-height:220px; overflow-y:auto; display:grid; grid-template-columns:1fr; gap:8px;"></div>
             <div style="margin-top:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#efe3cf; font-size:12px;">
                 <div style="font-weight:bold; color:var(--gold); margin-bottom:8px;">Monster Kills</div>
@@ -3955,6 +3965,10 @@ button.primary:hover { background: var(--accent-hover); }
 <div id="enchantOverlay"></div>
 <script>
 // --- Game State (MODIFIED) ---
+function createDefaultDailyBonusState() {
+  return { lastRewardDay: '', streak: 0, bestStreak: 0, totalClaims: 0, pendingRewards: [] };
+}
+
 const game = {
   name: '',
   hp: 10,
@@ -4106,6 +4120,7 @@ const game = {
   goldenDragonHp: 2500,
   achievementStats: { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} },
   eventJournal: [],
+  dailyBonus: createDefaultDailyBonusState(),
   // +++ END NEW STATE +++
   
   // +++ NEW SESSION LOCK +++
@@ -5198,6 +5213,7 @@ const VALID_ITEMS = [
   'Cow Hide',
   'Wolf Pelt',
   'Wolf Tooth',
+  'XP Bottle',
   'Wolf Helmet',
   'Wolf Plate',
   'Wolf Platelegs',
@@ -5413,7 +5429,7 @@ const TROUT_FISH_LVL = 5;
 const SALMON_FISH_LVL = 10;
 
 // --- NEW: Fishing Action Constants ---
-const FISHING_TIME_MS = 20000; // 20 seconds per fish
+const FISHING_TIME_MS = 15000; // 15 seconds per fish
 function getBestFishingPole() {
   let fallbackPole = null;
   for (const slot of (game.inventory || [])) {
@@ -6074,6 +6090,7 @@ const ITEM_SELL_PRICES = {
   'Bucket of Milk': 15,
   'Bucket of Water': 5,
   'Fire Resist': 400,
+  'XP Bottle': 0,
   'Grass Seed': 2,
   'Grass': 5,
   'Corn Seed': 5,
@@ -6187,7 +6204,7 @@ function normalizeItemDyeColor(color) {
 function getItemRenderImageName(itemOrName, fallbackName = 'gearicon') {
   const item = (itemOrName && typeof itemOrName === 'object') ? itemOrName : { name: itemOrName };
   const fallbackOverrides = { 'Copper Ore': 'copper_ore', 'Vitality Potion+': 'vitalitypotionplus', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 'Archery Bracer': 'archerybracer', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken', 'Pet Chicken Egg': 'petegg5', 'Pet Egg 5': 'petegg5', 'Fire Resist': 'fireresist' };
-  const baseName = (window.__inspectItemImageMap && item && item.name && window.__inspectItemImageMap[item.name]) || (item && item.name && fallbackOverrides[item.name]) || String(item && item.name ? item.name : fallbackName).toLowerCase().replace(/\s+/g, '').replace(/\+/g, 'plus');
+  const baseName = isXpBottleItemName(item && item.name) ? 'bottlexp' : ((window.__inspectItemImageMap && item && item.name && window.__inspectItemImageMap[item.name]) || (item && item.name && fallbackOverrides[item.name]) || String(item && item.name ? item.name : fallbackName).toLowerCase().replace(/\s+/g, '').replace(/\+/g, 'plus'));
   const dyeColor = normalizeItemDyeColor(item && item.dyeColor);
   const variantMap = item && item.name ? DYE_VARIANT_IMAGE_MAP[item.name] : null;
   if (dyeColor && variantMap && variantMap[dyeColor]) return variantMap[dyeColor];
@@ -6196,6 +6213,430 @@ function getItemRenderImageName(itemOrName, fallbackName = 'gearicon') {
 function itemsMatchForStack(slot, itemName, enchantLevel = 0, dyeColor = null) {
   if (!slot || slot.name !== itemName) return false;
   return Number(slot.enchantLevel || 0) === Number(enchantLevel || 0) && normalizeItemDyeColor(slot.dyeColor) === normalizeItemDyeColor(dyeColor);
+}
+
+const DAILY_XP_BOTTLE_SKILLS = [
+  { key: 'mining', label: 'Mining', icon: 'miningskillicon.png' },
+  { key: 'blacksmith', label: 'Blacksmith', icon: 'blacksmithskillicon.png' },
+  { key: 'attack', label: 'Attack', icon: 'attackskillicon.jpeg' },
+  { key: 'strength', label: 'Strength', icon: 'strengthskillicon.png' },
+  { key: 'defence', label: 'Defence', icon: 'defenseskillicon.png' },
+  { key: 'vitality', label: 'Vitality', icon: 'vitalityskillicon.png' },
+  { key: 'cooking', label: 'Cooking', icon: 'cookingskillicon.png' },
+  { key: 'woodcutting', label: 'Woodcutting', icon: 'woodcuttingskillicon.jpeg' },
+  { key: 'fletching', label: 'Fletching', icon: 'fletchingskillicon.jpeg' },
+  { key: 'crafting', label: 'Crafting', icon: 'craftingskillicon.png' },
+  { key: 'ranged', label: 'Ranged', icon: 'rangedskillicon.jpeg' },
+  { key: 'fishing', label: 'Fishing', icon: 'fishingskillicon.jpeg' },
+  { key: 'magic', label: 'Magic', icon: 'magicskillicon.jpeg' },
+  { key: 'stoneforging', label: 'Stone Forging', icon: 'stoneforgingskillicon.jpeg' },
+  { key: 'bountyhunting', label: 'Bounty Hunting', icon: 'bountyhunterskillicon.jpeg' },
+  { key: 'farming', label: 'Farming', icon: 'farmingskillicon.jpeg' },
+  { key: 'petmastery', label: 'Pet Mastery', icon: 'petmasteryskillicon.jpeg' },
+  { key: 'alchemy', label: 'Alchemy', icon: 'alchemyskillicon.jpeg' },
+  { key: 'tailoring', label: 'Tailoring', icon: 'tailoringskillicon.jpeg' },
+  { key: 'thieving', label: 'Thieving', icon: 'thievingskillicon.jpeg' }
+];
+
+function isXpBottleItemName(itemName) {
+  return /^XP Bottle \(([\d,]+) XP\)$/i.test(String(itemName || '').trim());
+}
+
+function getXpBottleAmountFromItemName(itemName) {
+  const match = String(itemName || '').trim().match(/^XP Bottle \(([\d,]+) XP\)$/i);
+  return match ? Math.max(0, parseInt(match[1].replace(/,/g, ''), 10) || 0) : 0;
+}
+
+function buildXpBottleItemName(xpAmount) {
+  const cleanAmount = Math.max(0, Math.floor(Number(xpAmount) || 0));
+  return 'XP Bottle (' + cleanAmount + ' XP)';
+}
+
+function getDailyBonusDayKey(dateObj = new Date()) {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return year + '-' + month + '-' + day;
+}
+
+function getDailyBonusRewardXp(streakDay) {
+  const normalizedDay = Math.max(1, Math.min(30, Number(streakDay) || 1));
+  return normalizedDay >= 30 ? 5000 : normalizedDay * 100;
+}
+
+function normalizeDailyBonusRewardEntry(entry) {
+  if (!entry || typeof entry !== 'object') return null;
+  const xpAmount = Math.max(0, Math.floor(Number(entry.xpAmount || 0)));
+  if (xpAmount <= 0) return null;
+  const streakDay = Math.max(1, Math.min(30, Number(entry.streakDay) || 1));
+  return {
+    dayKey: String(entry.dayKey || ''),
+    streakDay: streakDay,
+    xpAmount: xpAmount,
+    itemName: isXpBottleItemName(entry.itemName) ? String(entry.itemName) : buildXpBottleItemName(xpAmount)
+  };
+}
+
+function normalizeDailyBonusStateLike(rawDailyBonus) {
+  const source = rawDailyBonus && typeof rawDailyBonus === 'object' ? rawDailyBonus : createDefaultDailyBonusState();
+  const streak = Math.max(0, Math.min(30, Number(source.streak || 0)));
+  const bestStreak = Math.max(streak, Math.min(30, Number(source.bestStreak || 0)));
+  const totalClaims = Math.max(streak, Math.floor(Number(source.totalClaims || source.bestStreak || 0)));
+  return {
+    lastRewardDay: String(source.lastRewardDay || ''),
+    streak: streak,
+    bestStreak: bestStreak,
+    totalClaims: totalClaims,
+    pendingRewards: Array.isArray(source.pendingRewards)
+      ? source.pendingRewards.map(normalizeDailyBonusRewardEntry).filter(Boolean)
+      : []
+  };
+}
+
+function ensureDailyBonusState() {
+  game.dailyBonus = normalizeDailyBonusStateLike(game.dailyBonus);
+  return game.dailyBonus;
+}
+
+function getDailyBonusAchievementProgressFromState(rawDailyBonus) {
+  const normalizedDailyBonus = normalizeDailyBonusStateLike(rawDailyBonus);
+  const todayKey = getDailyBonusDayKey();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayKey = getDailyBonusDayKey(yesterday);
+  const currentStreak = (normalizedDailyBonus.lastRewardDay === todayKey || normalizedDailyBonus.lastRewardDay === yesterdayKey)
+    ? Number(normalizedDailyBonus.streak || 0)
+    : 0;
+  return {
+    currentStreak: Math.max(0, currentStreak),
+    bestStreak: Math.max(currentStreak, Number(normalizedDailyBonus.bestStreak || 0)),
+    totalClaims: Math.max(currentStreak, Math.floor(Number(normalizedDailyBonus.totalClaims || 0)))
+  };
+}
+
+const DAILY_MILESTONE_ACHIEVEMENTS = [
+  { title: '30 Consecutive Days', rewardXp: 10000, threshold: 30, progressType: 'streak', completeLabel: 'Reward claimed: XP Bottle (10,000 XP)' },
+  { title: '100 Total Days', rewardXp: 25000, threshold: 100, progressType: 'total', completeLabel: 'Reward claimed: XP Bottle (25,000 XP)' }
+];
+
+function getDailyMilestoneAchievementEntries(progress, unlockedMap = {}) {
+  const safeProgress = progress || { currentStreak: 0, bestStreak: 0, totalClaims: 0 };
+  return DAILY_MILESTONE_ACHIEVEMENTS.map(def => {
+    const achieved = def.progressType === 'streak'
+      ? Number(safeProgress.currentStreak || 0) >= def.threshold
+      : Number(safeProgress.totalClaims || 0) >= def.threshold;
+    const rewardClaimed = !!(unlockedMap && unlockedMap[def.title]);
+    const progressValue = def.progressType === 'streak'
+      ? Number(safeProgress.currentStreak || 0)
+      : Number(safeProgress.totalClaims || 0);
+    return {
+      title: def.title,
+      unlocked: rewardClaimed || achieved,
+      detail: rewardClaimed
+        ? def.completeLabel
+        : achieved
+          ? 'Ready to claim reward'
+          : (Math.max(0, progressValue) + ' / ' + def.threshold + (def.progressType === 'streak' ? ' consecutive' : ' days claimed'))
+    };
+  });
+}
+
+function getDailyBonusSkillDefs() {
+  return DAILY_XP_BOTTLE_SKILLS.filter(skill => !!game[skill.key]);
+}
+
+function getSkillDisplayNameFromKey(skillKey) {
+  const match = DAILY_XP_BOTTLE_SKILLS.find(skill => skill.key === skillKey);
+  if (match) return match.label;
+  return String(skillKey || '').charAt(0).toUpperCase() + String(skillKey || '').slice(1);
+}
+
+function getEligibleXpBottleSkills() {
+  return getDailyBonusSkillDefs().filter(skill => Number((game[skill.key] && game[skill.key].level) || 0) < 100);
+}
+
+function selectXpBottleSkill(skillKey) {
+  const modal = document.getElementById('gameModalOverlay');
+  if (!modal) return;
+  const selectedInput = modal.querySelector('.xp-bottle-selected-skill');
+  if (selectedInput) selectedInput.value = skillKey;
+  modal.querySelectorAll('.xp-bottle-skill-tile').forEach(tile => {
+    const isDisabled = tile.dataset.disabled === 'true';
+    const isSelected = tile.dataset.skillKey === skillKey;
+    tile.style.borderColor = isSelected ? 'var(--gold)' : (isDisabled ? '#6b4c32' : '#8e6439');
+    tile.style.boxShadow = isSelected ? '0 0 0 2px rgba(240, 210, 122, 0.35)' : 'none';
+  });
+}
+window.selectXpBottleSkill = selectXpBottleSkill;
+
+async function promptXpBottleSkillChoice(xpAmount) {
+  const availableSkills = getEligibleXpBottleSkills();
+  if (!availableSkills.length) return null;
+
+  const skillTilesHtml = getDailyBonusSkillDefs().map(skill => {
+    const level = Number((game[skill.key] && game[skill.key].level) || 1);
+    const isLocked = level >= 100;
+    return '<button type="button" class="xp-bottle-skill-tile" data-skill-key="' + skill.key + '" data-disabled="' + (isLocked ? 'true' : 'false') + '" ' + (isLocked ? 'disabled' : 'onclick="selectXpBottleSkill(\'' + skill.key + '\')"') + ' style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:110px; padding:10px 8px; background:' + (isLocked ? '#3a2b22' : '#4f341f') + '; border:2px solid ' + (isLocked ? '#6b4c32' : '#8e6439') + '; border-radius:10px; color:' + (isLocked ? '#9a8d80' : '#fff') + '; cursor:' + (isLocked ? 'not-allowed' : 'pointer') + '; transition:transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;">' +
+      '<img src="images/' + skill.icon + '" alt="' + skill.label + '" style="width:42px; height:42px; object-fit:contain; pointer-events:none;">' +
+      '<span style="font-weight:bold; font-size:12px; text-align:center; line-height:1.1; pointer-events:none;">' + skill.label + '</span>' +
+      '<span style="font-size:11px; color:' + (isLocked ? '#d98b8b' : '#d7c09b') + '; pointer-events:none;">' + (isLocked ? 'Lvl 100' : ('Lvl ' + level)) + '</span>' +
+    '</button>';
+  }).join('');
+
+  const contentHtml = '\n    <div style="color:#d7c09b; margin-bottom:10px;">Choose a skill to receive <span style="color:#7fd3ff; font-weight:bold;">+' + formatAmount(xpAmount) + ' XP</span>.</div>\n    <div style="color:#a8a8a8; font-size:12px; margin-bottom:12px;">Skills already at level 100 cannot receive the bottle.</div>\n    <input type="hidden" class="game-modal-input xp-bottle-selected-skill" value="">\n    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(92px, 1fr)); gap:8px;">' + skillTilesHtml + '</div>';
+
+  const modalPromise = _createModal('Use XP Bottle', contentHtml, [
+    { text: 'Cancel', value: null, class: 'primary', style: '#666' },
+    { text: 'Apply XP', value: 'apply', class: 'primary' }
+  ]);
+
+  setTimeout(() => {
+    if (availableSkills[0]) selectXpBottleSkill(availableSkills[0].key);
+  }, 0);
+
+  const result = await modalPromise;
+  if (result === null) return null;
+  if (!availableSkills.some(skill => skill.key === result)) {
+    await showGameAlert('Choose a Skill', 'Choose a skill that is not level 100 before applying the XP Bottle.');
+    return promptXpBottleSkillChoice(xpAmount);
+  }
+  return result;
+}
+
+async function useXpBottle(itemName) {
+  hideItemContextMenu();
+  const xpAmount = getXpBottleAmountFromItemName(itemName);
+  if (xpAmount <= 0) {
+    await showGameAlert('Invalid XP Bottle', 'This XP Bottle has no XP stored in it.');
+    return;
+  }
+
+  if (!getEligibleXpBottleSkills().length) {
+    await showGameAlert('All Skills Maxed', 'XP Bottles cannot be applied to skills that are already level 100.');
+    return;
+  }
+
+  const chosenSkill = await promptXpBottleSkillChoice(xpAmount);
+  if (!chosenSkill) return;
+  if (!game[chosenSkill] || Number(game[chosenSkill].level || 0) >= 100) {
+    await showGameAlert('Level 100 Skill', 'That skill is already level 100. Choose another one.');
+    return;
+  }
+
+  if (!removeItem(itemName, 1)) {
+    await showGameAlert('Missing Item', 'That XP Bottle is no longer in your inventory.');
+    return;
+  }
+
+  addXP(chosenSkill, xpAmount);
+  renderInventoryGrid();
+  game.isDirty = true;
+  if (typeof window.savePlayerData === 'function') {
+    window.savePlayerData();
+  }
+  await showGameAlert('XP Applied', formatAmount(xpAmount) + ' XP was applied to ' + getSkillDisplayNameFromKey(chosenSkill) + '.');
+}
+
+async function tryDeliverPendingDailyBonusRewards(notificationMode = 'none') {
+  ensureDailyBonusState();
+  const deliveredRewards = [];
+
+  while (game.dailyBonus.pendingRewards.length > 0) {
+    const nextReward = normalizeDailyBonusRewardEntry(game.dailyBonus.pendingRewards[0]);
+    if (!nextReward) {
+      game.dailyBonus.pendingRewards.shift();
+      game.isDirty = true;
+      continue;
+    }
+    if (!canReceiveItem(nextReward.itemName)) break;
+    game.dailyBonus.pendingRewards.shift();
+    addItem(nextReward.itemName, 1);
+    deliveredRewards.push(nextReward);
+    game.isDirty = true;
+  }
+
+  if (deliveredRewards.length > 0) {
+    const summaryText = deliveredRewards.length === 1
+      ? deliveredRewards[0].itemName + ' was added to your inventory.'
+      : deliveredRewards.length + ' XP Bottles were added to your inventory.';
+    if (notificationMode === 'alert') {
+      await showGameAlert('Daily Bonus', summaryText);
+    } else if (notificationMode === 'warning') {
+      showWarningPopup('Daily Bonus: ' + summaryText);
+    }
+    if (typeof window.savePlayerData === 'function') {
+      window.savePlayerData();
+    }
+  }
+
+  return {
+    delivered: deliveredRewards.length,
+    deliveredRewards: deliveredRewards,
+    remaining: game.dailyBonus.pendingRewards.length
+  };
+}
+
+function getDailyBonusStatus() {
+  ensureDailyBonusState();
+  const todayKey = getDailyBonusDayKey();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayKey = getDailyBonusDayKey(yesterday);
+  const currentStreak = Math.max(0, Math.min(30, Number(game.dailyBonus.streak || 0)));
+  const hasClaimedToday = game.dailyBonus.lastRewardDay === todayKey;
+  const nextStreak = game.dailyBonus.lastRewardDay === yesterdayKey
+    ? Math.min(currentStreak + 1, 30)
+    : 1;
+  const pendingReward = Array.isArray(game.dailyBonus.pendingRewards)
+    ? game.dailyBonus.pendingRewards.map(normalizeDailyBonusRewardEntry).filter(Boolean)[0] || null
+    : null;
+  return {
+    todayKey,
+    currentStreak,
+    hasClaimedToday,
+    nextStreak,
+    nextRewardXp: getDailyBonusRewardXp(nextStreak),
+    pendingReward
+  };
+}
+
+function getDailyBonusTooltipHtml() {
+  const status = getDailyBonusStatus();
+  if (status.pendingReward) {
+    return '<div style="font-weight:bold; color:var(--gold);">Daily Bonus</div>' +
+      '<div style="color:#7fd3ff;">Pending: ' + status.pendingReward.itemName + '</div>' +
+      '<div style="color:#d7c09b;">Click to add it to your inventory.</div>';
+  }
+  if (status.hasClaimedToday) {
+    const tomorrowStreak = Math.min(status.currentStreak + 1, 30);
+    return '<div style="font-weight:bold; color:var(--gold);">Daily Bonus</div>' +
+      '<div style="color:#aaffaa;">Already claimed today</div>' +
+      '<div>Current streak: Day ' + Math.max(1, status.currentStreak) + '</div>' +
+      '<div style="color:#7fd3ff;">Tomorrow: XP Bottle (' + formatAmount(getDailyBonusRewardXp(tomorrowStreak)) + ' XP)</div>';
+  }
+  return '<div style="font-weight:bold; color:var(--gold);">Daily Bonus</div>' +
+    '<div style="color:#7fd3ff;">Ready: XP Bottle (' + formatAmount(status.nextRewardXp) + ' XP)</div>' +
+    '<div>Claim streak day ' + status.nextStreak + '</div>' +
+    '<div style="color:#d7c09b;">Click to claim today\'s reward.</div>';
+}
+
+function getDailyBonusIconStreakLabel(status = getDailyBonusStatus()) {
+  const rawValue = status.pendingReward
+    ? Number(status.pendingReward.streakDay || status.nextStreak || 1)
+    : (status.hasClaimedToday ? Math.max(1, status.currentStreak) : status.nextStreak);
+  const normalizedValue = Math.max(1, Math.min(30, Number(rawValue) || 1));
+  return normalizedValue >= 30 ? '30+' : String(normalizedValue);
+}
+
+function refreshDailyBonusIcon() {
+  const dailyBonusBtn = document.getElementById('dailyBonusActionIcon');
+  if (!dailyBonusBtn) return;
+  const badge = dailyBonusBtn.querySelector('.daily-bonus-streak-badge');
+  if (!badge) return;
+  const status = getDailyBonusStatus();
+  const hasClaimableReward = !!status.pendingReward || !status.hasClaimedToday;
+  badge.textContent = hasClaimableReward ? '1' : '';
+  badge.style.display = hasClaimableReward ? 'inline-block' : 'none';
+  dailyBonusBtn.classList.toggle('pending-reward', !!status.pendingReward);
+  dailyBonusBtn.classList.toggle('claim-ready', !status.pendingReward && !status.hasClaimedToday);
+  dailyBonusBtn.classList.toggle('claimed-today', !status.pendingReward && status.hasClaimedToday);
+}
+
+function queueDailyBonusRewardItem(xpAmount, streakDay = 30) {
+  ensureDailyBonusState();
+  const rewardEntry = normalizeDailyBonusRewardEntry({
+    dayKey: getDailyBonusDayKey(),
+    streakDay: streakDay,
+    xpAmount: xpAmount,
+    itemName: buildXpBottleItemName(xpAmount)
+  });
+  if (!rewardEntry) return null;
+  game.dailyBonus.pendingRewards.push(rewardEntry);
+  game.isDirty = true;
+  return rewardEntry;
+}
+
+function grantDailyMilestoneAchievementReward(title, xpAmount, streakDay = 30) {
+  const justUnlocked = unlockAchievementDirect(title, true);
+  if (!justUnlocked) return null;
+  const rewardName = buildXpBottleItemName(xpAmount);
+  let pending = false;
+  if (canReceiveItem(rewardName)) {
+    addItem(rewardName, 1);
+  } else {
+    queueDailyBonusRewardItem(xpAmount, streakDay);
+    pending = true;
+  }
+  game.isDirty = true;
+  return { title, rewardName, pending };
+}
+
+function awardDailyMilestoneAchievements() {
+  ensureDailyBonusState();
+  const results = [];
+  const currentStreak = Number(game.dailyBonus.streak || 0);
+  const totalClaims = Math.max(currentStreak, Math.floor(Number(game.dailyBonus.totalClaims || 0)));
+
+  if (currentStreak >= 30) {
+    const reward30 = grantDailyMilestoneAchievementReward('30 Consecutive Days', 10000, 30);
+    if (reward30) results.push(reward30);
+  }
+
+  if (totalClaims >= 100) {
+    const reward100 = grantDailyMilestoneAchievementReward('100 Total Days', 25000, 30);
+    if (reward100) results.push(reward100);
+  }
+
+  return results;
+}
+
+async function claimDailyBonus() {
+  ensureDailyBonusState();
+  const status = getDailyBonusStatus();
+
+  if (status.pendingReward) {
+    if (!canReceiveItem(status.pendingReward.itemName)) {
+      await showGameAlert('Inventory Full', 'Free one inventory slot before claiming your pending daily reward.');
+      return;
+    }
+    const result = await tryDeliverPendingDailyBonusRewards('none');
+    if (result.delivered > 0) {
+      game.isDirty = true;
+      if (typeof window.savePlayerData === 'function') window.savePlayerData();
+      refreshDailyBonusIcon();
+      await showGameAlert('Daily Bonus', status.pendingReward.itemName + ' was added to your inventory. Click it to choose which skill gets the XP.');
+    } else {
+      await showGameAlert('Daily Bonus', 'Your pending daily reward is still waiting.');
+    }
+    return;
+  }
+
+  if (status.hasClaimedToday) {
+    const tomorrowStreak = Math.min(status.currentStreak + 1, 30);
+    await showGameAlert('Daily Bonus', 'You already claimed today\'s reward. Tomorrow you can claim XP Bottle (' + formatAmount(getDailyBonusRewardXp(tomorrowStreak)) + ' XP).');
+    return;
+  }
+
+  const rewardName = buildXpBottleItemName(status.nextRewardXp);
+  if (!canReceiveItem(rewardName)) {
+    await showGameAlert('Inventory Full', 'You need one free inventory slot to claim your daily bonus.');
+    return;
+  }
+
+  game.dailyBonus.lastRewardDay = status.todayKey;
+  game.dailyBonus.streak = status.nextStreak;
+  game.dailyBonus.bestStreak = Math.max(Number(game.dailyBonus.bestStreak || 0), game.dailyBonus.streak);
+  game.dailyBonus.totalClaims = Math.max(0, Math.floor(Number(game.dailyBonus.totalClaims || 0))) + 1;
+  addItem(rewardName, 1);
+  const milestoneRewards = awardDailyMilestoneAchievements();
+  game.isDirty = true;
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  refreshDailyBonusIcon();
+  let claimMessage = 'Day ' + status.nextStreak + ': ' + rewardName + ' was added to your inventory. Click it to choose which skill gets the XP.';
+  if (milestoneRewards.length > 0) {
+    claimMessage += '<br><br><span style="color:#aaffaa; font-weight:bold;">Achievement Reward:</span><br>' + milestoneRewards.map(reward => reward.title + ': ' + reward.rewardName + (reward.pending ? ' (pending inventory space)' : '')).join('<br>');
+  }
+  await showGameAlert('Daily Bonus Claimed', claimMessage);
 }
 
 function formatDyeColorLabel(color) {
@@ -7728,6 +8169,10 @@ function renderInventoryGrid(){
       } else if (itemName === 'Fire Resist') {
         itemStats = `<div style="color:#ffb85c;">Burn Immune (60s)</div>`;
         clickAction = '<div style="color:#aaffaa; margin-top: 5px; font-size:11px;">Click to use</div>';
+      } else if (isXpBottleItemName(itemName)) {
+        const xpBottleAmount = getXpBottleAmountFromItemName(itemName);
+        itemStats = `<div style="color:#7fd3ff;">+${formatAmount(xpBottleAmount)} XP to a chosen skill</div><div style="color:#d7c09b;">Cannot target Level 100 skills</div>`;
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px; font-size:11px;">Click to use</div>';
       } else if (itemName === 'Mapple Fishing Pole') {
         itemStats = `<div style="color:#7fd3ff;">-5s Fishing Time</div>`;
         clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Used automatically while fishing</div>';
@@ -7863,6 +8308,7 @@ async function handleSellItemClick(slotIndex) {
   
   // Look up price, default to 1 gold if missing so NOTHING is ever unsellable again
   let baseSellPrice = ITEM_SELL_PRICES[itemName];
+  if (isXpBottleItemName(itemName)) baseSellPrice = 0;
   
   if (baseSellPrice === undefined) {
       baseSellPrice = 1; 
@@ -7954,7 +8400,7 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
     handleSellItemClick(slotIndex);
   } else if (itemSlotType) {
     equipItem(itemSlotType, slotIndex);
-  } else if (getFoodHealAmount(itemName) > 0 || itemName === 'Vitality Potion' || itemName === 'Vitality Potion+' || itemName === 'Venom' || itemName === 'Beer' || itemName === 'Bucket of Water' || itemName === 'Fire Resist' || typeof getDyeColorFromItemName(itemName) !== 'undefined') {
+  } else if (getFoodHealAmount(itemName) > 0 || itemName === 'Vitality Potion' || itemName === 'Vitality Potion+' || itemName === 'Venom' || itemName === 'Beer' || itemName === 'Bucket of Water' || itemName === 'Fire Resist' || isXpBottleItemName(itemName) || typeof getDyeColorFromItemName(itemName) !== 'undefined') {
     if (typeof getDyeColorFromItemName(itemName) !== 'undefined') useDyeItem(itemName);
     else showItemContextMenu(event, itemName);
   }
@@ -7984,6 +8430,9 @@ function showItemContextMenu(event, itemName) {
     menuContent += `<button class="context-menu-btn" onclick="useBucketOfWater()">Use</button>`;
   } else if (itemName === 'Fire Resist') {
     menuContent += `<button class="context-menu-btn" onclick="useFireResist()">Use</button>`;
+  } else if (isXpBottleItemName(itemName)) {
+    const safeItemName = itemName.replace(/\\/g, '\\').replace(/'/g, "\\'");
+    menuContent += `<button class="context-menu-btn" onclick="useXpBottle('${safeItemName}')">Use</button>`;
   }
   // We can add other options here later (e.g., "Drop")
   
@@ -21157,6 +21606,8 @@ function getAchievementImage(title) {
   if (title === 'Black Chicken Level 50') return 'images/petblackchicken.png';
   if (title === 'Wolf Level 50') return 'images/wolfpet.png';
   if (title === 'BBC Big Black Chicken') return 'images/petblackchicken.png';
+  if (title === '30 Consecutive Days') return 'images/bottlexpicon.png';
+  if (title === '100 Total Days') return 'images/bottlexpicon.png';
   if (title === 'Find the Cat') return 'images/petcat.png';
   if (title === 'Find the Spirit') return 'images/tomb.png';
   if (title === 'Spirit in Peace') return 'images/tomb.png';
@@ -21183,12 +21634,17 @@ function renderAchievementsTab() {
   const totalKills = getTotalAchievementKills();
   const totalDeaths = Number(game.achievementStats.deaths || 0);
   const totalLotteryRolls = Number(game.achievementStats.lotteryRolls || 0);
+  const dailyBonusProgress = getDailyBonusAchievementProgressFromState(game.dailyBonus);
+  const currentStreak = dailyBonusProgress.currentStreak;
+  const bestStreak = dailyBonusProgress.bestStreak;
+  const totalDays = Number(dailyBonusProgress.totalClaims || 0);
   const millionaireUnlocked = !!((game.achievementStats.unlocked || {})['Millionaire']) || Number(game.gold || 0) >= 1000000;
   const findCatUnlocked = getCurrentEventAchievementState('Find the Cat');
   const findSpiritUnlocked = getCurrentEventAchievementState('Find the Spirit');
   const spiritInPeaceUnlocked = getCurrentEventAchievementState('Spirit in Peace');
   const findWolfUnlocked = getCurrentEventAchievementState('Find the Wolf');
   const bbcUnlocked = hasBigBlackChickenAchievement(game.pets, game.achievementStats.unlocked || {});
+  const dailyMilestoneAchievements = getDailyMilestoneAchievementEntries(dailyBonusProgress, game.achievementStats.unlocked || {});
   const skillAchievements = getTrackedSkillEntries().map(([label, key]) => ({
     title: `${label} Level 100`,
     unlocked: Number((game[key] && game[key].level) || 1) >= 100,
@@ -21207,6 +21663,7 @@ function renderAchievementsTab() {
     { title: 'Spirit in Peace', unlocked: spiritInPeaceUnlocked, detail: getEventAchievementDetail('Spirit in Peace', spiritInPeaceUnlocked) },
     { title: 'Find the Wolf', unlocked: findWolfUnlocked, detail: getEventAchievementDetail('Find the Wolf', findWolfUnlocked) },
     { title: 'BBC Big Black Chicken', unlocked: bbcUnlocked, detail: bbcUnlocked ? 'Rare hatch found' : 'Hatch a Black Chicken' },
+    ...dailyMilestoneAchievements,
     { title: 'Millionaire', unlocked: millionaireUnlocked, detail: millionaireUnlocked ? 'Unlocked' : `${Number(game.gold || 0).toLocaleString()} / 1,000,000` },
     { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown'), detail: ownsItemAnywhere('Gold Crown') ? 'Owned' : 'Not yet' },
     { title: 'Elegant Black Cape Owner', unlocked: ownsItemAnywhere('Elegant Black Cape'), detail: ownsItemAnywhere('Elegant Black Cape') ? 'Owned' : 'Not yet' },
@@ -21224,16 +21681,21 @@ function renderAchievementsTab() {
     const img = getAchievementImage(ach.title);
     return `<div style="background:${bg}; border:1px solid ${border}; border-radius:8px; padding:11px; min-height:84px; box-sizing:border-box;"><div style="display:flex; gap:8px; align-items:flex-start;"><img src="${img}" alt="${ach.title}" style="width:46px; height:46px; object-fit:contain; border-radius:8px; background:rgba(0,0,0,0.18); flex-shrink:0;"><div style="flex:1; min-width:0;"><div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start;"><div style="font-weight:bold; color:${titleColor}; font-size:13px; line-height:1.25;">${ach.title}</div><div style="font-size:11px; color:${statusColor}; white-space:nowrap;">${status}</div></div><div style="margin-top:8px; color:#d7c9b1; font-size:10px; line-height:1.25; word-break:break-word;">${ach.detail}</div></div></div></div>`;
   }).join('');
-  const killRows = mobs.map(enemy => {
-    const kills = getAchievementKillCount(enemy.name);
-    return `<div style="display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:#efe3cf;">${enemy.name}</span><span style="color:${kills > 0 ? '#8fd18f' : '#b89b76'}; font-weight:bold;">${kills}</span></div>`;
-  }).join('');
+  const killRows = [
+    `<div style="display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:#efe3cf;">Total Monster Kills</span><span style="color:${totalKills > 0 ? '#8fd18f' : '#b89b76'}; font-weight:bold;">${totalKills}</span></div>`,
+    ...mobs.map(enemy => {
+      const kills = getAchievementKillCount(enemy.name);
+      return `<div style="display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:#efe3cf;">${enemy.name}</span><span style="color:${kills > 0 ? '#8fd18f' : '#b89b76'}; font-weight:bold;">${kills}</span></div>`;
+    })
+  ].join('');
   tab.innerHTML = `
       <div style="width:100%; margin-top:6px; display:flex; flex-direction:column; gap:10px; overflow:hidden;">
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;">
-          <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Monster Kills</div><div style="font-size:20px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalKills}</div></div>
+        <div style="display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:8px;">
+          <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Days</div><div style="font-size:20px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalDays}</div></div>
           <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Lottery Rolls</div><div style="font-size:20px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalLotteryRolls.toLocaleString()}</div></div>
           <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Deaths</div><div style="font-size:20px; color:#ff8d8d; font-weight:bold; margin-top:4px;">${totalDeaths}</div></div>
+          <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Current Streak</div><div style="font-size:20px; color:#7fd3ff; font-weight:bold; margin-top:4px;">${currentStreak}</div></div>
+          <div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Best Streak</div><div style="font-size:20px; color:#aaffaa; font-weight:bold; margin-top:4px;">${bestStreak}</div></div>
         </div>
         <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; flex:1; min-height:0; overflow:hidden;">
           <div style="display:flex; flex-direction:column; min-height:0; background:rgba(0,0,0,0.18); border:1px solid rgba(212,163,97,0.2); border-radius:8px; padding:10px;">
@@ -24368,6 +24830,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
       eventJournalBtn.onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Event Journal</div>Deaths, duel results, and drunk moments');
       eventJournalBtn.onmouseleave = hideTooltip;
   }
+  const dailyBonusBtn = document.getElementById("dailyBonusActionIcon");
+  if (dailyBonusBtn) {
+      dailyBonusBtn.onclick = claimDailyBonus;
+      dailyBonusBtn.onmouseenter = (e) => showTooltip(e, getDailyBonusTooltipHtml());
+      dailyBonusBtn.onmouseleave = hideTooltip;
+      refreshDailyBonusIcon();
+  }
   const trophyRoomBtn = document.getElementById("trophyRoomActionIcon");
   if (trophyRoomBtn) {
       trophyRoomBtn.onclick = openTrophyRoomHub;
@@ -25684,6 +26153,7 @@ function getInspectAchievementEntries(playerData) {
     const findSpiritUnlocked = getInspectEventAchievementState(playerData, 'Find the Spirit');
     const spiritInPeaceUnlocked = getInspectEventAchievementState(playerData, 'Spirit in Peace');
     const findWolfUnlocked = getInspectEventAchievementState(playerData, 'Find the Wolf');
+    const dailyBonusProgress = getInspectDailyBonusSummary(playerData);
     const skillAchievements = getTrackedSkillEntries().map(([label, key]) => {
         const level = getInspectedSavedSkillLevel(playerData, key);
         return {
@@ -25694,6 +26164,7 @@ function getInspectAchievementEntries(playerData) {
     });
     const pets = Array.isArray(playerData && playerData.pets) ? playerData.pets : [];
     const bbcUnlocked = hasBigBlackChickenAchievement(pets, achievementStats.unlocked || {});
+    const dailyMilestoneAchievements = getDailyMilestoneAchievementEntries(dailyBonusProgress, achievementStats.unlocked || {});
     const petAchievements = PET_LEVEL_ACHIEVEMENT_DEFS.map(def => {
         const bestLevel = getBestPetAchievementLevel(pets, def.type);
         return { title: def.title, unlocked: bestLevel >= 50, detail: `${bestLevel}/50` };
@@ -25710,6 +26181,7 @@ function getInspectAchievementEntries(playerData) {
         { title: 'Spirit in Peace', unlocked: spiritInPeaceUnlocked, detail: getEventAchievementDetail('Spirit in Peace', spiritInPeaceUnlocked) },
         { title: 'Find the Wolf', unlocked: findWolfUnlocked, detail: getEventAchievementDetail('Find the Wolf', findWolfUnlocked) },
         { title: 'BBC Big Black Chicken', unlocked: bbcUnlocked, detail: bbcUnlocked ? 'Rare hatch found' : 'Hatch a Black Chicken' },
+        ...dailyMilestoneAchievements,
         { title: 'Millionaire', unlocked: millionaireUnlocked, detail: millionaireUnlocked ? 'Unlocked' : `${Number((playerData && playerData.gold) || 0).toLocaleString()} / 1,000,000` },
         { title: 'Gold Crown Owner', unlocked: hasGoldCrown, detail: hasGoldCrown ? 'Owned' : 'Not yet' },
         { title: 'Elegant Black Cape Owner', unlocked: hasElegantCape, detail: hasElegantCape ? 'Owned' : 'Not yet' },
@@ -25725,6 +26197,10 @@ function getInspectAchievementEntries(playerData) {
     };
 }
 
+function getInspectDailyBonusSummary(playerData) {
+    return getDailyBonusAchievementProgressFromState((playerData && playerData.dailyBonus) || null);
+}
+
 function renderInspectAchievementsPanel(playerData) {
     const metaEl = document.getElementById('inspectAchievementsMeta');
     const gridEl = document.getElementById('inspectAchievementsGrid');
@@ -25734,12 +26210,15 @@ function renderInspectAchievementsPanel(playerData) {
     const { achievementStats, totalLotteryRolls, entries } = getInspectAchievementEntries(playerData);
     const totalKills = Object.values(achievementStats.kills).reduce((sum, value) => sum + Number(value || 0), 0);
     const totalDeaths = Number(achievementStats.deaths || 0);
+    const { currentStreak, bestStreak, totalClaims } = getInspectDailyBonusSummary(playerData);
     const mobs = Object.values(getCombatMobDefinitions()).sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
 
     metaEl.innerHTML = [
-        `<div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Kills</div><div style="font-size:18px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalKills}</div></div>`,
+        `<div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Total Days</div><div style="font-size:18px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalClaims}</div></div>`,
         `<div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Lottery Rolls</div><div style="font-size:18px; color:var(--gold); font-weight:bold; margin-top:4px;">${totalLotteryRolls.toLocaleString()}</div></div>`,
-        `<div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Deaths</div><div style="font-size:18px; color:#ff8d8d; font-weight:bold; margin-top:4px;">${totalDeaths}</div></div>`
+        `<div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Deaths</div><div style="font-size:18px; color:#ff8d8d; font-weight:bold; margin-top:4px;">${totalDeaths}</div></div>`,
+        `<div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Current Streak</div><div style="font-size:18px; color:#7fd3ff; font-weight:bold; margin-top:4px;">${currentStreak}</div></div>`,
+        `<div style="background:rgba(0,0,0,0.22); border:1px solid rgba(212,163,97,0.22); border-radius:8px; padding:10px; text-align:center;"><div style="font-size:11px; color:#cdb388;">Best Streak</div><div style="font-size:18px; color:#aaffaa; font-weight:bold; margin-top:4px;">${bestStreak}</div></div>`
     ].join('');
 
     gridEl.innerHTML = entries.map(ach => {
@@ -25752,10 +26231,13 @@ function renderInspectAchievementsPanel(playerData) {
         return `<div style="background:${bg}; border:1px solid ${border}; border-radius:8px; padding:11px; min-height:84px; box-sizing:border-box;"><div style="display:flex; gap:8px; align-items:flex-start;"><img src="${img}" alt="${ach.title}" style="width:46px; height:46px; object-fit:contain; border-radius:8px; background:rgba(0,0,0,0.18); flex-shrink:0;"><div style="flex:1; min-width:0;"><div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start;"><div style="font-weight:bold; color:${titleColor}; font-size:13px; line-height:1.25;">${ach.title}</div><div style="font-size:11px; color:${statusColor}; white-space:nowrap;">${status}</div></div><div style="margin-top:8px; color:#d7c9b1; font-size:10px; line-height:1.25; word-break:break-word;">${ach.detail}</div></div></div></div>`;
     }).join('');
 
-    killsEl.innerHTML = mobs.map(enemy => {
-        const kills = Number(achievementStats.kills[enemy.name] || 0);
-        return `<div style="display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:#efe3cf;">${enemy.name}</span><span style="color:${kills > 0 ? '#8fd18f' : '#b89b76'}; font-weight:bold;">${kills}</span></div>`;
-    }).join('');
+    killsEl.innerHTML = [
+        `<div style="display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:#efe3cf;">Total Monster Kills</span><span style="color:${totalKills > 0 ? '#8fd18f' : '#b89b76'}; font-weight:bold;">${totalKills}</span></div>`,
+        ...mobs.map(enemy => {
+            const kills = Number(achievementStats.kills[enemy.name] || 0);
+            return `<div style="display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:#efe3cf;">${enemy.name}</span><span style="color:${kills > 0 ? '#8fd18f' : '#b89b76'}; font-weight:bold;">${kills}</span></div>`;
+        })
+    ].join('');
 }
 
 function renderInspectSkillsPanel(playerData) {
@@ -26973,6 +27455,7 @@ async function attemptEnchant() {
         lastBurnTickAt: game.lastBurnTickAt || 0,
         burnSource: game.burnSource || '',
         achievementStats: game.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} },
+        dailyBonus: game.dailyBonus || createDefaultDailyBonusState(),
         goldenDragonHp: Number(game.goldenDragonHp || 2500),
         updatedAt: new Date().toISOString()
       };
@@ -27353,6 +27836,9 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
   async function loadPlayerDataAndStart(user) {
     try {
       game.isForceDisconnecting = false;
+      window.__dailyBonusSessionHandled = false;
+      window.__dailyBonusDeliveryScheduled = false;
+      window.__dailyBonusSilentDeliveryInProgress = false;
       if (playerDocListener) {
         playerDocListener();
         playerDocListener = null;
@@ -27788,6 +28274,9 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         game.lastBurnTickAt = Number(data.lastBurnTickAt || 0);
         game.burnSource = String(data.burnSource || '');
         game.achievementStats = data.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} };
+        game.dailyBonus = data.dailyBonus || createDefaultDailyBonusState();
+        ensureDailyBonusState();
+        refreshDailyBonusIcon();
         if (!Array.isArray(game.eventJournal)) game.eventJournal = [];
         game.bestiaryUnlocked = data.bestiaryUnlocked || {};
         ensureAchievementStats();
@@ -28014,6 +28503,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         alchemy: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW +++ 
           playerAttackStyle: 'strength',
         activeSession: null, // +++ ADD THIS
+        dailyBonus: createDefaultDailyBonusState(),
         createdAt: new Date().toISOString()
       });
       await showGameAlert("Account Created", "Your account has been created. You must now create your character.");
@@ -28596,6 +29086,10 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 if (officialMatch) {
                     itemName = officialMatch; // Found it! Use exact name from list.
                 }
+            }
+
+            if (itemName === 'XP Bottle' && typeof buildXpBottleItemName === 'function') {
+                itemName = buildXpBottleItemName(100);
             }
 
             // If item was not found in the list, stop and show error
@@ -31753,6 +32247,9 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
 
 
 
