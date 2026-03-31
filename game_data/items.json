@@ -1300,6 +1300,14 @@
         "preventBurn": true,
         "durationMs": 60000
       }
+    },
+    "xp_bottle": {
+      "id": "xp_bottle",
+      "name": "XP Bottle",
+      "img": "images/bottlexpicon.png",
+      "sellPrice": 0,
+      "unlockLevel": 1,
+      "stats": {}
     }
   }
 }
