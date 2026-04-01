@@ -2421,7 +2421,7 @@ button.primary:hover { background: var(--accent-hover); }
 
 
 
-@media screen and (max-width: 1320px) {
+@media screen and (max-width: 1320px), screen and (max-height: 920px) {
   html, body {
     min-height: 100%;
     overflow-y: auto;
@@ -5921,6 +5921,59 @@ function applyItemsJsonData(data) {
 }
 window.applyItemsJsonData = applyItemsJsonData;
 
+function getJsonItemDefinition(itemOrNameOrId) {
+  const key = typeof itemOrNameOrId === 'string'
+    ? itemOrNameOrId
+    : (itemOrNameOrId && (itemOrNameOrId.name || itemOrNameOrId.id)) || '';
+  if (!key) return null;
+  return window.JSON_ITEMS.itemsByName[key] || window.JSON_ITEMS.itemsById[key] || null;
+}
+window.getJsonItemDefinition = getJsonItemDefinition;
+
+function normalizePlayerShopMaxQty(rawMaxQty, individualSales, playerShop) {
+  if (!playerShop) return 0;
+  const parsed = Math.floor(Number(rawMaxQty || 0));
+  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  return individualSales ? 1 : 1000;
+}
+
+function getPlayerShopItemConfig(itemOrNameOrId) {
+  const def = getJsonItemDefinition(itemOrNameOrId);
+  if (!def) {
+    return {
+      playerShop: false,
+      individualSales: false,
+      playerShopMaxQty: 0,
+      definition: null
+    };
+  }
+  const playerShop = !!def.playerShop;
+  const individualSales = !!def.individualSales;
+  const playerShopMaxQty = normalizePlayerShopMaxQty(def.playerShopMaxQty, individualSales, playerShop);
+  return {
+    playerShop,
+    individualSales,
+    playerShopMaxQty,
+    definition: def
+  };
+}
+window.getPlayerShopItemConfig = getPlayerShopItemConfig;
+
+function canListItemInPlayerShop(itemOrNameOrId) {
+  return !!getPlayerShopItemConfig(itemOrNameOrId).playerShop;
+}
+window.canListItemInPlayerShop = canListItemInPlayerShop;
+
+function isPlayerShopIndividualSale(itemOrNameOrId) {
+  const config = getPlayerShopItemConfig(itemOrNameOrId);
+  return !!(config.playerShop && config.individualSales);
+}
+window.isPlayerShopIndividualSale = isPlayerShopIndividualSale;
+
+function getPlayerShopMaxQty(itemOrNameOrId) {
+  return Number(getPlayerShopItemConfig(itemOrNameOrId).playerShopMaxQty || 0);
+}
+window.getPlayerShopMaxQty = getPlayerShopMaxQty;
 function loadItemsJsonData() {
   const paths = ['game_data/items.json', 'items.json'];
   return paths.reduce((promise, nextPath) => promise.catch(() => fetch(nextPath).then(response => {
@@ -7237,7 +7290,7 @@ function formatAmount(n) {
 
 
 function ensureGameTopVisible() {
-  if (window.innerWidth > 1320) return;
+  if (window.innerWidth > 1320 && window.innerHeight > 920) return;
   const gameScreenEl = document.getElementById('gameScreen');
   if (!gameScreenEl) return;
   if (getComputedStyle(gameScreenEl).display === 'none') return;
@@ -23165,7 +23218,11 @@ function _createModal(title, contentHtml, buttons) {
       }
 
       // --- MODIFIED ONCLICK LOGIC ---
-      button.onclick = () => {
+      button.onclick = async () => {
+        if (typeof btnConfig.onClick === 'function') {
+          const shouldContinue = await btnConfig.onClick({ modal, overlay, button, resolve });
+          if (shouldContinue === false) return;
+        }
         const inputEl = modal.querySelector('.game-modal-input');
         let resolveValue = btnConfig.value; // Default to the button's value (e.g., null for 'Cancel')
 
@@ -23173,7 +23230,7 @@ function _createModal(title, contentHtml, buttons) {
         if (inputEl && btnConfig.value !== null) { 
           resolveValue = inputEl.value; // Resolve with the input's value instead
         }
-          overlay.remove();
+        overlay.remove();
         resolve(resolveValue); // Resolve with either the input value or the button value
       };
       // --- END MODIFICATION ---
@@ -23213,7 +23270,7 @@ async function showGameAlert(title, message) {
   await _createModal(title, `<p>${message}</p>`, buttons);
 }
 
-async function showGamePrompt(title, message, defaultValue = '') {
+async function showGamePrompt(title, message, defaultValue = '', options = {}) {
   // HTML for the modal's content, including the input field
   const contentHtml = `
     <p>${message}</p>
@@ -23222,9 +23279,28 @@ async function showGamePrompt(title, message, defaultValue = '') {
   
   // Buttons: Cancel (value: null) and OK (value: 'ok')
   const buttons = [
-    { text: 'Cancel', value: null, class: 'primary', style: '#666' },
-    { text: 'OK', value: 'ok', class: 'primary' } // 'ok' is a placeholder, _createModal will grab the input value
+    { text: 'Cancel', value: null, class: 'primary', style: '#666' }
   ];
+
+  const maxValue = Math.floor(Number(options.maxValue || 0));
+  if (maxValue > 0) {
+    buttons.push({
+      text: options.maxButtonText || 'Max',
+      value: '__max__',
+      class: 'primary',
+      style: options.maxButtonStyle || '#8a5a3a',
+      onClick: ({ modal }) => {
+        const inputEl = modal.querySelector('.game-modal-input');
+        if (!inputEl) return false;
+        inputEl.value = String(maxValue);
+        inputEl.focus();
+        inputEl.select();
+        return false;
+      }
+    });
+  }
+
+  buttons.push({ text: 'OK', value: 'ok', class: 'primary' }); // 'ok' is a placeholder, _createModal will grab the input value
 
   // Our upgraded _createModal will return the input's value if 'OK' is clicked,
   // or null if 'Cancel' is clicked.
@@ -23239,6 +23315,27 @@ async function showGamePrompt(title, message, defaultValue = '') {
  * @param {string} message - The question to ask.
  * @returns {Promise<boolean>} - Resolves true if "Yes" was clicked, false if "No"/"Cancel".
  */
+const GENERAL_STORE_MAX_PROMPT_ITEMS = new Set([
+  'Fishing Bait',
+  'Empty Bucket',
+  'Empty Vial',
+  'Corn Seed',
+  'Grass Seed',
+  'Wheat Seed',
+  'Red Dye',
+  'Blue Dye',
+  'Black Dye',
+  'Green Dye',
+  'White Dye',
+  'Gold Dye',
+  'Bleach',
+  'Pet Chicken Egg'
+]);
+
+function shouldShowShopMaxButton(itemName) {
+  return GENERAL_STORE_MAX_PROMPT_ITEMS.has(String(itemName || ''));
+}
+
 async function showGameConfirm(title, message) {
   const contentHtml = `<p>${message}</p>`;
   
@@ -23982,9 +24079,6 @@ async function withdrawItem(fromBankIndex) {
   
   if (isNaN(qtyToWithdraw) || qtyToWithdraw <= 0 || qtyToWithdraw > item.qty) return;
   addItem(item.name, qtyToWithdraw, item.enchantLevel || 0, item.dyeColor || null); 
-  // Call addItem with the enchantment level
-  addItem(item.name, qtyToWithdraw, item.enchantLevel || 0, item.dyeColor || null); 
-  
   currentTab[fromBankIndex].qty -= qtyToWithdraw;
   if (currentTab[fromBankIndex].qty <= 0) currentTab[fromBankIndex] = null;
   
@@ -24154,10 +24248,12 @@ async function buyShopItem(itemName, price) {
     return;
   }
 
+  const maxAffordableQty = Math.floor(Number(game.gold || 0) / Number(price || 0));
   const input = await showGamePrompt(
     `Buy ${itemName}`,
     `How many ${itemName} do you want to buy? (Price: ${price}ea)`,
-    1
+    1,
+    shouldShowShopMaxButton(itemName) ? { maxValue: maxAffordableQty } : undefined
   );
 
   if (input === null) return;
@@ -32247,6 +32343,7 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
 
 
 
