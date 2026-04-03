@@ -183,6 +183,25 @@
                 "fire"
             ]
         },
+        "king_of_thieves": {
+            "id": "king_of_thieves",
+            "name": "King of Thieves",
+            "level": 20,
+            "maxHp": 55,
+            "style": "melee",
+            "maxHit": 6,
+            "attackLvl": 22,
+            "defenceLvl": 6,
+            "img": "images/billymonster.png",
+            "description": "Known as the King of Thieves after stealing the famous Gold Crown.",
+            "resists": [
+                "air",
+                "ranged"
+            ],
+            "weaks": [
+                "melee"
+            ]
+        },
         "centipede": {
             "id": "centipede",
             "name": "Centipede",
