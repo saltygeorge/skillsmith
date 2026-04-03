@@ -5986,6 +5986,84 @@ function loadItemsJsonData() {
 window.loadItemsJsonData = loadItemsJsonData;
 loadItemsJsonData();
 
+window.JSON_MONSTERS = { monstersById: {}, monstersByName: {}, loaded: false };
+
+function getNormalizedMonstersJsonMap(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return {};
+  const nestedMonsters = (data.monsters && typeof data.monsters === 'object' && !Array.isArray(data.monsters)) ? data.monsters : {};
+  const merged = { ...nestedMonsters };
+  Object.entries(data).forEach(([key, value]) => {
+    if (key === 'monsters') return;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return;
+    if (!('id' in value) && !('name' in value) && !('level' in value) && !('maxHp' in value) && !('style' in value)) return;
+    merged[key] = value;
+  });
+  return merged;
+}
+
+function applyMonstersJsonData(data) {
+  const mergedMonsters = getNormalizedMonstersJsonMap(data);
+  window.JSON_MONSTERS.monstersById = {};
+  window.JSON_MONSTERS.monstersByName = {};
+
+  Object.entries(mergedMonsters).forEach(([id, def]) => {
+    if (!def || typeof def !== 'object' || Array.isArray(def)) return;
+    const monsterName = String(def.name || id || '').trim();
+    if (!monsterName) return;
+    const normalizedDef = {
+      ...def,
+      id: def.id || id,
+      name: monsterName,
+      resists: Array.isArray(def.resists) ? def.resists.slice() : [],
+      weaks: Array.isArray(def.weaks) ? def.weaks.slice() : []
+    };
+    window.JSON_MONSTERS.monstersById[id] = normalizedDef;
+    window.JSON_MONSTERS.monstersByName[monsterName] = normalizedDef;
+  });
+
+  window.JSON_MONSTERS.loaded = true;
+  return window.JSON_MONSTERS.monstersById;
+}
+window.applyMonstersJsonData = applyMonstersJsonData;
+
+function getJsonMonsterDefinition(monsterOrNameOrId) {
+  const key = typeof monsterOrNameOrId === 'string'
+    ? monsterOrNameOrId
+    : (monsterOrNameOrId && (monsterOrNameOrId.name || monsterOrNameOrId.id)) || '';
+  if (!key) return null;
+  return window.JSON_MONSTERS.monstersByName[key] || window.JSON_MONSTERS.monstersById[key] || null;
+}
+window.getJsonMonsterDefinition = getJsonMonsterDefinition;
+
+window.__monstersJsonLoadPromise = null;
+
+function loadMonstersJsonData(force = false) {
+  if (!force && window.JSON_MONSTERS && window.JSON_MONSTERS.loaded) {
+    return Promise.resolve(window.JSON_MONSTERS.monstersById || {});
+  }
+  if (!force && window.__monstersJsonLoadPromise) return window.__monstersJsonLoadPromise;
+
+  const paths = ['game_data/monsters.json', 'monsters.json'];
+  window.__monstersJsonLoadPromise = paths.reduce((promise, nextPath) => promise.catch(() => fetch(nextPath).then(response => {
+    if (!response.ok) throw new Error('HTTP ' + response.status + ' for ' + nextPath);
+    return response.json();
+  })), Promise.reject())
+    .then(data => applyMonstersJsonData(data))
+    .catch(() => null)
+    .finally(() => {
+      window.__monstersJsonLoadPromise = null;
+    });
+
+  return window.__monstersJsonLoadPromise;
+}
+window.loadMonstersJsonData = loadMonstersJsonData;
+const BUILD_LAST_MODIFIED_AT = '2026-04-01 21:57:26 EDT';
+console.log('[BUILD] Last modified: ' + BUILD_LAST_MODIFIED_AT);
+loadMonstersJsonData().then(() => {
+  if (typeof renderBestiary === 'function') renderBestiary();
+  if (typeof renderAchievementsHub === 'function') renderAchievementsHub();
+});
+
 const SHOP_INVENTORY = new Array(24).fill(null);
 SHOP_INVENTORY[0] = { name: 'Bronze Pickaxe', price: 10 };
 SHOP_INVENTORY[1] = { name: 'Bronze Axe', price: 10 };
@@ -8417,7 +8495,23 @@ async function handleSellItemClick(slotIndex) {
   }
 }
 
-function handleItemClick(event, itemName, itemQty, slotIndex) {
+async function tryShiftClickConsumeItem(itemName) {
+  if (getFoodHealAmount(itemName) > 0) {
+    await eatFoodItem(itemName);
+    return true;
+  }
+  if (itemName === 'Vitality Potion') {
+    await drinkVitalityPotion();
+    return true;
+  }
+  if (itemName === 'Vitality Potion+') {
+    await drinkVitalityPotionPlus();
+    return true;
+  }
+  return false;
+}
+
+async function handleItemClick(event, itemName, itemQty, slotIndex) {
   hideItemContextMenu();
 
   if (document.getElementById('hubEnchanting').classList.contains('active')) {
@@ -8451,6 +8545,8 @@ function handleItemClick(event, itemName, itemQty, slotIndex) {
   if (game.shopOpen) {
     // Pass the slotIndex so the shop knows exactly which item (and enchant level) you are selling
     handleSellItemClick(slotIndex);
+  } else if (event && event.shiftKey && await tryShiftClickConsumeItem(itemName)) {
+    return;
   } else if (itemSlotType) {
     equipItem(itemSlotType, slotIndex);
   } else if (getFoodHealAmount(itemName) > 0 || itemName === 'Vitality Potion' || itemName === 'Vitality Potion+' || itemName === 'Venom' || itemName === 'Beer' || itemName === 'Bucket of Water' || itemName === 'Fire Resist' || isXpBottleItemName(itemName) || typeof getDyeColorFromItemName(itemName) !== 'undefined') {
@@ -9180,9 +9276,13 @@ function getFoodHealAmount(itemName) {
 async function eatFoodItem(itemName) {
   const healAmt = getFoodHealAmount(itemName);
   if (healAmt <= 0) return;
+  hideItemContextMenu();
+  if (game.hp >= game.maxHP) {
+    await showGameAlert("HP Full", "Your HP is already full.");
+    return;
+  }
   if (removeItem(itemName, 1)) {
     applyPlayerHealing(healAmt);
-    hideItemContextMenu();
     renderInventoryGrid();
     game.isDirty = true;
   }
@@ -21441,22 +21541,19 @@ function openBestiaryHub() {
 }
 
 function getCombatMobDefinitions() {
-  return {
-    'Chicken': { name: 'Chicken', level: 1, maxHp: 10, style: 'melee', maxHit: 1, attackLvl: 1, defenceLvl: 1, img: 'images/chickenmonster.jpeg', weaks: ['air', 'poison'] },
-    'Rat': { name: 'Rat', level: 1, maxHp: 10, style: 'melee', maxHit: 1, attackLvl: 1, defenceLvl: 1, img: 'images/ratmonster.jpeg', weaks: ['earth', 'poison'] },
-    'Spider': { name: 'Spider', level: 2, maxHp: 12, style: 'melee', maxHit: 2, attackLvl: 2, defenceLvl: 2, img: 'images/spidermonster.jpeg', resists: ['poison'], weaks: ['fire'] },
-    'Cow': { name: 'Cow', level: 2, maxHp: 15, style: 'melee', maxHit: 2, attackLvl: 3, defenceLvl: 3, img: 'images/cowmonster.png', resists: ['earth'], weaks: ['air'] },
-    'Dummy Target': { name: 'Dummy Target', level: 1, maxHp: 10, style: 'melee', maxHit: 0, attackLvl: 0, defenceLvl: 0, img: 'images/dummytarget.png', grantsFlatCombatXp: 1, noEnemyAttack: true },
-    'Goblin': { name: 'Goblin', level: 8, maxHp: 25, style: 'melee', maxHit: 3, attackLvl: 8, defenceLvl: 5, img: 'images/goblinmonster.jpeg', weaks: ['air'] },
-    'Platypus': { name: 'Platypus', level: 5, maxHp: 20, style: 'ranged', maxHit: 3, attackLvl: 6, defenceLvl: 4, img: 'images/platypusmonster.jpeg', resists: ['water'], weaks: ['poison'] },
-    'Stupid Koala': { name: 'Stupid Koala', level: 9, maxHp: 28, style: 'melee', maxHit: 4, attackLvl: 9, defenceLvl: 7, img: 'images/koalamonster.png', resists: ['earth'], weaks: ['fire'] },
-    'Crazy Owl': { name: 'Crazy Owl', level: 10, maxHp: 45, style: 'ranged', maxHit: 5, attackLvl: 12, defenceLvl: 8, img: 'images/crazyowlmonster.jpeg', resists: ['earth'], weaks: ['air', 'poison'] },
-    'The Witch': { name: 'The Witch', level: 15, maxHp: 60, style: 'magic', maxHit: 8, attackLvl: 15, defenceLvl: 5, img: 'images/witchmonster.jpeg', resists: ['fire', 'poison'], weaks: ['earth'] },
-    'Wolf': { name: 'Wolf', level: 25, maxHp: 70, style: 'melee', maxHit: 7, attackLvl: 26, defenceLvl: 22, img: 'images/wolfmonster.png', resists: ['earth'], weaks: ['fire'] },
-    'Madmax': { name: 'Madmax', level: 69, maxHp: 500, style: 'melee', maxHit: 15, attackLvl: 60, defenceLvl: 50, img: 'images/madmaxmonster.jpeg', lastSpecialTime: Date.now(), resists: ['earth'], weaks: ['water'] },
-    'Golden Dragon': { name: 'Golden Dragon', level: 100, maxHp: 2500, style: 'magic', maxHit: 25, attackLvl: 80, defenceLvl: 80, img: 'images/golddragon.png', resists: ['fire'], weaks: ['water'] },
-    'Centipede': { name: 'Centipede', level: 5, maxHp: 20, style: 'melee', maxHit: 4, attackLvl: 5, defenceLvl: 5, img: 'images/centipedemonster.jpeg', resists: ['poison'], weaks: ['fire'] }
-  };
+  if (!window.JSON_MONSTERS || !window.JSON_MONSTERS.loaded) return {};
+
+  const monsters = {};
+  Object.values(window.JSON_MONSTERS.monstersByName || {}).forEach(def => {
+    if (!def || !def.name) return;
+    monsters[def.name] = {
+      ...def,
+      name: def.name,
+      resists: Array.isArray(def.resists) ? def.resists.slice() : [],
+      weaks: Array.isArray(def.weaks) ? def.weaks.slice() : []
+    };
+  });
+  return monsters;
 }
 
 function formatBestiaryTypes(types, emptyText) {
@@ -21932,20 +22029,26 @@ function renderBestiary() {
       </div>`;
   }).join('');
 }
-function openCombatInterface(enemyName) {
+async function openCombatInterface(enemyName) {
   if (game.miningActive) { stopMining(); game.wasMiningBeforeCombat = true; }
   if (game.blacksmithingActive) { stopBlacksmithing(); game.wasSmithingBeforeCombat = true; }
   if (game.woodcuttingActive) { stopWoodcutting(); game.wasWoodcuttingBeforeCombat = true; }
-  if (game.fletchingActive) { stopFletching(); game.wasFletchingBeforeCombat = true; }
+  if (game.fletchingActive) { stopFletching(); game.wasCraftingBeforeCombat = true; }
   if (game.craftingActive) { stopCraftingBowString(); game.wasCraftingBeforeCombat = true; }
   if (game.fishingActive) { stopFishing(); game.wasFishingBeforeCombat = true; }
   if (game.stoneforgingActive) { stopStoneForging(); game.wasStoneForgingBeforeCombat = true; }
 
+  if (!window.JSON_MONSTERS || !window.JSON_MONSTERS.loaded) {
+    await loadMonstersJsonData();
+  }
+
   const mobs = getCombatMobDefinitions();
-
-
   const def = mobs[enemyName];
-  if (!def) { console.error('Unknown enemy:', enemyName); return; }
+  if (!def) {
+    console.error('Unknown enemy:', enemyName);
+    await showGameAlert('Monster Data Missing', 'Could not load monster data for ' + enemyName + '.');
+    return;
+  }
 
   if (enemyName === 'Wolf') unlockAchievementDirect('Find the Wolf');
 
@@ -24053,7 +24156,7 @@ async function depositItem(item, fromInventoryIndex, toBankIndex, skipPrompt = f
   if (game.inventory[fromInventoryIndex].qty <= 0) game.inventory[fromInventoryIndex] = null;
 
   if (bankSlot) {
-    currentTab[toBankIndex] = { name: item.name, qty: qtyToDeposit, enchantLevel: enchant, ...(normalizeItemDyeColor(dyeColor) ? { dyeColor: normalizeItemDyeColor(dyeColor) } : {}) };
+    currentTab[toBankIndex] = { name: item.name, qty: Number(bankSlot.qty || 0) + qtyToDeposit, enchantLevel: enchant, ...(normalizeItemDyeColor(dyeColor) ? { dyeColor: normalizeItemDyeColor(dyeColor) } : {}) };
   } else {
     currentTab[toBankIndex] = { name: item.name, qty: qtyToDeposit, enchantLevel: enchant, ...(normalizeItemDyeColor(dyeColor) ? { dyeColor: normalizeItemDyeColor(dyeColor) } : {}) };
   }
@@ -32343,6 +32446,7 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
 
 
 
