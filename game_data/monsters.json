@@ -9,7 +9,12 @@
             "maxHit": 1,
             "attackLvl": 1,
             "defenceLvl": 1,
-            "img": "images/chickenmonster.jpeg"
+            "img": "images/chickenmonster.jpeg",
+            "resists": [],
+            "weaks": [
+                "air",
+                "poison"
+            ]
         },
         "rat": {
             "id": "rat",
@@ -20,7 +25,12 @@
             "maxHit": 1,
             "attackLvl": 1,
             "defenceLvl": 1,
-            "img": "images/ratmonster.jpeg"
+            "img": "images/ratmonster.jpeg",
+            "resists": [],
+            "weaks": [
+                "earth",
+                "poison"
+            ]
         },
         "spider": {
             "id": "spider",
@@ -31,7 +41,13 @@
             "maxHit": 2,
             "attackLvl": 2,
             "defenceLvl": 2,
-            "img": "images/spidermonster.jpeg"
+            "img": "images/spidermonster.jpeg",
+            "resists": [
+                "poison"
+            ],
+            "weaks": [
+                "fire"
+            ]
         },
         "cow": {
             "id": "cow",
@@ -42,84 +58,13 @@
             "maxHit": 2,
             "attackLvl": 3,
             "defenceLvl": 3,
-            "img": "images/cowmonster.png"
-        },
-        "goblin": {
-            "id": "goblin",
-            "name": "Goblin",
-            "level": 8,
-            "maxHp": 25,
-            "style": "melee",
-            "maxHit": 3,
-            "attackLvl": 8,
-            "defenceLvl": 5,
-            "img": "images/goblinmonster.jpeg"
-        },
-        "crazy_platypus": {
-            "id": "crazy_platypus",
-            "name": "Crazy Platypus",
-            "level": 5,
-            "maxHp": 20,
-            "style": "ranged",
-            "maxHit": 3,
-            "attackLvl": 6,
-            "defenceLvl": 4,
-            "img": "images/platypusmonster.jpeg"
-        },
-        "stupid_koala": {
-            "id": "stupid_koala",
-            "name": "Stupid Koala",
-            "level": 9,
-            "maxHp": 28,
-            "style": "melee",
-            "maxHit": 4,
-            "attackLvl": 9,
-            "defenceLvl": 7,
-            "img": "images/koalamonster.png"
-        },
-        "crazy_owl": {
-            "id": "crazy_owl",
-            "name": "Crazy Owl",
-            "level": 10,
-            "maxHp": 45,
-            "style": "ranged",
-            "maxHit": 5,
-            "attackLvl": 12,
-            "defenceLvl": 8,
-            "img": "images/crazyowlmonster.jpeg"
-        },
-        "the_witch": {
-            "id": "the_witch",
-            "name": "The Witch",
-            "level": 15,
-            "maxHp": 60,
-            "style": "magic",
-            "maxHit": 8,
-            "attackLvl": 15,
-            "defenceLvl": 5,
-            "img": "images/witchmonster.jpeg"
-        },
-        "madmax": {
-            "id": "madmax",
-            "name": "Madmax",
-            "level": 69,
-            "maxHp": 500,
-            "style": "melee",
-            "maxHit": 15,
-            "attackLvl": 60,
-            "defenceLvl": 50,
-            "img": "images/madmaxmonster.jpeg"
-        },
-        "centipede": {
-            "id": "centipede",
-            "name": "Centipede",
-            "level": 5,
-            "maxHp": 20,
-            "style": "melee",
-            "maxHit": 4,
-            "attackLvl": 5,
-            "defenceLvl": 5,
-            "img": "images/centipedemonster.jpeg"
+            "img": "images/cowmonster.png",
+            "resists": [
+                "earth"
+            ],
+            "weaks": [
+                "air"
+            ]
         },
         "dummy_target": {
             "id": "dummy_target",
@@ -132,7 +77,145 @@
             "defenceLvl": 0,
             "img": "images/dummytarget.png",
             "grantsFlatCombatXp": 1,
-            "noEnemyAttack": true
+            "noEnemyAttack": true,
+            "resists": [],
+            "weaks": []
+        },
+        "goblin": {
+            "id": "goblin",
+            "name": "Goblin",
+            "level": 8,
+            "maxHp": 25,
+            "style": "melee",
+            "maxHit": 3,
+            "attackLvl": 8,
+            "defenceLvl": 5,
+            "img": "images/goblinmonster.jpeg",
+            "resists": [],
+            "weaks": [
+                "air"
+            ]
+        },
+        "platypus": {
+            "id": "platypus",
+            "name": "Platypus",
+            "level": 5,
+            "maxHp": 20,
+            "style": "ranged",
+            "maxHit": 3,
+            "attackLvl": 6,
+            "defenceLvl": 4,
+            "img": "images/platypusmonster.jpeg",
+            "resists": [
+                "water"
+            ],
+            "weaks": [
+                "poison"
+            ]
+        },
+        "stupid_koala": {
+            "id": "stupid_koala",
+            "name": "Stupid Koala",
+            "level": 9,
+            "maxHp": 28,
+            "style": "melee",
+            "maxHit": 4,
+            "attackLvl": 9,
+            "defenceLvl": 7,
+            "img": "images/koalamonster.png",
+            "resists": [
+                "earth"
+            ],
+            "weaks": [
+                "fire"
+            ]
+        },
+        "crazy_owl": {
+            "id": "crazy_owl",
+            "name": "Crazy Owl",
+            "level": 10,
+            "maxHp": 45,
+            "style": "ranged",
+            "maxHit": 5,
+            "attackLvl": 12,
+            "defenceLvl": 8,
+            "img": "images/crazyowlmonster.jpeg",
+            "resists": [
+                "earth"
+            ],
+            "weaks": [
+                "air",
+                "poison"
+            ]
+        },
+        "the_witch": {
+            "id": "the_witch",
+            "name": "The Witch",
+            "level": 15,
+            "maxHp": 60,
+            "style": "magic",
+            "maxHit": 8,
+            "attackLvl": 15,
+            "defenceLvl": 5,
+            "img": "images/witchmonster.jpeg",
+            "resists": [
+                "fire",
+                "poison"
+            ],
+            "weaks": [
+                "earth"
+            ]
+        },
+        "wolf": {
+            "id": "wolf",
+            "name": "Wolf",
+            "level": 25,
+            "maxHp": 70,
+            "style": "melee",
+            "maxHit": 7,
+            "attackLvl": 26,
+            "defenceLvl": 22,
+            "img": "images/wolfmonster.png",
+            "resists": [
+                "earth"
+            ],
+            "weaks": [
+                "fire"
+            ]
+        },
+        "centipede": {
+            "id": "centipede",
+            "name": "Centipede",
+            "level": 5,
+            "maxHp": 20,
+            "style": "melee",
+            "maxHit": 4,
+            "attackLvl": 5,
+            "defenceLvl": 5,
+            "img": "images/centipedemonster.jpeg",
+            "resists": [
+                "poison"
+            ],
+            "weaks": [
+                "fire"
+            ]
+        },
+        "madmax": {
+            "id": "madmax",
+            "name": "Madmax",
+            "level": 69,
+            "maxHp": 500,
+            "style": "melee",
+            "maxHit": 15,
+            "attackLvl": 60,
+            "defenceLvl": 50,
+            "img": "images/madmaxmonster.jpeg",
+            "resists": [
+                "earth"
+            ],
+            "weaks": [
+                "water"
+            ]
         },
         "gold_dragon": {
             "id": "gold_dragon",
@@ -143,7 +226,13 @@
             "maxHit": 25,
             "attackLvl": 80,
             "defenceLvl": 80,
-            "img": "images/golddragon.png"
+            "img": "images/golddragon.png",
+            "resists": [
+                "fire"
+            ],
+            "weaks": [
+                "water"
+            ]
         }
     }
 }
