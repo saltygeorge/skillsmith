@@ -3386,7 +3386,7 @@ button.primary:hover { background: var(--accent-hover); }
               <!-- NEW FOREST BUTTON -->
               <button id="normalForestAreaBtn" class="primary" 
                       style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; padding: 0; outline: none; background: transparent; border: none; box-shadow: none; overflow: hidden;"
-                      onclick="game.lastCombatAreaHub='hubNormalForest'; showMainScreen('hubNormalForest');" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Forest</div><div>Hunt Goblins, Platypus, Koalas, and Wolves.</div>')" 
+                      onclick="game.lastCombatAreaHub='hubNormalForest'; showMainScreen('hubNormalForest');" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>The Forest</div><div>Hunt Platypus, Koalas, the King of Thieves, and Wolves.</div>')" 
                       onmouseleave="hideTooltip()">
                 <img src="images/normalforest.jpeg" alt="Forest Area" 
                      style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover; display: block; image-rendering: auto; backface-visibility: hidden;">
@@ -3505,6 +3505,11 @@ button.primary:hover { background: var(--accent-hover); }
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Stupid Koala (Lvl 9)</div>')"
                    onmouseleave="hideTooltip()">
                 <img src="images/koalamonster.png" alt="Stupid Koala" style="height: 100px; object-fit: cover; object-position: center;">
+              </div>
+              <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('King of Thieves')"
+                   onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>King of Thieves (Lvl 20)</div>')"
+                   onmouseleave="hideTooltip()">
+                <img src="images/billymonster.png" alt="King of Thieves" style="height: 100px; object-fit: cover; border-radius: 8px;">
               </div>
               <div style="text-align:center; cursor:pointer;" onclick="openCombatInterface('Wolf')"
                    onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Wolf (Lvl 25)</div>')"
@@ -6057,7 +6062,23 @@ function loadMonstersJsonData(force = false) {
   return window.__monstersJsonLoadPromise;
 }
 window.loadMonstersJsonData = loadMonstersJsonData;
-const BUILD_LAST_MODIFIED_AT = '2026-04-01 21:57:26 EDT';
+const BUILD_LAST_MODIFIED_AT = (() => {
+  const rawLastModified = document.lastModified || '';
+  const parsedDate = rawLastModified ? new Date(rawLastModified) : null;
+  if (parsedDate && !Number.isNaN(parsedDate.getTime())) {
+    return parsedDate.toLocaleString('en-CA', {
+      timeZone: 'America/Toronto',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).replace(',', '');
+  }
+  return rawLastModified || 'unknown';
+})();
 console.log('[BUILD] Last modified: ' + BUILD_LAST_MODIFIED_AT);
 loadMonstersJsonData().then(() => {
   if (typeof renderBestiary === 'function') renderBestiary();
@@ -21563,6 +21584,9 @@ function formatBestiaryTypes(types, emptyText) {
 }
 function getBestiaryRecommendedStyle(enemy) {
   const weaks = enemy.weaks || [];
+  if (weaks.includes('melee')) return 'Melee';
+  if (weaks.includes('ranged')) return 'Ranged';
+  if (weaks.includes('magic')) return 'Magic';
   if (weaks.includes('water')) return 'Water Bolt';
   if (weaks.includes('fire')) return 'Fire Bolt';
   if (weaks.includes('air') && enemy.style === 'melee') return 'Ranged / Air';
@@ -21581,6 +21605,7 @@ function ensureAchievementStats() {
   if (typeof game.achievementStats.hadBeenDrunk !== 'boolean') game.achievementStats.hadBeenDrunk = false;
   if (!Number.isFinite(Number(game.achievementStats.lotteryRolls))) game.achievementStats.lotteryRolls = 0;
   if (typeof game.achievementStats.wonBarehandedKill !== 'boolean') game.achievementStats.wonBarehandedKill = false;
+  if (!Number.isFinite(Number(game.achievementStats.goldStolenByKingOfThieves))) game.achievementStats.goldStolenByKingOfThieves = 0;
   if (!game.achievementStats.unlocked || typeof game.achievementStats.unlocked !== 'object') game.achievementStats.unlocked = {};
 }
 
@@ -21767,6 +21792,7 @@ function getAchievementImage(title) {
   if (title === 'Drunk Night') return 'images/beer.png';
   if (title === 'Millionaire') return 'images/goldpouch.png';
   if (title === 'Gold Crown Owner') return 'images/goldcrown.png';
+  if (title === 'Gold Crown Thief') return 'images/goldcrown.png';
   if (title === 'Elegant Black Cape Owner') return 'images/elegantblackcape.png';
   if (title === 'Master Enchanter (+4)') return 'images/enchantingtableicon.jpeg';
   if (title === 'Bare Knuckle Victory') return 'images/attackskillicon.jpeg';
@@ -21794,6 +21820,7 @@ function renderAchievementsTab() {
   const spiritInPeaceUnlocked = getCurrentEventAchievementState('Spirit in Peace');
   const findWolfUnlocked = getCurrentEventAchievementState('Find the Wolf');
   const bbcUnlocked = hasBigBlackChickenAchievement(game.pets, game.achievementStats.unlocked || {});
+  const goldCrownThiefProgress = Number(game.achievementStats.goldStolenByKingOfThieves || 0);
   const dailyMilestoneAchievements = getDailyMilestoneAchievementEntries(dailyBonusProgress, game.achievementStats.unlocked || {});
   const skillAchievements = getTrackedSkillEntries().map(([label, key]) => ({
     title: `${label} Level 100`,
@@ -21816,6 +21843,7 @@ function renderAchievementsTab() {
     ...dailyMilestoneAchievements,
     { title: 'Millionaire', unlocked: millionaireUnlocked, detail: millionaireUnlocked ? 'Unlocked' : `${Number(game.gold || 0).toLocaleString()} / 1,000,000` },
     { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown'), detail: ownsItemAnywhere('Gold Crown') ? 'Owned' : 'Not yet' },
+    { title: 'Gold Crown Thief', unlocked: goldCrownThiefProgress >= 50000, detail: `${goldCrownThiefProgress.toLocaleString()} / 50,000 gold stolen` },
     { title: 'Elegant Black Cape Owner', unlocked: ownsItemAnywhere('Elegant Black Cape'), detail: ownsItemAnywhere('Elegant Black Cape') ? 'Owned' : 'Not yet' },
     { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4, detail: `Best enchant: +${maxEnchantLevel}` },
     { title: 'Bare Knuckle Victory', unlocked: !!game.achievementStats.wonBarehandedKill, detail: game.achievementStats.wonBarehandedKill ? 'Completed' : 'Kill 1 monster with no weapon equipped' },
@@ -21870,6 +21898,7 @@ function getAchievementEntriesForTracking() {
   const spiritInPeaceUnlocked = getCurrentEventAchievementState('Spirit in Peace');
   const findWolfUnlocked = getCurrentEventAchievementState('Find the Wolf');
   const bbcUnlocked = hasBigBlackChickenAchievement(game.pets, game.achievementStats.unlocked || {});
+  const goldCrownThiefProgress = Number(game.achievementStats.goldStolenByKingOfThieves || 0);
   const skillAchievements = getTrackedSkillEntries().map(([label, key]) => ({
     title: `${label} Level 100`,
     unlocked: Number((game[key] && game[key].level) || 1) >= 100
@@ -21889,6 +21918,7 @@ function getAchievementEntriesForTracking() {
     { title: 'BBC Big Black Chicken', unlocked: bbcUnlocked },
     { title: 'Millionaire', unlocked: millionaireUnlocked },
     { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown') },
+    { title: 'Gold Crown Thief', unlocked: goldCrownThiefProgress >= 50000 },
     { title: 'Elegant Black Cape Owner', unlocked: ownsItemAnywhere('Elegant Black Cape') },
     { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4 },
     { title: 'Bare Knuckle Victory', unlocked: !!game.achievementStats.wonBarehandedKill },
@@ -21994,6 +22024,25 @@ if (!window.__achievementUnlockWatcherStarted) {
     syncAchievementUnlockState(true);
   }, 1500);
 }
+function getBestiaryDescriptionTooltipHtml(enemy) {
+  const descriptionText = String((enemy && enemy.description) || '').trim();
+  if (!descriptionText || !enemy || enemy.name !== 'King of Thieves') return '';
+  const normalizedDescriptionText = descriptionText
+    .split('\r\n').join('\n')
+    .split('\r').join('\n')
+    .split('\n').join('<br>');
+  return `<div style="color:var(--gold); font-weight:bold; margin-bottom:4px;">Lore</div>${normalizedDescriptionText}`;
+}
+
+function escapeHtmlAttribute(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 function renderBestiary() {
   const list = document.getElementById('bestiaryList');
   if (!list) return;
@@ -22017,9 +22066,11 @@ function renderBestiary() {
     const styleLabel = enemy.style.charAt(0).toUpperCase() + enemy.style.slice(1);
     const resistText = formatBestiaryTypes(enemy.resists, 'None');
     const weakText = formatBestiaryTypes(enemy.weaks, 'None');
+    const descriptionTooltipHtml = getBestiaryDescriptionTooltipHtml(enemy);
+    const descriptionTooltipDataAttr = descriptionTooltipHtml ? ` data-bestiary-lore-tooltip="${escapeHtmlAttribute(descriptionTooltipHtml)}"` : '';
     return `
-      <div style="display:flex; gap:10px; align-items:flex-start; background: rgba(44,22,12,0.92); border: 1px solid rgba(212,163,97,0.28); border-radius: 8px; padding: 10px; height: 126px; box-sizing: border-box; overflow:hidden;">
-        <img src="${enemy.img}" alt="${enemy.name}" style="width:56px; height:56px; object-fit:contain; border-radius:6px; background: rgba(0,0,0,0.15); flex-shrink:0;">
+      <div style="display:flex; gap:10px; align-items:flex-start; background: rgba(44,22,12,0.92); border: 1px solid rgba(212,163,97,0.28); border-radius: 8px; padding: 10px; min-height: 126px; box-sizing: border-box; overflow:hidden;">
+        <img src="${enemy.img}" alt="${enemy.name}" style="width:56px; height:56px; object-fit:contain; border-radius:6px; background: rgba(0,0,0,0.15); flex-shrink:0;${descriptionTooltipHtml ? ' cursor:help;' : ''}"${descriptionTooltipDataAttr}>
         <div style="flex:1; min-width:0;">
           <div style="font-weight:bold; color:var(--gold); font-size:16px; line-height:1.1;">${enemy.name}</div>
           <div style="margin-top:3px; color:#efe3cf; font-size:12px;">Lvl ${enemy.level} | ${styleLabel} | HP ${enemy.maxHp}</div>
@@ -22027,7 +22078,14 @@ function renderBestiary() {
           <div style="margin-top:3px; color:#ffb0b0; font-size:12px;"><span style="font-weight:bold; color:#ffd0d0;">Weak:</span> ${weakText}</div>
         </div>
       </div>`;
-  }).join('');
+    }).join('');
+
+  list.querySelectorAll('[data-bestiary-lore-tooltip]').forEach(img => {
+    const tooltipContent = img.getAttribute('data-bestiary-lore-tooltip');
+    if (!tooltipContent) return;
+    img.onmouseenter = (event) => showTooltip(event, tooltipContent);
+    img.onmouseleave = hideTooltip;
+  });
 }
 async function openCombatInterface(enemyName) {
   if (game.miningActive) { stopMining(); game.wasMiningBeforeCombat = true; }
@@ -22184,7 +22242,7 @@ function beginCombat() {
   game.playerCombatInterval = setTimeout(playerCombatLoop, stats.attackSpeed);
   
   // Enemy (Chicken) attacks every 3.0 seconds
-  game.enemyCombatInterval = setInterval(enemyAttackTurn, 3000);
+  game.enemyCombatInterval = setInterval(enemyAttackTurn, getEnemyAttackSpeedMs(game.currentEnemy));
 }
 
 // NEW: Function to restart ONLY the player's attack interval
@@ -22205,6 +22263,12 @@ function restartPlayerAttackInterval() {
   if (runBtn) runBtn.disabled = false;
 }
 
+function getEnemyAttackSpeedMs(enemy = game.currentEnemy) {
+  const speed = Number((enemy && enemy.attackSpeed) || 3000);
+  if (!Number.isFinite(speed)) return 3000;
+  return Math.max(1000, speed);
+}
+
 // NEW: Function to restart combat intervals without resetting the fight
 function restartCombatIntervals() {
   if (!game.inCombat || !game.currentEnemy) return; // Should already be in combat
@@ -22218,7 +22282,7 @@ function restartCombatIntervals() {
   
   // 3. Restart intervals
   game.playerCombatInterval = setInterval(playerAttackTurn, stats.attackSpeed);
-  game.enemyCombatInterval = setInterval(enemyAttackTurn, 3000);
+  game.enemyCombatInterval = setInterval(enemyAttackTurn, getEnemyAttackSpeedMs(game.currentEnemy));
   
   // 4. Re-enable the run button
   const runBtn = document.getElementById('combat-run-btn');
@@ -22509,12 +22573,16 @@ function getAttackElementType(weaponType, activeSpell) {
   return null;
 }
 
-function getEnemyTypeModifier(enemy, attackType) {
+function getEnemyTypeModifier(enemy, attackType, weaponType = null) {
   if (!enemy || !attackType) return { multiplier: 1, effect: null };
   const resists = Array.isArray(enemy.resists) ? enemy.resists : [];
   const weaks = Array.isArray(enemy.weaks) ? enemy.weaks : [];
-  if (resists.includes(attackType)) return { multiplier: 0.5, effect: 'resist' };
-  if (weaks.includes(attackType)) return { multiplier: 1.5, effect: 'weak' };
+  const effectiveAttackTypes = [attackType];
+  if (weaponType === 'melee' && !effectiveAttackTypes.includes('melee')) effectiveAttackTypes.push('melee');
+  if (weaponType === 'ranged' && !effectiveAttackTypes.includes('ranged')) effectiveAttackTypes.push('ranged');
+  if (weaponType === 'magic' && !effectiveAttackTypes.includes('magic')) effectiveAttackTypes.push('magic');
+  if (resists.some(type => effectiveAttackTypes.includes(type))) return { multiplier: 0.5, effect: 'resist' };
+  if (weaks.some(type => effectiveAttackTypes.includes(type))) return { multiplier: 1.5, effect: 'weak' };
   return { multiplier: 1, effect: null };
 }
 
@@ -22645,7 +22713,7 @@ if (activeSpell) {
   }
 
   const attackElementType = getAttackElementType(weaponType, activeSpell);
-  const typeModifier = getEnemyTypeModifier(enemy, attackElementType);
+  const typeModifier = getEnemyTypeModifier(enemy, attackElementType, weaponType);
   if (damage > 0 && typeModifier.multiplier !== 1) {
     damage = Math.floor(damage * typeModifier.multiplier);
   }
@@ -22841,6 +22909,17 @@ function enemyAttackTurn() {
       }
   }
 
+  if (enemy.name === 'King of Thieves' && Number(game.gold || 0) > 0) {
+      const stolenGold = Math.min(Number(game.gold || 0), Math.floor(Math.random() * 25) + 1);
+      game.gold = Math.max(0, Number(game.gold || 0) - stolenGold);
+      ensureAchievementStats();
+      game.achievementStats.goldStolenByKingOfThieves = Number(game.achievementStats.goldStolenByKingOfThieves || 0) + stolenGold;
+      updateGoldUI();
+      game.isDirty = true;
+      showEnemyStatusPopup('The King of Thieves stole ' + stolenGold + ' Gold', '', 84);
+      return;
+  }
+
   let enemyAtkRoll = enemy.attackLvl * 64;
   let playerDefRoll = 0;
   
@@ -22970,6 +23049,16 @@ function handleEnemyDeath() {
           addItem('Pet Owl Egg', 1);
           queueDeathPopup('<span style="color:#ff4d4d; font-size:16px;">EGG DROP!</span>', dropDelay + 200);
           if (typeof addLocalChatMessage === 'function') addLocalChatMessage("You found a rare Pet Owl Egg!", "trade");
+      }
+    } else if (name === 'King of Thieves') {
+      const goldOreQty = Math.floor(Math.random() * 3) + 1;
+      addItem('Gold Ore', goldOreQty);
+      queueDeathPopup(`+${goldOreQty} Gold Ore`, dropDelay);
+      if (Math.floor(Math.random() * 20) === 0) {
+          queueDeathPopup('<span style="color:var(--gold); font-size:16px;">RARE DROP! +1 Gold Bar</span>', dropDelay + 450);
+          addItem('Gold Bar', 1);
+          if (typeof addLocalChatMessage === 'function') addLocalChatMessage("You found a rare Gold Bar on the King of Thieves!", "trade");
+          dropDelay += 450;
       }
     } else if (name === 'Wolf') {
       addItem('Wolf Pelt', 1);
@@ -26307,6 +26396,7 @@ function getInspectAchievementStats(playerData) {
         hadBeenDrunk: !!stats.hadBeenDrunk,
         lotteryRolls: Number.isFinite(Number(stats.lotteryRolls)) ? Number(stats.lotteryRolls) : 0,
         wonBarehandedKill: !!stats.wonBarehandedKill,
+        goldStolenByKingOfThieves: Number.isFinite(Number(stats.goldStolenByKingOfThieves)) ? Number(stats.goldStolenByKingOfThieves) : 0,
         unlocked: stats.unlocked && typeof stats.unlocked === 'object' ? stats.unlocked : {}
     };
 }
@@ -26353,6 +26443,7 @@ function getInspectAchievementEntries(playerData) {
     const spiritInPeaceUnlocked = getInspectEventAchievementState(playerData, 'Spirit in Peace');
     const findWolfUnlocked = getInspectEventAchievementState(playerData, 'Find the Wolf');
     const dailyBonusProgress = getInspectDailyBonusSummary(playerData);
+    const goldCrownThiefProgress = Number(achievementStats.goldStolenByKingOfThieves || 0);
     const skillAchievements = getTrackedSkillEntries().map(([label, key]) => {
         const level = getInspectedSavedSkillLevel(playerData, key);
         return {
@@ -26383,6 +26474,7 @@ function getInspectAchievementEntries(playerData) {
         ...dailyMilestoneAchievements,
         { title: 'Millionaire', unlocked: millionaireUnlocked, detail: millionaireUnlocked ? 'Unlocked' : `${Number((playerData && playerData.gold) || 0).toLocaleString()} / 1,000,000` },
         { title: 'Gold Crown Owner', unlocked: hasGoldCrown, detail: hasGoldCrown ? 'Owned' : 'Not yet' },
+        { title: 'Gold Crown Thief', unlocked: goldCrownThiefProgress >= 50000, detail: `${goldCrownThiefProgress.toLocaleString()} / 50,000 gold stolen` },
         { title: 'Elegant Black Cape Owner', unlocked: hasElegantCape, detail: hasElegantCape ? 'Owned' : 'Not yet' },
         { title: 'Master Enchanter (+4)', unlocked: maxEnchantLevel >= 4, detail: `Best enchant: +${maxEnchantLevel}` },
         { title: 'Bare Knuckle Victory', unlocked: achievementStats.wonBarehandedKill, detail: achievementStats.wonBarehandedKill ? 'Completed' : 'Kill 1 monster with no weapon equipped' },
