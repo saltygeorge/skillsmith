@@ -112,10 +112,6 @@
         {
           "name": "Iron Ore",
           "qty": 1
-        },
-        {
-          "name": "Coal Ore",
-          "qty": 2
         }
       ],
       "time": 3500,
@@ -136,10 +132,6 @@
         {
           "name": "Silver Ore",
           "qty": 1
-        },
-        {
-          "name": "Coal Ore",
-          "qty": 2
         }
       ],
       "time": 4000,
@@ -160,10 +152,6 @@
         {
           "name": "Gold Ore",
           "qty": 1
-        },
-        {
-          "name": "Coal Ore",
-          "qty": 2
         }
       ],
       "time": 4500,
@@ -1125,10 +1113,6 @@
         {
           "name": "Sand",
           "qty": 10
-        },
-        {
-          "name": "Coal Ore",
-          "qty": 2
         }
       ],
       "time": 4500,

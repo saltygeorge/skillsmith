@@ -811,7 +811,7 @@
     "coal_ore": {
       "id": "coal_ore",
       "name": "Coal Ore",
-      "img": "images/coalore.png",
+      "img": "images/charcoal.png",
       "sellPrice": 2,
       "playerShop": true,
       "individualSales": false,
@@ -1717,6 +1717,17 @@
         "preventBurn": true,
         "durationMs": 60000
       }
+    },
+    "charcoal": {
+      "id": "charcoal",
+      "name": "Charcoal",
+      "img": "images/charcoal.png",
+      "sellPrice": 2,
+      "playerShop": true,
+      "individualSales": false,
+      "playerShopMaxQty": 1000,
+      "unlockLevel": 1,
+      "stats": {}
     },
     "xp_bottle": {
       "id": "xp_bottle",
