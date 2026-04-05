@@ -821,6 +821,34 @@ button.primary:hover { background: var(--accent-hover); }
   font-weight: bold;
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.22);
 }
+#kilnInSlot.drag-over {
+  border-color: #ffb25d !important;
+  border-style: solid !important;
+  background: rgba(255, 140, 40, 0.18) !important;
+  box-shadow: 0 0 0 2px rgba(255, 145, 0, 0.16), 0 0 16px rgba(255, 120, 0, 0.22);
+}
+#kilnInSlot.drag-over #kilnInBody {
+  color: #ffd3a1 !important;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 145, 0, 0.22);
+}
+#smithFuelSlot.drag-over {
+  border-color: #ffb25d !important;
+  border-style: solid !important;
+  background: rgba(255, 140, 40, 0.18) !important;
+  box-shadow: 0 0 0 2px rgba(255, 145, 0, 0.16), 0 0 16px rgba(255, 120, 0, 0.22);
+}
+#cookingFuelSlot.drag-over {
+  border-color: #e0b36d !important;
+  border-style: solid !important;
+  background: rgba(214, 155, 74, 0.18) !important;
+  box-shadow: 0 0 0 2px rgba(214, 155, 74, 0.16), 0 0 16px rgba(160, 92, 28, 0.22);
+}
+#cookingFuelSlot.drag-over #cookingFuelBody {
+  color: #ffe0a8 !important;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(214, 155, 74, 0.22);
+}
 
 .equipment-slot.drag-valid {
   border-color: rgba(255, 215, 0, 0.9);
@@ -2766,6 +2794,7 @@ button.primary:hover { background: var(--accent-hover); }
               <img id="petYardActionIcon" src="images/petyardicon.jpeg" alt="Pet Yard" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openPetYardHub()">
               <img id="alchemyActionIcon" src="images/alchemyicon.jpeg" alt="Alchemy Table" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="tailoringActionIcon" src="images/tailoringtable.png" alt="Tailoring Table" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
+              <img id="kilnActionIcon" src="images/kilnicon.png" alt="Charcoal Kiln" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="thievingActionIcon" src="images/thievingicon.jpeg" alt="Thieving" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Thieving</div>Pickpocket and loot')" onmouseleave="hideTooltip()">
               <img id="enchantingActionIcon" src="images/enchantingtableicon.jpeg" alt="Enchanting Table" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onmouseenter="showTooltip(event, '<div style=\'font-weight:bold; color:var(--gold);\'>Enchanting Table</div>Upgrade your gear')" onmouseleave="hideTooltip()">
             </div>
@@ -2875,6 +2904,7 @@ button.primary:hover { background: var(--accent-hover); }
                 </div>
 
                 <div id="farmUpgradesPanel" style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px; margin-top:12px;"></div>
+                <div id="farmStationsPanel" style="display:flex; justify-content:center; width:100%; max-width:420px; margin-top:10px;"></div>
                       </div>
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
@@ -3207,6 +3237,14 @@ button.primary:hover { background: var(--accent-hover); }
             <div style="margin-top:8px; color:#efe3cf;">The massive blades spin slowly in the breeze.</div>
             <div class="action-buttons" style="margin-top: 10px;">
               <button id="hubWindmill_ReturnBtn" class="primary" style="background:#666;">Return</button>
+            </div>
+          </div>
+
+          <div id="hubKiln" class="hub-screen">
+            <h2>Charcoal Kiln</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Slow-burn wood into Charcoal.</div>
+            <div class="action-buttons" style="margin-top: 10px;">
+              <button id="hubKiln_ReturnBtn" class="primary" style="background:#666;">Return</button>
             </div>
           </div>
 
@@ -3941,7 +3979,7 @@ button.primary:hover { background: var(--accent-hover); }
         </div>
         <div id="inspectPetYardPanel" class="game-modal-content" style="display:none;">
             <div id="inspectPetYardMeta" style="margin-bottom:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; color:#efe3cf; font-size:12px;"></div>
-            <div id="inspectPetYardContent" style="max-height:320px; overflow-y:auto; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; padding-right:4px;"></div>
+            <div id="inspectPetYardContent" style="max-height:320px; overflow-y:auto; display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; padding-right:4px;"></div>
         </div>        <div id="inspectTrophyRoomsPanel" class="game-modal-content" style="display:none;">
             <div id="inspectTrophyRoomSelector" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;"></div>
             <div id="inspectTrophyRoomContent" style="display:flex; flex-direction:column; gap:12px; max-height:360px; overflow-y:auto; padding-right:6px;"></div>
@@ -4020,6 +4058,8 @@ const game = {
   woodcutting: { level: 1, xp: 0, totalXP: 0 }, // +++ NEW WOODCUTTING SKILL +++
   miningActive: false,
   blacksmithingActive: false,
+  blacksmithFuel: { fuelType: null, qty: 0, usedMs: 0 },
+  cookingFuel: { fuelType: null, qty: 0, usedMs: 0 },
   cookingActive: false,
   woodcuttingActive: false, // +++ NEW WOODCUTTING STATE +++
   progressFrame: null,
@@ -4099,6 +4139,7 @@ const game = {
     garden: new Array(16).fill(null), // 16 Crop Tiles
     cellar: new Array(16).fill(null), // 16 Mushroom Tiles
     mill: createDefaultMillState(),
+    kiln: createDefaultKilnState(),
     strayCat: createDefaultStrayCatState(),
     gardenTomb: createDefaultGardenTombState(),
     seedBagStorage: createDefaultSeedBagStorage(),
@@ -4424,6 +4465,13 @@ function clearTrophyRoomDragState() {
   window.__draggedInventoryIndex = null;
   window.__millDraggedWheatQty = 0;
   window.__millDraggedFlourQty = 0;
+  window.__kilnDraggedWoodQty = 0;
+  window.__kilnDraggedWoodType = null;
+  window.__kilnDraggedCharcoalQty = 0;
+  window.__smithFuelDraggedQty = 0;
+  window.__smithFuelDraggedType = null;
+  window.__cookingFuelDraggedQty = 0;
+  window.__cookingFuelDraggedType = null;
   if (typeof draggedBankItem !== 'undefined') draggedBankItem = null;
   game.isDragging = false;
   clearTrophyRoomDragHighlights();
@@ -5152,6 +5200,7 @@ const VALID_ITEMS = [
   'Birch',
   'Maple',
   'Mahogany',
+  'Charcoal',
   'Copper Ore',
   'Copper Bar',
   'Copper Chestplate',
@@ -6242,6 +6291,7 @@ const ITEM_SELL_PRICES = {
   'Bucket of Milk': 15,
   'Bucket of Water': 5,
   'Fire Resist': 400,
+  'Charcoal': 2,
   'XP Bottle': 0,
   'Grass Seed': 2,
   'Grass': 5,
@@ -6355,7 +6405,7 @@ function normalizeItemDyeColor(color) {
 
 function getItemRenderImageName(itemOrName, fallbackName = 'gearicon') {
   const item = (itemOrName && typeof itemOrName === 'object') ? itemOrName : { name: itemOrName };
-  const fallbackOverrides = { 'Copper Ore': 'copper_ore', 'Vitality Potion+': 'vitalitypotionplus', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 'Archery Bracer': 'archerybracer', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken', 'Pet Chicken Egg': 'petegg5', 'Pet Egg 5': 'petegg5', 'Fire Resist': 'fireresist' };
+  const fallbackOverrides = { 'Copper Ore': 'copper_ore', 'Vitality Potion+': 'vitalitypotionplus', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 'Archery Bracer': 'archerybracer', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken', 'Pet Chicken Egg': 'petegg5', 'Pet Egg 5': 'petegg5', 'Fire Resist': 'fireresist', 'Charcoal': 'charcoal' };
   const baseName = isXpBottleItemName(item && item.name) ? 'bottlexp' : ((window.__inspectItemImageMap && item && item.name && window.__inspectItemImageMap[item.name]) || (item && item.name && fallbackOverrides[item.name]) || String(item && item.name ? item.name : fallbackName).toLowerCase().replace(/\s+/g, '').replace(/\+/g, 'plus'));
   const dyeColor = normalizeItemDyeColor(item && item.dyeColor);
   const variantMap = item && item.name ? DYE_VARIANT_IMAGE_MAP[item.name] : null;
@@ -15494,6 +15544,7 @@ const WELL_COST = 30000;
 const GARDEN_COST = 75000;
 const MILL_COST = 250000;
 const MILL_PROCESS_TIME_MS = 30000; // 30 seconds per Flour
+const KILN_PROCESS_TIME_MS = 30000; // 30 seconds per Charcoal cycle
 const FARM_STRAY_CAT_CHANCE_DENOM = 100; // 1 in 100 chance per farm-entry check
 const FARM_STRAY_CAT_COOLDOWN_MS = 10000; // 10 seconds between farm-entry checks for testing
 const GARDEN_TOMB_CHANCE_DENOM = 10; // 1 in 10 chance per garden-entry check
@@ -15639,6 +15690,13 @@ function renderFarmUpgradePanels() {
     farmPanel.style.gap = '16px';
     farmPanel.style.gap = '16px';
   }
+
+  const stationsPanel = document.getElementById('farmStationsPanel');
+  if (stationsPanel) {
+    stationsPanel.innerHTML = '';
+    stationsPanel.style.display = 'none';
+  }
+
   const seedPanel = document.getElementById('gardenSeedBagPanel');
   if (seedPanel) {
     if (!game.farm.buildings.seedbag) {
@@ -15782,6 +15840,32 @@ function createDefaultMillState() {
   };
 }
 
+const KILN_WOOD_CONFIG = {
+  'Softwood': { img: 'softwood.png', charcoalYield: 1 },
+  'Oak': { img: 'oak.png', charcoalYield: 2 },
+  'Birch': { img: 'birch.png', charcoalYield: 3 },
+  'Maple': { img: 'maple.png', charcoalYield: 4 },
+  'Mahogany': { img: 'mahogany.png', charcoalYield: 5 }
+};
+
+function createDefaultKilnState() {
+  return {
+    inputWoodType: null,
+    inputWoodQty: 0,
+    outputCharcoal: 0,
+    processAccMs: 0,
+    lastCalcTime: Date.now()
+  };
+}
+
+function getKilnWoodConfig(itemName) {
+  return itemName ? (KILN_WOOD_CONFIG[itemName] || null) : null;
+}
+
+function isKilnWoodItem(itemName) {
+  return !!getKilnWoodConfig(itemName);
+}
+
 function ensureFarmState() {
   if (!game.farm) {
     game.farm = {
@@ -15803,6 +15887,7 @@ function ensureFarmState() {
   if (!game.farm.garden) game.farm.garden = new Array(16).fill(null);
   if (!game.farm.cellar) game.farm.cellar = new Array(16).fill(null);
   if (!game.farm.mill) game.farm.mill = createDefaultMillState();
+  if (!game.farm.kiln) game.farm.kiln = createDefaultKilnState();
   if (!game.farm.strayCat) game.farm.strayCat = createDefaultStrayCatState();
   if (!game.farm.gardenTomb) game.farm.gardenTomb = createDefaultGardenTombState();
   if (!game.farm.seedBagStorage) game.farm.seedBagStorage = createDefaultSeedBagStorage();
@@ -15824,6 +15909,16 @@ function ensureFarmState() {
   if (typeof game.farm.mill.outputFlour !== 'number') game.farm.mill.outputFlour = 0;
   if (typeof game.farm.mill.processAccMs !== 'number') game.farm.mill.processAccMs = 0;
   if (typeof game.farm.mill.lastCalcTime !== 'number') game.farm.mill.lastCalcTime = Date.now();
+  if (typeof game.farm.kiln.inputWoodType !== 'string') game.farm.kiln.inputWoodType = game.farm.kiln.inputWoodType ? String(game.farm.kiln.inputWoodType) : null;
+  if (game.farm.kiln.inputWoodType && !isKilnWoodItem(game.farm.kiln.inputWoodType)) game.farm.kiln.inputWoodType = null;
+  if (typeof game.farm.kiln.inputWoodQty !== 'number') game.farm.kiln.inputWoodQty = 0;
+  if (typeof game.farm.kiln.outputCharcoal !== 'number') game.farm.kiln.outputCharcoal = 0;
+  if (typeof game.farm.kiln.processAccMs !== 'number') game.farm.kiln.processAccMs = 0;
+  if (typeof game.farm.kiln.lastCalcTime !== 'number') game.farm.kiln.lastCalcTime = Date.now();
+  if (game.farm.kiln.inputWoodQty <= 0) {
+    game.farm.kiln.inputWoodQty = 0;
+    game.farm.kiln.inputWoodType = null;
+  }
 }
 // +++ NEW BOUNTY HUNTING CONSTANTS +++
 const BOUNTY_TIER_1_TARGETS = ['Rat', 'Spider', 'Chicken', 'Cow', 'Centipede', 'Goblin', 'Platypus'];
@@ -16194,6 +16289,9 @@ function handleGardenTombDrop(e) {
   window.__draggedInventoryIndex = null;
   window.__millDraggedWheatQty = 0;
   window.__millDraggedFlourQty = 0;
+  window.__kilnDraggedWoodQty = 0;
+  window.__kilnDraggedWoodType = null;
+  window.__kilnDraggedCharcoalQty = 0;
   game.isDragging = false;
   game.isDirty = true;
 
@@ -16420,7 +16518,7 @@ function renderPetYard(tab) {
                 const secretBonusColor = isPetSecretBonusUnlocked() ? '#7fd3ff' : '#888';
                 html += `
                 <div 
-                    style="background:rgba(0,0,0,0.3); border:2px solid ${isEquipped ? 'var(--gold)' : '#553322'}; border-radius:6px; padding:6px; width:110px; text-align:center;"
+                    style="background:rgba(0,0,0,0.3); border:2px solid ${isEquipped ? 'var(--gold)' : '#553322'}; border-radius:6px; padding:6px; width:126px; text-align:center;"
                     onmouseenter="showPetTooltip(event, '${pet.id}')" 
                     onmouseleave="hideTooltip()"
                 >
@@ -17969,12 +18067,46 @@ function processFarmLogic() {
         }
     }
 
-    // 4. Process Garden & Cellar
+    // 4. Process Kiln
+    if (game.farm && game.farm.kiln) {
+        const kiln = game.farm.kiln;
+        const elapsed = now - (kiln.lastCalcTime || now);
+        if (elapsed >= 1000) {
+            kiln.lastCalcTime = now;
+            if ((kiln.inputWoodQty || 0) > 0 && kiln.inputWoodType) {
+                kiln.processAccMs = (kiln.processAccMs || 0) + elapsed;
+                const craftable = Math.floor(kiln.processAccMs / KILN_PROCESS_TIME_MS);
+                if (craftable > 0) {
+                    const burnedLogs = Math.min(craftable, kiln.inputWoodQty);
+                    const woodCfg = getKilnWoodConfig(kiln.inputWoodType);
+                    const charcoalYield = Math.max(1, Number(woodCfg && woodCfg.charcoalYield ? woodCfg.charcoalYield : 1));
+                    kiln.inputWoodQty -= burnedLogs;
+                    kiln.outputCharcoal = Math.floor(kiln.outputCharcoal || 0) + (burnedLogs * charcoalYield);
+                    kiln.processAccMs -= burnedLogs * KILN_PROCESS_TIME_MS;
+                    if (kiln.inputWoodQty <= 0) {
+                        kiln.inputWoodQty = 0;
+                        kiln.inputWoodType = null;
+                        kiln.processAccMs = 0;
+                    }
+                    game.isDirty = true;
+                }
+            } else {
+                kiln.processAccMs = 0;
+                if ((kiln.inputWoodQty || 0) <= 0) kiln.inputWoodType = null;
+            }
+        }
+    }
+
+    // 5. Process Garden & Cellar
     processGardenGrowth(now);
     processCellarGrowth(now);
 
     if (document.getElementById('hubWindmill').classList.contains('active')) {
         updateMillUI();
+    }
+    const kilnHub = document.getElementById('hubKiln');
+    if (kilnHub && kilnHub.classList.contains('active')) {
+        updateKilnUI();
     }
 }
 
@@ -18074,7 +18206,7 @@ function openMillHub() {
     <div style="margin-top:16px; display:grid; grid-template-columns: 1fr 1fr; gap:12px; width:100%; max-width:520px;">
       <div>
         <div style="font-size:12px; color:#bfa58f; margin-bottom:6px;">Input (Wheat)</div>
-        <div id="millInSlot" class="inv-slot" style="width:var(--slot-size); height:var(--slot-size); margin:0 auto; border:2px dashed #8a6b4a; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; border-radius:8px;">
+        <div id="millInSlot" class="inv-slot" style="width:var(--slot-size); height:var(--slot-size); margin:0 auto; border:2px solid #8a6b4a; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; border-radius:8px;">
           <div id="millInBody" style="color:#888; font-size:12px; text-align:center; pointer-events:none; user-select:none;">Drop Wheat</div>
         </div>
       </div>
@@ -18330,6 +18462,1091 @@ function updateMillUI() {
   if (progressTextEl) progressTextEl.textContent = `Converting... ${formatTimer(remaining)}`;
 }
 
+function stopKilnUiTicker() {
+  if (window.__kilnUiTickerRaf) {
+    cancelAnimationFrame(window.__kilnUiTickerRaf);
+    window.__kilnUiTickerRaf = null;
+  }
+}
+
+function clearKilnDragState() {
+  window.__kilnDraggedWoodQty = 0;
+  window.__kilnDraggedWoodType = null;
+  window.__kilnDraggedCharcoalQty = 0;
+  game.isDragging = false;
+  clearTrophyRoomDragHighlights();
+  const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
+  if (draggingEl) draggingEl.classList.remove('dragging');
+}
+
+function startKilnUiTicker() {
+  stopKilnUiTicker();
+
+  const tick = () => {
+    const hub = document.getElementById('hubKiln');
+    if (!hub || !hub.classList.contains('active')) {
+      stopKilnUiTicker();
+      return;
+    }
+
+    updateKilnUI();
+    window.__kilnUiTickerRaf = requestAnimationFrame(tick);
+  };
+
+  window.__kilnUiTickerRaf = requestAnimationFrame(tick);
+}
+
+function openKilnHub() {
+  dismissFarmCat();
+  ensureFarmState();
+
+  game.shopOpen = false;
+  hideTooltip();
+  stopMining();
+  stopBlacksmithing();
+  stopFletching();
+  stopCraftingBowString();
+  stopFishing();
+  stopStoneForging();
+  stopCookingChicken();
+  stopWoodcutting();
+
+  const wrapper = document.getElementById('hubKiln');
+  if (!wrapper) return;
+
+  wrapper.innerHTML = `
+    <h2>Charcoal Kiln</h2>
+    <div style="margin-top:8px; color:#efe3cf;">Drop any wood in the input slot. Better wood gives more Charcoal every 30 seconds.</div>
+
+    <div style="margin-top:12px; color:#c8b39a; font-size:11px; text-align:center; width:100%; max-width:520px;">Softwood x1 | Oak x2 | Birch x3 | Maple x4 | Mahogany x5</div>
+
+    <div style="margin-top:16px; display:grid; grid-template-columns: 1fr 1fr; gap:12px; width:100%; max-width:520px;">
+      <div>
+        <div style="font-size:12px; color:#bfa58f; margin-bottom:6px;">Input (Wood)</div>
+        <div id="kilnInSlot" class="inv-slot" style="width:var(--slot-size); height:var(--slot-size); margin:0 auto; border:2px solid #8a6b4a; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; border-radius:8px;">
+          <div id="kilnInBody" style="color:#888; font-size:12px; text-align:center; pointer-events:none; user-select:none;">Drop Wood</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px; color:#bfa58f; margin-bottom:6px;">Output (Charcoal)</div>
+        <div id="kilnOutSlot" class="inv-slot" style="width:var(--slot-size); height:var(--slot-size); margin:0 auto; border:2px solid #8a5a35; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; border-radius:8px; cursor:pointer;">
+          <div id="kilnOutBody" style="color:#888; font-size:12px; text-align:center; pointer-events:none; user-select:none;">No Charcoal</div>
+        </div>
+        <div style="font-size:11px; color:#9f9f9f; margin-top:6px; text-align:center;">Drag output to inventory or click to collect</div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px; width:100%; max-width:520px;">
+      <div class="progress-container">
+        <div class="progress-fill" id="kilnProgress" style="transition:none;"></div>
+        <div class="progress-text" id="kilnProgressText"></div>
+      </div>
+    </div>
+
+    <div class="action-buttons" style="margin-top: 14px; width:100%;">
+      <button id="hubKiln_ReturnBtn" class="primary" style="background:#666;">Return</button>
+    </div>
+  `;
+
+  const inSlot = document.getElementById('kilnInSlot');
+  if (inSlot) {
+    const restoreKilnInputDraggableState = () => {
+      ensureFarmState();
+      inSlot.draggable = Math.floor(game.farm.kiln.inputWoodQty || 0) > 0;
+    };
+    const updateKilnDropHoverState = (e) => {
+      const dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+      const draggedItem = (dragIndex !== null && dragIndex >= 0) ? game.inventory[dragIndex] : (window.__lastInventoryDragSnapshot?.item || null);
+      const draggedCfg = draggedItem ? getKilnWoodConfig(draggedItem.name) : null;
+      const kiln = game.farm.kiln;
+      const isValidWoodDrag = !!draggedCfg && draggedItem.qty > 0 && (!kiln.inputWoodType || kiln.inputWoodType === draggedItem.name);
+      if (isValidWoodDrag) {
+        e.preventDefault();
+        inSlot.draggable = false;
+        inSlot.classList.add('drag-over');
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      } else {
+        inSlot.classList.remove('drag-over');
+        restoreKilnInputDraggableState();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'none';
+      }
+    };
+    inSlot.addEventListener('dragenter', updateKilnDropHoverState);
+    inSlot.addEventListener('dragover', updateKilnDropHoverState);
+    inSlot.addEventListener('dragleave', () => {
+      inSlot.classList.remove('drag-over');
+      restoreKilnInputDraggableState();
+    });
+    inSlot.addEventListener('drop', (e) => {
+      restoreKilnInputDraggableState();
+      handleKilnInDrop(e);
+    });
+    inSlot.addEventListener('dragstart', handleKilnInDragStart);
+    inSlot.addEventListener('dragend', clearKilnDragState);
+  }
+
+  const outSlot = document.getElementById('kilnOutSlot');
+  if (outSlot) {
+    outSlot.onclick = collectCharcoalFromKiln;
+    outSlot.addEventListener('dragstart', handleKilnOutDragStart);
+    outSlot.addEventListener('dragend', clearKilnDragState);
+  }
+
+  document.getElementById('hubKiln_ReturnBtn').onclick = () => { stopKilnUiTicker(); backToActions(); };
+
+  updateKilnUI();
+  showMainScreen('hubKiln');
+  startKilnUiTicker();
+}
+
+function handleKilnInDragStart(e) {
+  ensureFarmState();
+
+  const available = Math.floor(game.farm.kiln.inputWoodQty || 0);
+  const woodType = game.farm.kiln.inputWoodType;
+  if (available <= 0 || !woodType) {
+    e.preventDefault();
+    return;
+  }
+
+  window.__kilnDraggedWoodQty = available;
+  window.__kilnDraggedWoodType = woodType;
+  window.__kilnDraggedCharcoalQty = 0;
+
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', 'kiln_wood');
+  }
+
+  game.isDragging = true;
+}
+
+function handleKilnInDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const inSlot = document.getElementById('kilnInSlot');
+  if (inSlot) inSlot.classList.remove('drag-over');
+
+  ensureFarmState();
+
+  let dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+  if ((dragIndex === null || dragIndex < 0) && draggedBankItem && draggedBankItem.source !== 'bank' && typeof draggedBankItem.fromIndex === 'number') {
+    dragIndex = draggedBankItem.fromIndex;
+  }
+  if ((dragIndex === null || dragIndex < 0) && e.dataTransfer) {
+    const dragPayload = e.dataTransfer.getData('text/plain') || '';
+    const match = dragPayload.match(/^inventory_slot:(d+)$/);
+    if (match) dragIndex = parseInt(match[1], 10);
+  }
+  if (dragIndex === null || dragIndex < 0) return;
+
+  const src = game.inventory[dragIndex]
+    || ((draggedBankItem && draggedBankItem.source !== 'bank' && draggedBankItem.fromIndex === dragIndex) ? draggedBankItem.item : null)
+    || window.__lastInventoryDragSnapshot?.item
+    || null;
+  const woodCfg = src ? getKilnWoodConfig(src.name) : null;
+  if (!src || !woodCfg || src.qty < 1) {
+    showGameAlert('Invalid Item', 'Only wood can be placed in the Charcoal Kiln.');
+    return;
+  }
+
+  const kiln = game.farm.kiln;
+  if (kiln.inputWoodType && kiln.inputWoodType !== src.name) {
+    showGameAlert('Different Wood Loaded', `The kiln already contains ${kiln.inputWoodType}. Remove it first if you want to switch wood type.`);
+    return;
+  }
+
+  const amount = src.qty;
+  if (!removeItem(src.name, amount)) return;
+
+  const wasEmpty = Math.floor(kiln.inputWoodQty || 0) <= 0;
+  kiln.inputWoodType = src.name;
+  kiln.inputWoodQty = Math.floor(kiln.inputWoodQty || 0) + amount;
+  if (wasEmpty) {
+    const now = Date.now();
+    kiln.processAccMs = 0;
+    kiln.lastCalcTime = now;
+    window.__kilnVisualStartAt = now;
+  }
+  game.isDirty = true;
+
+  const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
+  if (draggingEl) draggingEl.classList.remove('dragging');
+  window.__draggedInventoryIndex = null;
+  window.__kilnDraggedWoodQty = 0;
+  window.__kilnDraggedWoodType = null;
+  window.__kilnDraggedCharcoalQty = 0;
+  window.__lastInventoryDragSnapshot = null;
+  game.isDragging = false;
+
+  updateKilnUI();
+}
+
+function handleKilnOutDragStart(e) {
+  ensureFarmState();
+
+  const ready = Math.floor(game.farm.kiln.outputCharcoal || 0);
+  if (ready <= 0) {
+    e.preventDefault();
+    return;
+  }
+
+  window.__kilnDraggedWoodQty = 0;
+  window.__kilnDraggedWoodType = null;
+  window.__kilnDraggedCharcoalQty = ready;
+
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', 'kiln_charcoal');
+  }
+
+  game.isDragging = true;
+}
+
+function collectCharcoalFromKiln() {
+  ensureFarmState();
+  const ready = Math.floor(game.farm.kiln.outputCharcoal || 0);
+
+  if (ready <= 0) {
+    showGameAlert('No Charcoal', 'No Charcoal is ready yet.');
+    return;
+  }
+
+  if (!canReceiveItem('Charcoal')) {
+    showGameAlert('Inventory Full', 'Make room to collect Charcoal.');
+    return;
+  }
+
+  game.farm.kiln.outputCharcoal = 0;
+  addItem('Charcoal', ready);
+  game.isDirty = true;
+  updateKilnUI();
+}
+
+function updateKilnUI() {
+  const hub = document.getElementById('hubKiln');
+  if (!hub || !hub.classList.contains('active')) return;
+
+  ensureFarmState();
+
+  const kiln = game.farm.kiln;
+  const woodType = kiln.inputWoodType;
+  const input = Math.floor(kiln.inputWoodQty || 0);
+  const output = Math.floor(kiln.outputCharcoal || 0);
+  const acc = Math.max(0, kiln.processAccMs || 0);
+  const woodCfg = getKilnWoodConfig(woodType);
+
+  const inBody = document.getElementById('kilnInBody');
+  const outBody = document.getElementById('kilnOutBody');
+  const progressEl = document.getElementById('kilnProgress');
+  const progressTextEl = document.getElementById('kilnProgressText');
+
+  if (inBody) {
+    if (input > 0 && woodType) {
+      inBody.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; gap:3px; pointer-events:none;"><img src="images/${woodCfg ? woodCfg.img : (getItemRenderImageName(woodType) + '.png')}" draggable="false" style="pointer-events:none;"><div class="inv-amount" style="pointer-events:none;">${formatAmount(input)}</div></div>`;
+    } else {
+      inBody.innerHTML = `<div style="color:#888; font-size:12px; text-align:center;">Drop Wood</div>`;
+    }
+  }
+
+  const inSlot = document.getElementById('kilnInSlot');
+  if (inSlot) {
+    inSlot.draggable = input > 0;
+    inSlot.style.opacity = input > 0 ? '1' : '0.9';
+  }
+
+  if (outBody) {
+    if (output > 0) {
+      outBody.innerHTML = `<img src="images/${getItemRenderImageName('Charcoal')}.png" draggable="false" style="pointer-events:none;"><div class="inv-amount" style="pointer-events:none;">${formatAmount(output)}</div>`;
+    } else {
+      outBody.innerHTML = `<div style="color:#888; font-size:12px; text-align:center;">No Charcoal</div>`;
+    }
+  }
+
+  const outSlot = document.getElementById('kilnOutSlot');
+  if (outSlot) {
+    outSlot.draggable = output > 0;
+    outSlot.style.opacity = output > 0 ? '1' : '0.8';
+  }
+
+  if (input < 1 || !woodType) {
+    window.__kilnVisualStartAt = null;
+    if (progressEl) {
+      progressEl.style.animation = 'none';
+      progressEl.style.width = '0%';
+      progressEl.dataset.kilnAnimating = '0';
+    }
+    if (progressTextEl) progressTextEl.textContent = 'Idle (Drop Wood in input)';
+    return;
+  }
+
+  const now = Date.now();
+  if (typeof window.__kilnVisualStartAt !== 'number' || !Number.isFinite(window.__kilnVisualStartAt)) {
+    const seed = Math.max(0, Math.min(KILN_PROCESS_TIME_MS - 1, acc % KILN_PROCESS_TIME_MS));
+    window.__kilnVisualStartAt = now - seed;
+  }
+
+  const elapsedVisual = Math.max(0, now - window.__kilnVisualStartAt);
+  const cycleAcc = elapsedVisual % KILN_PROCESS_TIME_MS;
+  const remaining = Math.max(0, KILN_PROCESS_TIME_MS - cycleAcc);
+
+  if (progressEl && progressEl.dataset.kilnAnimating !== '1') {
+    progressEl.style.animation = `millProgressLinear ${KILN_PROCESS_TIME_MS}ms linear infinite`;
+    progressEl.style.animationDelay = `-${Math.floor(cycleAcc)}ms`;
+    progressEl.style.width = '100%';
+    progressEl.dataset.kilnAnimating = '1';
+  }
+  if (progressTextEl) progressTextEl.textContent = `Burning ${woodType}... ${formatTimer(remaining)}`;
+}
+
+function createDefaultBlacksmithFuelState() {
+  return { fuelType: null, qty: 0, usedMs: 0 };
+}
+
+function ensureBlacksmithFuelState() {
+  if (!game.blacksmithFuel || typeof game.blacksmithFuel !== 'object') {
+    game.blacksmithFuel = createDefaultBlacksmithFuelState();
+  }
+
+  let qty = Math.max(0, Math.floor(Number(game.blacksmithFuel.qty || 0)));
+  let fuelType = (typeof game.blacksmithFuel.fuelType === 'string' && game.blacksmithFuel.fuelType.trim())
+    ? game.blacksmithFuel.fuelType.trim()
+    : null;
+  let usedMs = Math.max(0, Number(game.blacksmithFuel.usedMs || 0));
+
+  const cfg = getBlacksmithFuelConfig(fuelType);
+  if (!cfg || qty <= 0) {
+    fuelType = null;
+    qty = 0;
+    usedMs = 0;
+  } else {
+    while (qty > 0 && usedMs >= cfg.durationMs) {
+      usedMs -= cfg.durationMs;
+      qty -= 1;
+    }
+    if (qty <= 0) {
+      fuelType = null;
+      qty = 0;
+      usedMs = 0;
+    }
+  }
+
+  game.blacksmithFuel.fuelType = fuelType;
+  game.blacksmithFuel.qty = qty;
+  game.blacksmithFuel.usedMs = fuelType ? usedMs : 0;
+
+  return game.blacksmithFuel;
+}
+
+function getBlacksmithFuelConfig(itemName) {
+  if (itemName === 'Coal Ore') return { name: 'Coal Ore', img: `${getItemRenderImageName('Coal Ore')}.png`, durationMs: 5000 };
+  if (itemName === 'Charcoal') return { name: 'Charcoal', img: `${getItemRenderImageName('Charcoal')}.png`, durationMs: 4000 };
+  return null;
+}
+
+function getBlacksmithFuelAvailableMs() {
+  ensureBlacksmithFuelState();
+  const fuelType = game.blacksmithFuel.fuelType;
+  const qty = Math.floor(game.blacksmithFuel.qty || 0);
+  const usedMs = Math.max(0, Number(game.blacksmithFuel.usedMs || 0));
+  const cfg = getBlacksmithFuelConfig(fuelType);
+  if (!cfg || qty <= 0) return 0;
+  return Math.max(0, (qty * cfg.durationMs) - usedMs);
+}
+
+function formatBlacksmithFuelTime(ms) {
+  ms = Math.max(0, Number(ms || 0));
+  const totalSec = Math.ceil(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    : `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function getBlacksmithFuelDraggableQty() {
+  ensureBlacksmithFuelState();
+  const qty = Math.floor(game.blacksmithFuel.qty || 0);
+  const usedMs = Math.max(0, Number(game.blacksmithFuel.usedMs || 0));
+  return Math.max(0, qty - (usedMs > 0 ? 1 : 0));
+}
+
+function hasBlacksmithFuelForDuration(durationMs) {
+  return getBlacksmithFuelAvailableMs() >= Math.max(0, Number(durationMs || 0));
+}
+
+function consumeBlacksmithFuelMs(durationMs) {
+  ensureBlacksmithFuelState();
+
+  const fuelType = game.blacksmithFuel.fuelType;
+  const cfg = getBlacksmithFuelConfig(fuelType);
+  let qty = Math.floor(game.blacksmithFuel.qty || 0);
+  let usedMs = Math.max(0, Number(game.blacksmithFuel.usedMs || 0));
+  let remainingMs = Math.max(0, Number(durationMs || 0));
+
+  if (!cfg || qty <= 0) return false;
+  if (remainingMs <= 0) return true;
+
+  while (remainingMs > 0 && qty > 0) {
+    const currentFuelRemainingMs = Math.max(0, cfg.durationMs - usedMs);
+    if (currentFuelRemainingMs <= 0) {
+      qty -= 1;
+      usedMs = 0;
+      continue;
+    }
+
+    if (remainingMs < currentFuelRemainingMs) {
+      usedMs += remainingMs;
+      remainingMs = 0;
+      break;
+    }
+
+    remainingMs -= currentFuelRemainingMs;
+    qty -= 1;
+    usedMs = 0;
+  }
+
+  if (remainingMs > 0) return false;
+
+  game.blacksmithFuel.qty = qty;
+  game.blacksmithFuel.usedMs = qty > 0 ? usedMs : 0;
+  game.blacksmithFuel.fuelType = qty > 0 ? fuelType : null;
+  if (!game.blacksmithFuel.fuelType) game.blacksmithFuel.qty = 0;
+  game.isDirty = true;
+  return true;
+}
+
+function getBlacksmithFuelHtml() {
+  return `
+    <div id="smithFuelWrap" style="margin-top:0; width:min(220px, 100%); display:flex; flex-direction:column; align-items:center; gap:6px; flex:0 0 auto;">
+      <div style="font-size:12px; color:#bfa58f;">Fuel (Coal / Charcoal)</div>
+      <div style="display:flex; align-items:center; justify-content:center; gap:12px; width:auto; max-width:100%; flex-wrap:wrap;">
+        <img id="smithFuelFlame" src="images/flameoff.png" alt="Forge flame" draggable="false" style="width:38px; height:38px; image-rendering:auto; user-select:none; pointer-events:none; opacity:0.9;">
+        <div id="smithFuelSlot" class="inv-slot" style="width:var(--slot-size); height:var(--slot-size); margin:0; border:2px solid #8a6b4a; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; border-radius:8px; cursor:pointer;">
+          <div id="smithFuelBody" style="color:#888; font-size:12px; text-align:center; pointer-events:none; user-select:none;">Drop Fuel</div>
+        </div>
+      </div>
+      <div id="smithFuelStatus" style="font-size:11px; color:#9f9f9f; text-align:center;">Drag Coal Ore or Charcoal here. Click to collect.</div>
+    </div>
+  `;
+}
+
+function updateBlacksmithFuelUI() {
+  ensureBlacksmithFuelState();
+
+  const body = document.getElementById('smithFuelBody');
+  const slot = document.getElementById('smithFuelSlot');
+  const flame = document.getElementById('smithFuelFlame');
+  const status = document.getElementById('smithFuelStatus');
+  if (!body || !slot) return;
+
+  const fuelType = game.blacksmithFuel.fuelType;
+  const qty = Math.floor(game.blacksmithFuel.qty || 0);
+  const cfg = getBlacksmithFuelConfig(fuelType);
+  const heatLeftMs = getBlacksmithFuelAvailableMs();
+  const draggableQty = getBlacksmithFuelDraggableQty();
+  const isBurning = !!cfg && heatLeftMs > 0 && !!game.blacksmithingActive;
+
+  slot.draggable = draggableQty > 0;
+
+  if (fuelType && qty > 0 && cfg) {
+    body.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; pointer-events:none;"><img src="images/${cfg.img}" draggable="false" style="pointer-events:none;"><div class="inv-amount" style="pointer-events:none;">${formatAmount(qty)}</div></div>`;
+    slot.style.opacity = '1';
+  } else {
+    body.innerHTML = `<div style="color:#888; font-size:12px; text-align:center;">Drop Fuel</div>`;
+    slot.style.opacity = '0.9';
+  }
+
+  if (flame) {
+    flame.src = isBurning ? 'images/flame.gif' : 'images/flameoff.png';
+    flame.style.opacity = isBurning ? '1' : (qty > 0 ? '0.95' : '0.75');
+  }
+
+  if (status) {
+    if (!cfg || qty <= 0 || heatLeftMs <= 0) {
+      status.textContent = '0:00';
+    } else {
+      status.textContent = formatBlacksmithFuelTime(heatLeftMs);
+    }
+  }
+}
+
+async function collectBlacksmithFuel() {
+  ensureBlacksmithFuelState();
+
+  if (game.blacksmithingActive) {
+    await showGameAlert('Forge Active', 'Stop smithing before collecting fuel.');
+    return;
+  }
+
+  const fuelType = game.blacksmithFuel.fuelType;
+  const qty = Math.floor(game.blacksmithFuel.qty || 0);
+  const usedMs = Math.max(0, Number(game.blacksmithFuel.usedMs || 0));
+  if (!fuelType || qty <= 0) return;
+
+  const hasPartialFuel = usedMs > 0;
+  const returnQty = Math.max(0, qty - (hasPartialFuel ? 1 : 0));
+
+  if (returnQty > 0 && !canReceiveItem(fuelType)) {
+    await showGameAlert('Inventory Full', `Make room to collect ${fuelType}.`);
+    return;
+  }
+
+  if (returnQty > 0) addItem(fuelType, returnQty);
+  game.blacksmithFuel = createDefaultBlacksmithFuelState();
+  game.isDirty = true;
+  renderInventoryGrid();
+  updateBlacksmithFuelUI();
+  if (typeof window.savePlayerData === 'function') savePlayerData();
+
+  if (hasPartialFuel) {
+    const message = returnQty > 0
+      ? `Collected ${formatAmount(returnQty)} ${fuelType}. 1 partially-burned ${fuelType} was lost.`
+      : `The remaining ${fuelType} was partially burned and could not be collected.`;
+    await showGameAlert('Fuel Collected', message);
+  }
+}
+
+async function handleBlacksmithFuelDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const slot = document.getElementById('smithFuelSlot');
+  if (slot) slot.classList.remove('drag-over');
+
+  ensureBlacksmithFuelState();
+
+
+
+
+
+
+  let dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+  if ((dragIndex === null || dragIndex < 0) && draggedBankItem && draggedBankItem.source !== 'bank' && typeof draggedBankItem.fromIndex === 'number') {
+    dragIndex = draggedBankItem.fromIndex;
+  }
+  if ((dragIndex === null || dragIndex < 0) && e.dataTransfer) {
+    const dragPayload = e.dataTransfer.getData('text/plain') || '';
+    const match = dragPayload.match(/^inventory_slot:(\d+)$/);
+    if (match) dragIndex = parseInt(match[1], 10);
+  }
+  if (dragIndex === null || dragIndex < 0) return;
+
+  const src = game.inventory[dragIndex]
+    || ((draggedBankItem && draggedBankItem.source !== 'bank' && draggedBankItem.fromIndex === dragIndex) ? draggedBankItem.item : null)
+    || window.__lastInventoryDragSnapshot?.item
+    || null;
+  const fuelCfg = src ? getBlacksmithFuelConfig(src.name) : null;
+
+  if (!src || !fuelCfg || src.qty < 1) {
+    await showGameAlert('Invalid Fuel', 'Only Coal Ore or Charcoal can be placed in the Blacksmith fuel slot.');
+    return;
+  }
+
+  const currentFuelType = game.blacksmithFuel.fuelType;
+  const currentFuelQty = Math.max(0, Math.floor(game.blacksmithFuel.qty || 0));
+  const currentFuelUsedMs = Math.max(0, Number(game.blacksmithFuel.usedMs || 0));
+  const isSwappingFuelType = !!currentFuelType && currentFuelType !== src.name;
+  const returnQty = isSwappingFuelType ? Math.max(0, currentFuelQty - (currentFuelUsedMs > 0 ? 1 : 0)) : 0;
+
+  if (isSwappingFuelType && returnQty > 0 && !canReceiveItem(currentFuelType)) {
+    await showGameAlert('Inventory Full', `Make room to swap out ${currentFuelType}.`);
+    return;
+  }
+
+  const amount = Math.floor(src.qty || 0);
+  if (amount <= 0) return;
+  if (!removeItem(src.name, amount, Number(src.enchantLevel || 0), src.dyeColor || null)) return;
+
+  if (isSwappingFuelType) {
+    if (returnQty > 0) addItem(currentFuelType, returnQty);
+    game.blacksmithFuel = createDefaultBlacksmithFuelState();
+  }
+
+  game.blacksmithFuel.fuelType = src.name;
+  game.blacksmithFuel.qty = Math.floor(game.blacksmithFuel.qty || 0) + amount;
+  game.isDirty = true;
+
+  const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
+  if (draggingEl) draggingEl.classList.remove('dragging');
+  window.__draggedInventoryIndex = null;
+  window.__lastInventoryDragSnapshot = null;
+  window.__smithFuelDraggedQty = 0;
+  window.__smithFuelDraggedType = null;
+  draggedBankItem = null;
+  game.isDragging = false;
+
+  renderInventoryGrid();
+  updateBlacksmithFuelUI();
+  if (typeof window.savePlayerData === 'function') savePlayerData();
+}
+
+function clearBlacksmithFuelDragState() {
+  window.__smithFuelDraggedQty = 0;
+  window.__smithFuelDraggedType = null;
+  game.isDragging = false;
+  const slot = document.getElementById('smithFuelSlot');
+  if (slot) slot.classList.remove('drag-over');
+}
+
+function handleBlacksmithFuelDragStart(e) {
+  ensureBlacksmithFuelState();
+
+
+
+
+
+
+  const fuelType = game.blacksmithFuel.fuelType;
+  const qty = getBlacksmithFuelDraggableQty();
+  if (!fuelType || qty <= 0) {
+    e.preventDefault();
+    return;
+  }
+
+  window.__smithFuelDraggedQty = qty;
+  window.__smithFuelDraggedType = fuelType;
+
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', 'smith_fuel');
+  }
+
+  game.isDragging = true;
+}
+
+function bindBlacksmithFuelSlot() {
+  const slot = document.getElementById('smithFuelSlot');
+  if (!slot) return;
+
+  const restoreBlacksmithFuelDraggableState = () => {
+    const draggableQty = getBlacksmithFuelDraggableQty();
+    slot.draggable = draggableQty > 0;
+  };
+
+  if (slot.dataset.bound === '1') {
+    restoreBlacksmithFuelDraggableState();
+    updateBlacksmithFuelUI();
+    return;
+  }
+
+  const updateFuelDropHoverState = (e) => {
+    const dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+    const draggedItem = (dragIndex !== null && dragIndex >= 0) ? game.inventory[dragIndex] : (window.__lastInventoryDragSnapshot?.item || null);
+    const fuelCfg = draggedItem ? getBlacksmithFuelConfig(draggedItem.name) : null;
+    const isValidFuelDrag = !!fuelCfg && draggedItem.qty > 0;
+
+    if (isValidFuelDrag) {
+      e.preventDefault();
+      slot.draggable = false;
+      slot.classList.add('drag-over');
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    } else {
+      slot.classList.remove('drag-over');
+      restoreBlacksmithFuelDraggableState();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'none';
+    }
+  };
+
+  slot.addEventListener('dragenter', updateFuelDropHoverState);
+  slot.addEventListener('dragover', updateFuelDropHoverState);
+  slot.addEventListener('dragleave', () => {
+    slot.classList.remove('drag-over');
+    restoreBlacksmithFuelDraggableState();
+  });
+  slot.addEventListener('drop', (e) => {
+    restoreBlacksmithFuelDraggableState();
+    handleBlacksmithFuelDrop(e);
+  });
+  slot.addEventListener('click', collectBlacksmithFuel);
+  slot.addEventListener('dragstart', handleBlacksmithFuelDragStart);
+  slot.addEventListener('dragend', clearBlacksmithFuelDragState);
+  slot.dataset.bound = '1';
+
+  restoreBlacksmithFuelDraggableState();
+  updateBlacksmithFuelUI();
+}
+const COOKING_FUEL_RECIPE_IDS = new Set([
+  'cook_chicken',
+  'cook_beef',
+  'cook_herring',
+  'cook_trout',
+  'cook_salmon',
+  'cook_bread',
+  'cook_cake',
+  'cook_beer'
+]);
+
+function recipeNeedsCookingFuel(recipe) {
+  return !!recipe && recipe.section === 'cooking' && COOKING_FUEL_RECIPE_IDS.has(String(recipe.id || ''));
+}
+
+function createDefaultCookingFuelState() {
+  return { fuelType: null, qty: 0, usedMs: 0 };
+}
+
+function ensureCookingFuelState() {
+  if (!game.cookingFuel || typeof game.cookingFuel !== 'object') {
+    game.cookingFuel = createDefaultCookingFuelState();
+  }
+
+  let qty = Math.max(0, Math.floor(Number(game.cookingFuel.qty || 0)));
+  let fuelType = (typeof game.cookingFuel.fuelType === 'string' && game.cookingFuel.fuelType.trim())
+    ? game.cookingFuel.fuelType.trim()
+    : null;
+  let usedMs = Math.max(0, Number(game.cookingFuel.usedMs || 0));
+
+  const cfg = getCookingFuelConfig(fuelType);
+  if (!cfg || qty <= 0) {
+    fuelType = null;
+    qty = 0;
+    usedMs = 0;
+  } else {
+    while (qty > 0 && usedMs >= cfg.durationMs) {
+      usedMs -= cfg.durationMs;
+      qty -= 1;
+    }
+    if (qty <= 0) {
+      fuelType = null;
+      qty = 0;
+      usedMs = 0;
+    }
+  }
+
+  game.cookingFuel.fuelType = fuelType;
+  game.cookingFuel.qty = qty;
+  game.cookingFuel.usedMs = fuelType ? usedMs : 0;
+
+  return game.cookingFuel;
+}
+
+function getCookingFuelConfig(itemName) {
+  if (itemName === 'Softwood') return { name: 'Softwood', img: `${getItemRenderImageName('Softwood')}.png`, durationMs: 1000 };
+  if (itemName === 'Oak') return { name: 'Oak', img: `${getItemRenderImageName('Oak')}.png`, durationMs: 1000 };
+  if (itemName === 'Birch') return { name: 'Birch', img: `${getItemRenderImageName('Birch')}.png`, durationMs: 1000 };
+  if (itemName === 'Maple') return { name: 'Maple', img: `${getItemRenderImageName('Maple')}.png`, durationMs: 3000 };
+  if (itemName === 'Mahogany') return { name: 'Mahogany', img: `${getItemRenderImageName('Mahogany')}.png`, durationMs: 3000 };
+  if (itemName === 'Coal Ore') return { name: 'Coal Ore', img: `${getItemRenderImageName('Coal Ore')}.png`, durationMs: 5000 };
+  if (itemName === 'Charcoal') return { name: 'Charcoal', img: `${getItemRenderImageName('Charcoal')}.png`, durationMs: 4000 };
+  return null;
+}
+function getCookingFuelAvailableMs() {
+  ensureCookingFuelState();
+  const fuelType = game.cookingFuel.fuelType;
+  const qty = Math.floor(game.cookingFuel.qty || 0);
+  const usedMs = Math.max(0, Number(game.cookingFuel.usedMs || 0));
+  const cfg = getCookingFuelConfig(fuelType);
+  if (!cfg || qty <= 0) return 0;
+  return Math.max(0, (qty * cfg.durationMs) - usedMs);
+}
+
+function formatCookingFuelTime(ms) {
+  ms = Math.max(0, Number(ms || 0));
+  const totalSec = Math.ceil(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    : `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function getCookingFuelDraggableQty() {
+  ensureCookingFuelState();
+  const qty = Math.floor(game.cookingFuel.qty || 0);
+  const usedMs = Math.max(0, Number(game.cookingFuel.usedMs || 0));
+  return Math.max(0, qty - (usedMs > 0 ? 1 : 0));
+}
+
+function hasCookingFuelForDuration(durationMs) {
+  return getCookingFuelAvailableMs() >= Math.max(0, Number(durationMs || 0));
+}
+
+function consumeCookingFuelMs(durationMs) {
+  ensureCookingFuelState();
+
+  const fuelType = game.cookingFuel.fuelType;
+  const cfg = getCookingFuelConfig(fuelType);
+  let qty = Math.floor(game.cookingFuel.qty || 0);
+  let usedMs = Math.max(0, Number(game.cookingFuel.usedMs || 0));
+  let remainingMs = Math.max(0, Number(durationMs || 0));
+
+  if (!cfg || qty <= 0) return false;
+  if (remainingMs <= 0) return true;
+
+  while (remainingMs > 0 && qty > 0) {
+    const currentFuelRemainingMs = Math.max(0, cfg.durationMs - usedMs);
+    if (currentFuelRemainingMs <= 0) {
+      qty -= 1;
+      usedMs = 0;
+      continue;
+    }
+
+    if (remainingMs < currentFuelRemainingMs) {
+      usedMs += remainingMs;
+      remainingMs = 0;
+      break;
+    }
+
+    remainingMs -= currentFuelRemainingMs;
+    qty -= 1;
+    usedMs = 0;
+  }
+
+  if (remainingMs > 0) return false;
+
+  game.cookingFuel.qty = qty;
+  game.cookingFuel.usedMs = qty > 0 ? usedMs : 0;
+  game.cookingFuel.fuelType = qty > 0 ? fuelType : null;
+  if (!game.cookingFuel.fuelType) game.cookingFuel.qty = 0;
+  game.isDirty = true;
+  return true;
+}
+
+function getCookingFuelHtml() {
+  return `
+    <div id="cookingFuelWrap" style="margin-top:0; width:min(220px, 100%); display:flex; flex-direction:column; align-items:center; gap:6px; flex:0 0 auto;">
+      <div style="font-size:12px; color:#bfa58f;">Fuel (Wood / Coal / Charcoal)</div>
+      <div style="display:flex; align-items:center; justify-content:center; gap:12px; width:auto; max-width:100%; flex-wrap:wrap;">
+        <img id="cookingFuelFlame" src="images/flameoff.png" alt="Cooking flame" draggable="false" style="width:38px; height:38px; image-rendering:auto; user-select:none; pointer-events:none; opacity:0.9;">
+        <div id="cookingFuelSlot" class="inv-slot" style="width:var(--slot-size); height:var(--slot-size); margin:0; border:2px solid #8a6b4a; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; border-radius:8px; cursor:pointer;">
+          <div id="cookingFuelBody" style="color:#888; font-size:12px; text-align:center; pointer-events:none; user-select:none;">Drop Fuel</div>
+        </div>
+      </div>
+      <div id="cookingFuelStatus" style="font-size:11px; color:#9f9f9f; text-align:center;">0:00</div>
+    </div>
+  `;
+}
+
+function updateCookingFuelUI() {
+  ensureCookingFuelState();
+
+  const body = document.getElementById('cookingFuelBody');
+  const slot = document.getElementById('cookingFuelSlot');
+  const flame = document.getElementById('cookingFuelFlame');
+  const status = document.getElementById('cookingFuelStatus');
+  if (!body || !slot) return;
+
+  const fuelType = game.cookingFuel.fuelType;
+  const qty = Math.floor(game.cookingFuel.qty || 0);
+  const cfg = getCookingFuelConfig(fuelType);
+  const heatLeftMs = getCookingFuelAvailableMs();
+  const draggableQty = getCookingFuelDraggableQty();
+  const isBurning = !!cfg && heatLeftMs > 0 && !!game.cookingActive;
+
+  slot.draggable = draggableQty > 0;
+
+  if (fuelType && qty > 0 && cfg) {
+    body.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; pointer-events:none;"><img src="images/${cfg.img}" draggable="false" style="pointer-events:none;"><div class="inv-amount" style="pointer-events:none;">${formatAmount(qty)}</div></div>`;
+    slot.style.opacity = '1';
+  } else {
+    body.innerHTML = `<div style="color:#888; font-size:12px; text-align:center;">Drop Fuel</div>`;
+    slot.style.opacity = '0.9';
+  }
+
+  if (flame) {
+    flame.src = isBurning ? 'images/flame.gif' : 'images/flameoff.png';
+    flame.style.opacity = isBurning ? '1' : (qty > 0 ? '0.95' : '0.75');
+  }
+
+  if (status) {
+    if (!cfg || qty <= 0 || heatLeftMs <= 0) {
+      status.textContent = '0:00';
+    } else {
+      status.textContent = formatCookingFuelTime(heatLeftMs);
+    }
+  }
+}
+
+async function collectCookingFuel() {
+  ensureCookingFuelState();
+
+  if (game.cookingActive) {
+    await showGameAlert('Fire Active', 'Stop cooking before collecting fuel.');
+    return;
+  }
+
+  const fuelType = game.cookingFuel.fuelType;
+  const qty = Math.floor(game.cookingFuel.qty || 0);
+  const usedMs = Math.max(0, Number(game.cookingFuel.usedMs || 0));
+  if (!fuelType || qty <= 0) return;
+
+  const hasPartialFuel = usedMs > 0;
+  const returnQty = Math.max(0, qty - (hasPartialFuel ? 1 : 0));
+
+  if (returnQty > 0 && !canReceiveItem(fuelType)) {
+    await showGameAlert('Inventory Full', `Make room to collect ${fuelType}.`);
+    return;
+  }
+
+  if (returnQty > 0) addItem(fuelType, returnQty);
+  game.cookingFuel = createDefaultCookingFuelState();
+  game.isDirty = true;
+  renderInventoryGrid();
+  updateCookingFuelUI();
+  if (typeof window.savePlayerData === 'function') savePlayerData();
+
+  if (hasPartialFuel) {
+    const message = returnQty > 0
+      ? `Collected ${formatAmount(returnQty)} ${fuelType}. 1 partially-burned ${fuelType} was lost.`
+      : `The remaining ${fuelType} was partially burned and could not be collected.`;
+    await showGameAlert('Fuel Collected', message);
+  }
+}
+
+async function handleCookingFuelDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const slot = document.getElementById('cookingFuelSlot');
+  if (slot) slot.classList.remove('drag-over');
+
+  ensureCookingFuelState();
+
+
+  let dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+  if ((dragIndex === null || dragIndex < 0) && draggedBankItem && draggedBankItem.source !== 'bank' && typeof draggedBankItem.fromIndex === 'number') {
+    dragIndex = draggedBankItem.fromIndex;
+  }
+  if ((dragIndex === null || dragIndex < 0) && e.dataTransfer) {
+    const dragPayload = e.dataTransfer.getData('text/plain') || '';
+    const match = dragPayload.match(/^inventory_slot:(\d+)$/);
+    if (match) dragIndex = parseInt(match[1], 10);
+  }
+  if (dragIndex === null || dragIndex < 0) return;
+
+  const src = game.inventory[dragIndex]
+    || ((draggedBankItem && draggedBankItem.source !== 'bank' && draggedBankItem.fromIndex === dragIndex) ? draggedBankItem.item : null)
+    || window.__lastInventoryDragSnapshot?.item
+    || null;
+  const fuelCfg = src ? getCookingFuelConfig(src.name) : null;
+
+  if (!src || !fuelCfg || src.qty < 1) {
+    await showGameAlert('Invalid Fuel', 'Only Softwood, Oak, Birch, Maple, Mahogany, Coal Ore or Charcoal can be placed in the Cooking fuel slot.');
+    return;
+  }
+
+  const currentFuelType = game.cookingFuel.fuelType;
+  const currentFuelQty = Math.max(0, Math.floor(game.cookingFuel.qty || 0));
+  const currentFuelUsedMs = Math.max(0, Number(game.cookingFuel.usedMs || 0));
+  const isSwappingFuelType = !!currentFuelType && currentFuelType !== src.name;
+  const returnQty = isSwappingFuelType ? Math.max(0, currentFuelQty - (currentFuelUsedMs > 0 ? 1 : 0)) : 0;
+
+  if (isSwappingFuelType && returnQty > 0 && !canReceiveItem(currentFuelType)) {
+    await showGameAlert('Inventory Full', `Make room to swap out ${currentFuelType}.`);
+    return;
+  }
+
+  const amount = Math.floor(src.qty || 0);
+  if (amount <= 0) return;
+  if (!removeItem(src.name, amount, Number(src.enchantLevel || 0), src.dyeColor || null)) return;
+
+  if (isSwappingFuelType) {
+    if (returnQty > 0) addItem(currentFuelType, returnQty);
+    game.cookingFuel = createDefaultCookingFuelState();
+  }
+
+  game.cookingFuel.fuelType = src.name;
+  game.cookingFuel.qty = Math.floor(game.cookingFuel.qty || 0) + amount;
+  game.isDirty = true;
+
+  const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
+  if (draggingEl) draggingEl.classList.remove('dragging');
+  window.__draggedInventoryIndex = null;
+  window.__lastInventoryDragSnapshot = null;
+  window.__cookingFuelDraggedQty = 0;
+  window.__cookingFuelDraggedType = null;
+  draggedBankItem = null;
+  game.isDragging = false;
+
+  renderInventoryGrid();
+  updateCookingFuelUI();
+  if (typeof window.savePlayerData === 'function') savePlayerData();
+}
+
+function clearCookingFuelDragState() {
+  window.__cookingFuelDraggedQty = 0;
+  window.__cookingFuelDraggedType = null;
+  game.isDragging = false;
+  const slot = document.getElementById('cookingFuelSlot');
+  if (slot) slot.classList.remove('drag-over');
+}
+
+function handleCookingFuelDragStart(e) {
+  ensureCookingFuelState();
+
+
+  const fuelType = game.cookingFuel.fuelType;
+  const qty = getCookingFuelDraggableQty();
+  if (!fuelType || qty <= 0) {
+    e.preventDefault();
+    return;
+  }
+
+  window.__cookingFuelDraggedQty = qty;
+  window.__cookingFuelDraggedType = fuelType;
+
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', 'cooking_fuel');
+  }
+
+  game.isDragging = true;
+}
+
+function bindCookingFuelSlot() {
+  const slot = document.getElementById('cookingFuelSlot');
+  if (!slot) return;
+
+  const restoreCookingFuelDraggableState = () => {
+    const draggableQty = getCookingFuelDraggableQty();
+    slot.draggable = draggableQty > 0;
+  };
+
+  if (slot.dataset.bound === '1') {
+    restoreCookingFuelDraggableState();
+    updateCookingFuelUI();
+    return;
+  }
+
+  const updateFuelDropHoverState = (e) => {
+    const dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+    const draggedItem = (dragIndex !== null && dragIndex >= 0) ? game.inventory[dragIndex] : (window.__lastInventoryDragSnapshot?.item || null);
+    const fuelCfg = draggedItem ? getCookingFuelConfig(draggedItem.name) : null;
+    const isValidFuelDrag = !!fuelCfg && draggedItem.qty > 0;
+
+    if (isValidFuelDrag) {
+      e.preventDefault();
+      slot.draggable = false;
+      slot.classList.add('drag-over');
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    } else {
+      slot.classList.remove('drag-over');
+      restoreCookingFuelDraggableState();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'none';
+    }
+  };
+
+  slot.addEventListener('dragenter', updateFuelDropHoverState);
+  slot.addEventListener('dragover', updateFuelDropHoverState);
+  slot.addEventListener('dragleave', () => {
+    slot.classList.remove('drag-over');
+    restoreCookingFuelDraggableState();
+  });
+  slot.addEventListener('drop', (e) => {
+    restoreCookingFuelDraggableState();
+    handleCookingFuelDrop(e);
+  });
+  slot.addEventListener('click', collectCookingFuel);
+  slot.addEventListener('dragstart', handleCookingFuelDragStart);
+  slot.addEventListener('dragend', clearCookingFuelDragState);
+  slot.dataset.bound = '1';
+
+  restoreCookingFuelDraggableState();
+  updateCookingFuelUI();
+}
 async function handleWellClick() {
    dismissFarmCat();
    // Initialize if missing
@@ -21734,6 +22951,22 @@ function hasBigBlackChickenAchievement(pets, unlockedMap = {}) {
   return !!(unlockedMap && unlockedMap['BBC Big Black Chicken']) || (Array.isArray(pets) && pets.some(p => p && p.type === 'Black Chicken'));
 }
 
+function getPetYardFillCount(pets) {
+  return Math.min(6, Array.isArray(pets) ? pets.filter(Boolean).length : 0);
+}
+
+function getPetYardLevel50Count(pets) {
+  return Math.min(6, (Array.isArray(pets) ? pets : []).filter(p => p && Number(p.level || 0) >= 50).length);
+}
+
+function hasFullPetYardAchievement(pets, unlockedMap = {}) {
+  return !!(unlockedMap && unlockedMap['Pet Yard Full']) || getPetYardFillCount(pets) >= 6;
+}
+
+function hasFullLevel50PetYardAchievement(pets, unlockedMap = {}) {
+  return !!(unlockedMap && unlockedMap['Pet Yard Elite']) || getPetYardLevel50Count(pets) >= 6;
+}
+
 function unlockAchievementDirect(title, showPopup = true) {
   ensureAchievementStats();
   if (!title || game.achievementStats.unlocked[title]) return false;
@@ -21781,6 +23014,8 @@ function getAchievementImage(title) {
   if (title === 'Black Chicken Level 50') return 'images/petblackchicken.png';
   if (title === 'Wolf Level 50') return 'images/wolfpet.png';
   if (title === 'BBC Big Black Chicken') return 'images/petblackchicken.png';
+  if (title === 'Pet Yard Full') return 'images/petyardicon.jpeg';
+  if (title === 'Pet Yard Elite') return 'images/petmasteryskillicon.jpeg';
   if (title === '30 Consecutive Days') return 'images/bottlexpicon.png';
   if (title === '100 Total Days') return 'images/bottlexpicon.png';
   if (title === 'Find the Cat') return 'images/petcat.png';
@@ -21820,6 +23055,10 @@ function renderAchievementsTab() {
   const spiritInPeaceUnlocked = getCurrentEventAchievementState('Spirit in Peace');
   const findWolfUnlocked = getCurrentEventAchievementState('Find the Wolf');
   const bbcUnlocked = hasBigBlackChickenAchievement(game.pets, game.achievementStats.unlocked || {});
+  const petYardFullCount = getPetYardFillCount(game.pets);
+  const petYardLevel50Count = getPetYardLevel50Count(game.pets);
+  const petYardFullUnlocked = hasFullPetYardAchievement(game.pets, game.achievementStats.unlocked || {});
+  const petYardEliteUnlocked = hasFullLevel50PetYardAchievement(game.pets, game.achievementStats.unlocked || {});
   const goldCrownThiefProgress = Number(game.achievementStats.goldStolenByKingOfThieves || 0);
   const dailyMilestoneAchievements = getDailyMilestoneAchievementEntries(dailyBonusProgress, game.achievementStats.unlocked || {});
   const skillAchievements = getTrackedSkillEntries().map(([label, key]) => ({
@@ -21840,6 +23079,8 @@ function renderAchievementsTab() {
     { title: 'Spirit in Peace', unlocked: spiritInPeaceUnlocked, detail: getEventAchievementDetail('Spirit in Peace', spiritInPeaceUnlocked) },
     { title: 'Find the Wolf', unlocked: findWolfUnlocked, detail: getEventAchievementDetail('Find the Wolf', findWolfUnlocked) },
     { title: 'BBC Big Black Chicken', unlocked: bbcUnlocked, detail: bbcUnlocked ? 'Rare hatch found' : 'Hatch a Black Chicken' },
+    { title: 'Pet Yard Full', unlocked: petYardFullUnlocked, detail: `${petYardFullCount} / 6 pets` },
+    { title: 'Pet Yard Elite', unlocked: petYardEliteUnlocked, detail: `${petYardLevel50Count} / 6 level 50 pets` },
     ...dailyMilestoneAchievements,
     { title: 'Millionaire', unlocked: millionaireUnlocked, detail: millionaireUnlocked ? 'Unlocked' : `${Number(game.gold || 0).toLocaleString()} / 1,000,000` },
     { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown'), detail: ownsItemAnywhere('Gold Crown') ? 'Owned' : 'Not yet' },
@@ -21898,6 +23139,8 @@ function getAchievementEntriesForTracking() {
   const spiritInPeaceUnlocked = getCurrentEventAchievementState('Spirit in Peace');
   const findWolfUnlocked = getCurrentEventAchievementState('Find the Wolf');
   const bbcUnlocked = hasBigBlackChickenAchievement(game.pets, game.achievementStats.unlocked || {});
+  const petYardFullUnlocked = hasFullPetYardAchievement(game.pets, game.achievementStats.unlocked || {});
+  const petYardEliteUnlocked = hasFullLevel50PetYardAchievement(game.pets, game.achievementStats.unlocked || {});
   const goldCrownThiefProgress = Number(game.achievementStats.goldStolenByKingOfThieves || 0);
   const skillAchievements = getTrackedSkillEntries().map(([label, key]) => ({
     title: `${label} Level 100`,
@@ -21916,6 +23159,8 @@ function getAchievementEntriesForTracking() {
     { title: 'Spirit in Peace', unlocked: spiritInPeaceUnlocked },
     { title: 'Find the Wolf', unlocked: findWolfUnlocked },
     { title: 'BBC Big Black Chicken', unlocked: bbcUnlocked },
+    { title: 'Pet Yard Full', unlocked: petYardFullUnlocked },
+    { title: 'Pet Yard Elite', unlocked: petYardEliteUnlocked },
     { title: 'Millionaire', unlocked: millionaireUnlocked },
     { title: 'Gold Crown Owner', unlocked: ownsItemAnywhere('Gold Crown') },
     { title: 'Gold Crown Thief', unlocked: goldCrownThiefProgress >= 50000 },
@@ -24546,6 +25791,7 @@ function resetGameState() {
     garden: new Array(16).fill(null),
     cellar: new Array(16).fill(null),
     mill: createDefaultMillState(),
+    kiln: createDefaultKilnState(),
     strayCat: createDefaultStrayCatState(),
     gardenTomb: createDefaultGardenTombState(),
     seedBagStorage: createDefaultSeedBagStorage(),
@@ -24744,7 +25990,7 @@ window.closeSettings = closeSettings;
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubAchievements', 'hubEventJournal', 'hubTrophyRoom', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubAchievements', 'hubEventJournal', 'hubTrophyRoom', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubKiln', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
 function showMainScreen(screenIdToShow) {
   // NEW: Safely return item from enchanting table if player navigates away
   if (typeof returnEnchantItem === 'function' && game.enchantSlot) {
@@ -25145,6 +26391,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('hubAlchemy_ReturnBtn').onclick = backToActions;
   document.getElementById('tailoringActionIcon').onclick = openTailoringHub;
   document.getElementById('hubTailoring_ReturnBtn').onclick = backToActions;
+  document.getElementById('kilnActionIcon').onclick = openKilnHub;
   document.getElementById('thievingActionIcon').onclick = openThievingHub;
   document.getElementById('enchantingActionIcon').onclick = openEnchantingHub;
   document.getElementById('hubThieving_ReturnBtn').onclick = backToActions; // +++ NEW +++
@@ -25380,6 +26627,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('alchemyActionIcon').onmouseleave = hideTooltip;
   document.getElementById('tailoringActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Tailoring Table</div>Craft leather and cloth gear');
   document.getElementById('tailoringActionIcon').onmouseleave = hideTooltip;
+  document.getElementById('kilnActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Charcoal Kiln</div>Burn any wood into charcoal');
+  document.getElementById('kilnActionIcon').onmouseleave = hideTooltip;
 
   // +++ NEW PERSONAL FARM LISTENERS +++
   document.getElementById('personalFarmActionIcon').onclick = openPersonalFarmHub;
@@ -25727,6 +26976,13 @@ if (bankGridWrap) {
       window.__draggedInventoryIndex = draggedItemIndex;
       window.__millDraggedWheatQty = 0;
       window.__millDraggedFlourQty = 0;
+      window.__kilnDraggedWoodQty = 0;
+      window.__kilnDraggedWoodType = null;
+      window.__kilnDraggedCharcoalQty = 0;
+      window.__smithFuelDraggedQty = 0;
+      window.__smithFuelDraggedType = null;
+      window.__cookingFuelDraggedQty = 0;
+      window.__cookingFuelDraggedType = null;
       e.dataTransfer.effectAllowed = 'move';
       if (e.dataTransfer) e.dataTransfer.setData('text/plain', 'inventory_slot:' + draggedItemIndex);
       // +++ NEW: Link to bank drag system +++
@@ -25801,6 +27057,13 @@ inventoryGrid.addEventListener('dragend', (e) => {
     window.__draggedInventoryIndex = null;
     window.__millDraggedWheatQty = 0;
     window.__millDraggedFlourQty = 0;
+    window.__kilnDraggedWoodQty = 0;
+    window.__kilnDraggedWoodType = null;
+    window.__kilnDraggedCharcoalQty = 0;
+    window.__smithFuelDraggedQty = 0;
+    window.__smithFuelDraggedType = null;
+    window.__cookingFuelDraggedQty = 0;
+    window.__cookingFuelDraggedType = null;
     draggedBankItem = null;
     draggedShopItem = null;
     game.isDragging = false;
@@ -25848,6 +27111,13 @@ inventoryGrid.addEventListener('dragend', (e) => {
       window.__draggedInventoryIndex = null;
       window.__millDraggedWheatQty = 0;
       window.__millDraggedFlourQty = 0;
+      window.__kilnDraggedWoodQty = 0;
+      window.__kilnDraggedWoodType = null;
+      window.__kilnDraggedCharcoalQty = 0;
+      window.__smithFuelDraggedQty = 0;
+      window.__smithFuelDraggedType = null;
+      window.__cookingFuelDraggedQty = 0;
+      window.__cookingFuelDraggedType = null;
       draggedBankItem = null;
       draggedShopItem = null;
       game.isDragging = false;
@@ -25895,6 +27165,107 @@ inventoryGrid.addEventListener('dragend', (e) => {
         updateMillUI();
         if (typeof window.savePlayerData === 'function') savePlayerData();
       }
+    } else if ((window.__kilnDraggedWoodQty || 0) > 0 && window.__kilnDraggedWoodType) {
+      const qty = Math.floor(window.__kilnDraggedWoodQty || 0);
+      const woodType = String(window.__kilnDraggedWoodType || '');
+      const dropItem = game.inventory[dropIndex];
+
+      if (dropItem && (dropItem.name !== woodType || (dropItem.enchantLevel || 0) !== 0)) {
+        await showGameAlert('Invalid Slot', `Drop ${woodType} on an empty slot or an existing ${woodType} stack.`);
+      } else {
+        if (!dropItem) {
+          game.inventory[dropIndex] = { name: woodType, qty: qty, enchantLevel: 0 };
+        } else {
+          dropItem.qty += qty;
+        }
+
+        game.farm.kiln.inputWoodQty = Math.max(0, Math.floor(game.farm.kiln.inputWoodQty || 0) - qty);
+        if (game.farm.kiln.inputWoodQty <= 0) {
+          game.farm.kiln.inputWoodQty = 0;
+          game.farm.kiln.inputWoodType = null;
+          game.farm.kiln.processAccMs = 0;
+          window.__kilnVisualStartAt = null;
+        }
+        game.isDirty = true;
+        renderInventoryGrid();
+        updateKilnUI();
+        if (typeof window.savePlayerData === 'function') savePlayerData();
+      }
+    } else if ((window.__kilnDraggedCharcoalQty || 0) > 0) {
+      const qty = Math.floor(window.__kilnDraggedCharcoalQty || 0);
+      const dropItem = game.inventory[dropIndex];
+
+      if (dropItem && (dropItem.name !== 'Charcoal' || (dropItem.enchantLevel || 0) !== 0)) {
+        await showGameAlert('Invalid Slot', 'Drop Charcoal on an empty slot or an existing Charcoal stack.');
+      } else {
+        if (!dropItem) {
+          game.inventory[dropIndex] = { name: 'Charcoal', qty: qty, enchantLevel: 0 };
+        } else {
+          dropItem.qty += qty;
+        }
+
+        game.farm.kiln.outputCharcoal = Math.max(0, Math.floor(game.farm.kiln.outputCharcoal || 0) - qty);
+        game.isDirty = true;
+        renderInventoryGrid();
+        updateKilnUI();
+        if (typeof window.savePlayerData === 'function') savePlayerData();
+      }
+    } else if ((window.__smithFuelDraggedQty || 0) > 0 && window.__smithFuelDraggedType) {
+      const qty = Math.floor(window.__smithFuelDraggedQty || 0);
+      const fuelType = String(window.__smithFuelDraggedType || '');
+      const dropItem = game.inventory[dropIndex];
+
+      if (dropItem && (dropItem.name !== fuelType || (dropItem.enchantLevel || 0) !== 0)) {
+        await showGameAlert('Invalid Slot', `Drop ${fuelType} on an empty slot or an existing ${fuelType} stack.`);
+      } else {
+        if (game.blacksmithingActive && typeof stopJsonRecipe === 'function') {
+          stopJsonRecipe();
+        }
+
+        if (!dropItem) {
+          game.inventory[dropIndex] = { name: fuelType, qty: qty, enchantLevel: 0 };
+        } else {
+          dropItem.qty += qty;
+        }
+
+        ensureBlacksmithFuelState();
+        game.blacksmithFuel.qty = Math.max(0, Math.floor(game.blacksmithFuel.qty || 0) - qty);
+        if (game.blacksmithFuel.qty <= 0) {
+          game.blacksmithFuel = createDefaultBlacksmithFuelState();
+        }
+        game.isDirty = true;
+        renderInventoryGrid();
+        updateBlacksmithFuelUI();
+        if (typeof window.savePlayerData === 'function') savePlayerData();
+      }
+    } else if ((window.__cookingFuelDraggedQty || 0) > 0 && window.__cookingFuelDraggedType) {
+      const qty = Math.floor(window.__cookingFuelDraggedQty || 0);
+      const fuelType = String(window.__cookingFuelDraggedType || '');
+      const dropItem = game.inventory[dropIndex];
+
+      if (dropItem && (dropItem.name !== fuelType || (dropItem.enchantLevel || 0) !== 0)) {
+        await showGameAlert('Invalid Slot', `Drop ${fuelType} on an empty slot or an existing ${fuelType} stack.`);
+      } else {
+        if (game.cookingActive && typeof stopJsonRecipe === 'function') {
+          stopJsonRecipe();
+        }
+
+        if (!dropItem) {
+          game.inventory[dropIndex] = { name: fuelType, qty: qty, enchantLevel: 0 };
+        } else {
+          dropItem.qty += qty;
+        }
+
+        ensureCookingFuelState();
+        game.cookingFuel.qty = Math.max(0, Math.floor(game.cookingFuel.qty || 0) - qty);
+        if (game.cookingFuel.qty <= 0) {
+          game.cookingFuel = createDefaultCookingFuelState();
+        }
+        game.isDirty = true;
+        renderInventoryGrid();
+        updateCookingFuelUI();
+        if (typeof window.savePlayerData === 'function') savePlayerData();
+      }
     } else if (draggedShopItem) {
       await buyShopItem(draggedShopItem.name, draggedShopItem.price);
     } else if (draggedBankItem && draggedBankItem.source === 'bank') {
@@ -25927,6 +27298,9 @@ inventoryGrid.addEventListener('dragend', (e) => {
     window.__draggedInventoryIndex = null;
     window.__millDraggedWheatQty = 0;
     window.__millDraggedFlourQty = 0;
+    window.__kilnDraggedWoodQty = 0;
+    window.__kilnDraggedWoodType = null;
+    window.__kilnDraggedCharcoalQty = 0;
                 draggedBankItem = null;
                 game.isDragging = false;
                 return;
@@ -25977,6 +27351,13 @@ inventoryGrid.addEventListener('dragend', (e) => {
     window.__draggedInventoryIndex = null;
     window.__millDraggedWheatQty = 0;
     window.__millDraggedFlourQty = 0;
+    window.__kilnDraggedWoodQty = 0;
+    window.__kilnDraggedWoodType = null;
+    window.__kilnDraggedCharcoalQty = 0;
+    window.__smithFuelDraggedQty = 0;
+    window.__smithFuelDraggedType = null;
+    window.__cookingFuelDraggedQty = 0;
+    window.__cookingFuelDraggedType = null;
     draggedBankItem = null;
     draggedShopItem = null;
     game.isDragging = false; // Final safety unlock
@@ -26454,6 +27835,10 @@ function getInspectAchievementEntries(playerData) {
     });
     const pets = Array.isArray(playerData && playerData.pets) ? playerData.pets : [];
     const bbcUnlocked = hasBigBlackChickenAchievement(pets, achievementStats.unlocked || {});
+    const petYardFullCount = getPetYardFillCount(pets);
+    const petYardLevel50Count = getPetYardLevel50Count(pets);
+    const petYardFullUnlocked = hasFullPetYardAchievement(pets, achievementStats.unlocked || {});
+    const petYardEliteUnlocked = hasFullLevel50PetYardAchievement(pets, achievementStats.unlocked || {});
     const dailyMilestoneAchievements = getDailyMilestoneAchievementEntries(dailyBonusProgress, achievementStats.unlocked || {});
     const petAchievements = PET_LEVEL_ACHIEVEMENT_DEFS.map(def => {
         const bestLevel = getBestPetAchievementLevel(pets, def.type);
@@ -26471,6 +27856,8 @@ function getInspectAchievementEntries(playerData) {
         { title: 'Spirit in Peace', unlocked: spiritInPeaceUnlocked, detail: getEventAchievementDetail('Spirit in Peace', spiritInPeaceUnlocked) },
         { title: 'Find the Wolf', unlocked: findWolfUnlocked, detail: getEventAchievementDetail('Find the Wolf', findWolfUnlocked) },
         { title: 'BBC Big Black Chicken', unlocked: bbcUnlocked, detail: bbcUnlocked ? 'Rare hatch found' : 'Hatch a Black Chicken' },
+        { title: 'Pet Yard Full', unlocked: petYardFullUnlocked, detail: `${petYardFullCount} / 6 pets` },
+        { title: 'Pet Yard Elite', unlocked: petYardEliteUnlocked, detail: `${petYardLevel50Count} / 6 level 50 pets` },
         ...dailyMilestoneAchievements,
         { title: 'Millionaire', unlocked: millionaireUnlocked, detail: millionaireUnlocked ? 'Unlocked' : `${Number((playerData && playerData.gold) || 0).toLocaleString()} / 1,000,000` },
         { title: 'Gold Crown Owner', unlocked: hasGoldCrown, detail: hasGoldCrown ? 'Owned' : 'Not yet' },
@@ -27732,6 +29119,8 @@ async function attemptEnchant() {
         activeBounty: game.activeBounty || null,
         autoEatSlot: game.autoEatSlot || null,
         farm: game.farm,
+        blacksmithFuel: game.blacksmithFuel || { fuelType: null, qty: 0, usedMs: 0 },
+        cookingFuel: game.cookingFuel || { fuelType: null, qty: 0, usedMs: 0 },
         questLines: game.questLines,
         bestiaryUnlocked: game.bestiaryUnlocked || {},
         playerAttackStyle: game.playerAttackStyle, 
@@ -28568,6 +29957,10 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         game.dailyBonus = data.dailyBonus || createDefaultDailyBonusState();
         ensureDailyBonusState();
         refreshDailyBonusIcon();
+        game.blacksmithFuel = data.blacksmithFuel || { fuelType: null, qty: 0, usedMs: 0 };
+        ensureBlacksmithFuelState();
+        game.cookingFuel = data.cookingFuel || { fuelType: null, qty: 0, usedMs: 0 };
+        ensureCookingFuelState();
         if (!Array.isArray(game.eventJournal)) game.eventJournal = [];
         game.bestiaryUnlocked = data.bestiaryUnlocked || {};
         ensureAchievementStats();
@@ -31000,6 +32393,7 @@ async function sendChatMessage() {
       // +++ NEW FARM ASSETS +++
       'images/farmicon.jpeg',
       'images/petyardicon.jpeg',
+      'images/kilnicon.png',
       'images/petmasteryskillicon.jpeg',
       'images/petegg1.png',
       'images/petegg2.png',
@@ -32281,6 +33675,8 @@ window.getCraftJsonDebugSnapshot = function(){
     if (stopBtn) stopBtn.style.display = 'none';
     game.currentJsonRecipeContext = null;
     game.isDirty = true;
+    updateBlacksmithFuelUI();
+    updateCookingFuelUI();
   }
   window.stopJsonRecipe = stopJsonRecipe;
 
@@ -32318,17 +33714,34 @@ window.getCraftJsonDebugSnapshot = function(){
       : '';
     const output = parseOutput(recipe);
     const descHtml = recipe.description ? `<div style="margin-top:6px; color:#ffd27f;">${recipe.description}</div>` : '';
-    wrapper.innerHTML = `
-      <h2>${SECTION_META[recipe.section]?.label || 'Crafting'} - ${recipe.displayName || output.name}</h2>
+    const recipeFuelHtml = recipe.section === 'blacksmithing'
+      ? getBlacksmithFuelHtml()
+      : (recipeNeedsCookingFuel(recipe) ? getCookingFuelHtml() : '');
+    const recipeDetailsHtml = `
       <div style="margin-top:8px; color:#efe3cf;">Output: ${output.qty} ${output.name}</div>
       <div style="margin-top:4px; color:#efe3cf;">XP: ${Number(recipe.xp || 0)} | Time: ${(Number(recipe.time || 0)/1000).toFixed(1)}s</div>
       ${descHtml}
       <div style="margin-top:10px; color:#efe3cf;">Requires:</div>
       <div id="jsonRecipeRequirements" style="margin-top:6px; color:#efe3cf;">${reqs}</div>
       ${extraSkillHtml}
+    `;
+    const recipeTopLayoutHtml = recipeFuelHtml
+      ? `
+        <div style="margin-top:12px; display:flex; align-items:flex-start; justify-content:space-between; gap:18px; flex-wrap:wrap;">
+          <div style="flex:1 1 340px; min-width:260px;">${recipeDetailsHtml}</div>
+          <div style="flex:0 0 auto; margin-left:auto; margin-top:8px;">${recipeFuelHtml}</div>
+        </div>
+      `
+      : recipeDetailsHtml;
+    const recipeProgressHtml = `
       <div style="margin-top:16px;">
         <div class="progress-container"><div class="progress-fill" id="jsonRecipeProgress"></div></div>
       </div>
+    `;
+    wrapper.innerHTML = `
+      <h2>${SECTION_META[recipe.section]?.label || 'Crafting'} - ${recipe.displayName || output.name}</h2>
+      ${recipeTopLayoutHtml}
+      ${recipeProgressHtml}
       <div class="action-buttons" style="margin-top:14px;">
         <button id="jsonRecipeStartBtn" class="primary">Start Crafting</button>
         <button id="jsonRecipeStopBtn" class="primary" style="background:#555; display:none;">Stop Crafting</button>
@@ -32338,6 +33751,14 @@ window.getCraftJsonDebugSnapshot = function(){
     document.getElementById('jsonRecipeStartBtn').onclick = () => startJsonRecipe(recipe);
     document.getElementById('jsonRecipeStopBtn').onclick = stopJsonRecipe;
     document.getElementById('jsonRecipeReturnBtn').onclick = () => { stopJsonRecipe(); returnToRecipeHub(recipe); };
+    if (recipe.section === 'blacksmithing') {
+      bindBlacksmithFuelSlot();
+      updateBlacksmithFuelUI();
+    }
+    if (recipeNeedsCookingFuel(recipe)) {
+      bindCookingFuelSlot();
+      updateCookingFuelUI();
+    }
     showMainScreen('hubDynamic');
   }
 
@@ -32372,6 +33793,17 @@ window.getCraftJsonDebugSnapshot = function(){
         return;
       }
 
+      if (recipe.section === 'blacksmithing' && !consumeBlacksmithFuelMs(totalTime)) {
+        await showGameAlert('Out of Fuel', 'The forge ran out of heat before the craft could complete.');
+        stopJsonRecipe();
+        return;
+      }
+      if (recipeNeedsCookingFuel(recipe) && !consumeCookingFuelMs(totalTime)) {
+        await showGameAlert('Out of Fuel', 'The fire ran out of heat before the recipe could complete.');
+        stopJsonRecipe();
+        return;
+      }
+
       removeMaterials(recipe);
       refundRecipeItems(recipe);
       const craftedSuccess = !canBurn || (Math.random() * 100 < successRate);
@@ -32389,8 +33821,20 @@ window.getCraftJsonDebugSnapshot = function(){
       if (bar) bar.style.width = '0%';
       const reqsEl = document.getElementById('jsonRecipeRequirements');
       if (reqsEl) reqsEl.innerHTML = (recipe.requirements || []).map(r => formatRecipeRequirementLine(recipe, r, { showCurrent: true })).join('');
+      if (recipe.section === 'blacksmithing') updateBlacksmithFuelUI();
+      if (recipeNeedsCookingFuel(recipe)) updateCookingFuelUI();
       if (!hasMaterials(recipe)) {
         stopJsonRecipe();
+        return;
+      }
+      if (recipe.section === 'blacksmithing' && !hasBlacksmithFuelForDuration(totalTime)) {
+        stopJsonRecipe();
+        await showGameAlert('Out of Fuel', 'Add more Coal Ore or Charcoal to keep smithing.');
+        return;
+      }
+      if (recipeNeedsCookingFuel(recipe) && !hasCookingFuelForDuration(totalTime)) {
+        stopJsonRecipe();
+        await showGameAlert('Out of Fuel', 'Add more wood to keep cooking.');
         return;
       }
       const overdueTime = elapsed - totalTime;
@@ -32425,11 +33869,37 @@ window.getCraftJsonDebugSnapshot = function(){
       await showGameAlert('Not Enough Materials', 'You do not have the required materials.');
       return;
     }
+    if (recipe.section === 'blacksmithing') {
+      const requiredHeatMs = Math.max(1, Number(recipe.time || 0));
+      const availableHeatMs = getBlacksmithFuelAvailableMs();
+      if (!hasBlacksmithFuelForDuration(requiredHeatMs)) {
+        const message = availableHeatMs > 0
+          ? `This recipe needs ${formatBlacksmithFuelTime(requiredHeatMs)} of heat, but only ${formatBlacksmithFuelTime(availableHeatMs)} is loaded. Add more Coal Ore or Charcoal.`
+          : 'Load Coal Ore or Charcoal before starting smithing.';
+        await showGameAlert('Out of Fuel', message);
+        updateBlacksmithFuelUI();
+        return;
+      }
+    }
+    if (recipeNeedsCookingFuel(recipe)) {
+      const requiredHeatMs = Math.max(1, Number(recipe.time || 0));
+      const availableHeatMs = getCookingFuelAvailableMs();
+      if (!hasCookingFuelForDuration(requiredHeatMs)) {
+        const message = availableHeatMs > 0
+          ? `This recipe needs ${formatCookingFuelTime(requiredHeatMs)} of heat, but only ${formatCookingFuelTime(availableHeatMs)} is loaded. Add more fuel.`
+          : 'Load Softwood, Oak, Birch, Maple, Mahogany, Coal Ore or Charcoal before starting cooking.';
+        await showGameAlert('Out of Fuel', message);
+        updateCookingFuelUI();
+        return;
+      }
+    }
     game[meta.flag] = true;
     game.currentJsonRecipeContext = { recipeId: recipe.id, flag: meta.flag };
     const startBtn = document.getElementById('jsonRecipeStartBtn');
     const stopBtn = document.getElementById('jsonRecipeStopBtn');
     if (startBtn) startBtn.style.display = 'none';
+    updateBlacksmithFuelUI();
+    updateCookingFuelUI();
     if (stopBtn) stopBtn.style.display = 'inline-block';
     game.progressFrame = setTimeout(() => jsonRecipeLoop(recipe, Date.now()), 16);
   }
@@ -32538,10 +34008,6 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
-
-
-
-
 
 
 
