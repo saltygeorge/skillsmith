@@ -81,6 +81,39 @@
       "description": "A potent anti-fire concoction."
     },
     {
+      "id": "alchemy_stun_bomb",
+      "section": "alchemy",
+      "skill": "alchemy",
+      "level": 25,
+      "displayName": "Stun Bomb",
+      "image": "images/stunbomb.png",
+      "requirements": [
+        {
+          "name": "Empty Vial",
+          "qty": 1
+        },
+        {
+          "name": "Charcoal",
+          "qty": 1
+        },
+        {
+          "name": "Salt",
+          "qty": 1
+        },
+        {
+          "name": "Cloth",
+          "qty": 1
+        }
+      ],
+      "time": 5000,
+      "xp": 95,
+      "outputName": "Stun Bomb",
+      "outputQty": 1,
+      "slot": 3,
+      "requiresFuel": false,
+      "description": "A compact stun explosive that can be thrown in combat."
+    },
+    {
       "id": "smith_copper_bar",
       "section": "blacksmithing",
       "metalType": "copper",
@@ -540,7 +573,7 @@
       "time": 2500,
       "xp": 20,
       "outputName": "Copper Arrow Tip",
-      "outputQty": 10,
+      "outputQty": 3,
       "slot": 4
     },
     {
@@ -742,6 +775,31 @@
       "outputName": "Iron Chestplate",
       "outputQty": 1,
       "slot": 9
+    },
+    {
+      "id": "smith_throwing_knife",
+      "section": "blacksmithing",
+      "metalType": "iron",
+      "skill": "blacksmith",
+      "level": 20,
+      "displayName": "Throwing Knife x3",
+      "image": "images/throwingknife.png",
+      "requirements": [
+        {
+          "name": "Iron Bar",
+          "qty": 2
+        },
+        {
+          "name": "Leather",
+          "qty": 1
+        }
+      ],
+      "time": 4000,
+      "xp": 55,
+      "outputName": "Throwing Knife",
+      "outputQty": 3,
+      "slot": 10,
+      "description": "A bundle of balanced knives made for ranged throws."
     },
     {
       "id": "cook_chicken",

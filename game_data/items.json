@@ -1739,6 +1739,28 @@
       "playerShopMaxQty": 0,
       "unlockLevel": 1,
       "stats": {}
+    },
+    "throwing_knife": {
+      "id": "throwing_knife",
+      "name": "Throwing Knife",
+      "img": "images/throwingknife.png",
+      "sellPrice": 4,
+      "playerShop": true,
+      "individualSales": false,
+      "playerShopMaxQty": 1000,
+      "unlockLevel": 20,
+      "stats": {}
+    },
+    "stun_bomb": {
+      "id": "stun_bomb",
+      "name": "Stun Bomb",
+      "img": "images/stunbomb.png",
+      "sellPrice": 20,
+      "playerShop": true,
+      "individualSales": false,
+      "playerShopMaxQty": 1000,
+      "unlockLevel": 25,
+      "stats": {}
     }
   }
 }
