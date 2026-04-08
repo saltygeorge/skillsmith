@@ -849,6 +849,17 @@ button.primary:hover { background: var(--accent-hover); }
   font-weight: bold;
   text-shadow: 0 0 10px rgba(214, 155, 74, 0.22);
 }
+#alchemyFuelSlot.drag-over {
+  border-color: #e0b36d !important;
+  border-style: solid !important;
+  background: rgba(214, 155, 74, 0.18) !important;
+  box-shadow: 0 0 0 2px rgba(214, 155, 74, 0.16), 0 0 16px rgba(160, 92, 28, 0.22);
+}
+#alchemyFuelSlot.drag-over #alchemyFuelBody {
+  color: #ffe0a8 !important;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(214, 155, 74, 0.22);
+}
 
 .equipment-slot.drag-valid {
   border-color: rgba(255, 215, 0, 0.9);
@@ -2840,7 +2851,7 @@ button.primary:hover { background: var(--accent-hover); }
           <div id="hubHuntingBoard" class="hub-screen">
             <h2>Hunting Board</h2>
             <div style="margin-top:8px; color:#efe3cf;">Accept bounties to earn gold and experience.</div>
-                  <div id="bountyContent" style="margin-top: 4px; display: flex; flex-direction: column; gap: 6px; align-items: center;">
+                  <div id="bountyContent" style="margin-top: 4px; display: flex; flex-direction: column; gap: 6px; align-items: stretch; flex:1; min-height:0; max-height:340px; overflow-y:auto; padding-right:6px; box-sizing:border-box;">
                 </div>
 
             <div class="action-buttons" style="margin-top: 10px;">
@@ -2913,7 +2924,7 @@ button.primary:hover { background: var(--accent-hover); }
           </div>
 <div id="hubPetYard" class="hub-screen">
             <h2>Pet Yard</h2>
-                  <div id="petYardContent" style="margin-top: 10px;"></div>
+                  <div id="petYardContent" style="margin-top: 10px; min-height:0; overflow:hidden;"></div>
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
               <button id="hubPetYard_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="backToActions()">Return</button>
@@ -2967,6 +2978,8 @@ button.primary:hover { background: var(--accent-hover); }
 
           <div id="hubGarden" class="hub-screen">
             <h2>The Garden</h2>
+            <div id="gardenFieldTabs" style="display:flex; justify-content:center; gap:8px; margin-top:8px; flex-wrap:wrap;"></div>
+            <div id="gardenFieldStatus" style="margin-top:6px; text-align:center; color:#d8c39b; font-size:12px; min-height:18px;"></div>
                   <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
                           <div class="interactive-container" style="height: 320px;">
                     <img src="images/cropfield.jpeg" alt="The Garden" class="interactive-bg" style="width: 100%; height: 100%; object-fit: cover; object-position: top;">
@@ -3763,6 +3776,7 @@ button.primary:hover { background: var(--accent-hover); }
                   <div id="combat-enemy-hp-fill" style="width:100%"></div>
                   <div id="combat-enemy-hp-text">10 / 10 HP</div>
                 </div>
+                <div id="combat-enemy-effect-text" style="margin-top:6px; min-height:16px; font-size:12px; color:#ffdf8a;"></div>
               </div>
                       <div id="combat-player-area">
                 <div id="combat-action-panel">
@@ -4011,6 +4025,10 @@ button.primary:hover { background: var(--accent-hover); }
 function createDefaultDailyBonusState() {
   return { lastRewardDay: '', streak: 0, bestStreak: 0, totalClaims: 0, pendingRewards: [] };
 }
+function createDefaultSpecialContractState() {
+  return { acceptedDaysByContract: {} };
+}
+
 
 const game = {
   name: '',
@@ -4060,6 +4078,7 @@ const game = {
   blacksmithingActive: false,
   blacksmithFuel: { fuelType: null, qty: 0, usedMs: 0 },
   cookingFuel: { fuelType: null, qty: 0, usedMs: 0 },
+  alchemyFuel: { fuelType: null, qty: 0, usedMs: 0 },
   cookingActive: false,
   woodcuttingActive: false, // +++ NEW WOODCUTTING STATE +++
   progressFrame: null,
@@ -4074,6 +4093,8 @@ const game = {
   wolfTaming: { lastAttemptDay: '' },
   playerCombatInterval: null,
   enemyCombatInterval: null,
+  combatStatusInterval: null,
+  enemyStunResumeTimeout: null,
   wasMiningBeforeCombat: false, // Renamed from 'wasMiningBeforeTrade'
   wasSmithingBeforeCombat: false,
   wasWoodcuttingBeforeCombat: false,
@@ -4107,10 +4128,12 @@ const game = {
   // +++ NEW BOUNTY HUNTING SKILL +++
   bountyhunting: { level: 1, xp: 0, totalXP: 0 },
   activeBounty: null, 
+  specialContractState: createDefaultSpecialContractState(),
 
 // +++ NEW PET SYSTEM STATE +++
   petmastery: { level: 1, xp: 0, totalXP: 0 },
   pets: [], // Array of pet objects { id, type, name, level, xp, hp, lastCalcTime }
+  petYardExtraSlots: 0,
   incubator: { active: false, startTime: 0, eggType: null }, 
   // +++ END NEW STATE +++
 
@@ -4137,6 +4160,9 @@ const game = {
     chickens: [], 
     cows: [],
     garden: new Array(16).fill(null), // 16 Crop Tiles
+    garden2: new Array(16).fill(null), // 16 Crop Tiles (Field 2)
+    activeGardenField: 1,
+    selectedSeed: null,
     cellar: new Array(16).fill(null), // 16 Mushroom Tiles
     mill: createDefaultMillState(),
     kiln: createDefaultKilnState(),
@@ -4144,7 +4170,7 @@ const game = {
     gardenTomb: createDefaultGardenTombState(),
     seedBagStorage: createDefaultSeedBagStorage(),
     siloStorage: createDefaultSiloStorage(),
-    buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
+    buildings: { coop: false, barn: false, well: false, garden: false, secondField: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
   },
   
   // +++ NEW MAGIC STATE +++
@@ -4191,6 +4217,31 @@ isDragging: false,  enchantSlot: null,  enchantingActive: false,
 
 window.game = game;
 globalThis.game = game;
+
+const BASE_PET_YARD_CAPACITY = 6;
+const PET_YARD_EXPANSION_SLOTS = 3;
+
+function getPetYardExtraSlots(source = game) {
+  const extra = Number(source && source.petYardExtraSlots);
+  return Number.isFinite(extra) ? Math.max(0, Math.min(PET_YARD_EXPANSION_SLOTS, Math.floor(extra))) : 0;
+}
+
+function getPetYardMaxSlots(source = game) {
+  return BASE_PET_YARD_CAPACITY + getPetYardExtraSlots(source);
+}
+
+function getPetYardPetCount(source = game) {
+  const pets = Array.isArray(source && source.pets) ? source.pets.filter(Boolean) : [];
+  return pets.length;
+}
+
+function isPetYardFull(source = game) {
+  return getPetYardPetCount(source) >= getPetYardMaxSlots(source);
+}
+
+function formatPetYardCapacity(source = game) {
+  return `${getPetYardPetCount(source)}/${getPetYardMaxSlots(source)}`;
+}
 
 const EQUIPMENT_SLOT_KEYS = ['necklace', 'helmet', 'cape', 'weapon', 'chest', 'shield', 'ring1', 'legs', 'ring2', 'arrows', 'boots', 'pet'];
 const TROPHY_ROOM_DEFS = [
@@ -4472,6 +4523,8 @@ function clearTrophyRoomDragState() {
   window.__smithFuelDraggedType = null;
   window.__cookingFuelDraggedQty = 0;
   window.__cookingFuelDraggedType = null;
+  window.__alchemyFuelDraggedQty = 0;
+  window.__alchemyFuelDraggedType = null;
   if (typeof draggedBankItem !== 'undefined') draggedBankItem = null;
   game.isDragging = false;
   clearTrophyRoomDragHighlights();
@@ -5287,6 +5340,8 @@ const VALID_ITEMS = [
   'Fishing Pole',
   'Mapple Fishing Pole',
   'Fishing Bait',
+  'Throwing Knife',
+  'Stun Bomb',
 
   // +++ NEW COOKED FISH +++
   'Cooked Herring',
@@ -5553,33 +5608,33 @@ const COAL_MINE_XP = 20;
 const COAL_MINE_ITEM = 'Coal Ore';
 
 const IRON_MINE_TIME_MS = 3000;
-const IRON_MINE_XP = 35;
+const IRON_MINE_XP = 25;
 const IRON_MINE_ITEM = 'Iron Ore';
 
 const SILVER_MINE_LVL = 30;
 const SILVER_MINE_TIME_MS = 4000;
-const SILVER_MINE_XP = 50;
+const SILVER_MINE_XP = 30;
 const SILVER_MINE_ITEM = 'Silver Ore';
 
 const GOLD_MINE_LVL = 50;
 const GOLD_MINE_TIME_MS = 5000;
-const GOLD_MINE_XP = 75;
+const GOLD_MINE_XP = 50;
 const GOLD_MINE_ITEM = 'Gold Ore';
 
 // --- NEW: Crystal Mining Constants ---
 const EARTH_CRYSTAL_LVL = 20;
 const EARTH_CRYSTAL_TIME_MS = 4000;
-const EARTH_CRYSTAL_XP = 50;
+const EARTH_CRYSTAL_XP = 30;
 const EARTH_CRYSTAL_ITEM = 'Earth Crystal Shard';
 
 const AIR_CRYSTAL_LVL = 40;
 const AIR_CRYSTAL_TIME_MS = 5000;
-const AIR_CRYSTAL_XP = 65;
+const AIR_CRYSTAL_XP = 40;
 const AIR_CRYSTAL_ITEM = 'Air Crystal Shard';
 
 const WATER_CRYSTAL_LVL = 60;
 const WATER_CRYSTAL_TIME_MS = 6000;
-const WATER_CRYSTAL_XP = 80;
+const WATER_CRYSTAL_XP = 50;
 const WATER_CRYSTAL_ITEM = 'Water Crystal Shard';
 
 const MINE_COOLDOWN_COPPER_MS = 1000; // 1.0s
@@ -6131,7 +6186,6 @@ const BUILD_LAST_MODIFIED_AT = (() => {
 console.log('[BUILD] Last modified: ' + BUILD_LAST_MODIFIED_AT);
 loadMonstersJsonData().then(() => {
   if (typeof renderBestiary === 'function') renderBestiary();
-  if (typeof renderAchievementsHub === 'function') renderAchievementsHub();
 });
 
 const SHOP_INVENTORY = new Array(24).fill(null);
@@ -6155,6 +6209,8 @@ SHOP_INVENTORY[16] = { name: 'White Dye', price: 25000 };
 SHOP_INVENTORY[17] = { name: 'Gold Dye', price: 25000 };
 SHOP_INVENTORY[18] = { name: 'Bleach', price: 25000 };
 SHOP_INVENTORY[19] = { name: 'Pet Chicken Egg', price: 10000 };
+SHOP_INVENTORY[20] = { name: 'Pet Yard Expansion', price: 500000, img: 'images/petyardupgrade.png' };
+SHOP_INVENTORY[21] = { name: 'Second Field', price: 1000000, img: 'images/cropfieldupgrade.png' };
 // SHOP_INVENTORY[9] = { name: 'Wheat', price: 20 }; // Disabled from shop
 //SHOP_INVENTORY[10] = { name: 'Iron Battleaxe', price: 5000 };
 //SHOP_INVENTORY[11] = { name: 'Iron Shield', price: 5000 };
@@ -6373,7 +6429,7 @@ const DYEABLE_ITEM_RULES = {
   'Wizard Boots': ['white', 'black']
 };
 
-const DYE_VARIANT_IMAGE_MAP = {
+var DYE_VARIANT_IMAGE_MAP = {
   'Cloth Cape': {
     red: 'redclothcape',
     blue: 'blueclothcape',
@@ -6499,6 +6555,49 @@ function ensureDailyBonusState() {
   game.dailyBonus = normalizeDailyBonusStateLike(game.dailyBonus);
   return game.dailyBonus;
 }
+function normalizeSpecialContractStateLike(rawState) {
+  const source = rawState && typeof rawState === 'object' ? rawState : createDefaultSpecialContractState();
+  const acceptedDaysByContract = {};
+
+  if (source.acceptedDaysByContract && typeof source.acceptedDaysByContract === 'object') {
+    Object.entries(source.acceptedDaysByContract).forEach(([contractId, dayKey]) => {
+      const normalizedContractId = String(contractId || '').trim();
+      const normalizedDayKey = String(dayKey || '').trim();
+      if (normalizedContractId && normalizedDayKey) {
+        acceptedDaysByContract[normalizedContractId] = normalizedDayKey;
+      }
+    });
+  }
+
+  const legacyContractId = String(source.lastAcceptedContractId || '').trim();
+  const legacyDayKey = String(source.lastAcceptedDay || '').trim();
+  if (legacyContractId && legacyDayKey && !acceptedDaysByContract[legacyContractId]) {
+    acceptedDaysByContract[legacyContractId] = legacyDayKey;
+  }
+
+  return {
+    acceptedDaysByContract
+  };
+}
+
+function ensureSpecialContractState() {
+  game.specialContractState = normalizeSpecialContractStateLike(game.specialContractState);
+  return game.specialContractState;
+}
+
+function getSpecialContractDailyStatus(contractId = '') {
+  ensureSpecialContractState();
+  const todayKey = getDailyBonusDayKey();
+  const normalizedContractId = String(contractId || '').trim();
+  const acceptedDaysByContract = game.specialContractState.acceptedDaysByContract || {};
+  return {
+    todayKey,
+    contractId: normalizedContractId,
+    hasAcceptedToday: !!(normalizedContractId && acceptedDaysByContract[normalizedContractId] === todayKey),
+    acceptedDaysByContract
+  };
+}
+
 
 function getDailyBonusAchievementProgressFromState(rawDailyBonus) {
   const normalizedDailyBonus = normalizeDailyBonusStateLike(rawDailyBonus);
@@ -6516,14 +6615,14 @@ function getDailyBonusAchievementProgressFromState(rawDailyBonus) {
   };
 }
 
-const DAILY_MILESTONE_ACHIEVEMENTS = [
+var DAILY_MILESTONE_ACHIEVEMENTS = [
   { title: '30 Consecutive Days', rewardXp: 10000, threshold: 30, progressType: 'streak', completeLabel: 'Reward claimed: XP Bottle (10,000 XP)' },
   { title: '100 Total Days', rewardXp: 25000, threshold: 100, progressType: 'total', completeLabel: 'Reward claimed: XP Bottle (25,000 XP)' }
 ];
 
 function getDailyMilestoneAchievementEntries(progress, unlockedMap = {}) {
   const safeProgress = progress || { currentStreak: 0, bestStreak: 0, totalClaims: 0 };
-  return DAILY_MILESTONE_ACHIEVEMENTS.map(def => {
+  return (DAILY_MILESTONE_ACHIEVEMENTS || []).map(def => {
     const achieved = def.progressType === 'streak'
       ? Number(safeProgress.currentStreak || 0) >= def.threshold
       : Number(safeProgress.totalClaims || 0) >= def.threshold;
@@ -6971,6 +7070,8 @@ const PET_MAX_HP = 10;
 const PET_FEED_XP = 25; // Pet Mastery XP for feeding
 const PET_DIRECT_FEED_XP = 5; // Direct pet XP for feeding
 const PET_HATCH_XP = 500; // Pet Mastery XP for hatching
+const PET_LEVEL_UP_MASTERY_XP = 5; // Pet Mastery XP gained each time a pet levels up
+const PET_LEVEL_50_MASTERY_BONUS_XP = 250; // Bonus Pet Mastery XP when a pet reaches level 50
 const PET_SECRET_MASTERY_LVL = 50;
 
 // +++ NEW: EGG CONFIGURATION +++
@@ -7180,10 +7281,10 @@ async function attemptWolfTameWithRawChicken() {
     }
 
     if (!Array.isArray(game.pets)) game.pets = [];
-    if (game.pets.length >= 6) {
+    if (isPetYardFull()) {
         if (typeof window.savePlayerData === 'function') window.savePlayerData();
         game.currentEnemy = null;
-        await showGameAlert('Pet Yard Full', 'He would have followed you to the ends of the world, but there is no more room for him.');
+        await showGameAlert('Pet Yard Full', `He would have followed you to the ends of the world, but your Pet Yard is full (${formatPetYardCapacity()}).`);
         returnToCombatArea();
         return;
     }
@@ -7836,6 +7937,12 @@ function addGold(amount) {
   updateGoldUI();
 }
 
+function isTutorialQuestLineComplete() {
+  if (typeof getQuestProgress !== 'function' || typeof QUEST_LINES === 'undefined' || !QUEST_LINES.tutorial) return false;
+  const tutorialProgress = getQuestProgress('tutorial');
+  return !!(tutorialProgress && tutorialProgress.data && tutorialProgress.data.activeQuestId === 'COMPLETED');
+}
+
 function showTab(tab){
   document.getElementById('equipmentTab').style.display = 'none';
   document.getElementById('inventoryTab').style.display = 'none';
@@ -7845,9 +7952,13 @@ function showTab(tab){
   
   if (tab === 'quests') {
       renderQuestTabContent();
-      // Ensure the correct sub-tab is shown on load
-      const isMissionActive = document.getElementById('missionsSubTabContent').style.display === 'block';
-      showQuestSubTab(isMissionActive ? 'missions' : 'quests');
+      const shouldOpenMissionsFirst = isTutorialQuestLineComplete();
+      if (shouldOpenMissionsFirst) {
+          showQuestSubTab('missions');
+      } else {
+          const isMissionActive = document.getElementById('missionsSubTabContent').style.display === 'block';
+          showQuestSubTab(isMissionActive ? 'missions' : 'quests');
+      }
   } else if (tab === 'achievements') {
       renderAchievementsTab();
   }
@@ -8375,6 +8486,12 @@ function renderInventoryGrid(){
         const xpBottleAmount = getXpBottleAmountFromItemName(itemName);
         itemStats = `<div style="color:#7fd3ff;">+${formatAmount(xpBottleAmount)} XP to a chosen skill</div><div style="color:#d7c09b;">Cannot target Level 100 skills</div>`;
         clickAction = '<div style="color:#aaffaa; margin-top: 5px; font-size:11px;">Click to use</div>';
+      } else if (itemName === 'Throwing Knife') {
+        itemStats = `<div style="color:#aaffaa;">${Math.max(1, Math.min(5, Math.ceil(Number(game.ranged?.level || 1) / 20)))} Damage</div>`;
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px; font-size:11px;">Click to throw in combat</div>';
+      } else if (itemName === 'Stun Bomb') {
+        itemStats = `<div style="color:#ffdf8a;">Stuns for 10s</div>`;
+        clickAction = '<div style="color:#aaffaa; margin-top: 5px; font-size:11px;">Click to throw in combat</div>';
       } else if (itemName === 'Mapple Fishing Pole') {
         itemStats = `<div style="color:#7fd3ff;">-5s Fishing Time</div>`;
         clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Used automatically while fishing</div>';
@@ -8620,19 +8737,130 @@ async function handleItemClick(event, itemName, itemQty, slotIndex) {
     return;
   } else if (itemSlotType) {
     equipItem(itemSlotType, slotIndex);
-  } else if (getFoodHealAmount(itemName) > 0 || itemName === 'Vitality Potion' || itemName === 'Vitality Potion+' || itemName === 'Venom' || itemName === 'Beer' || itemName === 'Bucket of Water' || itemName === 'Fire Resist' || isXpBottleItemName(itemName) || typeof getDyeColorFromItemName(itemName) !== 'undefined') {
+  } else if (getFoodHealAmount(itemName) > 0 || itemName === 'Vitality Potion' || itemName === 'Vitality Potion+' || itemName === 'Venom' || itemName === 'Beer' || itemName === 'Bucket of Water' || itemName === 'Fire Resist' || isXpBottleItemName(itemName) || typeof getDyeColorFromItemName(itemName) !== 'undefined' || isThrowableItemName(itemName)) {
     if (typeof getDyeColorFromItemName(itemName) !== 'undefined') useDyeItem(itemName);
     else showItemContextMenu(event, itemName);
   }
 }
 
+function isThrowableItemName(itemName) {
+  return itemName === 'Throwing Knife' || itemName === 'Stun Bomb';
+}
+
+const THROWABLE_COOLDOWN_MS = {
+  'Throwing Knife': 3000,
+  'Stun Bomb': 30000
+};
+const STUN_BOMB_DURATION_MS = 10000;
+
+function ensureThrowableCooldownState() {
+  if (!game.throwableCooldowns || typeof game.throwableCooldowns !== 'object') {
+    game.throwableCooldowns = {};
+  }
+  return game.throwableCooldowns;
+}
+
+function getThrowableCooldownMs(itemName) {
+  return Number(THROWABLE_COOLDOWN_MS[itemName] || 0);
+}
+
+function getThrowableRemainingCooldownMs(itemName) {
+  const cooldowns = ensureThrowableCooldownState();
+  const readyAt = Number(cooldowns[itemName] || 0);
+  return Math.max(0, readyAt - Date.now());
+}
+
+function formatThrowableCooldownMs(ms) {
+  const totalSeconds = Math.max(0, Number(ms || 0)) / 1000;
+  return totalSeconds >= 10 ? `${Math.ceil(totalSeconds)}s` : `${totalSeconds.toFixed(1)}s`;
+}
+
+function getThrowableDamage() {
+  return Math.max(1, Math.min(5, Math.ceil(Number(game.ranged?.level || 1) / 20)));
+}
+
+function animateCombatEnemyHit() {
+  const enemyImg = document.getElementById('combat-enemy-img');
+  if (!enemyImg) return;
+  enemyImg.classList.remove('enemy-hit-anim');
+  void enemyImg.offsetWidth;
+  enemyImg.classList.add('enemy-hit-anim');
+}
+
+function awardThrowableCombatXp(skill, amount) {
+  const xpAmount = Math.max(1, Math.floor(Number(amount || 0)));
+  addXP(skill, xpAmount);
+  const displaySkill = skill.charAt(0).toUpperCase() + skill.slice(1);
+  showItemPopup(`+${xpAmount} ${displaySkill} XP`, null, 0);
+}
+
+async function throwThrowableItem(itemName) {
+  hideItemContextMenu();
+  if (!isThrowableItemName(itemName)) return;
+
+  if (!game.inCombat || !game.currentEnemy || Number(game.currentEnemy.currentHp || 0) <= 0) {
+    await showGameAlert('No Target', 'You can only throw this item during combat.');
+    return;
+  }
+
+  const remainingCooldownMs = getThrowableRemainingCooldownMs(itemName);
+  if (remainingCooldownMs > 0) {
+    showWarningPopup(`${itemName} ready in ${formatThrowableCooldownMs(remainingCooldownMs)}`);
+    return;
+  }
+
+  if (!removeItem(itemName, 1)) {
+    await showGameAlert('Item Missing', 'You do not have that item anymore.');
+    return;
+  }
+
+  const baseThrowPower = getThrowableDamage();
+  const damage = itemName === 'Stun Bomb' ? 0 : Math.min(baseThrowPower, Number(game.currentEnemy.currentHp || 0));
+  const cooldowns = ensureThrowableCooldownState();
+  cooldowns[itemName] = Date.now() + getThrowableCooldownMs(itemName);
+
+  playGlobalSound(itemName === 'Stun Bomb' ? 'sounds/soundeffects/earthblastsoundeffect.mp3' : 'sounds/soundeffects/arrowsoundeffect.mp3');
+
+  if (damage > 0) {
+    animateCombatEnemyHit();
+    showDamageSplat('enemy', damage, itemName === 'Stun Bomb' ? 'special' : 'damage');
+    game.currentEnemy.currentHp -= damage;
+    if (game.currentEnemy.name === 'Golden Dragon') {
+      game.goldenDragonHp = Math.max(0, game.currentEnemy.currentHp);
+    }
+    updateEnemyCombatUI();
+  }
+
+  if (itemName === 'Stun Bomb') {
+    if (game.currentEnemy.name === 'Madmax') {
+      showEnemyStatusPopup('Madmax resisted the stun!', '', 84);
+    } else {
+      game.currentEnemy.stunnedUntil = Date.now() + STUN_BOMB_DURATION_MS;
+      startCombatStatusLoop();
+      updateEnemyCombatUI();
+      showEnemyStatusPopup('Enemy stunned for 10s', '', 84);
+      scheduleEnemyAttackResumeAfterStun(STUN_BOMB_DURATION_MS);
+    }
+  }
+
+  awardThrowableCombatXp(xpSkill, (itemName === 'Stun Bomb' ? baseThrowPower : damage) * 4);
+  game.isDirty = true;
+
+  if (Number(game.currentEnemy.currentHp || 0) <= 0) {
+    handleEnemyDeath();
+  }
+}
+window.throwThrowableItem = throwThrowableItem;
 // NEW: Shows the right-click-style menu
 function showItemContextMenu(event, itemName) {
   const menu = document.getElementById('itemContextMenu');
   let menuContent = '';
 
   const foodHealAmt = getFoodHealAmount(itemName);
-  if (foodHealAmt > 0) {
+  if (isThrowableItemName(itemName)) {
+    const safeItemName = itemName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    menuContent += `<button class="context-menu-btn" onclick="throwThrowableItem('${safeItemName}')">Throw</button>`;
+  } else if (foodHealAmt > 0) {
     const safeItemName = itemName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     menuContent += `<button class="context-menu-btn" onclick="eatFoodItem('${safeItemName}')">Eat</button>`;
   } else if (itemName === 'Vitality Potion') {
@@ -15573,7 +15801,12 @@ function createDefaultGardenTombState() {
 const FARM_UPGRADE_CONFIG = {
   'Seed Bag': { price: 250000, img: 'seedbag.png' },
   'Silo': { price: 500000, img: 'silo.png' },
-  'Hand Pump Well': { price: 750000, img: 'automaticwell.png' }
+  'Hand Pump Well': { price: 750000, img: 'automaticwell.png' },
+  'Second Field': { price: 1000000, img: 'cropfieldupgrade.png', levelReq: 50 }
+};
+
+const PET_YARD_UPGRADE_CONFIG = {
+  'Pet Yard Expansion': { price: 500000, img: 'petyardupgrade.png', extraSlots: PET_YARD_EXPANSION_SLOTS }
 };
 
 function createDefaultSeedBagStorage() {
@@ -15593,7 +15826,42 @@ function isFarmUpgradePurchased(itemName) {
   if (itemName === 'Seed Bag') return !!game.farm.buildings.seedbag;
   if (itemName === 'Silo') return !!game.farm.buildings.silo;
   if (itemName === 'Hand Pump Well') return !!game.farm.buildings.handPumpWell;
+  if (itemName === 'Second Field') return !!game.farm.buildings.secondField;
   return false;
+}
+
+function getFarmUpgradeLevelRequirement(itemName) {
+  const meta = FARM_UPGRADE_CONFIG[itemName];
+  return Number((meta && meta.levelReq) || 0);
+}
+
+function isPetYardUpgradeItem(itemName) {
+  return !!PET_YARD_UPGRADE_CONFIG[itemName];
+}
+
+function isPetYardUpgradePurchased(itemName, source = game) {
+  return !!(isPetYardUpgradeItem(itemName) && getPetYardExtraSlots(source) >= Number(PET_YARD_UPGRADE_CONFIG[itemName].extraSlots || 0));
+}
+
+function isPermanentShopUpgradePurchased(itemName, source = game) {
+  if (isFarmUpgradeItem(itemName)) return isFarmUpgradePurchased(itemName);
+  if (isPetYardUpgradeItem(itemName)) return isPetYardUpgradePurchased(itemName, source);
+  return false;
+}
+
+function getPermanentShopUpgradeHint(itemName) {
+  if (isFarmUpgradeItem(itemName)) {
+    const req = getFarmUpgradeLevelRequirement(itemName);
+    return req > 0 ? `One-time farm upgrade. Requires Farming Lvl ${req}.` : 'One-time farm upgrade.';
+  }
+  if (isPetYardUpgradeItem(itemName)) return 'One-time Pet Yard upgrade (+3 slots).';
+  return 'Click to buy...';
+}
+
+function getPermanentShopUpgradeOwnedText(itemName) {
+  if (isFarmUpgradeItem(itemName)) return 'Already installed on your farm.';
+  if (isPetYardUpgradeItem(itemName)) return 'Already installed in your Pet Yard.';
+  return 'Already owned.';
 }
 
 function getStoredSeedCount(seedName) {
@@ -15671,26 +15939,34 @@ function renderFarmUpgradePanels() {
     const entries = [
       { name: 'Seed Bag', owned: !!game.farm.buildings.seedbag },
       { name: 'Silo', owned: !!game.farm.buildings.silo },
-      { name: 'Hand Pump Well', owned: !!game.farm.buildings.handPumpWell }
+      { name: 'Hand Pump Well', owned: !!game.farm.buildings.handPumpWell },
+      { name: 'Second Field', owned: !!game.farm.buildings.secondField }
     ];
     farmPanel.innerHTML = entries.map(entry => {
       const meta = FARM_UPGRADE_CONFIG[entry.name];
+      const levelReq = Number(meta.levelReq || 0);
+      const playerFarmingLevel = Number((game.farming && game.farming.level) || 1);
+      const isLevelLocked = !entry.owned && levelReq > playerFarmingLevel;
+      const subText = entry.owned
+        ? 'Installed'
+        : (isLevelLocked ? `Requires Farming Lvl ${levelReq}` : `${formatAmount(meta.price)} Gold - Buy in shop`);
+      const subTextColor = entry.owned ? '#8fd18f' : (isLevelLocked ? '#ffb36b' : '#ccc');
       return `
-        <div style="display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.2); border:1px solid ${entry.owned ? '#8fd18f' : 'var(--accent)'}; border-radius:8px; padding:6px 8px; width:100%;">
+        <div style="display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.2); border:1px solid ${entry.owned ? '#8fd18f' : 'var(--accent)'}; border-radius:8px; padding:4px 8px; width:100%; box-sizing:border-box; min-width:0;">
           <img src="images/${meta.img}" alt="${entry.name}" style="width:26px; height:26px; object-fit:contain; ${entry.owned ? '' : 'filter:grayscale(40%); opacity:0.9;'}">
           <div style="flex:1; min-width:0;">
             <div style="color:var(--gold); font-weight:bold; font-size:12px;">${entry.name}</div>
-            <div style="font-size:10px; color:${entry.owned ? '#8fd18f' : '#ccc'};">${entry.owned ? 'Installed' : `${formatAmount(meta.price)} Gold - Buy in shop`}</div>
+            <div style="font-size:10px; color:${subTextColor};">${subText}</div>
           </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
     farmPanel.style.display = 'grid';
-    farmPanel.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
-    farmPanel.style.gap = '16px';
-    farmPanel.style.gap = '16px';
+    farmPanel.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+    farmPanel.style.width = '100%';
+    farmPanel.style.columnGap = '10px';
+    farmPanel.style.rowGap = '4px';
+    farmPanel.style.alignItems = 'stretch';
   }
-
   const stationsPanel = document.getElementById('farmStationsPanel');
   if (stationsPanel) {
     stationsPanel.innerHTML = '';
@@ -15710,10 +15986,12 @@ function renderFarmUpgradePanels() {
       seedPanel.innerHTML = rows.map(row => {
         const inv = getInventoryQtyByName(row.item);
         const stored = getStoredSeedCount(row.item);
+        const isSelected = game.farm.selectedSeed === row.item;
         return `
           <div style="display:flex; align-items:center; gap:5px; width:100%; min-height:24px;">
             <img src="images/${row.img}" alt="${row.item}" style="width:24px; height:24px; object-fit:contain;">
             <div style="flex:1; font-size:11px; line-height:1.15; color:#efe3cf;">${row.item}<br><span style="font-size:10px; color:#ccc;">Bag: <span style="color:${stored >= row.req ? '#8fd18f' : '#ff8888'};">${stored}</span> | Inv: <span style="color:${inv >= row.req ? '#8fd18f' : '#ff8888'};">${inv}</span></span></div>
+            <button class="primary" style="padding:4px 7px; font-size:10px; background:${isSelected ? '#8a5a38' : '#6d452d'}; border-color:${isSelected ? 'var(--gold)' : 'var(--accent)'};" onclick="setSelectedGardenSeed('${row.item}')">${isSelected ? 'Selected' : 'Select'}</button>
             <button class="primary" style="padding:4px 7px; font-size:10px;" onclick="storeFarmUpgradeItem('${row.item}')">Store All</button>
             <button class="primary" style="padding:4px 7px; font-size:10px; background:#666;" onclick="withdrawFarmUpgradeItem('${row.item}')">Take All</button>
           </div>
@@ -15794,17 +16072,24 @@ function waterAllGardenPlots() {
   ensureFarmState();
   if (!game.farm.buildings.handPumpWell) return;
   let wateredCount = 0;
-  game.farm.garden.forEach(slotData => {
-    if (slotData && !slotData.watered) {
-      slotData.watered = true;
-      slotData.waterTime = Date.now();
-      wateredCount++;
-    }
+  const gardenFields = [game.farm.garden];
+  if (game.farm.buildings.secondField && game.farm.garden2) gardenFields.push(game.farm.garden2);
+
+  gardenFields.forEach(fieldSlots => {
+    fieldSlots.forEach(slotData => {
+      if (slotData && !slotData.watered) {
+        slotData.watered = true;
+        slotData.waterTime = Date.now();
+        wateredCount++;
+      }
+    });
   });
+
   if (wateredCount <= 0) {
     showGameAlert('Nothing to Water', 'All planted plots are already watered.');
     return;
   }
+
   playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');
   renderGarden();
   game.isDirty = true;
@@ -15817,6 +16102,15 @@ async function purchaseFarmUpgrade(itemName, price) {
     await showGameAlert('Already Owned', `${itemName} is already installed on your farm.`);
     return;
   }
+  const levelReq = getFarmUpgradeLevelRequirement(itemName);
+  if (levelReq > 0 && Number((game.farming && game.farming.level) || 1) < levelReq) {
+    await showGameAlert('Level Required', `You need Farming Level ${levelReq} to buy ${itemName}.`);
+    return;
+  }
+  if (itemName === 'Second Field' && !game.farm.buildings.garden) {
+    await showGameAlert('Garden Required', 'You need to own the Garden before buying a Second Field.');
+    return;
+  }
   if (game.gold < price) {
     await showGameAlert('Not Enough Gold', `You need ${price} Gold to buy that.`);
     return;
@@ -15825,9 +16119,32 @@ async function purchaseFarmUpgrade(itemName, price) {
   if (itemName === 'Seed Bag') game.farm.buildings.seedbag = true;
   if (itemName === 'Silo') game.farm.buildings.silo = true;
   if (itemName === 'Hand Pump Well') game.farm.buildings.handPumpWell = true;
+  if (itemName === 'Second Field') game.farm.buildings.secondField = true;
   renderFarmUpgradePanels();
   game.isDirty = true;
-  await showGameAlert('Upgrade Installed', `${itemName} has been added to your farm.`);
+  await showGameAlert('Upgrade Installed', itemName === 'Second Field' ? 'A second crop field is now available in your Garden.' : `${itemName} has been added to your farm.`);
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+async function purchasePetYardUpgrade(itemName, price) {
+  if (!isPetYardUpgradeItem(itemName)) return;
+  if (isPetYardUpgradePurchased(itemName)) {
+    await showGameAlert('Already Owned', `${itemName} is already installed in your Pet Yard.`);
+    return;
+  }
+  if (game.gold < price) {
+    await showGameAlert('Not Enough Gold', `You need ${price} Gold to buy that.`);
+    return;
+  }
+
+  const config = PET_YARD_UPGRADE_CONFIG[itemName];
+  addGold(-price);
+  game.petYardExtraSlots = Number(config.extraSlots || PET_YARD_EXPANSION_SLOTS);
+  game.isDirty = true;
+  if (typeof renderPetYard === 'function' && document.getElementById('hubPetYard')?.classList.contains('active')) {
+    renderPetYard('pets');
+  }
+  await showGameAlert('Upgrade Installed', `Pet Yard Expansion installed. You now have ${getPetYardMaxSlots()} total pet slots.`);
   if (typeof window.savePlayerData === 'function') window.savePlayerData();
 }
 
@@ -15872,19 +16189,25 @@ function ensureFarmState() {
       chickens: [],
       cows: [],
       garden: new Array(16).fill(null),
+      garden2: new Array(16).fill(null),
+      activeGardenField: 1,
       cellar: new Array(16).fill(null),
       mill: createDefaultMillState(),
+      kiln: createDefaultKilnState(),
       strayCat: createDefaultStrayCatState(),
       gardenTomb: createDefaultGardenTombState(),
       seedBagStorage: createDefaultSeedBagStorage(),
       siloStorage: createDefaultSiloStorage(),
-      buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
+      buildings: { coop: false, barn: false, well: false, garden: false, secondField: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
     };
   }
 
   if (!game.farm.chickens) game.farm.chickens = [];
   if (!game.farm.cows) game.farm.cows = [];
   if (!game.farm.garden) game.farm.garden = new Array(16).fill(null);
+  if (!game.farm.garden2) game.farm.garden2 = new Array(16).fill(null);
+  if (typeof game.farm.activeGardenField !== 'number') game.farm.activeGardenField = 1;
+  if (typeof game.farm.selectedSeed !== 'string') game.farm.selectedSeed = game.farm.selectedSeed ? String(game.farm.selectedSeed) : null;
   if (!game.farm.cellar) game.farm.cellar = new Array(16).fill(null);
   if (!game.farm.mill) game.farm.mill = createDefaultMillState();
   if (!game.farm.kiln) game.farm.kiln = createDefaultKilnState();
@@ -15897,13 +16220,15 @@ function ensureFarmState() {
   if (typeof game.farm.gardenTomb.lastGiftDay !== 'string') game.farm.gardenTomb.lastGiftDay = '';
 
   if (!game.farm.buildings) {
-    game.farm.buildings = { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false };
+    game.farm.buildings = { coop: false, barn: false, well: false, garden: false, secondField: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false };
   }
 
-  const keys = ['coop', 'barn', 'well', 'garden', 'cellar', 'mill', 'seedbag', 'silo', 'handPumpWell'];
+  const keys = ['coop', 'barn', 'well', 'garden', 'secondField', 'cellar', 'mill', 'seedbag', 'silo', 'handPumpWell'];
   keys.forEach(k => {
     if (game.farm.buildings[k] === undefined) game.farm.buildings[k] = false;
   });
+
+  if (!game.farm.buildings.secondField && game.farm.activeGardenField === 2) game.farm.activeGardenField = 1;
 
   if (typeof game.farm.mill.inputWheat !== 'number') game.farm.mill.inputWheat = 0;
   if (typeof game.farm.mill.outputFlour !== 'number') game.farm.mill.outputFlour = 0;
@@ -15920,6 +16245,68 @@ function ensureFarmState() {
     game.farm.kiln.inputWoodType = null;
   }
 }
+function getGardenFieldSlots(fieldNumber = 1) {
+  ensureFarmState();
+  return Number(fieldNumber) === 2 ? game.farm.garden2 : game.farm.garden;
+}
+
+function getActiveGardenFieldNumber() {
+  ensureFarmState();
+  const nextField = Number(game.farm.activeGardenField) === 2 && !!game.farm.buildings.secondField ? 2 : 1;
+  game.farm.activeGardenField = nextField;
+  return nextField;
+}
+
+function getActiveGardenSlots() {
+  return getGardenFieldSlots(getActiveGardenFieldNumber());
+}
+
+function setActiveGardenField(fieldNumber) {
+  ensureFarmState();
+  const nextField = Number(fieldNumber) === 2 && !!game.farm.buildings.secondField ? 2 : 1;
+  if (getActiveGardenFieldNumber() === nextField) return;
+  game.farm.activeGardenField = nextField;
+  hideItemContextMenu();
+  hideTooltip();
+  renderGarden();
+  game.isDirty = true;
+}
+
+function renderGardenFieldTabs() {
+  const tabs = document.getElementById('gardenFieldTabs');
+  const status = document.getElementById('gardenFieldStatus');
+  if (!tabs || !status) return;
+  const gardenContainer = document.querySelector('#hubGarden .interactive-container');
+  if (gardenContainer && tabs.parentElement !== gardenContainer) gardenContainer.appendChild(tabs);
+  if (gardenContainer && status.parentElement !== gardenContainer) gardenContainer.appendChild(status);
+  tabs.style.display = 'flex';
+  tabs.style.position = 'absolute';
+  tabs.style.top = '8px';
+  tabs.style.left = '50%';
+  tabs.style.transform = 'translateX(-50%)';
+  tabs.style.zIndex = '22';
+  tabs.style.marginTop = '0';
+  tabs.style.justifyContent = 'center';
+  tabs.style.gap = '6px';
+  tabs.style.flexWrap = 'nowrap';
+  tabs.style.width = 'auto';
+  status.style.display = 'none';
+  status.textContent = '';
+  ensureFarmState();
+  const activeField = getActiveGardenFieldNumber();
+  const secondOwned = !!game.farm.buildings.secondField;
+  const secondMeta = FARM_UPGRADE_CONFIG['Second Field'] || { price: 1000000, levelReq: 50 };
+  const farmingLevel = Number((game.farming && game.farming.level) || 1);
+  const levelReq = Number(secondMeta.levelReq || 0);
+  const field2Hint = secondOwned
+    ? ''
+    : (farmingLevel < levelReq
+      ? `Second Field unlocks at Farming Lvl ${levelReq}.`
+      : `Second Field available in the General Store for ${formatAmount(secondMeta.price)} Gold.`);
+  const buildButtonHtml = (fieldNumber, label, isDisabled, titleText = '') => `
+    <button class="primary" title="${titleText}" ${isDisabled ? 'disabled' : `onclick="setActiveGardenField(${fieldNumber})"`} style="padding:6px 14px; font-size:13px; background:${activeField === fieldNumber ? '#8a5a38' : (isDisabled ? '#555' : '#6b4329')}; opacity:${isDisabled ? '0.65' : '1'}; cursor:${isDisabled ? 'default' : 'pointer'};">${label}</button>`;
+  tabs.innerHTML = buildButtonHtml(1, 'Field 1', false) + buildButtonHtml(2, 'Field 2', !secondOwned, field2Hint);
+}
 // +++ NEW BOUNTY HUNTING CONSTANTS +++
 const BOUNTY_TIER_1_TARGETS = ['Rat', 'Spider', 'Chicken', 'Cow', 'Centipede', 'Goblin', 'Platypus'];
 const BOUNTY_TIER_2_TARGETS = ['Stupid Koala', 'Crazy Owl', 'The Witch']; 
@@ -15931,8 +16318,90 @@ const BOUNTY_TIER_2_ITEM_REQUESTS = [
   { name: 'Cake', qty: 25, reward: 20000 },
   { name: 'Vitality Potion+', qty: 25, reward: 25000 }
 ];
+const LEVEL_1_BOUNTY_ITEM_MISSIONS = [
+  { id: 'venom_reserve', title: 'Venom Reserve', desc: 'The alchemists need a fresh stockpile of venom for field work.', reward: 5000, objectives: [
+    { type: 'item', itemName: 'Venom', reqQty: 100, label: 'Venom delivered' }
+  ] },
+  { id: 'herring_run', title: 'Herring Run', desc: 'Deliver a full batch of cooked herring for the river workers.', reward: 5000, objectives: [
+    { type: 'item', itemName: 'Cooked Herring', reqQty: 100, label: 'Cooked Herring delivered' }
+  ] },
+  { id: 'salt_on_the_trail', title: 'Salt on the Trail', desc: 'Prepare salted trout for a patrol that will be away from camp for days.', reward: 7000, objectives: [
+    { type: 'item', itemName: 'Salt Trout', reqQty: 100, label: 'Salt Trout delivered' }
+  ] }
+];
+const LEVEL_2_BOUNTY_ITEM_MISSIONS = [
+  { id: 'cake_walk', title: 'Cake Walk', desc: 'The quartermaster wants a clean stack of cakes for morale duty.', reward: 20000, minLevel: 10, objectives: [
+    { type: 'item', itemName: 'Cake', reqQty: 25, label: 'Cake delivered' }
+  ] },
+  { id: 'second_wind_plus', title: 'Second Wind+', desc: 'Deliver reinforced potion stock for the next hunting rotation.', reward: 25000, minLevel: 10, objectives: [
+    { type: 'item', itemName: 'Vitality Potion+', reqQty: 25, label: 'Vitality Potion+ delivered' }
+  ] },
+  { id: 'never_go_back', title: 'Never Go Back', desc: 'Bring a Wolf Necklace and a Black Cloth Cape. Once you wear the wild, there is no going back.', reward: 60000, minLevel: 10, objectives: [
+    { type: 'item', itemName: 'Wolf Necklace', reqQty: 1, label: 'Wolf Necklace delivered' },
+    { type: 'item', itemName: 'Cloth Cape', reqQty: 1, dyeColor: 'black', label: 'Black Cloth Cape delivered' }
+  ] },
+  { id: 'blue_and_gold', title: 'Blue and Gold', desc: 'Deliver a Topaz Necklace and a Sapphire Ring for a wealthy client.', reward: 28000, minLevel: 10, objectives: [
+    { type: 'item', itemName: 'Topaz Necklace', reqQty: 1, label: 'Topaz Necklace delivered' },
+    { type: 'item', itemName: 'Sapphire Ring', reqQty: 1, label: 'Sapphire Ring delivered' }
+  ] }
+];
 const BOUNTY_KILL_XP = 8; 
 const BOUNTY_REQ_COUNT = 100;
+const LEVEL_1_BOUNTY_MISSIONS = [
+  { id: 'kill_and_grill', title: 'Kill and Grill', desc: 'Cull chickens for the camp, then cook the haul into hot meals.', reward: 6000, objectives: [
+    { type: 'kill', target: 'Chicken', req: 50, label: 'Chickens defeated' },
+    { type: 'item', itemName: 'Cooked Chicken', reqQty: 50, label: 'Cooked Chicken delivered' }
+  ] },
+  { id: 'copper_crackdown', title: 'Copper Crackdown', desc: 'Crush goblins and smelt their stolen ore into copper bars.', reward: 12000, objectives: [
+    { type: 'kill', target: 'Goblin', req: 100, label: 'Goblins defeated' },
+    { type: 'item', itemName: 'Copper Bar', reqQty: 25, label: 'Copper Bars delivered' }
+  ] },
+  { id: 'hide_to_hire', title: 'Hide to Hire', desc: 'Thin the herd and turn fresh hides into usable leather.', reward: 10000, objectives: [
+    { type: 'kill', target: 'Cow', req: 25, label: 'Cows defeated' },
+    { type: 'item', itemName: 'Leather', reqQty: 25, label: 'Leather delivered' }
+  ] },
+  { id: 'poison_payday', title: 'Poison Payday', desc: 'Hunt centipedes and bottle venom for the local alchemists.', reward: 9000, objectives: [
+    { type: 'kill', target: 'Centipede', req: 25, label: 'Centipedes defeated' },
+    { type: 'item', itemName: 'Venom', reqQty: 25, label: 'Venom delivered' }
+  ] },
+  { id: 'tackle_tax', title: 'Tackle Tax', desc: 'Track Platypus near the water and collect fresh fishing bait for the anglers.', reward: 8000, objectives: [
+    { type: 'kill', target: 'Platypus', req: 25, label: 'Platypus defeated' },
+    { type: 'item', itemName: 'Fishing Bait', reqQty: 50, label: 'Fishing Bait delivered' }
+  ] }
+];
+const LEVEL_2_BOUNTY_MISSIONS = [
+  { id: 'become_the_alpha', title: 'Become the Alpha', desc: 'Bring the wolf pack to heel and claim enough fangs to prove dominance.', reward: 20000, minLevel: 10, objectives: [
+    { type: 'kill', target: 'Wolf', req: 50, label: 'Wolves defeated' },
+    { type: 'item', itemName: 'Wolf Tooth', reqQty: 10, label: 'Wolf Tooth delivered' }
+  ] },
+  { id: 'be_more_crazy', title: 'Be More Crazy', desc: 'Outlast the owl frenzy and haul back a mountain of feathers.', reward: 30000, minLevel: 10, objectives: [
+    { type: 'kill', target: 'Crazy Owl', req: 100, label: 'Crazy Owls defeated' },
+    { type: 'item', itemName: 'Feather', reqQty: 1000, label: 'Feather delivered' }
+  ] },
+  { id: 'witch_work', title: 'Witch Work', desc: 'Break the witch coven and brew enough potion stock for the healers.', reward: 35000, minLevel: 10, objectives: [
+    { type: 'kill', target: 'The Witch', req: 100, label: 'Witches defeated' },
+    { type: 'item', itemName: 'Vitality Potion', reqQty: 25, label: 'Vitality Potion delivered' }
+  ] },
+  { id: 'royal_refund', title: 'Royal Refund', desc: 'Hunt down the King of Thieves and reclaim a wagon of stolen gold ore.', reward: 40000, minLevel: 10, objectives: [
+    { type: 'kill', target: 'King of Thieves', req: 100, label: 'Kings of Thieves defeated' },
+    { type: 'item', itemName: 'Gold Ore', reqQty: 100, label: 'Gold Ore delivered' }
+  ] }
+];
+const SPECIAL_BOUNTY_CONTRACTS = [
+  { id: 'eradicate_rats', title: 'Eradicate the Rat Nest', desc: 'The sewers are crawling again. Thin their numbers and keep the camp safe.', mode: 'kill', target: 'Rat', req: 250, reward: 15000, minLevel: 1, color: 'var(--gold)' },
+  { id: 'beat_your_fear', title: 'Beat Your Fear', desc: 'Face the webs head-on and wipe out a massive spider swarm.', mode: 'kill', target: 'Spider', req: 200, reward: 18000, minLevel: 3, color: '#8fd18f' },
+  { id: 'fragile_freight', title: 'Fragile Freight', desc: 'Deliver 1 Pet Spider Egg without cracking the prize.', mode: 'item', itemName: 'Pet Spider Egg', reqQty: 1, reward: 30000, minLevel: 8, color: '#c893ff' },
+  { id: 'night_courier', title: 'Night Courier', desc: 'Deliver 1 Pet Owl Egg for a collector who pays in silence.', mode: 'item', itemName: 'Pet Owl Egg', reqQty: 1, reward: 35000, minLevel: 10, color: '#7fd3ff' },
+  { id: 'the_sandwich', title: 'The Sandwich', desc: 'Build the perfect road meal: 2 Bread, 1 Cheese, 1 Cooked Beef, and 1 Beer.', mode: 'multi', reward: 18000, minLevel: 10, color: '#d7b46a', objectives: [
+    { type: 'item', itemName: 'Bread', reqQty: 2, label: 'Bread delivered' },
+    { type: 'item', itemName: 'Cheese', reqQty: 1, label: 'Cheese delivered' },
+    { type: 'item', itemName: 'Cooked Beef', reqQty: 1, label: 'Cooked Beef delivered' },
+    { type: 'item', itemName: 'Beer', reqQty: 1, label: 'Beer delivered' }
+  ] },
+  { id: 'break_the_beast', title: 'Break the Beast', desc: 'Track down Madmax and bring back proof of victory.', mode: 'kill', target: 'Madmax', req: 1, reward: 80000, minLevel: 20, color: '#ff6b6b' },
+  { id: 'slay_the_golden_tyrant', title: 'Slay the Golden Tyrant', desc: 'Take down the Golden Dragon and survive the flames.', mode: 'kill', target: 'Golden Dragon', req: 1, reward: 150000, minLevel: 35, color: '#f4c542' },
+  { id: 'get_coco_drunk', title: 'Get Coco Drunk', desc: 'Let the Stupid Koala steal 10 Beer and see how wild the night gets.', mode: 'counter', counterKey: 'koalaBeerStolen', counterLabel: 'Beer stolen by Koala', req: 10, reward: 25000, minLevel: 10, color: '#ffb347' }
+];
 
 function getInventoryQtyByName(itemName) {
   let total = 0;
@@ -15951,9 +16420,22 @@ function getItemCount(itemName) {
 function getActiveBountyProgress(bounty) {
   if (!bounty) return { current: 0, required: 1, isComplete: false };
 
+  if (bounty.mode === 'multi') {
+    const objectives = Array.isArray(bounty.objectives) ? bounty.objectives : [];
+    const required = Math.max(1, objectives.length);
+    const current = objectives.filter(isBountyObjectiveComplete).length;
+    return { current, required, isComplete: current >= required };
+  }
+
   if (bounty.mode === 'item') {
     const current = getInventoryQtyByName(bounty.itemName);
     const required = Math.max(1, Number(bounty.reqQty || 0));
+    return { current, required, isComplete: current >= required };
+  }
+
+  if (bounty.mode === 'counter') {
+    const current = Math.max(0, Number(bounty.progress || 0));
+    const required = Math.max(1, Number(bounty.req || 0));
     return { current, required, isComplete: current >= required };
   }
 
@@ -15962,6 +16444,126 @@ function getActiveBountyProgress(bounty) {
   return { current, required, isComplete: current >= required };
 }
 
+function getLevel1BountyMissionById(missionId) {
+  return [...LEVEL_1_BOUNTY_MISSIONS, ...LEVEL_1_BOUNTY_ITEM_MISSIONS].find(mission => mission.id === missionId) || null;
+}
+
+function getLevel2BountyMissionById(missionId) {
+  return [...LEVEL_2_BOUNTY_MISSIONS, ...LEVEL_2_BOUNTY_ITEM_MISSIONS].find(mission => mission.id === missionId) || null;
+}
+
+function getSpecialBountyContractById(contractId) {
+  return SPECIAL_BOUNTY_CONTRACTS.find(contract => contract.id === contractId) || null;
+}
+
+function matchesBountyItemObjectiveSlot(slot, objective) {
+  if (!slot || !objective || objective.type !== 'item') return false;
+  if (slot.name !== objective.itemName) return false;
+  const requiredDyeColor = normalizeItemDyeColor(objective.dyeColor);
+  if (requiredDyeColor && normalizeItemDyeColor(slot.dyeColor) !== requiredDyeColor) return false;
+  return true;
+}
+
+function getInventoryQtyForBountyObjective(objective) {
+  if (!objective || objective.type !== 'item') return 0;
+  let total = 0;
+  for (const slot of (game.inventory || [])) {
+    if (matchesBountyItemObjectiveSlot(slot, objective)) total += Number(slot.qty || 0);
+  }
+  return total;
+}
+
+function removeItemsForBountyObjective(objective) {
+  if (!objective || objective.type !== 'item') return true;
+  const requiredQty = Math.max(1, Number(objective.reqQty || 0));
+  const requiredDyeColor = normalizeItemDyeColor(objective.dyeColor);
+  if (!requiredDyeColor) return removeItem(objective.itemName, requiredQty);
+
+  let available = 0;
+  for (const slot of (game.inventory || [])) {
+    if (matchesBountyItemObjectiveSlot(slot, objective)) available += Number(slot.qty || 0);
+  }
+  if (available < requiredQty) return false;
+
+  let remaining = requiredQty;
+  for (let i = 0; i < game.inventory.length && remaining > 0; i++) {
+    const slot = game.inventory[i];
+    if (!matchesBountyItemObjectiveSlot(slot, objective)) continue;
+    const take = Math.min(remaining, Number(slot.qty || 0));
+    slot.qty -= take;
+    remaining -= take;
+    if (slot.qty <= 0) game.inventory[i] = null;
+  }
+  game.isDirty = true;
+  return remaining <= 0;
+}
+
+function getBountyObjectiveCurrent(objective) {
+  if (!objective) return 0;
+  if (objective.type === 'item') return getInventoryQtyForBountyObjective(objective);
+  if (objective.type === 'counter') return Math.max(0, Number(objective.progress || 0));
+  return Math.max(0, Number(objective.kills || 0));
+}
+
+function getBountyObjectiveRequired(objective) {
+  if (!objective) return 1;
+  if (objective.type === 'item') return Math.max(1, Number(objective.reqQty || 0));
+  return Math.max(1, Number(objective.req || 0));
+}
+
+function isBountyObjectiveComplete(objective) {
+  return getBountyObjectiveCurrent(objective) >= getBountyObjectiveRequired(objective);
+}
+
+function getBountyObjectiveLabel(objective) {
+  if (!objective) return 'Objective';
+  if (objective.label) return objective.label;
+  if (objective.type === 'item') return objective.itemName;
+  if (objective.type === 'counter') return objective.counterLabel || 'Progress';
+  return `${objective.target} kills`;
+}
+
+function getBountyObjectivesHtml(bounty) {
+  if (!bounty || bounty.mode !== 'multi' || !Array.isArray(bounty.objectives) || bounty.objectives.length === 0) return '';
+  return `<div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">${bounty.objectives.map(objective => {
+    const current = getBountyObjectiveCurrent(objective);
+    const required = getBountyObjectiveRequired(objective);
+    const done = current >= required;
+    return `<div style="background:rgba(0,0,0,0.18); border:1px solid ${done ? '#44aa44' : 'rgba(255,255,255,0.08)'}; border-radius:6px; padding:8px;">
+      <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:6px;">
+        <span style="color:${done ? '#aaffaa' : '#efe3cf'}; font-size:12px;">${getBountyObjectiveLabel(objective)}</span>
+        <span style="color:${done ? '#aaffaa' : '#b89b76'}; font-size:12px; font-weight:bold;">${current} / ${required}</span>
+      </div>
+      <div style="width:100%; height:8px; background:#333; border-radius:999px; overflow:hidden;"><div style="width:${Math.min(100, (current / required) * 100)}%; height:100%; background:${done ? '#44aa44' : 'var(--gold)'};"></div></div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function getBountyMissionTitle(bounty, prefix = 'Current') {
+  if (!bounty) return 'Bounty';
+  if (bounty.title) return bounty.title;
+  if (bounty.mode === 'item') return `${prefix} Request: Deliver ${bounty.reqQty} ${bounty.itemName}`;
+  if (bounty.mode === 'counter') return `${prefix} Contract`;
+  const req = Math.max(1, Number(bounty.req || 0));
+  return `${prefix} Bounty: Kill ${req} ${bounty.target}${req === 1 ? '' : 's'}`;
+}
+
+function getBountyMissionDescription(bounty) {
+  if (!bounty) return '';
+  if (bounty.desc) return bounty.desc;
+  if (bounty.mode === 'item') return `Deliver ${bounty.reqQty} ${bounty.itemName}.`;
+  if (bounty.mode === 'counter') return bounty.counterLabel || 'Complete the special contract objective.';
+  const req = Math.max(1, Number(bounty.req || 0));
+  return `Eliminate ${req} ${bounty.target}${req === 1 ? '' : 's'}.`;
+}
+
+function getBountyProgressLabel(bounty) {
+  if (!bounty) return 'Progress';
+  if (bounty.mode === 'multi') return 'Objectives';
+  if (bounty.mode === 'item') return 'In inventory';
+  if (bounty.mode === 'counter') return bounty.counterLabel || 'Progress';
+  return 'Kills';
+}
 function openTailoringHub() {
   showMainScreen('hubTailoring');
   renderTailoringItems();
@@ -16389,9 +16991,9 @@ async function rescueFarmCat() {
 
   strayCat.visible = false;
 
-  if (game.pets.length >= 6) {
+  if (isPetYardFull()) {
     renderFarmCatOverlay();
-    await showGameAlert('Pet Yard Full', 'The cat ran away. Your Pet Yard is full (6/6). Sell or remove a pet before capturing.');
+    await showGameAlert('Pet Yard Full', `The cat ran away. Your Pet Yard is full (${formatPetYardCapacity()}). Sell or remove a pet before capturing.`);
     return;
   }
 
@@ -16488,6 +17090,9 @@ function updatePetTimers() {
 function renderPetYard(tab) {
     const container = document.getElementById('petYardContent');
     if (!container) return;
+    const previousPetsScrollTop = tab === 'pets'
+      ? Number(container.querySelector('[data-pet-yard-scroll="1"]')?.scrollTop || 0)
+      : 0;
 
     let html = `
         <div class="sub-tabs" style="justify-content: center; margin-bottom: 12px;">
@@ -16497,42 +17102,42 @@ function renderPetYard(tab) {
     `;
 
     if (tab === 'pets') {
-        if (!game.pets || game.pets.length === 0) {
-            html += `<div style="text-align:center; color:#888; padding: 20px;">You have no pets yet. Visit the Hatchery!</div>`;
-        } else {
-            html += `<div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">`;
-                  game.pets.forEach((pet, index) => {
-                const config = PET_DATA[pet.type];
-                const isEquipped = game.equipment.pet && game.equipment.pet.id === pet.id;
-                const hpPercent = (pet.hp / PET_MAX_HP) * 100;
-                const hpColor = pet.hp <= 0 ? '#555' : (pet.hp <= 3 ? '#d22' : '#44aa44');
-                const status = pet.hp <= 0 ? '<div style="color:#ff4d4d; font-size:10px;">(SICK)</div>' : '';
-                          // Bonus Text
-                let bonusText = "No bonus";
-                const petBonusDef = PET_DATA[pet.type];
-                if (petBonusDef && petBonusDef.bonus) {
-                    const bonusData = petBonusDef.bonus(pet.level);
-                    bonusText = formatPetBonusText(pet.type, bonusData);
-                }
-                const secretBonusText = getPetSecretBonusText(pet.type, pet.level);
-                const secretBonusColor = isPetSecretBonusUnlocked() ? '#7fd3ff' : '#888';
-                html += `
+        const pets = Array.isArray(game.pets) ? game.pets : [];
+        const petCards = [];
+
+        html += `<div style="margin-bottom:10px; text-align:center; color:#d7c09b; font-size:12px;">Slots: ${formatPetYardCapacity()}${getPetYardExtraSlots() > 0 ? ` <span style="color:#8fd18f;">(+${getPetYardExtraSlots()} upgrade)</span>` : ''}</div>`;
+
+        pets.forEach((pet) => {
+            const config = PET_DATA[pet.type];
+            const isEquipped = game.equipment.pet && game.equipment.pet.id === pet.id;
+            const hpPercent = (pet.hp / PET_MAX_HP) * 100;
+            const hpColor = pet.hp <= 0 ? '#555' : (pet.hp <= 3 ? '#d22' : '#44aa44');
+            const status = pet.hp <= 0 ? '<div style="color:#ff4d4d; font-size:10px;">(SICK)</div>' : '';
+            let bonusText = 'No bonus';
+            const petBonusDef = PET_DATA[pet.type];
+            if (petBonusDef && petBonusDef.bonus) {
+                const bonusData = petBonusDef.bonus(pet.level);
+                bonusText = formatPetBonusText(pet.type, bonusData);
+            }
+            const secretBonusText = getPetSecretBonusText(pet.type, pet.level);
+            const secretBonusColor = isPetSecretBonusUnlocked() ? '#7fd3ff' : '#888';
+            petCards.push(`
                 <div 
-                    style="background:rgba(0,0,0,0.3); border:2px solid ${isEquipped ? 'var(--gold)' : '#553322'}; border-radius:6px; padding:6px; width:126px; text-align:center;"
+                    style="background:rgba(0,0,0,0.3); border:2px solid ${isEquipped ? 'var(--gold)' : '#553322'}; border-radius:6px; padding:6px; width:150px; min-height:226px; display:flex; flex-direction:column; text-align:center; box-sizing:border-box;"
                     onmouseenter="showPetTooltip(event, '${pet.id}')" 
                     onmouseleave="hideTooltip()"
                 >
                     <div style="font-weight:bold; color:var(--gold); font-size:12px; margin-bottom:2px;">${pet.type} Lvl ${pet.level}</div>
-                                  <img src="images/${config.img}.png" style="width:48px; height:48px; object-fit:contain; opacity:${pet.hp <= 0 ? '0.5' : '1'};">
+                    <img src="images/${config.img}.png" style="width:76px; height:76px; display:block; margin:2px auto 4px auto; object-fit:contain; opacity:${pet.hp <= 0 ? '0.5' : '1'};">
                     ${status}
-                                  <div style="background:#333; width:100%; height:4px; border-radius:2px; margin:4px 0;">
+                    <div style="background:#333; width:100%; height:4px; border-radius:2px; margin:4px 0;">
                         <div style="background:${hpColor}; width:${hpPercent}%; height:100%; border-radius:2px;"></div>
                     </div>
-                                  <div style="font-size:10px; color:#aaa; margin-top:-2px;">${pet.hp}/${PET_MAX_HP} HP</div>
+                    <div style="font-size:10px; color:#aaa; margin-top:-2px;">${pet.hp}/${PET_MAX_HP} HP</div>
                     <div style="font-size:10px; color:#aaffaa; margin:2px 0;">${bonusText}</div>
                     <div style="font-size:9px; color:${secretBonusColor}; margin:1px 0 3px 0;">${secretBonusText}</div>
 
-                    <div style="display:flex; flex-wrap: wrap; gap:4px; justify-content:center; margin-top:6px;">
+                    <div style="display:flex; flex-wrap: wrap; gap:4px; justify-content:center; margin-top:auto; padding-top:6px;">
                         <button class="primary" style="padding:4px 8px; font-size:11px; flex: 1;" onclick="event.stopPropagation(); feedPet('${pet.id}')">Feed</button>
                         <button class="primary" style="padding:4px 8px; font-size:11px; flex: 1; background:${isEquipped ? '#900' : 'var(--accent)'};" onclick="event.stopPropagation(); equipPetFromYard('${pet.id}')">
                             ${isEquipped ? 'Unequip' : 'Equip'}
@@ -16541,10 +17146,19 @@ function renderPetYard(tab) {
                             Sell
                         </button>
                     </div>
-                </div>`;
-            });
-            html += `</div>`;
+                </div>`);
+        });
+
+        const emptySlots = Math.max(0, getPetYardMaxSlots() - pets.length);
+        for (let i = 0; i < emptySlots; i++) {
+            petCards.push(`
+                <div style="background:rgba(0,0,0,0.18); border:2px dashed rgba(212,163,97,0.32); border-radius:6px; padding:6px; width:150px; min-height:278px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; box-sizing:border-box;">
+                    <div style="font-weight:bold; color:#b89b76; font-size:12px;">Empty Slot</div>
+                    <div style="font-size:10px; color:#8f7763; margin-top:4px;">Ready for a new pet</div>
+                </div>`);
         }
+
+        html += `<div data-pet-yard-scroll="1" style="max-height:340px; overflow-y:auto; padding-right:6px;"><div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">${petCards.join('')}</div></div>`;
     } else if (tab === 'hatchery') {
         // Incubator Logic
         const now = Date.now();
@@ -16622,6 +17236,10 @@ function renderPetYard(tab) {
     }
 
     container.innerHTML = html;
+    if (tab === 'pets') {
+        const scrollEl = container.querySelector('[data-pet-yard-scroll="1"]');
+        if (scrollEl) scrollEl.scrollTop = previousPetsScrollTop;
+    }
 }
 
 function startIncubation(eggItemName) {
@@ -16629,8 +17247,8 @@ function startIncubation(eggItemName) {
     const petType = EGG_TYPES[eggItemName];
     
     if (petType) {
-        if (game.pets.length >= 6) {
-            showGameAlert("Pet Yard Full", "Your Pet Yard is full (6/6). Sell or remove a pet before incubating.");
+        if (isPetYardFull()) {
+            showGameAlert("Pet Yard Full", `Your Pet Yard is full (${formatPetYardCapacity()}). Sell or remove a pet before incubating.`);
             return;
         }
 
@@ -16650,8 +17268,8 @@ function hatchEgg() {
     if (!game.incubator.active) return;
 
     // +++ NEW: MAX PET LIMIT +++
-    if (game.pets.length >= 6) {
-        showGameAlert("Pet Yard Full", "Your Pet Yard is full (6/6). Sell or remove a pet before hatching.");
+    if (isPetYardFull()) {
+        showGameAlert("Pet Yard Full", `Your Pet Yard is full (${formatPetYardCapacity()}). Sell or remove a pet before hatching.`);
         return;
     }
 
@@ -16694,6 +17312,37 @@ function refreshEquippedPetBonusesUI() {
     if (typeof updateHPUI === 'function') updateHPUI();
 }
 
+function processPetLevelUps(pet) {
+    if (!pet || pet.level >= 50) return false;
+
+    let levelsGained = 0;
+    let reachedLevel50 = false;
+    while (pet.level < 50) {
+        const xpNeeded = pet.level * 100;
+        if (pet.xp < xpNeeded) break;
+        pet.xp -= xpNeeded;
+        pet.level++;
+        levelsGained++;
+        if (pet.level >= 50) reachedLevel50 = true;
+        showItemPopup(`Pet Lvl Up: ${pet.level}!`, null, 600);
+        playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+    }
+
+    if (levelsGained <= 0) return false;
+
+    const masteryReward = (levelsGained * PET_LEVEL_UP_MASTERY_XP) + (reachedLevel50 ? PET_LEVEL_50_MASTERY_BONUS_XP : 0);
+    if (masteryReward > 0) {
+        addXP('petmastery', masteryReward);
+        if (reachedLevel50) {
+            showItemPopup(`+${masteryReward} Pet Mastery XP`, null, 950);
+        }
+    }
+
+    syncAchievementUnlockState(true);
+    game.isDirty = true;
+    return true;
+}
+
 function feedPet(petId) {
     const pet = game.pets.find(p => p.id === petId);
     if (!pet) return;
@@ -16707,21 +17356,10 @@ function feedPet(petId) {
     const food = config.foodItem;
     const consumeFood = food === 'Corn' ? consumeSiloFood(food, 1) : removeItem(food, 1);
     if (consumeFood) {
-        pet.hp++;
-        addXP('petmastery', PET_FEED_XP);
+        pet.hp++;        addXP('petmastery', PET_FEED_XP);
         if (pet.level < 50) {
             pet.xp += PET_DIRECT_FEED_XP;
-            let petLeveledUp = false;
-            while (pet.level < 50) {
-                const xpNeeded = pet.level * 100;
-                if (pet.xp < xpNeeded) break;
-                pet.xp -= xpNeeded;
-                pet.level++;
-                petLeveledUp = true;
-                showItemPopup(`Pet Lvl Up: ${pet.level}!`, null, 600);
-                playGlobalSound('sounds/soundeffects/levelupsound.mp3');
-            }
-            if (petLeveledUp) syncAchievementUnlockState(true);
+            processPetLevelUps(pet);
         }
         playGlobalSound('sounds/soundeffects/inventorysound.mp3');
         renderPetYard('pets');
@@ -17243,16 +17881,18 @@ function collectMilk() {
 // =================================================================
 
 function renderGarden() {
-  if (!game.farm.garden) game.farm.garden = new Array(16).fill(null);
+  ensureFarmState();
+  const gardenSlots = getActiveGardenSlots();
+  renderGardenFieldTabs();
   renderGardenHandPumpOverlay();
   renderGardenTombOverlay();
   renderGardenTombOfferingPanel();
 
-  game.farm.garden.forEach((slotData, index) => {
+  gardenSlots.forEach((slotData, index) => {
     const poly = document.getElementById(`garden-poly-${index}`);
     const imgEl = document.getElementById(`garden-img-${index}`);
 
-    if (!poly || !imgEl) return; 
+    if (!poly || !imgEl) return;
 
     poly.onmouseleave = hideTooltip;
 
@@ -17273,7 +17913,7 @@ function renderGarden() {
         if (elapsed >= FARM_STAGE_3_TIME) stageIndex = 2;
         else if (elapsed >= FARM_STAGE_2_TIME) stageIndex = 1;
         stageIndex = Math.min(stageIndex, cropDef.stages - 1);
-          const imgName = cropDef.images[stageIndex];
+        const imgName = cropDef.images[stageIndex];
 
         if (!imgEl.hasAttribute('data-base-x')) {
             imgEl.setAttribute('data-base-x', imgEl.getAttribute('x'));
@@ -17282,7 +17922,6 @@ function renderGarden() {
 
         let osX = 0;
         let osY = 0;
-        // FIXED: Now correctly checks cropDef instead of shroomDef
         if (cropDef.stageOffsets && cropDef.stageOffsets[stageIndex]) {
             osX = cropDef.stageOffsets[stageIndex].x;
             osY = cropDef.stageOffsets[stageIndex].y;
@@ -17294,17 +17933,17 @@ function renderGarden() {
         imgEl.setAttribute('y', baseY + osY);
 
         imgEl.style.display = 'block';
-        imgEl.setAttribute('href', `images/${imgName}`); 
-          if (elapsed >= FARM_HARVEST_TIME) {
-           imgEl.style.filter = "drop-shadow(0 0 3px #44aa44)";
+        imgEl.setAttribute('href', `images/${imgName}`);
+        if (elapsed >= FARM_HARVEST_TIME) {
+           imgEl.style.filter = 'drop-shadow(0 0 3px #44aa44)';
         } else {
-           imgEl.style.filter = "none";
+           imgEl.style.filter = 'none';
         }
         poly.onmouseenter = (e) => showCropTooltip(e, index);
       }
     } else {
       if (imgEl) imgEl.style.display = 'none';
-      poly.onmouseenter = (e) => showTooltip(e, "Empty Plot<br><span style='color:#aaffaa'>Click to plant</span>");
+      poly.onmouseenter = (e) => showTooltip(e, 'Empty Plot<br><span style="color:#aaffaa">Click to plant</span>');
     }
   });
 }
@@ -17373,14 +18012,22 @@ function renderCellar() {
   });
 }
 
-function handleCellarSlotClick(e, index) {
+async function handleCellarSlotClick(e, index) {
   hideItemContextMenu();
   const slotData = game.farm.cellar[index];
   if (!slotData) {
+    if (e && e.shiftKey && isFarmUpgradePurchased('Seed Bag')) {
+      if (getInventoryQtyByName('Dirt Shroom') >= DIRT_SHROOM_PLANT_COST) {
+        plantMushroom(index, 'Dirt Shroom');
+      } else {
+        await showGameAlert('Not Enough Mushrooms', `You need ${DIRT_SHROOM_PLANT_COST} Dirt Shrooms to plant.`);
+      }
+      return;
+    }
     showMushroomMenu(e, index);
   } else {
     const elapsed = Date.now() - slotData.waterTime;
-    if (elapsed >= FARM_HARVEST_TIME) { 
+    if (elapsed >= FARM_HARVEST_TIME) {
       harvestMushroom(index);
     }
   }
@@ -17505,35 +18152,73 @@ function showShroomTooltip(e, index) {
         }
     }, 1000);
 }
-
-function handleGardenSlotClick(e, index) {
+const GARDEN_SEED_OPTIONS = [
+  { cropName: 'Grass', seedItemName: 'Grass Seed', cost: GRASS_SEEDS_REQ, img: 'grassseed.png' },
+  { cropName: 'Corn', seedItemName: 'Corn Seed', cost: CORN_SEEDS_REQ, img: 'cornseed.png' },
+  { cropName: 'Wheat', seedItemName: 'Wheat Seed', cost: WHEAT_SEEDS_REQ, img: 'wheatseed.png' }
+];
+function getGardenSeedOption(seedItemName) {
+  return GARDEN_SEED_OPTIONS.find(opt => opt.seedItemName === seedItemName) || null;
+}
+function setSelectedGardenSeed(seedItemName) {
+  ensureFarmState();
+  const option = getGardenSeedOption(seedItemName);
+  if (!option) return;
+  game.farm.selectedSeed = seedItemName;
+  renderFarmUpgradePanels();
+  game.isDirty = true;
+  showWarningPopup(`${seedItemName} selected. Shift + Click an empty plot to plant.`);
+}
+async function tryPlantSelectedSeed(index) {
+  ensureFarmState();
+  const option = getGardenSeedOption(game.farm.selectedSeed);
+  if (!option) {
+    await showGameAlert('No Seed Selected', 'Select a seed from the Seed Bag first.');
+    return false;
+  }
+  const reqLevel = CROPS[option.cropName] ? CROPS[option.cropName].levelReq : 1;
+  const playerLevel = Number((game.farming && game.farming.level) || 1);
+  if (playerLevel < reqLevel) {
+    await showGameAlert('Level Required', `You need Farming Level ${reqLevel} to plant ${option.cropName}.`);
+    return false;
+  }
+  const seedCount = getAvailableSeedCount(option.seedItemName);
+  if (seedCount < option.cost) {
+    await showGameAlert('Not Enough Seeds', `You need ${option.cost} ${option.seedItemName} to plant ${option.cropName}.`);
+    return false;
+  }
+  plantSeed(index, option.cropName, option.seedItemName, option.cost);
+  return true;
+}
+async function handleGardenSlotClick(e, index) {
   hideItemContextMenu();
-  const slotData = game.farm.garden[index];
-
+  const gardenSlots = getActiveGardenSlots();
+  const slotData = gardenSlots[index];
   if (!slotData) {
+    if (e && e.shiftKey && isFarmUpgradePurchased('Seed Bag')) {
+      const planted = await tryPlantSelectedSeed(index);
+      if (planted) return;
+    }
     showPlantingMenu(e, index);
   } else if (!slotData.watered) {
     waterCrop(e, index);
   } else {
-    // +++ NEW: Check 12 Hours using new constant +++
     const elapsed = Date.now() - slotData.waterTime;
-
-    if (elapsed >= FARM_HARVEST_TIME) { 
+    if (elapsed >= FARM_HARVEST_TIME) {
       harvestCrop(index);
     }
   }
 }
-
 function showPlantingMenu(event, index) {
   const menu = document.getElementById('itemContextMenu');
   let menuContent = `<div style="padding:5px 8px; font-weight:bold; color:var(--gold); border-bottom:1px solid #555;">Select Seed</div>`;
   let hasOptions = false;
-
-  const options = [
-      { name: 'Grass', seed: 'Grass Seed', cost: GRASS_SEEDS_REQ, img: 'grassseed.png' },
-      { name: 'Corn', seed: 'Corn Seed', cost: CORN_SEEDS_REQ, img: 'cornseed.png' },
-      { name: 'Wheat', seed: 'Wheat Seed', cost: WHEAT_SEEDS_REQ, img: 'wheatseed.png' }
-  ];
+  const options = GARDEN_SEED_OPTIONS.map(opt => ({
+      name: opt.cropName,
+      seed: opt.seedItemName,
+      cost: opt.cost,
+      img: opt.img
+  }));
 
   // +++ NEW: Sort options by Level Requirement (Lowest first) +++
   options.sort((a, b) => {
@@ -17591,7 +18276,8 @@ function plantSeed(index, cropName, seedItemName, cost) {
     return;
   }
 
-  game.farm.garden[index] = {
+  const gardenSlots = getActiveGardenSlots();
+  gardenSlots[index] = {
     crop: cropName,
     stage: 0,
     watered: false,
@@ -17606,7 +18292,8 @@ function plantSeed(index, cropName, seedItemName, cost) {
 }
 
 function waterCrop(e, index) {
-  const slotData = game.farm.garden[index];
+  const gardenSlots = getActiveGardenSlots();
+  const slotData = gardenSlots[index];
   if (!slotData || slotData.watered) return;
 
   if (!removeItem('Bucket of Water', 1)) {
@@ -17616,24 +18303,21 @@ function waterCrop(e, index) {
   addItem('Empty Bucket', 1);
 
   slotData.watered = true;
-  slotData.waterTime = Date.now(); 
+  slotData.waterTime = Date.now();
 
   playGlobalSound('sounds/soundeffects/wellsoundeffect.mp3');
   renderGarden();
-  
-  // +++ NEW: Instantly switch tooltip to the timer +++
   showCropTooltip(e, index);
 
   game.isDirty = true;
 }
 
 function harvestCrop(index) {
-  const slotData = game.farm.garden[index];
+  const gardenSlots = getActiveGardenSlots();
+  const slotData = gardenSlots[index];
   if (!slotData) return;
 
   const cropDef = CROPS[slotData.crop];
-  
-  // +++ NEW: Check 12 Hour Requirement +++
   const elapsed = Date.now() - slotData.waterTime;
   if (elapsed < FARM_HARVEST_TIME) return;
 
@@ -17657,19 +18341,17 @@ function harvestCrop(index) {
   const baseYieldAmount = Math.floor(Math.random() * (max - min + 1)) + min;
   const yieldAmount = baseYieldAmount * getFarmingHarvestMultiplier();
   addItem(cropDef.productName, yieldAmount);
-  
-  // Award Farming XP
+
   let xp = 0;
   if (slotData.crop === 'Grass') xp = HARVEST_GRASS_XP;
   else if (slotData.crop === 'Corn') xp = HARVEST_CORN_XP;
   else if (slotData.crop === 'Wheat') xp = HARVEST_WHEAT_XP;
-  
+
   addXP('farming', xp);
-  
   showItemPopup(`+${xp} Farming XP`, null, 0);
   showItemPopup(`+${yieldAmount} ${cropDef.productName}`, null, 450);
 
-  game.farm.garden[index] = null;
+  gardenSlots[index] = null;
 
   playGlobalSound('sounds/soundeffects/inventorysound.mp3');
   renderGarden();
@@ -17677,28 +18359,31 @@ function harvestCrop(index) {
 }
 
 function processGardenGrowth(now) {
-  if (!game.farm.garden) return;
-  
+  ensureFarmState();
   const isGardenOpen = document.getElementById('hubGarden').classList.contains('active');
   let needsUpdate = false;
+  const gardenFields = [game.farm.garden];
+  if (game.farm.buildings.secondField && game.farm.garden2) gardenFields.push(game.farm.garden2);
 
-  game.farm.garden.forEach(slot => {
-    if (slot && slot.watered) {
-      const elapsed = now - slot.waterTime;
-      let calculatedStage = 0;
-      // Map time to integer stage for save data consistency
-      if (elapsed >= FARM_STAGE_3_TIME) calculatedStage = 2;
-      else if (elapsed >= FARM_STAGE_2_TIME) calculatedStage = 1;
-      else calculatedStage = 0;
+  gardenFields.forEach(fieldSlots => {
+    if (!fieldSlots) return;
+    fieldSlots.forEach(slot => {
+      if (slot && slot.watered) {
+        const elapsed = now - slot.waterTime;
+        let calculatedStage = 0;
+        if (elapsed >= FARM_STAGE_3_TIME) calculatedStage = 2;
+        else if (elapsed >= FARM_STAGE_2_TIME) calculatedStage = 1;
+        else calculatedStage = 0;
 
-      if (calculatedStage > slot.stage) {
+        if (calculatedStage > slot.stage) {
           slot.stage = calculatedStage;
           needsUpdate = true;
+        }
       }
-    }
+    });
   });
 
-  if (isGardenOpen) {
+  if (isGardenOpen && needsUpdate) {
     renderGarden();
   }
 }
@@ -17842,12 +18527,13 @@ function showCowTooltip(e, index) {
 // +++ NEW: Real-Time Crop Tooltip +++
 function showCropTooltip(e, index) {
     const getTooltipContent = () => {
-        const slot = (game.farm.garden && game.farm.garden[index]) ? game.farm.garden[index] : null;
+        const gardenSlots = getActiveGardenSlots();
+        const slot = (gardenSlots && gardenSlots[index]) ? gardenSlots[index] : null;
         if (!slot || !slot.watered) return null;
 
         const cropDef = CROPS[slot.crop];
         const elapsed = Date.now() - slot.waterTime;
-          let remaining = 0;
+        let remaining = 0;
         let statusText = "";
         let timerColor = "#fff";
 
@@ -17856,15 +18542,12 @@ function showCropTooltip(e, index) {
             timerColor = "#aaffaa";
             remaining = 0;
         } else if (elapsed >= FARM_STAGE_3_TIME) {
-            // Between 10 and 12 hours
             statusText = `<span style="color:#ccc;">Ripening... (Stage 3/3)</span>`;
             remaining = FARM_HARVEST_TIME - elapsed;
         } else if (elapsed >= FARM_STAGE_2_TIME) {
-            // Between 5 and 10 hours
             statusText = `<span style="color:#ccc;">Growing... (Stage 2/3)</span>`;
             remaining = FARM_STAGE_3_TIME - elapsed;
         } else {
-            // Less than 5 hours
             statusText = `<span style="color:#ccc;">Sprouting... (Stage 1/3)</span>`;
             remaining = FARM_STAGE_2_TIME - elapsed;
         }
@@ -17887,11 +18570,9 @@ function showCropTooltip(e, index) {
         `;
     };
 
-    // Initial Show
     const initialContent = getTooltipContent();
     if (initialContent) showTooltip(e, initialContent);
 
-    // Loop
     if (tooltipInterval) clearInterval(tooltipInterval);
     tooltipInterval = setInterval(() => {
         const newContent = getTooltipContent();
@@ -17901,7 +18582,7 @@ function showCropTooltip(e, index) {
         } else {
             hideTooltip();
         }
-    }, 1000); // Update once a second since times are long
+    }, 1000);
 }
 
 // +++ NEW: Chicken Tooltip Logic (Multi-Chicken) +++
@@ -19307,8 +19988,8 @@ function consumeCookingFuelMs(durationMs) {
 
 function getCookingFuelHtml() {
   return `
-    <div id="cookingFuelWrap" style="margin-top:0; width:min(220px, 100%); display:flex; flex-direction:column; align-items:center; gap:6px; flex:0 0 auto;">
-      <div style="font-size:12px; color:#bfa58f;">Fuel (Wood / Coal / Charcoal)</div>
+    <div id="cookingFuelWrap" style="margin-top:0; width:min(220px, 100%); display:flex; flex-direction:column; align-items:center; gap:4px; flex:0 0 auto;">
+      <div style="font-size:11px; color:#bfa58f; white-space:nowrap; line-height:1;">Fuel (Wood/Coal/Charcoal)</div>
       <div style="display:flex; align-items:center; justify-content:center; gap:12px; width:auto; max-width:100%; flex-wrap:wrap;">
         <img id="cookingFuelFlame" src="images/flameoff.png" alt="Cooking flame" draggable="false" style="width:38px; height:38px; image-rendering:auto; user-select:none; pointer-events:none; opacity:0.9;">
         <div id="cookingFuelSlot" class="inv-slot" style="width:var(--slot-size); height:var(--slot-size); margin:0; border:2px solid #8a6b4a; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; border-radius:8px; cursor:pointer;">
@@ -19547,6 +20228,373 @@ function bindCookingFuelSlot() {
   restoreCookingFuelDraggableState();
   updateCookingFuelUI();
 }
+function recipeNeedsAlchemyFuel(recipe) {
+  return !!recipe && recipe.section === 'alchemy' && recipe.requiresFuel !== false;
+}
+function createDefaultAlchemyFuelState() {
+  return { fuelType: null, qty: 0, usedMs: 0 };
+}
+
+function ensureAlchemyFuelState() {
+  if (!game.alchemyFuel || typeof game.alchemyFuel !== 'object') {
+    game.alchemyFuel = createDefaultAlchemyFuelState();
+  }
+
+  let qty = Math.max(0, Math.floor(Number(game.alchemyFuel.qty || 0)));
+  let fuelType = (typeof game.alchemyFuel.fuelType === 'string' && game.alchemyFuel.fuelType.trim())
+    ? game.alchemyFuel.fuelType.trim()
+    : null;
+  let usedMs = Math.max(0, Number(game.alchemyFuel.usedMs || 0));
+
+  const cfg = getAlchemyFuelConfig(fuelType);
+  if (!cfg || qty <= 0) {
+    fuelType = null;
+    qty = 0;
+    usedMs = 0;
+  } else {
+    while (qty > 0 && usedMs >= cfg.durationMs) {
+      usedMs -= cfg.durationMs;
+      qty -= 1;
+    }
+    if (qty <= 0) {
+      fuelType = null;
+      qty = 0;
+      usedMs = 0;
+    }
+  }
+
+  game.alchemyFuel.fuelType = fuelType;
+  game.alchemyFuel.qty = qty;
+  game.alchemyFuel.usedMs = fuelType ? usedMs : 0;
+
+  return game.alchemyFuel;
+}
+
+function getAlchemyFuelConfig(itemName) {
+  if (itemName === 'Softwood') return { name: 'Softwood', img: `${getItemRenderImageName('Softwood')}.png`, durationMs: 1000 };
+  if (itemName === 'Oak') return { name: 'Oak', img: `${getItemRenderImageName('Oak')}.png`, durationMs: 1000 };
+  if (itemName === 'Birch') return { name: 'Birch', img: `${getItemRenderImageName('Birch')}.png`, durationMs: 1000 };
+  if (itemName === 'Maple') return { name: 'Maple', img: `${getItemRenderImageName('Maple')}.png`, durationMs: 3000 };
+  if (itemName === 'Mahogany') return { name: 'Mahogany', img: `${getItemRenderImageName('Mahogany')}.png`, durationMs: 3000 };
+  if (itemName === 'Coal Ore') return { name: 'Coal Ore', img: `${getItemRenderImageName('Coal Ore')}.png`, durationMs: 5000 };
+  if (itemName === 'Charcoal') return { name: 'Charcoal', img: `${getItemRenderImageName('Charcoal')}.png`, durationMs: 4000 };
+  return null;
+}
+function getAlchemyFuelAvailableMs() {
+  ensureAlchemyFuelState();
+  const fuelType = game.alchemyFuel.fuelType;
+  const qty = Math.floor(game.alchemyFuel.qty || 0);
+  const usedMs = Math.max(0, Number(game.alchemyFuel.usedMs || 0));
+  const cfg = getAlchemyFuelConfig(fuelType);
+  if (!cfg || qty <= 0) return 0;
+  return Math.max(0, (qty * cfg.durationMs) - usedMs);
+}
+
+function formatAlchemyFuelTime(ms) {
+  ms = Math.max(0, Number(ms || 0));
+  const totalSec = Math.ceil(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    : `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function getAlchemyFuelDraggableQty() {
+  ensureAlchemyFuelState();
+  const qty = Math.floor(game.alchemyFuel.qty || 0);
+  const usedMs = Math.max(0, Number(game.alchemyFuel.usedMs || 0));
+  return Math.max(0, qty - (usedMs > 0 ? 1 : 0));
+}
+
+function hasAlchemyFuelForDuration(durationMs) {
+  return getAlchemyFuelAvailableMs() >= Math.max(0, Number(durationMs || 0));
+}
+
+function consumeAlchemyFuelMs(durationMs) {
+  ensureAlchemyFuelState();
+
+  const fuelType = game.alchemyFuel.fuelType;
+  const cfg = getAlchemyFuelConfig(fuelType);
+  let qty = Math.floor(game.alchemyFuel.qty || 0);
+  let usedMs = Math.max(0, Number(game.alchemyFuel.usedMs || 0));
+  let remainingMs = Math.max(0, Number(durationMs || 0));
+
+  if (!cfg || qty <= 0) return false;
+  if (remainingMs <= 0) return true;
+
+  while (remainingMs > 0 && qty > 0) {
+    const currentFuelRemainingMs = Math.max(0, cfg.durationMs - usedMs);
+    if (currentFuelRemainingMs <= 0) {
+      qty -= 1;
+      usedMs = 0;
+      continue;
+    }
+
+    if (remainingMs < currentFuelRemainingMs) {
+      usedMs += remainingMs;
+      remainingMs = 0;
+      break;
+    }
+
+    remainingMs -= currentFuelRemainingMs;
+    qty -= 1;
+    usedMs = 0;
+  }
+
+  if (remainingMs > 0) return false;
+
+  game.alchemyFuel.qty = qty;
+  game.alchemyFuel.usedMs = qty > 0 ? usedMs : 0;
+  game.alchemyFuel.fuelType = qty > 0 ? fuelType : null;
+  if (!game.alchemyFuel.fuelType) game.alchemyFuel.qty = 0;
+  game.isDirty = true;
+  return true;
+}
+
+function getAlchemyFuelHtml() {
+  return `
+    <div id="alchemyFuelWrap" style="margin-top:0; width:min(220px, 100%); display:flex; flex-direction:column; align-items:center; gap:4px; flex:0 0 auto;">
+      <div style="font-size:11px; color:#bfa58f; white-space:nowrap; line-height:1;">Fuel (Wood/Coal/Charcoal)</div>
+      <div style="display:flex; align-items:center; justify-content:center; gap:12px; width:auto; max-width:100%; flex-wrap:wrap;">
+        <img id="alchemyFuelFlame" src="images/flameoff.png" alt="Alchemy flame" draggable="false" style="width:38px; height:38px; image-rendering:auto; user-select:none; pointer-events:none; opacity:0.9;">
+        <div id="alchemyFuelSlot" class="inv-slot" style="width:var(--slot-size); height:var(--slot-size); margin:0; border:2px solid #8a6b4a; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; border-radius:8px; cursor:pointer;">
+          <div id="alchemyFuelBody" style="color:#888; font-size:12px; text-align:center; pointer-events:none; user-select:none;">Drop Fuel</div>
+        </div>
+      </div>
+      <div id="alchemyFuelStatus" style="font-size:11px; color:#9f9f9f; text-align:center;">0:00</div>
+    </div>
+  `;
+}
+
+function updateAlchemyFuelUI() {
+  ensureAlchemyFuelState();
+
+  const body = document.getElementById('alchemyFuelBody');
+  const slot = document.getElementById('alchemyFuelSlot');
+  const flame = document.getElementById('alchemyFuelFlame');
+  const status = document.getElementById('alchemyFuelStatus');
+  if (!body || !slot) return;
+
+  const fuelType = game.alchemyFuel.fuelType;
+  const qty = Math.floor(game.alchemyFuel.qty || 0);
+  const cfg = getAlchemyFuelConfig(fuelType);
+  const heatLeftMs = getAlchemyFuelAvailableMs();
+  const draggableQty = getAlchemyFuelDraggableQty();
+  const isBurning = !!cfg && heatLeftMs > 0 && !!game.alchemyActive;
+
+  slot.draggable = draggableQty > 0;
+
+  if (fuelType && qty > 0 && cfg) {
+    body.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; pointer-events:none;"><img src="images/${cfg.img}" draggable="false" style="pointer-events:none;"><div class="inv-amount" style="pointer-events:none;">${formatAmount(qty)}</div></div>`;
+    slot.style.opacity = '1';
+  } else {
+    body.innerHTML = `<div style="color:#888; font-size:12px; text-align:center;">Drop Fuel</div>`;
+    slot.style.opacity = '0.9';
+  }
+
+  if (flame) {
+    flame.src = isBurning ? 'images/flame.gif' : 'images/flameoff.png';
+    flame.style.opacity = isBurning ? '1' : (qty > 0 ? '0.95' : '0.75');
+  }
+
+  if (status) {
+    if (!cfg || qty <= 0 || heatLeftMs <= 0) {
+      status.textContent = '0:00';
+    } else {
+      status.textContent = formatAlchemyFuelTime(heatLeftMs);
+    }
+  }
+}
+
+async function collectAlchemyFuel() {
+  ensureAlchemyFuelState();
+
+  if (game.alchemyActive) {
+    await showGameAlert('Alchemy Active', 'Stop brewing before collecting fuel.');
+    return;
+  }
+
+  const fuelType = game.alchemyFuel.fuelType;
+  const qty = Math.floor(game.alchemyFuel.qty || 0);
+  const usedMs = Math.max(0, Number(game.alchemyFuel.usedMs || 0));
+  if (!fuelType || qty <= 0) return;
+
+  const hasPartialFuel = usedMs > 0;
+  const returnQty = Math.max(0, qty - (hasPartialFuel ? 1 : 0));
+
+  if (returnQty > 0 && !canReceiveItem(fuelType)) {
+    await showGameAlert('Inventory Full', `Make room to collect ${fuelType}.`);
+    return;
+  }
+
+  if (returnQty > 0) addItem(fuelType, returnQty);
+  game.alchemyFuel = createDefaultAlchemyFuelState();
+  game.isDirty = true;
+  renderInventoryGrid();
+  updateAlchemyFuelUI();
+  if (typeof window.savePlayerData === 'function') savePlayerData();
+
+  if (hasPartialFuel) {
+    const message = returnQty > 0
+      ? `Collected ${formatAmount(returnQty)} ${fuelType}. 1 partially-burned ${fuelType} was lost.`
+      : `The remaining ${fuelType} was partially burned and could not be collected.`;
+    await showGameAlert('Fuel Collected', message);
+  }
+}
+
+async function handleAlchemyFuelDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const slot = document.getElementById('alchemyFuelSlot');
+  if (slot) slot.classList.remove('drag-over');
+
+  ensureAlchemyFuelState();
+
+
+  let dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+  if ((dragIndex === null || dragIndex < 0) && draggedBankItem && draggedBankItem.source !== 'bank' && typeof draggedBankItem.fromIndex === 'number') {
+    dragIndex = draggedBankItem.fromIndex;
+  }
+  if ((dragIndex === null || dragIndex < 0) && e.dataTransfer) {
+    const dragPayload = e.dataTransfer.getData('text/plain') || '';
+    const match = dragPayload.match(/^inventory_slot:(\d+)$/);
+    if (match) dragIndex = parseInt(match[1], 10);
+  }
+  if (dragIndex === null || dragIndex < 0) return;
+
+  const src = game.inventory[dragIndex]
+    || ((draggedBankItem && draggedBankItem.source !== 'bank' && draggedBankItem.fromIndex === dragIndex) ? draggedBankItem.item : null)
+    || window.__lastInventoryDragSnapshot?.item
+    || null;
+  const fuelCfg = src ? getAlchemyFuelConfig(src.name) : null;
+
+  if (!src || !fuelCfg || src.qty < 1) {
+    await showGameAlert('Invalid Fuel', 'Only Softwood, Oak, Birch, Maple, Mahogany, Coal Ore or Charcoal can be placed in the Alchemy fuel slot.');
+    return;
+  }
+
+  const currentFuelType = game.alchemyFuel.fuelType;
+  const currentFuelQty = Math.max(0, Math.floor(game.alchemyFuel.qty || 0));
+  const currentFuelUsedMs = Math.max(0, Number(game.alchemyFuel.usedMs || 0));
+  const isSwappingFuelType = !!currentFuelType && currentFuelType !== src.name;
+  const returnQty = isSwappingFuelType ? Math.max(0, currentFuelQty - (currentFuelUsedMs > 0 ? 1 : 0)) : 0;
+
+  if (isSwappingFuelType && returnQty > 0 && !canReceiveItem(currentFuelType)) {
+    await showGameAlert('Inventory Full', `Make room to swap out ${currentFuelType}.`);
+    return;
+  }
+
+  const amount = Math.floor(src.qty || 0);
+  if (amount <= 0) return;
+  if (!removeItem(src.name, amount, Number(src.enchantLevel || 0), src.dyeColor || null)) return;
+
+  if (isSwappingFuelType) {
+    if (returnQty > 0) addItem(currentFuelType, returnQty);
+    game.alchemyFuel = createDefaultAlchemyFuelState();
+  }
+
+  game.alchemyFuel.fuelType = src.name;
+  game.alchemyFuel.qty = Math.floor(game.alchemyFuel.qty || 0) + amount;
+  game.isDirty = true;
+
+  const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
+  if (draggingEl) draggingEl.classList.remove('dragging');
+  window.__draggedInventoryIndex = null;
+  window.__lastInventoryDragSnapshot = null;
+  window.__alchemyFuelDraggedQty = 0;
+  window.__alchemyFuelDraggedType = null;
+  draggedBankItem = null;
+  game.isDragging = false;
+
+  renderInventoryGrid();
+  updateAlchemyFuelUI();
+  if (typeof window.savePlayerData === 'function') savePlayerData();
+}
+
+function clearAlchemyFuelDragState() {
+  window.__alchemyFuelDraggedQty = 0;
+  window.__alchemyFuelDraggedType = null;
+  game.isDragging = false;
+  const slot = document.getElementById('alchemyFuelSlot');
+  if (slot) slot.classList.remove('drag-over');
+}
+
+function handleAlchemyFuelDragStart(e) {
+  ensureAlchemyFuelState();
+
+
+  const fuelType = game.alchemyFuel.fuelType;
+  const qty = getAlchemyFuelDraggableQty();
+  if (!fuelType || qty <= 0) {
+    e.preventDefault();
+    return;
+  }
+
+  window.__alchemyFuelDraggedQty = qty;
+  window.__alchemyFuelDraggedType = fuelType;
+
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', 'cooking_fuel');
+  }
+
+  game.isDragging = true;
+}
+
+function bindAlchemyFuelSlot() {
+  const slot = document.getElementById('alchemyFuelSlot');
+  if (!slot) return;
+
+  const restoreCookingFuelDraggableState = () => {
+    const draggableQty = getAlchemyFuelDraggableQty();
+    slot.draggable = draggableQty > 0;
+  };
+
+  if (slot.dataset.bound === '1') {
+    restoreCookingFuelDraggableState();
+    updateAlchemyFuelUI();
+    return;
+  }
+
+  const updateFuelDropHoverState = (e) => {
+    const dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+    const draggedItem = (dragIndex !== null && dragIndex >= 0) ? game.inventory[dragIndex] : (window.__lastInventoryDragSnapshot?.item || null);
+    const fuelCfg = draggedItem ? getAlchemyFuelConfig(draggedItem.name) : null;
+    const isValidFuelDrag = !!fuelCfg && draggedItem.qty > 0;
+
+    if (isValidFuelDrag) {
+      e.preventDefault();
+      slot.draggable = false;
+      slot.classList.add('drag-over');
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    } else {
+      slot.classList.remove('drag-over');
+      restoreCookingFuelDraggableState();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'none';
+    }
+  };
+
+  slot.addEventListener('dragenter', updateFuelDropHoverState);
+  slot.addEventListener('dragover', updateFuelDropHoverState);
+  slot.addEventListener('dragleave', () => {
+    slot.classList.remove('drag-over');
+    restoreCookingFuelDraggableState();
+  });
+  slot.addEventListener('drop', (e) => {
+    restoreCookingFuelDraggableState();
+    handleAlchemyFuelDrop(e);
+  });
+  slot.addEventListener('click', collectAlchemyFuel);
+  slot.addEventListener('dragstart', handleAlchemyFuelDragStart);
+  slot.addEventListener('dragend', clearAlchemyFuelDragState);
+  slot.dataset.bound = '1';
+
+  restoreCookingFuelDraggableState();
+  updateAlchemyFuelUI();
+}
 async function handleWellClick() {
    dismissFarmCat();
    // Initialize if missing
@@ -19776,66 +20824,183 @@ function renderBountyInterface() {
     const isComplete = progress.isComplete;
     const statusColor = isComplete ? '#44aa44' : '#efe3cf';
     const statusText = isComplete ? 'MISSION COMPLETE' : 'IN PROGRESS';
-    const missionTitle = (b.mode === 'item')
-      ? `Current Request: Deliver ${b.reqQty} ${b.itemName}`
-      : `Current Bounty: Kill ${b.target}s`;
+    const missionTitle = getBountyMissionTitle(b, 'Current');
+    const missionDesc = getBountyMissionDescription(b);
+    const progressLabel = getBountyProgressLabel(b);
+    const objectivesHtml = getBountyObjectivesHtml(b);
 
     const bountyHtml = `
-      <div style="width:100%; max-width:420px; background: rgba(0,0,0,0.2); padding: 14px 15px; border-radius: 8px; border: 2px solid ${isComplete ? '#44aa44' : 'var(--accent)'};">
-        <h3 style="color: var(--gold); margin-top: 0;">${missionTitle}</h3>
+      <div style="width:100%; max-width:460px; margin:0 auto; background: rgba(0,0,0,0.2); padding: 14px 15px; border-radius: 8px; border: 2px solid ${isComplete ? '#44aa44' : 'var(--accent)'}; box-sizing:border-box;">
+        <h3 style="color: var(--gold); margin-top: 0; margin-bottom: 6px;">${missionTitle}</h3>
+        <div style="font-size:12px; color:#ccc; margin-bottom: 10px;">${missionDesc}</div>
         <div style="color: ${statusColor}; font-weight: bold; margin-bottom: 10px;">${statusText}</div>
-        <div style="margin-bottom: 10px;">
-           Progress: <span style="color: #fff;">${progress.current} / ${progress.required}</span>
-        </div>
+        <div style="margin-bottom: 10px;">${progressLabel}: <span style="color: #fff;">${progress.current} / ${progress.required}</span></div>
         <div style="width: 100%; height: 10px; background: #333; border-radius: 5px; overflow: hidden;">
            <div style="width: ${Math.min(100, (progress.current / progress.required) * 100)}%; height: 100%; background: var(--gold);"></div>
         </div>
-        <div style="margin-top: 15px; font-size: 14px; color: #ccc;">
-           Reward: ${b.reward} Gold
-        </div>
-        ${isComplete ? 
-          `<button onclick="claimBountyReward()" class="primary" style="margin-top: 15px; background: #44aa44; width: 100%;">Claim Reward</button>` : 
+        ${objectivesHtml}
+        <div style="margin-top: 15px; font-size: 14px; color: #ccc;">Reward: ${formatAmount(Number(b.reward || 0))} Gold</div>
+        ${isComplete ?
+          `<button onclick="claimBountyReward()" class="primary" style="margin-top: 15px; background: #44aa44; width: 100%;">Claim Reward</button>` :
           `<div style="margin-top: 15px; font-style: italic; color: #888;">Return here when the job is done.</div>`
         }
         <button onclick="cancelActiveBounty()" class="primary" style="margin-top: 8px; background:#7a2d2d; width: 100%;">Cancel Bounty</button>
       </div>
     `;
     container.innerHTML = bountyHtml;
+    return;
+  }
 
-  } else {
-    const bhLvl = game.bountyhunting.level;
-    const isLvl2Locked = bhLvl < 10;
-
-    container.innerHTML = `
-      <div onclick="assignBounty(1, 'kill')" class="quest-line-card" style="text-align: left; width:100%; max-width:420px; padding: 14px 15px;">
-        <div style="font-size: 18px; font-weight: bold; color: var(--gold);">Level 1 Bounties</div>
-        <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Rats, Spiders, Chickens, Goblins, etc.</div>
-        <div style="margin-top: 8px; color: #aaffaa;">Reward: 2500 Gold</div>
+  const bhLvl = Number(game.bountyhunting.level || 1);
+  const level1Cards = LEVEL_1_BOUNTY_MISSIONS.map(mission => `
+      <div onclick="assignLevel1BountyMission('${mission.id}')" class="quest-line-card" style="text-align:left; width:100%; max-width:420px; padding:12px 14px; box-sizing:border-box;">
+        <div style="font-size:17px; font-weight:bold; color:var(--gold);">${mission.title}</div>
+        <div style="font-size:12px; color:#ccc; margin-top:4px;">${mission.desc}</div>
+        <div style="margin-top:8px; color:#aaffaa;">Reward: ${formatAmount(mission.reward)} Gold</div>
       </div>
-
-      <div onclick="assignBounty(1, 'item')" class="quest-line-card" style="text-align: left; width:100%; max-width:420px; padding: 14px 15px;">
-        <div style="font-size: 18px; font-weight: bold; color: var(--gold);">Level 1 Item Request</div>
-        <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Deliver 100 Venom or 100 Cooked Herring.</div>
-        <div style="margin-top: 8px; color: #aaffaa;">Reward: 5000 Gold</div>
+    `).join('');
+  const level1ItemCards = LEVEL_1_BOUNTY_ITEM_MISSIONS.map(mission => `
+      <div onclick="assignLevel1BountyMission('${mission.id}')" class="quest-line-card" style="text-align:left; width:100%; max-width:420px; padding:12px 14px; box-sizing:border-box;">
+        <div style="font-size:17px; font-weight:bold; color:#d7c27a;">${mission.title}</div>
+        <div style="font-size:12px; color:#ccc; margin-top:4px;">${mission.desc}</div>
+        <div style="margin-top:8px; color:#aaffaa;">Reward: ${formatAmount(mission.reward)} Gold</div>
       </div>
-
-      <div onclick="assignBounty(2, 'kill')" class="quest-line-card ${isLvl2Locked ? 'locked-item' : ''}" style="text-align: left; width:100%; max-width:420px; padding: 14px 15px;">
-        <div style="font-size: 18px; font-weight: bold; color: ${isLvl2Locked ? '#888' : '#ff4d4d'};">Level 2 Bounties</div>
-        <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Elite targets like Stupid Koalas, Crazy Owls, and The Witch.</div>
-        <div style="margin-top: 8px; color: ${isLvl2Locked ? '#ff8888' : '#aaffaa'};">
-            ${isLvl2Locked ? 'Requires Bounty Hunting Lvl 10' : 'Reward: 10,000 - 15,000 Gold'}
-        </div>
-      </div>
-
-      <div onclick="assignBounty(2, 'item')" class="quest-line-card ${isLvl2Locked ? 'locked-item' : ''}" style="text-align: left; width:100%; max-width:420px; padding: 14px 15px;">
-        <div style="font-size: 18px; font-weight: bold; color: ${isLvl2Locked ? '#888' : '#ff4d4d'};">Level 2 Item Request</div>
-        <div style="font-size: 12px; color: #ccc; margin-top: 4px;">Deliver 25 Cake or 25 Vitality Potion+.</div>
-        <div style="margin-top: 8px; color: ${isLvl2Locked ? '#ff8888' : '#aaffaa'};">
-            ${isLvl2Locked ? 'Requires Bounty Hunting Lvl 10' : 'Reward: 20,000 - 25,000 Gold'}
-        </div>
+    `).join('');
+  const level2Cards = LEVEL_2_BOUNTY_MISSIONS.map(mission => {
+    const locked = bhLvl < Number(mission.minLevel || 10);
+    return `
+      <div onclick="${locked ? '' : `assignLevel2BountyMission('${mission.id}')`}" class="quest-line-card ${locked ? 'locked-item' : ''}" style="text-align:left; width:100%; max-width:420px; padding:12px 14px; box-sizing:border-box; cursor:${locked ? 'not-allowed' : 'pointer'};">
+        <div style="font-size:17px; font-weight:bold; color:${locked ? '#888' : '#ff4d4d'};">${mission.title}</div>
+        <div style="font-size:12px; color:#ccc; margin-top:4px;">${mission.desc}</div>
+        <div style="margin-top:8px; color:${locked ? '#ff8888' : '#aaffaa'};">${locked ? `Requires Bounty Hunting Lvl ${mission.minLevel || 10}` : `Reward: ${formatAmount(mission.reward)} Gold`}</div>
       </div>
     `;
+  }).join('');
+  const level2ItemCards = LEVEL_2_BOUNTY_ITEM_MISSIONS.map(mission => {
+    const locked = bhLvl < Number(mission.minLevel || 10);
+    return `
+      <div onclick="${locked ? '' : `assignLevel2BountyMission('${mission.id}')`}" class="quest-line-card ${locked ? 'locked-item' : ''}" style="text-align:left; width:100%; max-width:420px; padding:12px 14px; box-sizing:border-box; cursor:${locked ? 'not-allowed' : 'pointer'};">
+        <div style="font-size:17px; font-weight:bold; color:${locked ? '#888' : '#d7c27a'};">${mission.title}</div>
+        <div style="font-size:12px; color:#ccc; margin-top:4px;">${mission.desc}</div>
+        <div style="margin-top:8px; color:${locked ? '#ff8888' : '#aaffaa'};">${locked ? `Requires Bounty Hunting Lvl ${mission.minLevel || 10}` : `Reward: ${formatAmount(mission.reward)} Gold`}</div>
+      </div>
+    `;
+  }).join('');
+  const specialCards = SPECIAL_BOUNTY_CONTRACTS.map(contract => {
+    const contractStatus = getSpecialContractDailyStatus(contract.id);
+    const levelLocked = bhLvl < Number(contract.minLevel || 1);
+    const dailyLocked = contractStatus.hasAcceptedToday;
+    const locked = levelLocked || dailyLocked;
+    const footerText = levelLocked
+      ? `Requires Bounty Hunting Lvl ${contract.minLevel}`
+      : (dailyLocked ? 'This contract was already taken today' : `Reward: ${formatAmount(contract.reward)} Gold`);
+    return `
+      <div onclick="${locked ? '' : `assignSpecialBounty('${contract.id}')`}" class="quest-line-card ${locked ? 'locked-item' : ''}" style="text-align:left; width:100%; max-width:420px; padding:12px 14px; box-sizing:border-box; cursor:${locked ? 'not-allowed' : 'pointer'};">
+        <div style="font-size:17px; font-weight:bold; color:${locked ? '#888' : contract.color};">${contract.title}</div>
+        <div style="font-size:12px; color:#ccc; margin-top:4px;">${contract.desc}</div>
+        <div style="margin-top:8px; color:${levelLocked || dailyLocked ? '#ff8888' : '#aaffaa'};">${footerText}</div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="width:100%; max-width:460px; margin:0 auto; display:flex; flex-direction:column; gap:10px; min-height:0;">
+      <div style="color:var(--gold); font-weight:bold;">Level 1 Missions</div>
+      ${level1Cards}
+
+      <div style="margin-top:6px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); color:var(--gold); font-weight:bold;">Level 1 Deliveries</div>
+      ${level1ItemCards}
+
+      <div style="margin-top:6px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); color:var(--gold); font-weight:bold;">Level 2 Missions</div>
+      ${level2Cards}
+
+      <div style="margin-top:6px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); color:var(--gold); font-weight:bold;">Level 2 Deliveries</div>
+      ${level2ItemCards}
+
+      <div style="margin-top:6px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); color:var(--gold); font-weight:bold;">Special Contracts</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${specialCards}
+      </div>
+    </div>
+  `;
+}
+async function assignLevel1BountyMission(missionId) {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Error", "Session not active.");
+    return;
   }
+
+  const mission = getLevel1BountyMissionById(missionId);
+  if (!mission) return;
+
+  game.activeBounty = {
+    missionId: mission.id,
+    title: mission.title,
+    desc: mission.desc,
+    mode: 'multi',
+    tier: 1,
+    reward: Number(mission.reward || 0),
+    objectives: (mission.objectives || []).map(objective => ({
+      type: objective.type,
+      target: objective.target || null,
+      req: Number(objective.req || 0),
+      kills: 0,
+      itemName: objective.itemName || null,
+      reqQty: Number(objective.reqQty || 0),
+      counterKey: objective.counterKey || null,
+      counterLabel: objective.counterLabel || null,
+      progress: 0,
+      label: objective.label || null,
+      dyeColor: objective.dyeColor || null
+    }))
+  };
+
+  await showGameAlert("Mission Accepted", `${mission.title}: ${mission.desc}`);
+  if (typeof renderBountyDetails === 'function') renderBountyDetails();
+  game.isDirty = true;
+  renderBountyInterface();
+}
+
+async function assignLevel2BountyMission(missionId) {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Error", "Session not active.");
+    return;
+  }
+
+  const mission = getLevel2BountyMissionById(missionId);
+  if (!mission) return;
+
+  if (game.bountyhunting.level < Number(mission.minLevel || 10)) {
+    await showGameAlert("Level Required", `You need Bounty Hunting Level ${mission.minLevel || 10} for this mission.`);
+    return;
+  }
+
+  game.activeBounty = {
+    missionId: mission.id,
+    title: mission.title,
+    desc: mission.desc,
+    mode: 'multi',
+    tier: 2,
+    reward: Number(mission.reward || 0),
+    objectives: (mission.objectives || []).map(objective => ({
+      type: objective.type,
+      target: objective.target || null,
+      req: Number(objective.req || 0),
+      kills: 0,
+      itemName: objective.itemName || null,
+      reqQty: Number(objective.reqQty || 0),
+      counterKey: objective.counterKey || null,
+      counterLabel: objective.counterLabel || null,
+      progress: 0,
+      label: objective.label || null,
+      dyeColor: objective.dyeColor || null
+    }))
+  };
+
+  await showGameAlert("Mission Accepted", `${mission.title}: ${mission.desc}`);
+  if (typeof renderBountyDetails === 'function') renderBountyDetails();
+  game.isDirty = true;
+  renderBountyInterface();
 }
 
 async function assignBounty(tier, mode = 'kill') {
@@ -19890,6 +21055,76 @@ async function assignBounty(tier, mode = 'kill') {
   renderBountyInterface();
 }
 
+async function assignSpecialBounty(contractId) {
+  if (!game.isSessionActive) {
+    await showGameAlert("Session Error", "Session not active.");
+    return;
+  }
+
+  const contract = getSpecialBountyContractById(contractId);
+  if (!contract) return;
+
+  const specialStatus = getSpecialContractDailyStatus(contract.id);
+  if (specialStatus.hasAcceptedToday) {
+    await showGameAlert("Daily Limit", "You can only accept this special contract once per day. Come back tomorrow for this one again.");
+    return;
+  }
+
+  if (game.bountyhunting.level < Number(contract.minLevel || 1)) {
+    await showGameAlert("Level Required", `You need Bounty Hunting Level ${contract.minLevel} for this contract.`);
+    return;
+  }
+
+  ensureSpecialContractState();
+  game.specialContractState.acceptedDaysByContract[contract.id] = specialStatus.todayKey;
+
+  game.activeBounty = {
+    specialId: contract.id,
+    title: contract.title,
+    desc: contract.desc,
+    mode: contract.mode,
+    tier: 3,
+    reward: Number(contract.reward || 0),
+    target: contract.target || null,
+    req: Number(contract.req || 0),
+    kills: 0,
+    itemName: contract.itemName || null,
+    reqQty: Number(contract.reqQty || 0),
+    counterKey: contract.counterKey || null,
+    counterLabel: contract.counterLabel || null,
+    progress: 0,
+    objectives: Array.isArray(contract.objectives) ? contract.objectives.map(objective => ({
+      type: objective.type,
+      target: objective.target || null,
+      req: Number(objective.req || 0),
+      kills: 0,
+      itemName: objective.itemName || null,
+      reqQty: Number(objective.reqQty || 0),
+      counterKey: objective.counterKey || null,
+      counterLabel: objective.counterLabel || null,
+      progress: 0,
+      label: objective.label || null,
+      dyeColor: objective.dyeColor || null
+    })) : null
+  };
+
+  const missionText = contract.mode === 'item'
+    ? `Deliver ${contract.reqQty} ${contract.itemName}.`
+    : (contract.mode === 'counter'
+      ? contract.desc
+      : (contract.mode === 'multi'
+        ? contract.desc
+        : `Kill ${contract.req} ${contract.target}${Number(contract.req || 0) === 1 ? '' : 's'}.`));
+
+  await showGameAlert("Special Contract Accepted", `${contract.title}: ${missionText}`);
+
+  if (typeof renderBountyDetails === 'function') {
+    renderBountyDetails();
+  }
+
+  game.isDirty = true;
+  renderBountyInterface();
+}
 async function claimBountyReward() {
   const b = game.activeBounty;
   if (!b) return;
@@ -19901,6 +21136,18 @@ async function claimBountyReward() {
     if (!removeItem(b.itemName, Number(b.reqQty || 0))) {
       await showGameAlert("Missing Items", `You no longer have enough ${b.itemName}.`);
       return;
+    }
+  }
+
+  if (b.mode === 'multi') {
+    for (const objective of (b.objectives || [])) {
+      if (objective && objective.type === 'item') {
+        if (!removeItemsForBountyObjective(objective)) {
+          const objectiveLabel = objective.label || objective.itemName;
+          await showGameAlert("Missing Items", `You no longer have enough ${objectiveLabel}.`);
+          return;
+        }
+      }
     }
   }
 
@@ -19918,8 +21165,6 @@ async function claimBountyReward() {
   renderBountyInterface();
   await showGameAlert("Bounty Claimed", `You received ${formatAmount(rewardAmount)} Gold.`);
 }
-
-
 async function cancelActiveBounty() {
   if (!game.activeBounty) return;
 
@@ -19936,7 +21181,29 @@ async function cancelActiveBounty() {
 }
 
 function updateBountyProgress(enemyName, delay = 0) {
-  if (!game.activeBounty || game.activeBounty.mode === 'item') return;
+  if (!game.activeBounty || game.activeBounty.mode === 'item' || game.activeBounty.mode === 'counter') return;
+
+  if (game.activeBounty.mode === 'multi') {
+    let didProgress = false;
+    (game.activeBounty.objectives || []).forEach(objective => {
+      if (!objective || objective.type !== 'kill' || objective.target !== enemyName) return;
+      if (Number(objective.kills || 0) >= getBountyObjectiveRequired(objective)) return;
+      objective.kills = Math.max(0, Number(objective.kills || 0)) + 1;
+      didProgress = true;
+      addXP('bountyhunting', BOUNTY_KILL_XP, parseInt(delay));
+    });
+
+    if (didProgress) {
+      if (typeof window.renderBountyDetails === 'function') {
+          window.renderBountyDetails();
+      }
+      if (document.getElementById('hubHuntingBoard')?.classList.contains('active')) {
+          renderBountyInterface();
+      }
+      game.isDirty = true;
+    }
+    return;
+  }
 
   if (game.activeBounty.target === enemyName) {
     if (game.activeBounty.kills < game.activeBounty.req) {
@@ -19946,10 +21213,43 @@ function updateBountyProgress(enemyName, delay = 0) {
       if (typeof window.renderBountyDetails === 'function') {
           window.renderBountyDetails();
       }
+      if (document.getElementById('hubHuntingBoard')?.classList.contains('active')) {
+          renderBountyInterface();
+      }
 
       game.isDirty = true;
     }
   }
+}
+
+function incrementActiveBountyCounter(counterKey, amount = 1) {
+  if (!game.activeBounty) return;
+
+  if (game.activeBounty.mode === 'multi') {
+    let didProgress = false;
+    (game.activeBounty.objectives || []).forEach(objective => {
+      if (!objective || objective.type !== 'counter' || objective.counterKey !== counterKey) return;
+      const required = getBountyObjectiveRequired(objective);
+      const nextValue = Math.max(0, Number(objective.progress || 0)) + Math.max(1, Number(amount || 1));
+      objective.progress = Math.min(required, nextValue);
+      didProgress = true;
+    });
+    if (!didProgress) return;
+  } else {
+    if (game.activeBounty.mode !== 'counter' || game.activeBounty.counterKey !== counterKey) return;
+    const required = Math.max(1, Number(game.activeBounty.req || 0));
+    const nextValue = Math.max(0, Number(game.activeBounty.progress || 0)) + Math.max(1, Number(amount || 1));
+    game.activeBounty.progress = Math.min(required, nextValue);
+  }
+
+  if (typeof window.renderBountyDetails === 'function') {
+      window.renderBountyDetails();
+  }
+  if (document.getElementById('hubHuntingBoard')?.classList.contains('active')) {
+      renderBountyInterface();
+  }
+
+  game.isDirty = true;
 }
 function getMiningResourceMultiplier() {
   const lvl = Number((game && game.mining && game.mining.level) || 1);
@@ -20842,31 +22142,33 @@ function renderBountyDetails() {
     const isComplete = progress.isComplete;
     const statusColor = isComplete ? '#44aa44' : 'var(--gold)';
     const statusText = isComplete ? 'MISSION COMPLETE' : 'IN PROGRESS';
-    const missionTitle = (b.mode === 'item')
-      ? `Active Request: Deliver ${b.reqQty} ${b.itemName}`
-      : `Active Bounty: Kill ${b.target}s`;
+    const missionTitle = getBountyMissionTitle(b, 'Active');
+    const missionDesc = getBountyMissionDescription(b);
+    const progressLabel = getBountyProgressLabel(b);
+    const objectivesHtml = getBountyObjectivesHtml(b);
 
     container.innerHTML = `
         <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px;">
             <div style="font-weight: bold; color: var(--gold); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 ${missionTitle}
             </div>
-                  <div style="font-weight: bold; color: ${statusColor}; margin-bottom: 10px;">
+            <div style="font-size:12px; color:#ccc; margin-bottom:8px;">${missionDesc}</div>
+            <div style="font-weight: bold; color: ${statusColor}; margin-bottom: 10px;">
                 Status: ${statusText}
             </div>
-                  <div style="margin-bottom: 10px;">
-               Progress: <span style="color: #fff; font-weight: bold;">${progress.current} / ${progress.required}</span>
+            <div style="margin-bottom: 10px;">
+               ${progressLabel}: <span style="color: #fff; font-weight: bold;">${progress.current} / ${progress.required}</span>
             </div>
             <div style="width: 100%; height: 10px; background: #333; border-radius: 5px; overflow: hidden; margin-bottom: 10px;">
                <div style="width: ${Math.min(100, (progress.current / progress.required) * 100)}%; height: 100%; background: var(--gold);"></div>
             </div>
-            <div style="font-size: 14px; color: #aaffaa;">
-               Reward: ${b.reward} Gold
+            ${objectivesHtml}
+            <div style="font-size: 14px; color: #aaffaa; margin-top: 10px;">
+               Reward: ${formatAmount(Number(b.reward || 0))} Gold
             </div>
         </div>
     `;
 }
-
 function renderQuestLinesList() {
   const container = document.getElementById('questLinesContainer');
   container.innerHTML = '';
@@ -23488,6 +24790,7 @@ function beginCombat() {
   
   // Enemy (Chicken) attacks every 3.0 seconds
   game.enemyCombatInterval = setInterval(enemyAttackTurn, getEnemyAttackSpeedMs(game.currentEnemy));
+  startCombatStatusLoop();
 }
 
 // NEW: Function to restart ONLY the player's attack interval
@@ -23512,6 +24815,36 @@ function getEnemyAttackSpeedMs(enemy = game.currentEnemy) {
   const speed = Number((enemy && enemy.attackSpeed) || 3000);
   if (!Number.isFinite(speed)) return 3000;
   return Math.max(1000, speed);
+}
+function stopCombatStatusLoop() {
+  if (game.combatStatusInterval) clearInterval(game.combatStatusInterval);
+  game.combatStatusInterval = null;
+}
+
+function startCombatStatusLoop() {
+  stopCombatStatusLoop();
+  game.combatStatusInterval = setInterval(() => {
+    if (!game.currentEnemy) return;
+    updateEnemyCombatUI();
+  }, 100);
+}
+
+function clearEnemyStunResumeTimeout() {
+  if (game.enemyStunResumeTimeout) clearTimeout(game.enemyStunResumeTimeout);
+  game.enemyStunResumeTimeout = null;
+}
+
+function scheduleEnemyAttackResumeAfterStun(durationMs) {
+  if (game.enemyCombatInterval) clearInterval(game.enemyCombatInterval);
+  game.enemyCombatInterval = null;
+  clearEnemyStunResumeTimeout();
+  game.enemyStunResumeTimeout = setTimeout(() => {
+    game.enemyStunResumeTimeout = null;
+    if (!game.inCombat || !game.currentEnemy) return;
+    if (Number(game.currentEnemy.stunnedUntil || 0) > Date.now()) return;
+    game.enemyCombatInterval = setInterval(enemyAttackTurn, getEnemyAttackSpeedMs(game.currentEnemy));
+    updateEnemyCombatUI();
+  }, Math.max(0, Number(durationMs || 0)));
 }
 
 // NEW: Function to restart combat intervals without resetting the fight
@@ -23545,6 +24878,8 @@ function runFromCombat(playerDied = false) {
   if (game.enemyCombatInterval) clearInterval(game.enemyCombatInterval);
   game.playerCombatInterval = null;
   game.enemyCombatInterval = null;
+  stopCombatStatusLoop();
+  clearEnemyStunResumeTimeout();
 
   const fightBtn = document.getElementById('combat-fight-btn');
   const runBtn = document.getElementById('combat-run-btn');
@@ -23567,10 +24902,12 @@ function runFromCombat(playerDied = false) {
     if (game.currentEnemy) {
         if (game.currentEnemy.name === 'Golden Dragon') {
             game.goldenDragonHp = Math.max(0, game.currentEnemy.currentHp);
+            game.currentEnemy.stunnedUntil = 0;
             game.isDirty = true;
             updateEnemyCombatUI();
         } else {
             game.currentEnemy.currentHp = game.currentEnemy.maxHp;
+            game.currentEnemy.stunnedUntil = 0;
             updateEnemyCombatUI();
         }
     }
@@ -23585,6 +24922,8 @@ function returnToCombatArea() { // +++ RENAMED FUNCTION +++
     if (game.enemyCombatInterval) clearInterval(game.enemyCombatInterval);
     game.playerCombatInterval = null;
     game.enemyCombatInterval = null;
+    stopCombatStatusLoop();
+    clearEnemyStunResumeTimeout();
   }
   // +++ END FIX +++
 
@@ -23629,11 +24968,16 @@ function updateEnemyCombatUI() {
   const fill = document.getElementById('combat-enemy-hp-fill');
   const text = document.getElementById('combat-enemy-hp-text');
   const enemyNameEl = document.getElementById('combat-enemy-name');
+  const enemyEffectEl = document.getElementById('combat-enemy-effect-text');
   
   if (fill) fill.style.width = percent + '%';
   if (text) text.textContent = `${enemy.currentHp} / ${enemy.maxHp} HP`;
   if (enemyNameEl) {
       enemyNameEl.textContent = enemy.isLeaderboardClone ? `Duel vs ${enemy.name.replace(/ Clone$/, '')}` : enemy.name;
+  }
+  if (enemyEffectEl) {
+      const remainingStunMs = Math.max(0, Number(enemy.stunnedUntil || 0) - Date.now());
+      enemyEffectEl.textContent = remainingStunMs > 0 ? `Stunned: ${(remainingStunMs / 1000).toFixed(1)}s` : '';
   }
 }
 
@@ -24047,19 +25391,10 @@ if (activeSpell) {
     if (game.equipment.pet) {
       const petIndex = game.pets.findIndex(p => p.id === game.equipment.pet.id);
       if (petIndex > -1) {
-        const pet = game.pets[petIndex];
-        if (pet.hp > 0 && pet.level < 50) {
+        const pet = game.pets[petIndex];        if (pet.hp > 0 && pet.level < 50) {
           const petXPGained = Math.ceil(xp * 0.10);
           pet.xp += petXPGained;
-          const xpNeeded = pet.level * 100;
-          if (pet.xp >= xpNeeded) {
-            pet.xp -= xpNeeded;
-            pet.level++;
-            showItemPopup(`Pet Lvl Up: ${pet.level}!`, null, 600);
-            playGlobalSound('sounds/soundeffects/levelupsound.mp3');
-            syncAchievementUnlockState(true);
-            game.isDirty = true;
-          }
+          processPetLevelUps(pet);
         }
       }
     }
@@ -24083,6 +25418,10 @@ function enemyAttackTurn() {
   const enemy = game.currentEnemy;
 
   if (enemy.noEnemyAttack) return;
+
+  const stunUntil = Number(enemy.stunnedUntil || 0);
+  if (stunUntil > Date.now()) return;
+  if (stunUntil > 0) enemy.stunnedUntil = 0;
 
   // Madmax Special Attack Logic
   if (enemy.name === 'Madmax') {
@@ -24147,13 +25486,13 @@ function enemyAttackTurn() {
   if (enemy.name === 'Stupid Koala') {
       const hasBeer = Array.isArray(game.inventory) && game.inventory.some(slot => slot && slot.name === 'Beer' && Number(slot.qty || 0) > 0);
       if (hasBeer && Math.floor(Math.random() * 10) === 0 && removeItem('Beer', 1)) {
+          incrementActiveBountyCounter('koalaBeerStolen', 1);
           game.isDirty = true;
           if (typeof renderInventoryGrid === 'function') renderInventoryGrid();
           setTemporaryCombatEnemyImage('images/happykoalamonster.png', 10000);
           showEnemyStatusPopup('Coco is happy he stole you a beer', '', 84);
       }
   }
-
   if (enemy.name === 'King of Thieves' && Number(game.gold || 0) > 0) {
       const stolenGold = Math.min(Number(game.gold || 0), Math.floor(Math.random() * 25) + 1);
       game.gold = Math.max(0, Number(game.gold || 0) - stolenGold);
@@ -24234,10 +25573,15 @@ function handleEnemyDeath() {
         latestPopupDelay = Math.max(latestPopupDelay, delay);
     };
     
-    if (game.activeBounty && game.activeBounty.target === game.currentEnemy.name && game.activeBounty.kills < game.activeBounty.req) {
-        updateBountyProgress(game.currentEnemy.name, dropDelay);
-        latestPopupDelay = Math.max(latestPopupDelay, dropDelay);
-        dropDelay += 450; 
+    if (game.activeBounty) {
+        const shouldTrackBountyKill = (game.activeBounty.mode === 'multi')
+            ? (game.activeBounty.objectives || []).some(objective => objective && objective.type === 'kill' && objective.target === game.currentEnemy.name && Number(objective.kills || 0) < getBountyObjectiveRequired(objective))
+            : (game.activeBounty.mode !== 'item' && game.activeBounty.mode !== 'counter' && game.activeBounty.target === game.currentEnemy.name && Number(game.activeBounty.kills || 0) < Number(game.activeBounty.req || 0));
+        if (shouldTrackBountyKill) {
+            updateBountyProgress(game.currentEnemy.name, dropDelay);
+            latestPopupDelay = Math.max(latestPopupDelay, dropDelay);
+            dropDelay += 450; 
+        }
     }
 
     const name = game.currentEnemy.name;
@@ -24352,6 +25696,8 @@ function handleEnemyDeath() {
         game.isDirty = true;
     }
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
+    game.currentEnemy.stunnedUntil = 0;
+    clearEnemyStunResumeTimeout();
     updateEnemyCombatUI();
     return latestPopupDelay;
 }
@@ -25680,6 +27026,12 @@ async function buyShopItem(itemName, price) {
     return;
   }
 
+  if (isPetYardUpgradeItem(itemName)) {
+    await purchasePetYardUpgrade(itemName, price);
+    renderShopGrid();
+    return;
+  }
+
   if (game.gold < price) {
     await showGameAlert("Not Enough Gold", `You need ${price} Gold to buy that.`);
     return;
@@ -25789,6 +27141,9 @@ function resetGameState() {
     chickens: [],
     cows: [],
     garden: new Array(16).fill(null),
+    garden2: new Array(16).fill(null),
+    activeGardenField: 1,
+    selectedSeed: null,
     cellar: new Array(16).fill(null),
     mill: createDefaultMillState(),
     kiln: createDefaultKilnState(),
@@ -25796,7 +27151,7 @@ function resetGameState() {
     gardenTomb: createDefaultGardenTombState(),
     seedBagStorage: createDefaultSeedBagStorage(),
     siloStorage: createDefaultSiloStorage(),
-    buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
+    buildings: { coop: false, barn: false, well: false, garden: false, secondField: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false },
   };
 
   game.questLines = {}; 
@@ -26154,7 +27509,7 @@ function renderShopGrid() {
     slot.className = 'inv-slot';
     
     if(item) {
-      const isOwnedUpgrade = isFarmUpgradeItem(item.name) && isFarmUpgradePurchased(item.name);
+      const isOwnedUpgrade = isPermanentShopUpgradePurchased(item.name);
       if (!isOwnedUpgrade) {
         slot.onclick = () => buyShopItem(item.name, item.price);
       } else {
@@ -26187,7 +27542,7 @@ function renderShopGrid() {
       else if (item.name === 'White Dye') imgName = 'whitedye';
       else if (item.name === 'Gold Dye') imgName = 'golddye';
       else if (item.name === 'Bleach') imgName = 'bleach';
-      img.src = `images/${imgName}.png`;
+      img.src = item.img || `images/${imgName}.png`;
       img.alt = item.name;
       const eLvl = item.enchantLevel || 0;
       if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
@@ -26213,12 +27568,12 @@ function renderShopGrid() {
         ? `
           <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
           <div style="color:#fff;">Price: ${item.price} Gold</div>
-          <div style="color:#8fd18f; margin-top: 5px;">Already installed on your farm.</div>
+          <div style="color:#8fd18f; margin-top: 5px;">${getPermanentShopUpgradeOwnedText(item.name)}</div>
         `
         : `
           <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name}</div>
           <div style="color:#fff;">Price: ${item.price} Gold</div>
-          <div style="color:#aaffaa; margin-top: 5px;">${isFarmUpgradeItem(item.name) ? 'One-time farm upgrade.' : 'Click to buy...'}</div>
+          <div style="color:#aaffaa; margin-top: 5px;">${getPermanentShopUpgradeHint(item.name)}</div>
         `;
       slot.onmouseenter = (evt) => showTooltip(evt, tooltipContent);
       slot.onmouseleave = hideTooltip;
@@ -27064,6 +28419,8 @@ inventoryGrid.addEventListener('dragend', (e) => {
     window.__smithFuelDraggedType = null;
     window.__cookingFuelDraggedQty = 0;
     window.__cookingFuelDraggedType = null;
+    window.__alchemyFuelDraggedQty = 0;
+    window.__alchemyFuelDraggedType = null;
     draggedBankItem = null;
     draggedShopItem = null;
     game.isDragging = false;
@@ -27264,6 +28621,34 @@ inventoryGrid.addEventListener('dragend', (e) => {
         game.isDirty = true;
         renderInventoryGrid();
         updateCookingFuelUI();
+        if (typeof window.savePlayerData === 'function') savePlayerData();
+      }
+    } else if ((window.__alchemyFuelDraggedQty || 0) > 0 && window.__alchemyFuelDraggedType) {
+      const qty = Math.floor(window.__alchemyFuelDraggedQty || 0);
+      const fuelType = String(window.__alchemyFuelDraggedType || '');
+      const dropItem = game.inventory[dropIndex];
+
+      if (dropItem && (dropItem.name !== fuelType || (dropItem.enchantLevel || 0) !== 0)) {
+        await showGameAlert('Invalid Slot', `Drop ${fuelType} on an empty slot or an existing ${fuelType} stack.`);
+      } else {
+        if (game.alchemyActive && typeof stopJsonRecipe === 'function') {
+          stopJsonRecipe();
+        }
+
+        if (!dropItem) {
+          game.inventory[dropIndex] = { name: fuelType, qty: qty, enchantLevel: 0 };
+        } else {
+          dropItem.qty += qty;
+        }
+
+        ensureAlchemyFuelState();
+        game.alchemyFuel.qty = Math.max(0, Math.floor(game.alchemyFuel.qty || 0) - qty);
+        if (game.alchemyFuel.qty <= 0) {
+          game.alchemyFuel = createDefaultAlchemyFuelState();
+        }
+        game.isDirty = true;
+        renderInventoryGrid();
+        updateAlchemyFuelUI();
         if (typeof window.savePlayerData === 'function') savePlayerData();
       }
     } else if (draggedShopItem) {
@@ -27964,6 +29349,7 @@ function renderInspectPetYardPanel(playerData) {
     if (!metaEl || !contentEl) return;
 
     const pets = Array.isArray((playerData && playerData.pets)) ? playerData.pets : [];
+    const maxPetSlots = getPetYardMaxSlots(playerData);
     const equippedPet = playerData && playerData.equipment && playerData.equipment.pet ? playerData.equipment.pet : null;
     const equippedPetId = equippedPet && equippedPet.id ? equippedPet.id : null;
     const equippedPetFromList = equippedPetId ? pets.find(pet => pet && pet.id === equippedPetId) : null;
@@ -27976,7 +29362,7 @@ function renderInspectPetYardPanel(playerData) {
 
     metaEl.innerHTML = `
         <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-            <span>Pets: ${pets.length}/6</span>
+            <span>Pets: ${pets.length}/${maxPetSlots}</span>
             <span>Equipped: ${equippedPetLabel}</span>
             <span>Pet Mastery: ${petMasteryLevel}</span>
             <span style="color:${incubator.active ? 'var(--gold)' : '#cdb388'};">Incubator: ${incubatorLabel}</span>
@@ -29114,13 +30500,16 @@ async function attemptEnchant() {
         thieving: game.thieving,
         petmastery: game.petmastery,
         pets: game.pets,
+        petYardExtraSlots: getPetYardExtraSlots(),
         incubator: game.incubator,
         wolfTaming: game.wolfTaming || { lastAttemptDay: '' },
         activeBounty: game.activeBounty || null,
+        specialContractState: game.specialContractState || createDefaultSpecialContractState(),
         autoEatSlot: game.autoEatSlot || null,
         farm: game.farm,
         blacksmithFuel: game.blacksmithFuel || { fuelType: null, qty: 0, usedMs: 0 },
         cookingFuel: game.cookingFuel || { fuelType: null, qty: 0, usedMs: 0 },
+        alchemyFuel: game.alchemyFuel || { fuelType: null, qty: 0, usedMs: 0 },
         questLines: game.questLines,
         bestiaryUnlocked: game.bestiaryUnlocked || {},
         playerAttackStyle: game.playerAttackStyle, 
@@ -29929,6 +31318,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           game.petmastery = { level: 1, xp: 0, totalXP: 0 }; 
         }
         game.pets = data.pets || [];
+        game.petYardExtraSlots = getPetYardExtraSlots(data);
         game.incubator = data.incubator || { active: false, startTime: 0, eggType: null };
         game.wolfTaming = data.wolfTaming || { lastAttemptDay: '' };
         if (typeof game.wolfTaming.lastAttemptDay !== 'string') game.wolfTaming.lastAttemptDay = '';
@@ -29942,6 +31332,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           game.farming = { level: 1, xp: 0, totalXP: 0 }; 
         }
         game.activeBounty = data.activeBounty || null;
+        game.specialContractState = data.specialContractState || createDefaultSpecialContractState();
+        ensureSpecialContractState();
         game.goldenDragonHp = Number.isFinite(Number(data.goldenDragonHp)) ? Math.max(0, Math.min(2500, Number(data.goldenDragonHp))) : 2500;
         game.bestiaryUnlocked = data.bestiaryUnlocked || {};
         game.autoEatSlot = data.autoEatSlot || null;
@@ -29961,6 +31353,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         ensureBlacksmithFuelState();
         game.cookingFuel = data.cookingFuel || { fuelType: null, qty: 0, usedMs: 0 };
         ensureCookingFuelState();
+        game.alchemyFuel = data.alchemyFuel || { fuelType: null, qty: 0, usedMs: 0 };
+        ensureAlchemyFuelState();
         if (!Array.isArray(game.eventJournal)) game.eventJournal = [];
         game.bestiaryUnlocked = data.bestiaryUnlocked || {};
         ensureAchievementStats();
@@ -29971,13 +31365,17 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             chickens: [], 
             cows: [], 
             garden: new Array(16).fill(null), 
+            garden2: new Array(16).fill(null),
+            activeGardenField: 1,
+            selectedSeed: null,
             cellar: new Array(16).fill(null),
             mill: createDefaultMillState(),
+            kiln: createDefaultKilnState(),
             strayCat: createDefaultStrayCatState(),
             gardenTomb: createDefaultGardenTombState(),
             seedBagStorage: createDefaultSeedBagStorage(),
             siloStorage: createDefaultSiloStorage(),
-            buildings: { coop: false, barn: false, well: false, garden: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
+            buildings: { coop: false, barn: false, well: false, garden: false, secondField: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
         };
         ensureFarmState();
           // Define constants locally
@@ -30398,10 +31796,30 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           .slice(0, 6);
   }
 
+  function resolveAdminItemName(rawInput) {
+      const lowered = String(rawInput || '').trim().toLowerCase();
+      if (!lowered) return null;
+
+      const staticMatch = (Array.isArray(VALID_ITEMS) ? VALID_ITEMS : []).find(name => String(name || '').toLowerCase() === lowered);
+      if (staticMatch) return staticMatch;
+
+      if (window.JSON_ITEMS && window.JSON_ITEMS.itemsByName) {
+          const jsonMatch = Object.keys(window.JSON_ITEMS.itemsByName).find(name => String(name || '').toLowerCase() === lowered);
+          if (jsonMatch) return jsonMatch;
+      }
+
+      return null;
+  }
+
   function getValidItemNameMatches(partial) {
       const lowered = String(partial || '').trim().toLowerCase();
-      return (Array.isArray(VALID_ITEMS) ? VALID_ITEMS : [])
+      const itemNames = new Set(Array.isArray(VALID_ITEMS) ? VALID_ITEMS : []);
+      if (window.JSON_ITEMS && window.JSON_ITEMS.itemsByName) {
+          Object.keys(window.JSON_ITEMS.itemsByName).forEach(name => itemNames.add(name));
+      }
+      return Array.from(itemNames)
           .filter(name => !lowered || name.toLowerCase().includes(lowered))
+          .sort((a, b) => a.localeCompare(b))
           .slice(0, 6);
   }
 
@@ -30756,21 +32174,13 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                   // Extract the raw name parts
             const rawNameParts = args.slice(1, -1);
                   if (!targetName || rawNameParts.length === 0 || isNaN(qty) || qty <= 0) {
-                addLocalChatMessage("Usage: /giveitem [playername] [Item Name] [amount]", 'error');
+                addLocalChatMessage("Usage: /giveitem [playername|me] [Item Name] [amount]", 'error');
                 return true;
             }
 
             // +++ FIX: VALIDATE ITEM EXISTENCE +++
             const rawInput = rawNameParts.join(' ').toLowerCase();
-            let itemName = null;
-
-            // Check against VALID_ITEMS list
-            if (typeof VALID_ITEMS !== 'undefined') {
-                const officialMatch = VALID_ITEMS.find(i => i.toLowerCase() === rawInput);
-                if (officialMatch) {
-                    itemName = officialMatch; // Found it! Use exact name from list.
-                }
-            }
+            let itemName = typeof resolveAdminItemName === 'function' ? resolveAdminItemName(rawInput) : null;
 
             if (itemName === 'XP Bottle' && typeof buildXpBottleItemName === 'function') {
                 itemName = buildXpBottleItemName(100);
@@ -30783,7 +32193,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             }
             // +++ END FIX +++
                   // Case A: Give to Self
-            if (targetName === game.name.toLowerCase()) {
+            if (targetName === 'me' || targetName === game.name.toLowerCase()) {
                 if (typeof window.addItem === 'function') {
                     window.addItem(itemName, qty); 
                     await window.savePlayerData();
@@ -30826,8 +32236,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
 
             if (targetName === game.name.toLowerCase()) {
                 game.pets = Array.isArray(game.pets) ? game.pets : [];
-                if (game.pets.length >= 6) {
-                    addLocalChatMessage('Your Pet Yard is full (6/6).', 'error');
+                if (isPetYardFull()) {
+                    addLocalChatMessage('Your Pet Yard is full (' + formatPetYardCapacity() + ').', 'error');
                     return true;
                 }
 
@@ -30852,8 +32262,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 const playerData = targetDoc.data() || {};
                 const exactName = (playerData.name || '').trim() || args[0];
                 const pets = Array.isArray(playerData.pets) ? playerData.pets.slice() : [];
-                if (pets.length >= 6) {
-                    addLocalChatMessage(exactName + "'s Pet Yard is full (6/6).", 'error');
+                if (getPetYardPetCount(playerData) >= getPetYardMaxSlots(playerData)) {
+                    addLocalChatMessage(exactName + "'s Pet Yard is full (" + formatPetYardCapacity(playerData) + ').', 'error');
                     return true;
                 }
 
@@ -31573,12 +32983,15 @@ function getChatCommandMatches(value) {
     const prefix = '/giveitem ';
     const rest = trimmed.slice(prefix.length);
     if (!rest.length) {
-      return getCachedAdminPlayerNameMatches('').map(name => ({ command: prefix + name + ' ', desc: 'Player name' }));
+      return [{ command: prefix + 'me ', desc: 'Your character' }].concat(
+        getCachedAdminPlayerNameMatches('').map(name => ({ command: prefix + name + ' ', desc: 'Player name' }))
+      );
     }
 
     const firstSpace = rest.indexOf(' ');
     if (firstSpace === -1) {
-      return getCachedAdminPlayerNameMatches(rest).map(name => ({ command: prefix + name + ' ', desc: 'Player name' }));
+      const meMatches = 'me'.startsWith(rest.toLowerCase()) ? [{ command: prefix + 'me ', desc: 'Your character' }] : [];
+      return meMatches.concat(getCachedAdminPlayerNameMatches(rest).map(name => ({ command: prefix + name + ' ', desc: 'Player name' })));
     }
 
     const playerName = rest.slice(0, firstSpace).trim();
@@ -32393,6 +33806,7 @@ async function sendChatMessage() {
       // +++ NEW FARM ASSETS +++
       'images/farmicon.jpeg',
       'images/petyardicon.jpeg',
+      'images/petyardupgrade.png',
       'images/kilnicon.png',
       'images/petmasteryskillicon.jpeg',
       'images/petegg1.png',
@@ -32410,6 +33824,9 @@ async function sendChatMessage() {
       'images/incubator_active.png',
       'images/personalfarm.webp',
       'images/cropfield.jpeg', 
+      'images/cropfieldupgrade.png', 
+      'images/throwingknife.png',
+      'images/stunbomb.png', 
       // +++ Garden Assets +++
       'images/grassseed.png',
       'images/grassfirststage.png',
@@ -33677,6 +35094,7 @@ window.getCraftJsonDebugSnapshot = function(){
     game.isDirty = true;
     updateBlacksmithFuelUI();
     updateCookingFuelUI();
+    updateAlchemyFuelUI();
   }
   window.stopJsonRecipe = stopJsonRecipe;
 
@@ -33716,7 +35134,9 @@ window.getCraftJsonDebugSnapshot = function(){
     const descHtml = recipe.description ? `<div style="margin-top:6px; color:#ffd27f;">${recipe.description}</div>` : '';
     const recipeFuelHtml = recipe.section === 'blacksmithing'
       ? getBlacksmithFuelHtml()
-      : (recipeNeedsCookingFuel(recipe) ? getCookingFuelHtml() : '');
+      : (recipeNeedsCookingFuel(recipe)
+        ? getCookingFuelHtml()
+        : (recipeNeedsAlchemyFuel(recipe) ? getAlchemyFuelHtml() : ''));
     const recipeDetailsHtml = `
       <div style="margin-top:8px; color:#efe3cf;">Output: ${output.qty} ${output.name}</div>
       <div style="margin-top:4px; color:#efe3cf;">XP: ${Number(recipe.xp || 0)} | Time: ${(Number(recipe.time || 0)/1000).toFixed(1)}s</div>
@@ -33729,7 +35149,7 @@ window.getCraftJsonDebugSnapshot = function(){
       ? `
         <div style="margin-top:12px; display:flex; align-items:flex-start; justify-content:space-between; gap:18px; flex-wrap:wrap;">
           <div style="flex:1 1 340px; min-width:260px;">${recipeDetailsHtml}</div>
-          <div style="flex:0 0 auto; margin-left:auto; margin-top:8px;">${recipeFuelHtml}</div>
+          <div style="flex:0 0 auto; margin-left:auto; margin-top:0;">${recipeFuelHtml}</div>
         </div>
       `
       : recipeDetailsHtml;
@@ -33758,6 +35178,10 @@ window.getCraftJsonDebugSnapshot = function(){
     if (recipeNeedsCookingFuel(recipe)) {
       bindCookingFuelSlot();
       updateCookingFuelUI();
+    }
+    if (recipeNeedsAlchemyFuel(recipe)) {
+      bindAlchemyFuelSlot();
+      updateAlchemyFuelUI();
     }
     showMainScreen('hubDynamic');
   }
@@ -33803,6 +35227,11 @@ window.getCraftJsonDebugSnapshot = function(){
         stopJsonRecipe();
         return;
       }
+      if (recipeNeedsAlchemyFuel(recipe) && !consumeAlchemyFuelMs(totalTime)) {
+        await showGameAlert('Out of Fuel', 'The fire ran out of heat before the brew could complete.');
+        stopJsonRecipe();
+        return;
+      }
 
       removeMaterials(recipe);
       refundRecipeItems(recipe);
@@ -33823,6 +35252,7 @@ window.getCraftJsonDebugSnapshot = function(){
       if (reqsEl) reqsEl.innerHTML = (recipe.requirements || []).map(r => formatRecipeRequirementLine(recipe, r, { showCurrent: true })).join('');
       if (recipe.section === 'blacksmithing') updateBlacksmithFuelUI();
       if (recipeNeedsCookingFuel(recipe)) updateCookingFuelUI();
+      if (recipeNeedsAlchemyFuel(recipe)) updateAlchemyFuelUI();
       if (!hasMaterials(recipe)) {
         stopJsonRecipe();
         return;
@@ -33835,6 +35265,11 @@ window.getCraftJsonDebugSnapshot = function(){
       if (recipeNeedsCookingFuel(recipe) && !hasCookingFuelForDuration(totalTime)) {
         stopJsonRecipe();
         await showGameAlert('Out of Fuel', 'Add more wood to keep cooking.');
+        return;
+      }
+      if (recipeNeedsAlchemyFuel(recipe) && !hasAlchemyFuelForDuration(totalTime)) {
+        stopJsonRecipe();
+        await showGameAlert('Out of Fuel', 'Add more fuel to keep brewing.');
         return;
       }
       const overdueTime = elapsed - totalTime;
@@ -33893,6 +35328,18 @@ window.getCraftJsonDebugSnapshot = function(){
         return;
       }
     }
+    if (recipeNeedsAlchemyFuel(recipe)) {
+      const requiredHeatMs = Math.max(1, Number(recipe.time || 0));
+      const availableHeatMs = getAlchemyFuelAvailableMs();
+      if (!hasAlchemyFuelForDuration(requiredHeatMs)) {
+        const message = availableHeatMs > 0
+          ? `This recipe needs ${formatAlchemyFuelTime(requiredHeatMs)} of heat, but only ${formatAlchemyFuelTime(availableHeatMs)} is loaded. Add more fuel.`
+          : 'Load Softwood, Oak, Birch, Maple, Mahogany, Coal Ore or Charcoal before starting alchemy.';
+        await showGameAlert('Out of Fuel', message);
+        updateAlchemyFuelUI();
+        return;
+      }
+    }
     game[meta.flag] = true;
     game.currentJsonRecipeContext = { recipeId: recipe.id, flag: meta.flag };
     const startBtn = document.getElementById('jsonRecipeStartBtn');
@@ -33900,6 +35347,7 @@ window.getCraftJsonDebugSnapshot = function(){
     if (startBtn) startBtn.style.display = 'none';
     updateBlacksmithFuelUI();
     updateCookingFuelUI();
+    updateAlchemyFuelUI();
     if (stopBtn) stopBtn.style.display = 'inline-block';
     game.progressFrame = setTimeout(() => jsonRecipeLoop(recipe, Date.now()), 16);
   }
@@ -34008,8 +35456,6 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
-
-
 
 
 
