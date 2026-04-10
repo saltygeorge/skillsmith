@@ -60,7 +60,7 @@
       "id": "alchemy_fire_resist",
       "section": "alchemy",
       "skill": "alchemy",
-      "level": 25,
+      "level": 30,
       "displayName": "Fire Resist",
       "image": "images/fireresist.png",
       "requirements": [
@@ -84,7 +84,7 @@
       "id": "alchemy_stun_bomb",
       "section": "alchemy",
       "skill": "alchemy",
-      "level": 25,
+      "level": 50,
       "displayName": "Stun Bomb",
       "image": "images/stunbomb.png",
       "requirements": [

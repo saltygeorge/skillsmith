@@ -607,6 +607,22 @@
         "armorType": "jewelry"
       }
     },
+    "fire_ring": {
+      "id": "fire_ring",
+      "name": "Fire Ring",
+      "img": "images/firering.png",
+      "sellPrice": 50000,
+      "playerShop": true,
+      "individualSales": true,
+      "playerShopMaxQty": 1,
+      "unlockLevel": 50,
+      "stats": {
+        "overallDamage": 1,
+        "overallDefence": 1,
+        "fireResist": true,
+        "armorType": "jewelry"
+      }
+    },
     "diamond_ring": {
       "id": "diamond_ring",
       "name": "Diamond Ring",
