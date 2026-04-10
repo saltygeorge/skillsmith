@@ -4189,6 +4189,8 @@ const game = {
   burnExpiresAt: 0,
   lastBurnTickAt: 0,
   burnSource: '',
+  burnAccumulatedMs: 0,
+  burnTier: 1,
   goldenDragonHp: 2500,
   achievementStats: { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} },
   eventJournal: [],
@@ -4379,6 +4381,7 @@ function getTrophyRoomEquipSlot(itemName) {
     'Cloth Cape': 'cape',
     '1tapper': 'weapon',
     'Gold Ring': 'ring_choice',
+    'Fire Ring': 'ring_choice',
     'Diamond Ring': 'ring_choice',
     'Emerald Ring': 'ring_choice',
     'Ruby Ring': 'ring_choice',
@@ -4735,7 +4738,7 @@ function renderTrophyRoomEquipmentFrame(equipment, frame, roomIndex) {
 
     if (displayedItem) {
       const enchantLevel = Number(displayedItem.enchantLevel || 0);
-      if (displayedItem.name === 'Gold Crown' || displayedItem.name === 'Elegant Black Cape') slotEl.classList.add('legendary-glow');
+      if (isLegendaryItemName(displayedItem.name)) slotEl.classList.add('legendary-glow');
       else if (enchantLevel > 0) slotEl.classList.add(`enchant-glow-${enchantLevel}`);
 
       if (enchantLevel > 0) {
@@ -5364,6 +5367,7 @@ const VALID_ITEMS = [
   'Advanced Magic Staff',
   'Gold Crown',
   'Elegant Black Cape', // +++ NEW CAPE +++
+  'Fire Ring',
   '1tapper', // +++ NEW ADMIN ITEM +++
   'Rat Tail', // +++ NEW ITEM +++
   'Pet Spider Egg', // +++ NEW PET EGG +++
@@ -5975,6 +5979,7 @@ const ITEM_STATS = {
   // --- COSMETICS / SPECIALS ---
   'Gold Crown': { meleeDef: 8, rangedDef: 8, magicDef: 8, magicAtk: 2, rangedAtk: 2, meleeAtk: 2, armorType: 'hybrid' },
   'Elegant Black Cape': { meleeDef: 5, rangedDef: 7, magicDef: 8, armorType: 'hybrid' },
+  'Fire Ring': { overallDamage: 1, overallDefence: 1, fireResist: true, armorType: 'jewelry' },
   '1tapper': { meleeStr: 999, meleeAtk: 999, weaponType: 'melee', twoHanded: true, speed: 500 },
   'Pet Spider': { type: 'pet' },
   'Pet Wolf': { type: 'pet' },
@@ -5994,6 +5999,25 @@ const ITEM_STATS = {
   'Wolf Necklace': { meleeStr: 4, armorType: 'jewelry' },
   'Archery Bracer': { rangedStr: 5, rangedAtk: 5, armorType: 'jewelry', occupiesBothRings: true }
 };
+
+function isLegendaryItemName(name) {
+  return name === 'Gold Crown' || name === 'Elegant Black Cape' || name === 'Fire Ring';
+}
+
+function getEquipmentExtraTooltipHtml(def, stdB = 0) {
+  if (!def) return '';
+  let html = '';
+  const overallDamage = def.overallDamage ? def.overallDamage + stdB : 0;
+  const overallDefence = def.overallDefence ? def.overallDefence + stdB : 0;
+  if (overallDamage && overallDefence && overallDamage === overallDefence) {
+    html += '<div style="color:#ffd27f;">+' + overallDamage + ' Overall</div>';
+  } else {
+    if (overallDamage) html += '<div style="color:#ffd27f;">+' + overallDamage + ' Overall Damage</div>';
+    if (overallDefence) html += '<div style="color:#ffd27f;">+' + overallDefence + ' Overall Defence</div>';
+  }
+  if (def.fireResist) html += '<div style="color:#ffb85c;">Fire Resist</div>';
+  return html;
+}
 window.ITEM_STATS = ITEM_STATS;
 window.JSON_ITEMS = { itemsById: {}, itemsByName: {}, loaded: false };
 
@@ -6293,6 +6317,7 @@ const ITEM_SELL_PRICES = {
   'Wizard Boots': 30,
   'Gold Crown': 50000,
   'Elegant Black Cape': 50000,
+  'Fire Ring': 50000,
   'Cloth Cape': 60,
   'Red Dye': 20,
   'Blue Dye': 20,
@@ -7646,6 +7671,21 @@ function getPlayerCombatStats() {
       stats.rangedStr += (def.rangedStr || 0) + (def.rangedStr ? standardBonus : 0);
       stats.magicDmg += (def.magicDmg || 0) + (def.magicDmg ? standardBonus : 0);
       stats.maxHPBonus += (def.maxHPBonus || 0) + (def.maxHPBonus ? standardBonus : 0);
+      if (def.overallDamage) {
+        const overallDamageBonus = def.overallDamage + standardBonus;
+        stats.meleeAtk += overallDamageBonus;
+        stats.rangedAtk += overallDamageBonus;
+        stats.magicAtk += overallDamageBonus;
+        stats.meleeStr += overallDamageBonus;
+        stats.rangedStr += overallDamageBonus;
+        stats.magicDmg += overallDamageBonus;
+      }
+      if (def.overallDefence) {
+        const overallDefenceBonus = def.overallDefence + standardBonus;
+        stats.meleeDef += overallDefenceBonus;
+        stats.rangedDef += overallDefenceBonus;
+        stats.magicDef += overallDefenceBonus;
+      }
       // DEFENSE SCALING BASED ON ARMOR TYPE
       if (def.armorType === 'melee') {
           stats.meleeDef += (def.meleeDef || 0) + standardBonus;
@@ -7682,6 +7722,9 @@ function getPlayerCombatStats() {
               if (bonuses.physicalDamage) stats.meleeStr += bonuses.physicalDamage;
               if (bonuses.maxHPBonus) stats.maxHPBonus += bonuses.maxHPBonus;
               if (bonuses.overallDamage) {
+                  stats.meleeAtk += bonuses.overallDamage;
+                  stats.rangedAtk += bonuses.overallDamage;
+                  stats.magicAtk += bonuses.overallDamage;
                   stats.meleeStr += bonuses.overallDamage;
                   stats.rangedStr += bonuses.overallDamage;
                   stats.magicDmg += bonuses.overallDamage;
@@ -7772,7 +7815,7 @@ function renderEquipment() {
   'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Advanced Magic Staff': 'advancedmagicstaff',
   'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken',
   'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace',
-  'Gold Ring': 'goldring', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
+  'Gold Ring': 'goldring', 'Fire Ring': 'firering', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
   'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace', 'Archery Bracer': 'archerybracer',
   'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch',
   'Iron Battleaxe': 'ironbattleaxe',
@@ -7844,7 +7887,7 @@ function renderEquipment() {
     if (displayedItem) {
         const eLvl = displayedItem.enchantLevel || 0;
         // Apply Gold Aura for Legendary items, otherwise apply Enchantment glows
-        if (displayedItem.name === 'Gold Crown' || displayedItem.name === 'Elegant Black Cape') {
+        if (isLegendaryItemName(displayedItem.name)) {
             mainSlotEl.classList.add('legendary-glow');
         } else if (eLvl > 0) {
             mainSlotEl.classList.add(`enchant-glow-${eLvl}`);
@@ -7891,6 +7934,7 @@ function renderEquipment() {
 
             // Attack penalties (Red lines)
             if (def.maxHPBonus) html += `<div style="color:#ffaaaa;">+${def.maxHPBonus + stdB} Max HP</div>`;
+            html += getEquipmentExtraTooltipHtml(def, stdB);
             if (def.speed) html += `<div style="color:var(--gold);">Speed: ${(def.speed / 1000).toFixed(1)}s</div>`;
         }
         html += `<div style="color:#ffaaaa; margin-top:5px; font-size:11px;">Click to unequip</div>`;
@@ -8275,6 +8319,7 @@ function renderInventoryGrid(){
               else if (item.name === 'Burnt Beef') imgName = 'burntbeef';
               else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
               else if (item.name === 'Elegant Black Cape') imgName = 'elegantblackcape';
+              else if (item.name === 'Fire Ring') imgName = 'firering';
               else if (item.name === 'Coal Ore') imgName = 'coalore';
               else if (item.name === 'Iron Ore') imgName = 'ironore';
               else if (item.name === 'Iron Bar') imgName = 'ironbar';
@@ -8410,7 +8455,7 @@ function renderInventoryGrid(){
       img.src = `images/${getItemRenderImageName(item, imgName)}.png`;
       img.alt = item.name;
       const eLvl = item.enchantLevel || 0;
-      if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
+      if (isLegendaryItemName(item.name)) {
           slot.classList.add('legendary-glow');
       } else if (eLvl > 0) {
           slot.classList.add(`enchant-glow-${eLvl}`);
@@ -8458,6 +8503,7 @@ function renderInventoryGrid(){
         if (stats.magicDef !== undefined) itemStats += `<div style="color:#6dafff;">+${stats.magicDef + magBonus} Magic Def</div>`;
 
         if (stats.maxHPBonus) itemStats += `<div style="color:#ffaaaa;">+${stats.maxHPBonus + stdB} Max HP</div>`;
+        itemStats += getEquipmentExtraTooltipHtml(stats, stdB);
         // --- ADDED SPEED DISPLAY ---
         if (stats.speed) itemStats += `<div style="color:var(--gold);">Speed: ${(stats.speed / 1000).toFixed(1)}s</div>`;
           clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Click to equip</div>';
@@ -8683,7 +8729,12 @@ async function handleSellItemClick(slotIndex) {
   }
 }
 
+function isGluttonyUnlocked() {
+  return Number(game?.cooking?.level || 0) >= 80;
+}
+
 async function tryShiftClickConsumeItem(itemName) {
+  if (!isGluttonyUnlocked()) return false;
   if (getFoodHealAmount(itemName) > 0) {
     await eatFoodItem(itemName);
     return true;
@@ -8720,6 +8771,7 @@ async function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Wolf Helmet': 'helmet', 'Wolf Plate': 'chest', 'Wolf Platelegs': 'legs', 'Wolf Boots': 'boots',
     'Leather Boots': 'boots', 'Wizard Hat': 'helmet', 'Wizard Robe': 'chest', 'Wizard Trousers': 'legs',
     'Wizard Boots': 'boots', 'Magic Staff': 'weapon', 'Advanced Magic Staff': 'weapon', 'Gold Crown': 'helmet', 'Elegant Black Cape': 'cape',
+    'Fire Ring': 'ring_choice',
     'Cloth Cape': 'cape',
     '1tapper': 'weapon', 'Gold Ring': 'ring_choice', 'Diamond Ring': 'ring_choice', 'Emerald Ring': 'ring_choice',
     'Ruby Ring': 'ring_choice', 'Sapphire Ring': 'ring_choice', 'Topaz Ring': 'ring_choice', 'Archery Bracer': 'ring_choice',
@@ -9097,12 +9149,18 @@ function getFireResistRemainingMs() {
   return Math.max(0, Number(game.fireResistExpiresAt || 0) - Date.now());
 }
 
-function isFireResistActive() {
-  return getFireResistRemainingMs() > 0;
+function hasEquippedFireRing() {
+  return !!((game && game.equipment && game.equipment.ring1 && game.equipment.ring1.name === 'Fire Ring') || (game && game.equipment && game.equipment.ring2 && game.equipment.ring2.name === 'Fire Ring'));
 }
 
-const BURN_DURATION_MS = 10000;
-const BURN_TICK_MS = 1000;
+function isFireResistActive() {
+  return getFireResistRemainingMs() > 0 || hasEquippedFireRing();
+}
+
+const BURN_DURATION_MS = 30000;
+const BURN_TICK_MS = 5000;
+const BURN_TIER_TWO_TICK_MS = 4000;
+const BURN_TIER_TWO_THRESHOLD_MS = 100000;
 
 function getBurnRemainingMs() {
   return Math.max(0, Number(game.burnExpiresAt || 0) - Date.now());
@@ -9112,11 +9170,33 @@ function isBurnStatusActive() {
   return getBurnRemainingMs() > 0;
 }
 
+function getBurnAccumulatedMs() {
+  return Math.max(0, Number(game.burnAccumulatedMs || 0));
+}
+
+function getBurnStatusTier() {
+  return Math.max(1, Number(game.burnTier || 1));
+}
+
+function getBurnDamagePerTick() {
+  return getBurnStatusTier();
+}
+
+function getBurnTickMs() {
+  return getBurnStatusTier() >= 2 ? BURN_TIER_TWO_TICK_MS : BURN_TICK_MS;
+}
+
+function getBurnStatusLabel() {
+  return getBurnStatusTier() >= 2 ? 'Burn II' : 'Burn';
+}
+
 function clearBurnStatus(showPopup = false, persistImmediately = false) {
-  const hadBurn = Number(game.burnExpiresAt || 0) > 0 || Number(game.lastBurnTickAt || 0) > 0 || !!game.burnSource;
+  const hadBurn = Number(game.burnExpiresAt || 0) > 0 || Number(game.lastBurnTickAt || 0) > 0 || !!game.burnSource || Number(game.burnAccumulatedMs || 0) > 0;
   game.burnExpiresAt = 0;
   game.lastBurnTickAt = 0;
   game.burnSource = '';
+  game.burnAccumulatedMs = 0;
+  game.burnTier = 1;
   if (hadBurn) game.isDirty = true;
   if (showPopup) showWarningPopup('The flames are extinguished.');
   if (persistImmediately && typeof window.savePlayerData === 'function') {
@@ -9127,9 +9207,20 @@ function clearBurnStatus(showPopup = false, persistImmediately = false) {
 
 function applyBurnStatus(sourceName = 'Golden Dragon', durationMs = BURN_DURATION_MS) {
   const now = Date.now();
+  const addedDurationMs = Math.max(BURN_TICK_MS, Number(durationMs || BURN_DURATION_MS));
+  const currentExpiry = Number(game.burnExpiresAt || 0);
+  const baseExpiry = currentExpiry > now ? currentExpiry : now;
   game.burnSource = sourceName;
-  game.burnExpiresAt = now + Math.max(BURN_TICK_MS, Number(durationMs || BURN_DURATION_MS));
-  game.lastBurnTickAt = now;
+  game.burnExpiresAt = baseExpiry + addedDurationMs;
+  if (Number(game.lastBurnTickAt || 0) <= 0 || currentExpiry <= now) {
+    game.lastBurnTickAt = now;
+  }
+  game.burnAccumulatedMs = getBurnAccumulatedMs() + addedDurationMs;
+  if (getBurnRemainingMs() >= BURN_TIER_TWO_THRESHOLD_MS) {
+    game.burnTier = 2;
+  } else if (Number(game.burnTier || 0) <= 0) {
+    game.burnTier = 1;
+  }
   game.isDirty = true;
   isBeerBuffTimerDismissed = false;
   if (typeof updateBeerBuffTimerUI === 'function') updateBeerBuffTimerUI();
@@ -9149,20 +9240,24 @@ function processBurnStatusTick() {
   if (burnExpiresAt <= 0) return;
 
   const now = Date.now();
-  const lastTickAt = Number(game.lastBurnTickAt || (burnExpiresAt - BURN_DURATION_MS));
+  const fallbackDuration = Math.max(BURN_DURATION_MS, getBurnRemainingMs());
+  const lastTickAt = Number(game.lastBurnTickAt || (burnExpiresAt - fallbackDuration));
   const tickEnd = Math.min(now, burnExpiresAt);
-  const ticksDue = Math.floor((tickEnd - lastTickAt) / BURN_TICK_MS);
+  const burnTickMs = getBurnTickMs();
+  const ticksDue = Math.floor((tickEnd - lastTickAt) / burnTickMs);
 
   if (ticksDue <= 0) {
     if (now >= burnExpiresAt) clearBurnStatus(false, false);
     return;
   }
 
-  game.lastBurnTickAt = lastTickAt + (ticksDue * BURN_TICK_MS);
-  game.hp = Math.max(0, Number(game.hp || 0) - ticksDue);
+  const damagePerTick = getBurnDamagePerTick();
+  const totalBurnDamage = ticksDue * damagePerTick;
+  game.lastBurnTickAt = lastTickAt + (ticksDue * burnTickMs);
+  game.hp = Math.max(0, Number(game.hp || 0) - totalBurnDamage);
   game.isDirty = true;
   updateHPUI();
-  showDamageSplat('player', ticksDue, 'damage');
+  showDamageSplat('player', totalBurnDamage, 'damage');
 
   if (game.hp <= 0) {
     clearBurnStatus(false, false);
@@ -9199,7 +9294,7 @@ function updateBeerBuffTimerUI() {
   const activeEffects = [];
 
   if (burnRemainingMs > 0) {
-    activeEffects.push({ label: 'Burn', remainingMs: burnRemainingMs, durationMs: BURN_DURATION_MS, fillColor: '#ff6b3d' });
+    activeEffects.push({ label: getBurnStatusLabel(), remainingMs: burnRemainingMs, durationMs: Math.max(BURN_DURATION_MS, burnRemainingMs), fillColor: '#ff6b3d' });
   }
   if (fireResistRemainingMs > 0) {
     activeEffects.push({ label: 'Fire Resist', remainingMs: fireResistRemainingMs, durationMs: FIRE_RESIST_DURATION_MS, fillColor: '#ffb85c' });
@@ -9208,6 +9303,11 @@ function updateBeerBuffTimerUI() {
     activeEffects.push({ label: 'Drunk', remainingMs: drunkRemainingMs, durationMs: BEER_BUFF_DURATION_MS, fillColor: '#d68b2e' });
   } else if (remainingMs > 0) {
     activeEffects.push({ label: 'Beer Buff', remainingMs: remainingMs, durationMs: BEER_BUFF_DURATION_MS, fillColor: '' });
+  }
+
+  const monsterStunRemainingMs = Math.max(0, Number(game.currentEnemy?.stunnedUntil || 0) - Date.now());
+  if (monsterStunRemainingMs > 0) {
+    activeEffects.push({ label: 'Monster Stun', remainingMs: monsterStunRemainingMs, durationMs: 10000, fillColor: '#6eb6ff' });
   }
 
   const isActive = activeEffects.length > 0;
@@ -9880,6 +9980,10 @@ function updateSkillUI(){
         if (data.level >= 80) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Spell Cost: 1 Stone</div>`);
         else if (data.level >= 20) skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Spell Cost: 2 Stones</div>`);
         else skillBonusLines.push(`<div style="color:#7fd3ff; font-weight:bold; margin-top:2px;">Spell Cost: 3 Stones</div>`);
+    }
+    if (skillDataKey === 'cooking') {
+        if (data.level >= 80) skillBonusLines.push(`<div style="color:#ffcf70; font-weight:bold; margin-top:2px;">Gluttony: Shift + Click food and potions</div>`);
+        else skillBonusLines.push(`<div style="color:#ffcf70; font-weight:bold; margin-top:2px;">Gluttony: Unlock at Lvl 80</div>`);
     }
     const skillBonusHtml = `${skillBonusLines.join('')}<div>(Total XP: ${data.totalXP.toLocaleString()})</div>`;
 
@@ -24976,8 +25080,7 @@ function updateEnemyCombatUI() {
       enemyNameEl.textContent = enemy.isLeaderboardClone ? `Duel vs ${enemy.name.replace(/ Clone$/, '')}` : enemy.name;
   }
   if (enemyEffectEl) {
-      const remainingStunMs = Math.max(0, Number(enemy.stunnedUntil || 0) - Date.now());
-      enemyEffectEl.textContent = remainingStunMs > 0 ? `Stunned: ${(remainingStunMs / 1000).toFixed(1)}s` : '';
+      enemyEffectEl.textContent = '';
   }
 }
 
@@ -25711,22 +25814,14 @@ const SLOT_WIDTH = 80;
 const WINNER_INDEX = 40; 
 const TOTAL_SLOTS = 50; 
 
-// --- NEW: Rotating Jackpot Pool ---
-const JACKPOT_POOL = [
-    { name: 'Elegant Black Cape', desc: '** The cape provides +2 Armor.' },
-    { name: 'Gold Crown', desc: '** The crown provides +5 Defense and +2 Attack stats.' }
-];
+// --- NEW: Rotating Lottery Variants ---
+const LOTTERY_JACKPOT_DESCRIPTIONS = {
+    'Gold Crown': '** The crown provides +5 Defense and +2 Attack stats.',
+    'Elegant Black Cape': '** The cape provides +2 Armor.',
+    'Fire Ring': '** The ring provides +1 Overall and Fire Resist.'
+};
 
-function getCurrentJackpot() {
-    const dayIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24)) % JACKPOT_POOL.length;
-    return JACKPOT_POOL[dayIndex];
-}
-
-// =================================================================
-// +++ NEW: WEIGHTED LOTTERY SYSTEM +++
-// =================================================================
-
-const LOTTERY_LOOT = [
+const BASE_LOTTERY_VARIANT_LOOT = [
     { name: 'Burnt Chicken', qty: 1000, weight: 100 },
     { name: 'Coal Ore', qty: 1000, weight: 100 },
     { name: 'Copper Ore', qty: 1000, weight: 100 },
@@ -25741,21 +25836,105 @@ const LOTTERY_LOOT = [
     { name: 'Oak', qty: 1000, weight: 30 },
     { name: 'Cooked Salmon', qty: 750, weight: 30 },
     { name: 'Gold', qty: 25000, weight: 10 },
-    { name: 'Waterstone', qty: 2000, weight: 20 },     
+    { name: 'Waterstone', qty: 2000, weight: 20 },
     { name: 'Airstone', qty: 2000, weight: 20 },
-    { name: '1tapper', qty: 1, weight: 0 },
+    { name: '1tapper', qty: 1, weight: 0 }
 ];
 
-function getRandomLotteryFiller() {
+function cloneLotteryLootTable(items = BASE_LOTTERY_VARIANT_LOOT) {
+    return items.map(item => ({ ...item }));
+}
+
+function replaceLotteryLootEntries(items, replacements = []) {
+    const table = cloneLotteryLootTable(items);
+    replacements.forEach(({ match, replace }) => {
+        const idx = table.findIndex(item => item.name === match.name && Number(item.qty || 0) === Number(match.qty || 0));
+        if (idx !== -1) {
+            table[idx] = { ...table[idx], ...replace };
+        }
+    });
+    return table;
+}
+
+const LOTTERY_VARIANT_1_LOOT = cloneLotteryLootTable();
+const LOTTERY_VARIANT_2_LOOT = replaceLotteryLootEntries(BASE_LOTTERY_VARIANT_LOOT, [
+    { match: { name: 'Gold Ore', qty: 1000 }, replace: { name: 'Silver Ore', qty: 1000 } },
+    { match: { name: 'Cooked Salmon', qty: 750 }, replace: { name: 'Wheat', qty: 750 } },
+    { match: { name: 'Waterstone', qty: 2000 }, replace: { name: 'Fire Stone', qty: 1000 } }
+]);
+const LOTTERY_VARIANT_3_LOOT = replaceLotteryLootEntries(BASE_LOTTERY_VARIANT_LOOT, [
+    { match: { name: 'Gold', qty: 25000 }, replace: { name: 'XP Bottle (10000 XP)', qty: 1 } },
+    { match: { name: 'Oak', qty: 1000 }, replace: { name: 'Mahogany', qty: 1000 } },
+    { match: { name: 'Raw Chicken', qty: 500 }, replace: { name: 'Grass', qty: 250 } }
+]);
+const LOTTERY_VARIANT_4_LOOT = replaceLotteryLootEntries(BASE_LOTTERY_VARIANT_LOOT, [
+    { match: { name: 'Burnt Chicken', qty: 1000 }, replace: { name: 'Sand', qty: 1000 } },
+    { match: { name: 'Feather', qty: 1000 }, replace: { name: 'Venom', qty: 500 } },
+    { match: { name: 'Fishing Bait', qty: 1000 }, replace: { name: 'Wild Herb', qty: 250 } }
+]);
+
+const LOTTERY_VARIANTS = [
+    {
+        id: 1,
+        jackpot: { name: 'Fire Ring', desc: LOTTERY_JACKPOT_DESCRIPTIONS['Fire Ring'] },
+        lootTable: LOTTERY_VARIANT_1_LOOT
+    },
+    {
+        id: 2,
+        jackpot: { name: 'Elegant Black Cape', desc: LOTTERY_JACKPOT_DESCRIPTIONS['Elegant Black Cape'] },
+        lootTable: LOTTERY_VARIANT_2_LOOT
+    },
+    {
+        id: 3,
+        jackpot: { name: 'Gold Crown', desc: LOTTERY_JACKPOT_DESCRIPTIONS['Gold Crown'] },
+        lootTable: LOTTERY_VARIANT_3_LOOT
+    },
+    {
+        id: 4,
+        jackpot: { name: 'Elegant Black Cape', desc: LOTTERY_JACKPOT_DESCRIPTIONS['Elegant Black Cape'] },
+        lootTable: LOTTERY_VARIANT_4_LOOT
+    }
+];
+
+function getCurrentLotteryVariant() {
+    const dayIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24)) % LOTTERY_VARIANTS.length;
+    return LOTTERY_VARIANTS[dayIndex];
+}
+
+function getCurrentJackpot() {
+    return getCurrentLotteryVariant().jackpot;
+}
+
+function getRandomLotteryFiller(variant = getCurrentLotteryVariant()) {
+    const lootTable = Array.isArray(variant && variant.lootTable) && variant.lootTable.length
+        ? variant.lootTable
+        : BASE_LOTTERY_VARIANT_LOOT;
     let totalWeight = 0;
-    for (const item of LOTTERY_LOOT) totalWeight += (item.weight ?? 10);
+    for (const item of lootTable) totalWeight += (item.weight ?? 10);
     let random = Math.floor(Math.random() * totalWeight);
-    for (const item of LOTTERY_LOOT) {
+    for (const item of lootTable) {
         const weight = item.weight ?? 10;
         if (random < weight) return item;
         random -= weight;
     }
-    return LOTTERY_LOOT[0];
+    return lootTable[0];
+}
+
+const LOTTERY_TEASER_ONLY_ITEMS = [
+    { name: '1tapper', qty: 1, chance: 0.01 }
+];
+
+function getRandomLotteryTeaserItem(variant = getCurrentLotteryVariant(), jackpotChance = 0) {
+    const jackpot = (variant && variant.jackpot) ? variant.jackpot : getCurrentJackpot();
+    if (jackpot && Math.random() < jackpotChance) {
+        return { name: jackpot.name, qty: 1 };
+    }
+    for (const teaserItem of LOTTERY_TEASER_ONLY_ITEMS) {
+        if (Math.random() < Number(teaserItem.chance || 0)) {
+            return { name: teaserItem.name, qty: Number(teaserItem.qty || 1) };
+        }
+    }
+    return getRandomLotteryFiller(variant);
 }
 
 function openLotteryHub() {
@@ -25766,7 +25945,8 @@ function openLotteryHub() {
     const returnBtn = document.getElementById('hubLottery_ReturnBtn');
     
     // Set text based on rotation
-    const jackpot = getCurrentJackpot();
+    const variant = getCurrentLotteryVariant();
+    const jackpot = variant.jackpot;
     document.getElementById('lotteryJackpotName').innerText = jackpot.name;
     document.getElementById('lotteryJackpotDesc').innerText = jackpot.desc;
 
@@ -25797,7 +25977,7 @@ function openLotteryHub() {
 
     // Teasers
     for(let i=0; i<10; i++) {
-        let item = (Math.random() < 0.10) ? { name: jackpot.name, qty: 1 } : getRandomLotteryFiller();
+        let item = getRandomLotteryTeaserItem(variant, 0.10);
         const slot = document.createElement('div');
         slot.className = 'lottery-slot';
         let imgName = (window.__inspectItemImageMap && window.__inspectItemImageMap[item.name]) || getItemRenderImageName(item);
@@ -25834,8 +26014,9 @@ function updateLotteryTimer() {
 
     // If timer reaches zero while player is watching, update the item info
     if (h === 0 && m === 0 && s === 0) {
-        const jackpot = getCurrentJackpot();
-        document.getElementById('lotteryJackpotName').innerText = jackpot.name;
+        const variant = getCurrentLotteryVariant();
+    const jackpot = variant.jackpot;
+    document.getElementById('lotteryJackpotName').innerText = jackpot.name;
         document.getElementById('lotteryJackpotDesc').innerText = jackpot.desc;
     }
 }
@@ -25846,7 +26027,8 @@ async function buyLotteryTicket() {
         return;
     }
 
-    const jackpot = getCurrentJackpot();
+    const variant = getCurrentLotteryVariant();
+    const jackpot = variant.jackpot;
 
     // 1. Check for Tickets or Gold
     let ticketCount = 0;
@@ -25875,7 +26057,7 @@ async function buyLotteryTicket() {
         wonItemName = jackpot.name;
         wonItemQty = 1;
     } else {
-        const item = getRandomLotteryFiller();
+        const item = getRandomLotteryFiller(variant);
         wonItemName = item.name;
         wonItemQty = item.qty;
     }
@@ -25897,7 +26079,7 @@ async function buyLotteryTicket() {
         if (i === WINNER_INDEX) {
             itemDisplay = { name: wonItemName, qty: wonItemQty };
         } else {
-            itemDisplay = (Math.random() < 0.05) ? { name: jackpot.name, qty: 1 } : getRandomLotteryFiller();
+            itemDisplay = getRandomLotteryTeaserItem(variant, 0.05);
         }
           const slot = document.createElement('div');
         slot.className = 'lottery-slot';
@@ -26355,6 +26537,7 @@ function renderBankGrid() {
 
                       else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
               else if (item.name === 'Elegant Black Cape') imgName = 'elegantblackcape';
+              else if (item.name === 'Fire Ring') imgName = 'firering';
 
               else if (item.name === 'Iron Battleaxe') imgName = 'ironbattleaxe';
               else if (item.name === 'Iron Shield') imgName = 'ironshield';
@@ -26543,7 +26726,7 @@ function renderBankGrid() {
       img.alt = item.name;
       // Apply Enchantment Glows
       const eLvl = item.enchantLevel || 0;
-      if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
+      if (isLegendaryItemName(item.name)) {
           slot.classList.add('legendary-glow');
       } else if (eLvl > 0) {
           slot.classList.add(`enchant-glow-${eLvl}`);
@@ -27164,6 +27347,8 @@ function resetGameState() {
   game.burnExpiresAt = 0;
   game.lastBurnTickAt = 0;
   game.burnSource = '';
+  game.burnAccumulatedMs = 0;
+  game.burnTier = 1;
   game.achievementStats = { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} };
   game.goldenDragonHp = 2500;
   game.eventJournal = [];
@@ -27545,7 +27730,7 @@ function renderShopGrid() {
       img.src = item.img || `images/${imgName}.png`;
       img.alt = item.name;
       const eLvl = item.enchantLevel || 0;
-      if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
+      if (isLegendaryItemName(item.name)) {
           slot.classList.add('legendary-glow');
       } else if (eLvl > 0) {
           slot.classList.add(`enchant-glow-${eLvl}`);
@@ -28888,7 +29073,7 @@ function renderInspectEquipment(equipment, frame) {
         'Softwood Bow': 'softwoodbow', 'Oak Bow': 'oakbow', 
         'Copper Arrow': 'copperarrow', 'Copper Arrow Poisoned': 'copperarrowpoisonned', 'Leather Hood': 'leatherhood', 'Leather Body': 'leatherarmor', 'Ranger Chest': 'rangerchest', 'Leather Chaps': 'leatherpants', 
         'Leather Boots': 'leatherboots', 'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 
-        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Advanced Magic Staff': 'advancedmagicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', 'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Dragon': 'petdragon', 'Pet Spider Egg': 'petegg1', 'Pet Owl Egg': 'petegg2', 'Pet Dragon Egg': 'petegg3', 'Pet Chicken Egg': 'petegg5', 'Pet Egg 5': 'petegg5', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken', 'Fire Stone': 'firestone',
+        'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Advanced Magic Staff': 'advancedmagicstaff', 'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', 'Fire Ring': 'firering', 'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Dragon': 'petdragon', 'Pet Spider Egg': 'petegg1', 'Pet Owl Egg': 'petegg2', 'Pet Dragon Egg': 'petegg3', 'Pet Chicken Egg': 'petegg5', 'Pet Egg 5': 'petegg5', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken', 'Fire Stone': 'firestone',
         'Empty Bucket': 'emptybucket', 'Empty Glass': 'emptyglass', 'Beer': 'beer', 'Bucket of Milk': 'bucketofmilk', 'Bucket of Water': 'bucketofwater', 'Fire Resist': 'fireresist', 'Wheat Seed': 'wheatseed', 'Wheat': 'wheat', 'flour': 'flour', 'Bread': 'bread', 'Burnt Bread': 'burntbread', 'Cheese': 'cheese', 'Salt Herring': 'saltherring', 'Salt Trout': 'salttrout', 'Salt Salmon': 'saltsalmon', 'Cake': 'cake', 'Burnt Cake': 'burntcake', 'Vitality Potion': 'vitalitypotion', 'Gold Ring': 'goldring',
         'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
         'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace', 'Archery Bracer': 'archerybracer',
@@ -28972,6 +29157,7 @@ function renderInspectEquipment(equipment, frame) {
                 if (itemStats.rangedDef !== undefined) statsHtml += `<div style="color:#aaffaa;">+${itemStats.rangedDef + rBonus} Ranged Def</div>`;
                 if (itemStats.magicDef !== undefined) statsHtml += `<div style="color:#6dafff;">+${itemStats.magicDef + magBonus} Magic Def</div>`;
                           if (itemStats.maxHPBonus) statsHtml += `<div style="color:#ffaaaa;">+${itemStats.maxHPBonus + stdB} Max HP</div>`;
+                statsHtml += getEquipmentExtraTooltipHtml(itemStats, stdB);
             }
 
             const tooltipContent = `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${item.name} ${enchantLvl > 0 ? `+${enchantLvl}` : ''}</div>${statsHtml}`;
@@ -29098,7 +29284,7 @@ function createInspectReadOnlySlot(item) {
         }
 
         const enchantLevel = Number(item.enchantLevel || 0);
-        if (item.name === "Gold Crown" || item.name === "Elegant Black Cape") {
+        if (isLegendaryItemName(item.name)) {
             slotEl.classList.add("legendary-glow");
         } else if (enchantLevel > 0) {
             slotEl.classList.add(`enchant-glow-${enchantLevel}`);
@@ -29920,7 +30106,7 @@ function handleEnchantItemClick(item, index) {
     hideTooltip();
 
     // Prevent legendary/jewelry items from being enchanted
-    if (item.name === "Gold Ring" || item.name === "Gold Crown" || item.name === "Elegant Black Cape") {
+    if (item.name === "Gold Ring" || isLegendaryItemName(item.name)) {
         showWarningPopup(`The ${item.name} cannot be enchanted!`);
         return true;
     }
@@ -30523,6 +30709,8 @@ async function attemptEnchant() {
         burnExpiresAt: game.burnExpiresAt || 0,
         lastBurnTickAt: game.lastBurnTickAt || 0,
         burnSource: game.burnSource || '',
+        burnAccumulatedMs: Number(game.burnAccumulatedMs || 0),
+        burnTier: Number(game.burnTier || 1),
         achievementStats: game.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} },
         dailyBonus: game.dailyBonus || createDefaultDailyBonusState(),
         goldenDragonHp: Number(game.goldenDragonHp || 2500),
@@ -31345,6 +31533,14 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         game.burnExpiresAt = Number(data.burnExpiresAt || 0);
         game.lastBurnTickAt = Number(data.lastBurnTickAt || 0);
         game.burnSource = String(data.burnSource || '');
+        game.burnAccumulatedMs = Number(data.burnAccumulatedMs || 0);
+        if (game.burnExpiresAt > Date.now() && game.burnAccumulatedMs <= 0) {
+          game.burnAccumulatedMs = Math.max(BURN_DURATION_MS, game.burnExpiresAt - Date.now());
+        }
+        game.burnTier = Math.max(1, Number(data.burnTier || 0));
+        if (game.burnTier <= 1 && game.burnExpiresAt > Date.now() && (game.burnExpiresAt - Date.now()) >= BURN_TIER_TWO_THRESHOLD_MS) {
+          game.burnTier = 2;
+        }
         game.achievementStats = data.achievementStats || { kills: {}, deaths: 0, hadBeenDrunk: false, lotteryRolls: 0, wonBarehandedKill: false, unlocked: {} };
         game.dailyBonus = data.dailyBonus || createDefaultDailyBonusState();
         ensureDailyBonusState();
