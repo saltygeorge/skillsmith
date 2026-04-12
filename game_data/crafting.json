@@ -577,6 +577,26 @@
       "slot": 4
     },
     {
+      "id": "smith_silver_arrow_tips",
+      "section": "blacksmithing",
+      "metalType": "silver",
+      "skill": "blacksmith",
+      "level": 50,
+      "displayName": "Silver Arrow Tip x3",
+      "image": "images/silverarrowtip.png",
+      "requirements": [
+        {
+          "name": "Silver Bar",
+          "qty": 4
+        }
+      ],
+      "time": 3000,
+      "xp": 45,
+      "outputName": "Silver Arrow Tip",
+      "outputQty": 3,
+      "slot": 3
+    },
+    {
       "id": "smith_iron_shield",
       "section": "blacksmithing",
       "metalType": "iron",
@@ -1148,10 +1168,6 @@
         {
           "name": "Sand",
           "qty": 5
-        },
-        {
-          "name": "Coal Ore",
-          "qty": 1
         }
       ],
       "time": 3500,
@@ -1705,6 +1721,29 @@
       "slot": 2
     },
     {
+      "id": "fletch_silver_arrow",
+      "section": "fletching",
+      "skill": "fletching",
+      "level": 50,
+      "displayName": "Silver Arrow x15",
+      "image": "images/silverarrow.png",
+      "requirements": [
+        {
+          "name": "Unbound Arrow",
+          "qty": 15
+        },
+        {
+          "name": "Silver Arrow Tip",
+          "qty": 15
+        }
+      ],
+      "time": 3000,
+      "xp": 55,
+      "outputName": "Silver Arrow",
+      "outputQty": 15,
+      "slot": 8
+    },
+    {
       "id": "fletch_unstrung_softwood_bow",
       "section": "fletching",
       "skill": "fletching",
@@ -1810,6 +1849,29 @@
       "outputName": "Copper Arrow Poisoned",
       "outputQty": 1,
       "slot": 7
+    },
+    {
+      "id": "fletch_silver_arrow_poisoned",
+      "section": "fletching",
+      "skill": "fletching",
+      "level": 60,
+      "displayName": "Silver Arrow Poisoned",
+      "image": "images/silverarrowpoisonned.png",
+      "requirements": [
+        {
+          "name": "Silver Arrow",
+          "qty": 1
+        },
+        {
+          "name": "Venom",
+          "qty": 1
+        }
+      ],
+      "time": 3000,
+      "xp": 120,
+      "outputName": "Silver Arrow Poisoned",
+      "outputQty": 1,
+      "slot": 9
     },
     {
       "id": "tailor_leather",
@@ -2236,3 +2298,4 @@
     }
   ]
 }
+

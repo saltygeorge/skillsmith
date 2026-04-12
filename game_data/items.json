@@ -450,6 +450,19 @@
         "rangedStr": 2
       }
     },
+    "silver_arrow": {
+      "id": "silver_arrow",
+      "name": "Silver Arrow",
+      "img": "images/silverarrow.png",
+      "sellPrice": 12,
+      "playerShop": true,
+      "individualSales": true,
+      "playerShopMaxQty": 1,
+      "unlockLevel": 1,
+      "stats": {
+        "rangedStr": 4
+      }
+    },
     "copper_arrow_poisoned": {
       "id": "copper_arrow_poisoned",
       "name": "Copper Arrow Poisoned",
@@ -461,6 +474,19 @@
       "unlockLevel": 1,
       "stats": {
         "rangedStr": 4
+      }
+    },
+    "silver_arrow_poisoned": {
+      "id": "silver_arrow_poisoned",
+      "name": "Silver Arrow Poisoned",
+      "img": "images/silverarrowpoisonned.png",
+      "sellPrice": 45,
+      "playerShop": true,
+      "individualSales": true,
+      "playerShopMaxQty": 1,
+      "unlockLevel": 1,
+      "stats": {
+        "rangedStr": 6
       }
     },
     "wizard_hat": {
@@ -883,6 +909,15 @@
       "name": "Copper Arrow Tip",
       "img": "images/copperarrowtip.png",
       "sellPrice": 2,
+      "playerShop": true,
+      "individualSales": false,
+      "playerShopMaxQty": 1000
+    },
+    "silver_arrow_tip": {
+      "id": "silver_arrow_tip",
+      "name": "Silver Arrow Tip",
+      "img": "images/silverarrowtip.png",
+      "sellPrice": 5,
       "playerShop": true,
       "individualSales": false,
       "playerShopMaxQty": 1000
