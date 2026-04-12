@@ -5822,11 +5822,12 @@ const WATER_CRYSTAL_TIME_MS = 6000;
 const WATER_CRYSTAL_XP = 50;
 const WATER_CRYSTAL_ITEM = 'Water Crystal Shard';
 
-const MINE_COOLDOWN_COPPER_MS = 1000; // 1.0s
-const MINE_COOLDOWN_COAL_MS = 1500;   // 1.5s
-const MINE_COOLDOWN_IRON_MS = 1500;   // 1.5s
-const MINE_COOLDOWN_SILVER_MS = 1500; // 1.5s
-const MINE_COOLDOWN_GOLD_MS = 1500;   // 1.5s
+const MINE_COOLDOWN_COPPER_MS = 0;
+const MINE_COOLDOWN_COAL_MS = 0;
+const MINE_COOLDOWN_IRON_MS = 0;
+const MINE_COOLDOWN_SILVER_MS = 0;
+const MINE_COOLDOWN_GOLD_MS = 0;
+const MINE_COOLDOWN_CRYSTAL_MS = 0;
 
 const MINING_GEM_DROP_RATE = 0.01;
 const MINING_GEM_POOLS = {
@@ -5957,7 +5958,7 @@ const EMPTY_VIAL_TIME_MS = 4000;
 const SAND_MINE_TIME_MS = 1500; // Fast to mine
 const SAND_MINE_XP = 10;
 const SAND_MINE_ITEM = 'Sand';
-const MINE_COOLDOWN_SAND_MS = 1000;
+const MINE_COOLDOWN_SAND_MS = 0;
 
 // +++ NEW: Leather Crafting Constants +++
 const CRAFTING_LEATHER_LVL = 1;
@@ -6069,8 +6070,8 @@ const OAK_CHOP_TIME_MS = 3000;
 const OAK_CHOP_XP = 35;
 const OAK_CHOP_ITEM = 'Oak';
 
-const CHOP_COOLDOWN_SOFTWOOD_MS = 1000;
-const CHOP_COOLDOWN_OAK_MS = 1500;
+const CHOP_COOLDOWN_SOFTWOOD_MS = 0;
+const CHOP_COOLDOWN_OAK_MS = 0;
 
 // --- NEW: Tool Crafting Requirements ---
 const COPPER_AXE_BAR_COST = 3;
@@ -9349,6 +9350,9 @@ const BURN_DURATION_MS = 30000;
 const BURN_TICK_MS = 5000;
 const BURN_TIER_TWO_TICK_MS = 4000;
 const BURN_TIER_TWO_THRESHOLD_MS = 100000;
+const ENEMY_POISON_DURATION_MS = 3000;
+const ENEMY_POISON_TICK_MS = 1000;
+const ENEMY_POISON_DAMAGE_PER_TICK = 1;
 
 function getBurnRemainingMs() {
   return Math.max(0, Number(game.burnExpiresAt || 0) - Date.now());
@@ -9420,6 +9424,81 @@ function applyBurnStatus(sourceName = 'Golden Dragon', durationMs = BURN_DURATIO
   if (typeof window.savePlayerData === 'function') {
     window.savePlayerData();
   }
+}
+
+function getEnemyPoisonRemainingMs() {
+  return Math.max(0, Number(game.currentEnemy?.poisonExpiresAt || 0) - Date.now());
+}
+
+function clearEnemyPoisonStatus() {
+  if (!game.currentEnemy) return false;
+  const hadPoison = Number(game.currentEnemy.poisonExpiresAt || 0) > 0 || Number(game.currentEnemy.lastPoisonTickAt || 0) > 0;
+  game.currentEnemy.poisonExpiresAt = 0;
+  game.currentEnemy.lastPoisonTickAt = 0;
+  if (hadPoison) {
+    game.isDirty = true;
+    if (typeof updateBeerBuffTimerUI === 'function') updateBeerBuffTimerUI();
+  }
+  return hadPoison;
+}
+
+function applyEnemyPoisonStatus(durationMs = ENEMY_POISON_DURATION_MS) {
+  if (!game.currentEnemy) return false;
+  const now = Date.now();
+  const nextDurationMs = Math.max(ENEMY_POISON_TICK_MS, Number(durationMs || ENEMY_POISON_DURATION_MS));
+  const currentExpiry = Number(game.currentEnemy.poisonExpiresAt || 0);
+  game.currentEnemy.poisonExpiresAt = now + nextDurationMs;
+  if (Number(game.currentEnemy.lastPoisonTickAt || 0) <= 0 || currentExpiry <= now) {
+    game.currentEnemy.lastPoisonTickAt = now;
+  }
+  game.isDirty = true;
+  isBeerBuffTimerDismissed = false;
+  if (typeof updateBeerBuffTimerUI === 'function') updateBeerBuffTimerUI();
+  return true;
+}
+
+function processEnemyPoisonTick() {
+  if (!game.inCombat || !game.currentEnemy) return;
+  const poisonExpiresAt = Number(game.currentEnemy.poisonExpiresAt || 0);
+  if (poisonExpiresAt <= 0) return;
+  if (Number(game.currentEnemy.currentHp || 0) <= 0) {
+    clearEnemyPoisonStatus();
+    return;
+  }
+
+  const now = Date.now();
+  const lastTickAt = Number(game.currentEnemy.lastPoisonTickAt || now);
+  const tickEnd = Math.min(now, poisonExpiresAt);
+  const ticksDue = Math.floor((tickEnd - lastTickAt) / ENEMY_POISON_TICK_MS);
+
+  if (ticksDue <= 0) {
+    if (now >= poisonExpiresAt) clearEnemyPoisonStatus();
+    return;
+  }
+
+  const totalPoisonDamage = Math.min(Number(game.currentEnemy.currentHp || 0), ticksDue * ENEMY_POISON_DAMAGE_PER_TICK);
+  game.currentEnemy.lastPoisonTickAt = lastTickAt + (ticksDue * ENEMY_POISON_TICK_MS);
+  if (totalPoisonDamage <= 0) {
+    if (now >= poisonExpiresAt) clearEnemyPoisonStatus();
+    return;
+  }
+
+  game.currentEnemy.currentHp = Math.max(0, Number(game.currentEnemy.currentHp || 0) - totalPoisonDamage);
+  if (game.currentEnemy.name === 'Golden Dragon') {
+    game.goldenDragonHp = Math.max(0, game.currentEnemy.currentHp);
+    game.isDirty = true;
+  }
+  showDamageSplat('enemy', totalPoisonDamage, 'damage');
+  updateEnemyCombatUI();
+  if (typeof updateBeerBuffTimerUI === 'function') updateBeerBuffTimerUI();
+
+  if (game.currentEnemy.currentHp <= 0) {
+    clearEnemyPoisonStatus();
+    handleEnemyDeath();
+    return;
+  }
+
+  if (now >= poisonExpiresAt) clearEnemyPoisonStatus();
 }
 
 function processBurnStatusTick() {
@@ -9496,6 +9575,11 @@ function updateBeerBuffTimerUI() {
   const monsterStunRemainingMs = Math.max(0, Number(game.currentEnemy?.stunnedUntil || 0) - Date.now());
   if (monsterStunRemainingMs > 0) {
     activeEffects.push({ label: 'Monster Stun', remainingMs: monsterStunRemainingMs, durationMs: 10000, fillColor: '#6eb6ff' });
+  }
+
+  const monsterPoisonRemainingMs = getEnemyPoisonRemainingMs();
+  if (monsterPoisonRemainingMs > 0) {
+    activeEffects.push({ label: 'Monster Poison', remainingMs: monsterPoisonRemainingMs, durationMs: ENEMY_POISON_DURATION_MS, fillColor: '#72d66a' });
   }
 
   const isActive = activeEffects.length > 0;
@@ -24690,7 +24774,7 @@ function openEarthCrystalMine() {
   document.getElementById('startMineBtn').onclick = () => startCrystalMining('Earth');
   document.getElementById('stopMineBtn').onclick = stopMining;
   showMainScreen('hubDynamic');
-  syncMiningForegroundUi('mine:crystal:earth', EARTH_CRYSTAL_TIME_MS + 1500);
+  syncMiningForegroundUi('mine:crystal:earth', EARTH_CRYSTAL_TIME_MS + MINE_COOLDOWN_CRYSTAL_MS);
 }
 
 function openAirCrystalMine() {
@@ -24715,7 +24799,7 @@ function openAirCrystalMine() {
   document.getElementById('startMineBtn').onclick = () => startCrystalMining('Air');
   document.getElementById('stopMineBtn').onclick = stopMining;
   showMainScreen('hubDynamic');
-  syncMiningForegroundUi('mine:crystal:air', AIR_CRYSTAL_TIME_MS + 1500);
+  syncMiningForegroundUi('mine:crystal:air', AIR_CRYSTAL_TIME_MS + MINE_COOLDOWN_CRYSTAL_MS);
 }
 
 function openWaterCrystalMine() {
@@ -24740,7 +24824,7 @@ function openWaterCrystalMine() {
   document.getElementById('startMineBtn').onclick = () => startCrystalMining('Water');
   document.getElementById('stopMineBtn').onclick = stopMining;
   showMainScreen('hubDynamic');
-  syncMiningForegroundUi('mine:crystal:water', WATER_CRYSTAL_TIME_MS + 1500);
+  syncMiningForegroundUi('mine:crystal:water', WATER_CRYSTAL_TIME_MS + MINE_COOLDOWN_CRYSTAL_MS);
 }
 
 async function startCrystalMining(type) {
@@ -24775,7 +24859,7 @@ async function startCrystalMining(type) {
 
   const crystalTaskKey = `mine:crystal:${String(type || '').toLowerCase()}`;
   const crystalLabel = `${type} Crystal`;
-  if (!startMiningTask(crystalTaskKey, crystalLabel, timeMs + 1500, (ts, st) => crystalMiningLoop(ts, st, type))) return;
+  if (!startMiningTask(crystalTaskKey, crystalLabel, timeMs + MINE_COOLDOWN_CRYSTAL_MS, (ts, st) => crystalMiningLoop(ts, st, type))) return;
 }
 
 function crystalMiningLoop(timestamp, startTime, type) {
@@ -24800,7 +24884,7 @@ function crystalMiningLoop(timestamp, startTime, type) {
     
     const overdueTime = elapsed - timeMs;
     const newCooldownStartTime = Date.now() - overdueTime;
-    return miningCooldownLoop(Date.now(), newCooldownStartTime, 1500, 'mineProgressText', (ts, st) => crystalMiningLoop(ts, st, type), crystalTaskKey);
+    return miningCooldownLoop(Date.now(), newCooldownStartTime, MINE_COOLDOWN_CRYSTAL_MS, 'mineProgressText', (ts, st) => crystalMiningLoop(ts, st, type), crystalTaskKey);
     
   } else {
     const progress = (elapsed / timeMs) * 100;
@@ -25871,7 +25955,7 @@ async function openCombatInterface(enemyName) {
   if (enemyName === 'Wolf') unlockAchievementDirect('Find the Wolf');
 
   const startingHp = enemyName === 'Golden Dragon' ? Math.max(0, Math.min(def.maxHp, Number(game.goldenDragonHp || def.maxHp))) : def.maxHp;
-  game.currentEnemy = { ...def, currentHp: startingHp };
+  game.currentEnemy = { ...def, currentHp: startingHp, stunnedUntil: 0, poisonExpiresAt: 0, lastPoisonTickAt: 0 };
 
   const imgEl = document.getElementById('combat-enemy-img');
   if (imgEl) {
@@ -26059,7 +26143,9 @@ function startCombatStatusLoop() {
   stopCombatStatusLoop();
   game.combatStatusInterval = setInterval(() => {
     if (!game.currentEnemy) return;
+    processEnemyPoisonTick();
     updateEnemyCombatUI();
+    if (typeof updateBeerBuffTimerUI === 'function') updateBeerBuffTimerUI();
   }, 100);
 }
 
@@ -26114,6 +26200,12 @@ function runFromCombat(playerDied = false) {
   game.enemyCombatInterval = null;
   stopCombatStatusLoop();
   clearEnemyStunResumeTimeout();
+  if (game.currentEnemy) {
+    game.currentEnemy.stunnedUntil = 0;
+    game.currentEnemy.poisonExpiresAt = 0;
+    game.currentEnemy.lastPoisonTickAt = 0;
+  }
+  if (typeof updateBeerBuffTimerUI === 'function') updateBeerBuffTimerUI();
 
   const fightBtn = document.getElementById('combat-fight-btn');
   const runBtn = document.getElementById('combat-run-btn');
@@ -26192,7 +26284,10 @@ function updateEnemyCombatUI() {
       enemyNameEl.textContent = enemy.isLeaderboardClone ? `Duel vs ${enemy.name.replace(/ Clone$/, '')}` : enemy.name;
   }
   if (enemyEffectEl) {
-      enemyEffectEl.textContent = '';
+      const effects = [];
+      if (Number(enemy.stunnedUntil || 0) > Date.now()) effects.push('Stunned');
+      if (Number(enemy.poisonExpiresAt || 0) > Date.now()) effects.push('Poisoned');
+      enemyEffectEl.textContent = effects.join(' | ');
   }
 }
 
@@ -26549,6 +26644,14 @@ if (activeSpell) {
     game.isDirty = true;
   }
   updateEnemyCombatUI();
+
+  if (effectiveDamage > 0 && weaponType === 'ranged' && game.equipment.arrows && /Poisoned/.test(String(game.equipment.arrows.name || '')) && game.currentEnemy.currentHp > 0) {
+    const poisonResists = Array.isArray(enemy.resists) ? enemy.resists : [];
+    if (!poisonResists.includes('poison')) {
+      applyEnemyPoisonStatus();
+      updateEnemyCombatUI();
+    }
+  }
 
   if (weaponType === 'ranged') {
     let recoverArrow = false;
@@ -26912,7 +27015,10 @@ function handleEnemyDeath() {
     }
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
     game.currentEnemy.stunnedUntil = 0;
+    game.currentEnemy.poisonExpiresAt = 0;
+    game.currentEnemy.lastPoisonTickAt = 0;
     clearEnemyStunResumeTimeout();
+    if (typeof updateBeerBuffTimerUI === 'function') updateBeerBuffTimerUI();
     updateEnemyCombatUI();
     return latestPopupDelay;
 }
@@ -28867,8 +28973,10 @@ function showMainScreen(screenIdToShow, options = {}) {
 // Special case: if we're showing the kitchen hub, apply level locks
   if (screenIdToShow === 'hubKitchen') {
     const cookLvl = game.cooking.level;
-    document.getElementById('cookTroutBtn').classList.toggle('locked-item', cookLvl < COOK_TROUT_LVL);
-    document.getElementById('cookSalmonBtn').classList.toggle('locked-item', cookLvl < COOK_SALMON_LVL);
+    const cookTroutBtn = document.getElementById('cookTroutBtn');
+    const cookSalmonBtn = document.getElementById('cookSalmonBtn');
+    if (cookTroutBtn) cookTroutBtn.classList.toggle('locked-item', cookLvl < COOK_TROUT_LVL);
+    if (cookSalmonBtn) cookSalmonBtn.classList.toggle('locked-item', cookLvl < COOK_SALMON_LVL);
   }
 
   // +++ NEW: Special case for hubRiver level locks +++
@@ -35671,6 +35779,7 @@ async function sendChatMessage() {
       })
       .catch(err => console.error('[CRAFT JSON] load failed', err));
   }
+  window.loadCraftingJsonData = loadCraftingJsonData;
 
   function getRecipes(section, extraFilter){
     let recipes = JSON_CRAFTING.recipes.filter(r => r.section === section);
@@ -37079,12 +37188,17 @@ window.getCraftJsonDebugSnapshot = function(){
     setTimeout(() => renderSmithingItems(metal), 0);
   };
 
-  loadCraftingJsonData().then(() => {
-    bindSmithTabs();
-    setTimeout(rerenderCurrentHub, 100);
-    setTimeout(rerenderCurrentHub, 500);
-    setInterval(rerenderCurrentHub, 1500);
-  });
+  const loadJsonCraftingData = window.loadCraftingJsonData;
+  if (typeof loadJsonCraftingData === 'function') {
+    loadJsonCraftingData().then(() => {
+      bindSmithTabs();
+      setTimeout(rerenderCurrentHub, 100);
+      setTimeout(rerenderCurrentHub, 500);
+      setInterval(rerenderCurrentHub, 1500);
+    });
+  } else {
+    console.warn('[CRAFT JSON] loadCraftingJsonData unavailable during background action bootstrap');
+  }
 })();
 </script>
 
