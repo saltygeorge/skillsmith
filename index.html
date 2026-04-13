@@ -35764,10 +35764,21 @@ async function sendChatMessage() {
       // +++ END FIX +++
       // Keep the loading screen visible until auth/session boot chooses a real screen.
       // This avoids a blank background flash on refresh.
+      setTimeout(() => {
+        const loadingScreen = document.getElementById('loadingScreen');
+        const authScreen = document.getElementById('authScreen');
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        if (!loadingScreen || loadingScreen.style.display === 'none') return;
+        const anyBootScreenVisible = [authScreen, startScreen, gameScreen].some(el => el && el.style.display !== 'none');
+        if (!anyBootScreenVisible) {
+          if (authScreen) authScreen.style.display = 'flex';
+          if (startScreen) startScreen.style.display = 'none';
+          if (gameScreen) gameScreen.style.display = 'none';
+        }
+        loadingScreen.style.display = 'none';
+      }, 1500);
 
-      // --- We removed the code that shows the authScreen ---
-      // The onAuthStateChanged listener will now handle showing
-      // the correct screen (login OR game) without a flash.
 
     });
 
@@ -37215,7 +37226,6 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
-
 
 
 
