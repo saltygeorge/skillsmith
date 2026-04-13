@@ -32464,6 +32464,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           authScreen.style.display = 'none';
           startScreen.style.display = 'flex'; 
           gameScreen.style.display = 'none';
+          const loadingScreen = document.getElementById('loadingScreen');
+          if (loadingScreen) loadingScreen.style.display = 'none';
           return; 
         }
 
@@ -32476,6 +32478,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           authScreen.style.display = 'none';
           startScreen.style.display = 'flex'; 
           gameScreen.style.display = 'none';
+          const loadingScreen = document.getElementById('loadingScreen');
+          if (loadingScreen) loadingScreen.style.display = 'none';
           return; // Stop here!
         }
         // +++ END FIX +++
@@ -33072,6 +33076,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
           startScreen.style.display = 'none';
         authScreen.style.display = 'none';
         gameScreen.style.display = 'flex';
+          const loadingScreen = document.getElementById('loadingScreen');
+          if (loadingScreen) loadingScreen.style.display = 'none';
         
         ensureGameTopVisible();
         loadSettings();
@@ -33086,6 +33092,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         authScreen.style.display = 'none';
         startScreen.style.display = 'flex';
         gameScreen.style.display = 'none';
+          const loadingScreen = document.getElementById('loadingScreen');
+          if (loadingScreen) loadingScreen.style.display = 'none';
         return false; 
       }
 
@@ -33186,6 +33194,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
         startScreen.style.display = 'flex';
         gameScreen.style.display = 'none';
         authScreen.style.display = 'none';
+          const loadingScreen = document.getElementById('loadingScreen');
+          if (loadingScreen) loadingScreen.style.display = 'none';
       }
     } else {
       // User is logged out
@@ -33195,6 +33205,8 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
       authScreen.style.display = 'flex';
       startScreen.style.display = 'none';
       gameScreen.style.display = 'none';
+          const loadingScreen = document.getElementById('loadingScreen');
+          if (loadingScreen) loadingScreen.style.display = 'none';
       // Stop listeners and release lock
       // Trade cleanup removed
             if (playerDocListener) playerDocListener();
@@ -35750,10 +35762,8 @@ async function sendChatMessage() {
           }
       });
       // +++ END FIX +++
-      const loadingScreen = document.getElementById('loadingScreen');
-      if (loadingScreen) {
-        loadingScreen.style.display = 'none'; // Hide loading
-      }
+      // Keep the loading screen visible until auth/session boot chooses a real screen.
+      // This avoids a blank background flash on refresh.
 
       // --- We removed the code that shows the authScreen ---
       // The onAuthStateChanged listener will now handle showing
