@@ -4549,6 +4549,7 @@ function getTrophyRoomEquipSlot(itemName) {
     'Gold Crown': 'helmet',
     'Elegant Black Cape': 'cape',
     'Cloth Cape': 'cape',
+    'Bad Dragon': 'weapon',
     '1tapper': 'weapon',
     'Gold Ring': 'ring_choice',
     'Fire Ring': 'ring_choice',
@@ -5549,6 +5550,7 @@ const VALID_ITEMS = [
   'Gold Crown',
   'Elegant Black Cape', // +++ NEW CAPE +++
   'Fire Ring',
+  'Bad Dragon',
   '1tapper', // +++ NEW ADMIN ITEM +++
   'Rat Tail', // +++ NEW ITEM +++
   'Pet Spider Egg', // +++ NEW PET EGG +++
@@ -6162,6 +6164,7 @@ const ITEM_STATS = {
   'Gold Crown': { meleeDef: 8, rangedDef: 8, magicDef: 8, magicAtk: 2, rangedAtk: 2, meleeAtk: 2, armorType: 'hybrid' },
   'Elegant Black Cape': { meleeDef: 5, rangedDef: 7, magicDef: 8, armorType: 'hybrid' },
   'Fire Ring': { overallDamage: 1, overallDefence: 1, fireResist: true, armorType: 'jewelry' },
+  'Bad Dragon': { meleeStr: 25, meleeAtk: 50, weaponType: 'melee', twoHanded: true, speed: 10000, onHitStunDurationMs: 3000 },
   '1tapper': { meleeStr: 999, meleeAtk: 999, weaponType: 'melee', twoHanded: true, speed: 500 },
   'Pet Spider': { type: 'pet' },
   'Pet Wolf': { type: 'pet' },
@@ -6183,7 +6186,7 @@ const ITEM_STATS = {
 };
 
 function isLegendaryItemName(name) {
-  return name === 'Gold Crown' || name === 'Elegant Black Cape' || name === 'Fire Ring';
+  return name === 'Gold Crown' || name === 'Elegant Black Cape' || name === 'Fire Ring' || name === 'Bad Dragon';
 }
 
 function getEquipmentExtraTooltipHtml(def, stdB = 0) {
@@ -6198,6 +6201,7 @@ function getEquipmentExtraTooltipHtml(def, stdB = 0) {
     if (overallDefence) html += '<div style="color:#ffd27f;">+' + overallDefence + ' Overall Defence</div>';
   }
   if (def.fireResist) html += '<div style="color:#ffb85c;">Fire Resist</div>';
+  if (def.onHitStunDurationMs) html += '<div style="color:#6eb6ff;">Stuns enemy for ' + (def.onHitStunDurationMs / 1000).toFixed(0) + 's on hit</div>';
   return html;
 }
 window.ITEM_STATS = ITEM_STATS;
@@ -6502,6 +6506,7 @@ const ITEM_SELL_PRICES = {
   'Gold Crown': 50000,
   'Elegant Black Cape': 50000,
   'Fire Ring': 50000,
+  'Bad Dragon': 100000,
   'Cloth Cape': 60,
   'Red Dye': 20,
   'Blue Dye': 20,
@@ -7511,7 +7516,7 @@ async function attemptWolfTameWithRawChicken() {
 
     game.pets.push(newPet);
     game.isDirty = true;
-    playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+    playGlobalSound('sounds/soundeffects/levelupsoundeffect.mp3');
     if (typeof window.savePlayerData === 'function') window.savePlayerData();
     game.currentEnemy = null;
     await showGameAlert('Wolf Tamed!', 'The wolf accepts your offering and joins your Pet Yard.');
@@ -8001,7 +8006,7 @@ function renderEquipment() {
   'Wizard Hat': 'wizardhat', 'Wizard Robe': 'wizardrobe', 'Wizard Trousers': 'wizardtrousers', 'Wizard Boots': 'wizardboots', 'Magic Staff': 'magicstaff', 'Advanced Magic Staff': 'advancedmagicstaff',
   'Gold Crown': 'goldcrown', 'Elegant Black Cape': 'elegantblackcape', '1tapper': '1tapper', 'Pet Spider': 'petspider', 'Pet Owl': 'petowl', 'Pet Cat': 'petcat', 'Pet Wolf': 'wolfpet', 'Pet Chicken': 'petchicken', 'Pet Black Chicken': 'petblackchicken',
   'Cloth Cape': 'clothcape', 'Red Dye': 'reddye', 'Blue Dye': 'bluedye', 'Black Dye': 'blackdye', 'Green Dye': 'greendye', 'White Dye': 'whitedye', 'Gold Dye': 'golddye', 'Bleach': 'bleach', 'Wolf Pelt': 'wolfpelt', 'Wolf Tooth': 'wolfteeth', 'Wolf Helmet': 'wolfhelmet', 'Wolf Plate': 'wolfplate', 'Wolf Platelegs': 'wolfplatelegs', 'Wolf Boots': 'wolfboot', 'Wolf Necklace': 'wolfnecklace',
-  'Gold Ring': 'goldring', 'Fire Ring': 'firering', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
+  'Gold Ring': 'goldring', 'Fire Ring': 'firering', 'Bad Dragon': 'baddragon', 'Diamond Ring': 'diamondring', 'Emerald Ring': 'emeraldring', 'Ruby Ring': 'rubyring', 'Sapphire Ring': 'sapphirering', 'Topaz Ring': 'topazring',
   'Diamond Necklace': 'diamondnecklace', 'Emerald Necklace': 'emeraldnecklace', 'Ruby Necklace': 'rubynecklace', 'Sapphire Necklace': 'sapphirenecklace', 'Topaz Necklace': 'topaznecklace', 'Archery Bracer': 'archerybracer',
   'Silver Fangs of the Fallen Monarch': 'silverfangsofthefallenmonarch',
   'Iron Battleaxe': 'ironbattleaxe',
@@ -8391,7 +8396,7 @@ async function buyAutoEat() {
         if (game.gold >= cost) {
             addGold(-cost);
             game.autoEatUnlocked = true;
-            playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+            playGlobalSound('sounds/soundeffects/levelupsoundeffect.mp3');
             renderAutoEatSlot();
             game.isDirty = true;
             await showGameAlert("Unlocked!", "The Auto-Heal slot is now available. Equip potions or venom from your inventory to use it.");
@@ -8506,6 +8511,7 @@ function renderInventoryGrid(){
               else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
               else if (item.name === 'Elegant Black Cape') imgName = 'elegantblackcape';
               else if (item.name === 'Fire Ring') imgName = 'firering';
+              else if (item.name === 'Bad Dragon') imgName = 'baddragon';
               else if (item.name === 'Coal Ore') imgName = 'coalore';
               else if (item.name === 'Iron Ore') imgName = 'ironore';
               else if (item.name === 'Iron Bar') imgName = 'ironbar';
@@ -8961,6 +8967,7 @@ async function handleItemClick(event, itemName, itemQty, slotIndex) {
     'Leather Boots': 'boots', 'Wizard Hat': 'helmet', 'Wizard Robe': 'chest', 'Wizard Trousers': 'legs',
     'Wizard Boots': 'boots', 'Magic Staff': 'weapon', 'Advanced Magic Staff': 'weapon', 'Gold Crown': 'helmet', 'Elegant Black Cape': 'cape',
     'Fire Ring': 'ring_choice',
+    'Bad Dragon': 'weapon',
     'Cloth Cape': 'cape',
     '1tapper': 'weapon', 'Gold Ring': 'ring_choice', 'Diamond Ring': 'ring_choice', 'Emerald Ring': 'ring_choice',
     'Ruby Ring': 'ring_choice', 'Sapphire Ring': 'ring_choice', 'Topaz Ring': 'ring_choice', 'Archery Bracer': 'ring_choice',
@@ -9077,6 +9084,7 @@ async function throwThrowableItem(itemName) {
       showEnemyStatusPopup('Madmax resisted the stun!', '', 84);
     } else {
       game.currentEnemy.stunnedUntil = Date.now() + STUN_BOMB_DURATION_MS;
+      game.currentEnemy.stunDurationMs = STUN_BOMB_DURATION_MS;
       startCombatStatusLoop();
       updateEnemyCombatUI();
       showEnemyStatusPopup('Enemy stunned for 10s', '', 84);
@@ -9574,7 +9582,7 @@ function updateBeerBuffTimerUI() {
 
   const monsterStunRemainingMs = Math.max(0, Number(game.currentEnemy?.stunnedUntil || 0) - Date.now());
   if (monsterStunRemainingMs > 0) {
-    activeEffects.push({ label: 'Monster Stun', remainingMs: monsterStunRemainingMs, durationMs: 10000, fillColor: '#6eb6ff' });
+    activeEffects.push({ label: 'Monster Stun', remainingMs: monsterStunRemainingMs, durationMs: Math.max(1000, Number(game.currentEnemy?.stunDurationMs || monsterStunRemainingMs)), fillColor: '#6eb6ff' });
   }
 
   const monsterPoisonRemainingMs = getEnemyPoisonRemainingMs();
@@ -17464,7 +17472,7 @@ async function rescueFarmCat() {
   game.pets.push(newPet);
   renderFarmCatOverlay();
   game.isDirty = true;
-  playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+  playGlobalSound('sounds/soundeffects/levelupsoundeffect.mp3');
   await showGameAlert('Cat Rescued!', 'You rescued the cat. It joined your Pet Yard.');
 }
 
@@ -17545,6 +17553,11 @@ function updatePetTimers() {
 function renderPetYard(tab) {
     const container = document.getElementById('petYardContent');
     if (!container) return;
+    if (window.__petYardRefreshTimeout) {
+        clearTimeout(window.__petYardRefreshTimeout);
+        window.__petYardRefreshTimeout = null;
+    }
+    container.dataset.activeTab = String(tab || 'pets');
     const previousPetsScrollTop = tab === 'pets'
       ? Number(container.querySelector('[data-pet-yard-scroll="1"]')?.scrollTop || 0)
       : 0;
@@ -17684,8 +17697,13 @@ function renderPetYard(tab) {
         `;
           // Auto-refresh UI if incubating
         if(isActive && !isReady) {
-            setTimeout(() => {
-                if(document.getElementById('hubPetYard').classList.contains('active')) renderPetYard('hatchery');
+            window.__petYardRefreshTimeout = setTimeout(() => {
+                window.__petYardRefreshTimeout = null;
+                const yard = document.getElementById('hubPetYard');
+                const currentContainer = document.getElementById('petYardContent');
+                if (yard && yard.classList.contains('active') && currentContainer && currentContainer.dataset.activeTab === 'hatchery') {
+                    renderPetYard('hatchery');
+                }
             }, 10000); // Refresh every 10s
         }
     }
@@ -17754,7 +17772,7 @@ function hatchEgg() {
     game.incubator.startTime = 0;
     
     addXP('petmastery', PET_HATCH_XP);
-    playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+    playGlobalSound('sounds/soundeffects/levelupsoundeffect.mp3');
     if (hatchedType === 'Black Chicken') showGameAlert("Rare Hatch!", 'You hatched a level 1 Black Chicken!');
     else showGameAlert("Hatched!", `You hatched a level 1 ${newPet.type}!`);
     
@@ -17780,7 +17798,7 @@ function processPetLevelUps(pet) {
         levelsGained++;
         if (pet.level >= 50) reachedLevel50 = true;
         showItemPopup(`Pet Lvl Up: ${pet.level}!`, null, 600);
-        playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+        playGlobalSound('sounds/soundeffects/levelupsoundeffect.mp3');
     }
 
     if (levelsGained <= 0) return false;
@@ -19325,14 +19343,8 @@ function openMillHub() {
 
   game.shopOpen = false;
   hideTooltip();
-  stopMining();
-  stopBlacksmithing();
-  stopFletching();
-  stopCraftingBowString();
-  stopFishing();
-  stopStoneForging();
+  stopTimedDetailNavigationActivities();
   if (!shouldPreserveBackgroundCooking()) stopCookingChicken();
-  stopWoodcutting();
 
   const wrapper = document.getElementById('hubWindmill');
   if (!wrapper) return;
@@ -19640,14 +19652,8 @@ function openKilnHub() {
 
   game.shopOpen = false;
   hideTooltip();
-  stopMining();
-  stopBlacksmithing();
-  stopFletching();
-  stopCraftingBowString();
-  stopFishing();
-  stopStoneForging();
+  stopTimedDetailNavigationActivities();
   if (!shouldPreserveBackgroundCooking()) stopCookingChicken();
-  stopWoodcutting();
 
   const wrapper = document.getElementById('hubKiln');
   if (!wrapper) return;
@@ -22067,14 +22073,8 @@ async function handleGardenClick() {
 function openWellHub() {
   game.shopOpen = false;
   hideTooltip();
-  stopMining();
-  stopBlacksmithing();
-  stopFletching();
-  stopCraftingBowString();
-  stopFishing();
-  stopStoneForging();
+  stopTimedDetailNavigationActivities();
   if (!shouldPreserveBackgroundCooking()) stopCookingChicken();
-  stopWoodcutting();
 
   const wrapper = document.getElementById('hubWell');
   
@@ -22549,7 +22549,7 @@ async function claimBountyReward() {
 
   const rewardAmount = b.reward || 2500;
   addGold(rewardAmount);
-  playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+  playGlobalSound('sounds/soundeffects/levelupsoundeffect.mp3');
 
   game.activeBounty = null;
 
@@ -23758,7 +23758,7 @@ async function completeQuest(lineId) {
     data.kills = 0; // Reset kills for next quest
     data.activeQuestId = null; // Force recalculation
     
-    playGlobalSound('sounds/soundeffects/levelupsound.mp3'); 
+    playGlobalSound('sounds/soundeffects/levelupsoundeffect.mp3'); 
     await showGameAlert("Quest Complete!", `You completed: ${qData.name}`);
     
     // --- NEW: Real-time update for the sidebar tab + main hub ---
@@ -25955,7 +25955,7 @@ async function openCombatInterface(enemyName) {
   if (enemyName === 'Wolf') unlockAchievementDirect('Find the Wolf');
 
   const startingHp = enemyName === 'Golden Dragon' ? Math.max(0, Math.min(def.maxHp, Number(game.goldenDragonHp || def.maxHp))) : def.maxHp;
-  game.currentEnemy = { ...def, currentHp: startingHp, stunnedUntil: 0, poisonExpiresAt: 0, lastPoisonTickAt: 0 };
+  game.currentEnemy = { ...def, currentHp: startingHp, stunnedUntil: 0, stunDurationMs: 0, poisonExpiresAt: 0, lastPoisonTickAt: 0 };
 
   const imgEl = document.getElementById('combat-enemy-img');
   if (imgEl) {
@@ -26202,6 +26202,7 @@ function runFromCombat(playerDied = false) {
   clearEnemyStunResumeTimeout();
   if (game.currentEnemy) {
     game.currentEnemy.stunnedUntil = 0;
+    game.currentEnemy.stunDurationMs = 0;
     game.currentEnemy.poisonExpiresAt = 0;
     game.currentEnemy.lastPoisonTickAt = 0;
   }
@@ -26229,11 +26230,13 @@ function runFromCombat(playerDied = false) {
         if (game.currentEnemy.name === 'Golden Dragon') {
             game.goldenDragonHp = Math.max(0, game.currentEnemy.currentHp);
             game.currentEnemy.stunnedUntil = 0;
+            game.currentEnemy.stunDurationMs = 0;
             game.isDirty = true;
             updateEnemyCombatUI();
         } else {
             game.currentEnemy.currentHp = game.currentEnemy.maxHp;
             game.currentEnemy.stunnedUntil = 0;
+            game.currentEnemy.stunDurationMs = 0;
             updateEnemyCombatUI();
         }
     }
@@ -26511,6 +26514,7 @@ function playerAttackTurn(spellOverride = null) {
 
   const playerStats = getPlayerCombatStats();
   const enemy = game.currentEnemy;
+  const equippedWeaponDef = (game.equipment.weapon && ITEM_STATS[game.equipment.weapon.name]) ? ITEM_STATS[game.equipment.weapon.name] : null;
   game.lastAttackTime = Date.now();
 
   const weaponType = playerStats.equippedWeaponType;
@@ -26645,6 +26649,18 @@ if (activeSpell) {
   }
   updateEnemyCombatUI();
 
+  if (effectiveDamage > 0 && equippedWeaponDef && Number(equippedWeaponDef.onHitStunDurationMs || 0) > 0 && game.currentEnemy.currentHp > 0) {
+    const weaponStunDurationMs = Math.max(0, Number(equippedWeaponDef.onHitStunDurationMs || 0));
+    if (weaponStunDurationMs > 0) {
+      game.currentEnemy.stunnedUntil = Date.now() + weaponStunDurationMs;
+      game.currentEnemy.stunDurationMs = weaponStunDurationMs;
+      startCombatStatusLoop();
+      updateEnemyCombatUI();
+      showEnemyStatusPopup('Enemy stunned for ' + Math.floor(weaponStunDurationMs / 1000) + 's', '', 84);
+      scheduleEnemyAttackResumeAfterStun(weaponStunDurationMs);
+    }
+  }
+
   if (effectiveDamage > 0 && weaponType === 'ranged' && game.equipment.arrows && /Poisoned/.test(String(game.equipment.arrows.name || '')) && game.currentEnemy.currentHp > 0) {
     const poisonResists = Array.isArray(enemy.resists) ? enemy.resists : [];
     if (!poisonResists.includes('poison')) {
@@ -26739,7 +26755,7 @@ function enemyAttackTurn() {
 
   const stunUntil = Number(enemy.stunnedUntil || 0);
   if (stunUntil > Date.now()) return;
-  if (stunUntil > 0) enemy.stunnedUntil = 0;
+  if (stunUntil > 0) { enemy.stunnedUntil = 0; enemy.stunDurationMs = 0; }
 
   // Madmax Special Attack Logic
   if (enemy.name === 'Madmax') {
@@ -27015,6 +27031,7 @@ function handleEnemyDeath() {
     }
     game.currentEnemy.currentHp = game.currentEnemy.maxHp;
     game.currentEnemy.stunnedUntil = 0;
+    game.currentEnemy.stunDurationMs = 0;
     game.currentEnemy.poisonExpiresAt = 0;
     game.currentEnemy.lastPoisonTickAt = 0;
     clearEnemyStunResumeTimeout();
@@ -27036,7 +27053,8 @@ const TOTAL_SLOTS = 50;
 const LOTTERY_JACKPOT_DESCRIPTIONS = {
     'Gold Crown': '** The crown provides +5 Defense and +2 Attack stats.',
     'Elegant Black Cape': '** The cape provides +2 Armor.',
-    'Fire Ring': '** The ring provides +1 Overall and Fire Resist.'
+    'Fire Ring': '** The ring provides +1 Overall and Fire Resist.',
+    'Bad Dragon': '** The weapon provides +50 Melee Attack, +25 Melee Strength, and stuns on hit.'
 };
 
 const BASE_LOTTERY_VARIANT_LOOT = [
@@ -27094,12 +27112,12 @@ const LOTTERY_VARIANT_4_LOOT = replaceLotteryLootEntries(BASE_LOTTERY_VARIANT_LO
 const LOTTERY_VARIANTS = [
     {
         id: 1,
-        jackpot: { name: 'Fire Ring', desc: LOTTERY_JACKPOT_DESCRIPTIONS['Fire Ring'] },
+        jackpot: { name: 'Bad Dragon', desc: LOTTERY_JACKPOT_DESCRIPTIONS['Bad Dragon'] },
         lootTable: LOTTERY_VARIANT_1_LOOT
     },
     {
         id: 2,
-        jackpot: { name: 'Elegant Black Cape', desc: LOTTERY_JACKPOT_DESCRIPTIONS['Elegant Black Cape'] },
+        jackpot: { name: 'Fire Ring', desc: LOTTERY_JACKPOT_DESCRIPTIONS['Fire Ring'] },
         lootTable: LOTTERY_VARIANT_2_LOOT
     },
     {
@@ -27109,7 +27127,7 @@ const LOTTERY_VARIANTS = [
     },
     {
         id: 4,
-        jackpot: { name: 'Elegant Black Cape', desc: LOTTERY_JACKPOT_DESCRIPTIONS['Elegant Black Cape'] },
+        jackpot: { name: 'Bad Dragon', desc: LOTTERY_JACKPOT_DESCRIPTIONS['Bad Dragon'] },
         lootTable: LOTTERY_VARIANT_4_LOOT
     }
 ];
@@ -27337,7 +27355,7 @@ async function buyLotteryTicket() {
         const resultMsg = document.getElementById('lotteryResultMsg');
         if (wonItemName === jackpot.name) {
             resultMsg.innerHTML = `<span style="color: #ff4d4d; font-size: 22px;">JACKPOT! YOU WON THE ${wonItemName.toUpperCase()}!</span>`;
-            playGlobalSound('sounds/soundeffects/levelupsound.mp3');
+            playGlobalSound('sounds/soundeffects/levelupsoundeffect.mp3');
         } else {
             resultMsg.innerHTML = `Won: ${wonItemQty.toLocaleString()} ${wonItemName}`;
             playGlobalSound('sounds/soundeffects/inventorysound.mp3');
@@ -27818,6 +27836,7 @@ function renderBankGrid() {
                       else if (item.name === 'Gold Crown') imgName = 'goldcrown'; 
               else if (item.name === 'Elegant Black Cape') imgName = 'elegantblackcape';
               else if (item.name === 'Fire Ring') imgName = 'firering';
+              else if (item.name === 'Bad Dragon') imgName = 'baddragon';
 
               else if (item.name === 'Iron Battleaxe') imgName = 'ironbattleaxe';
               else if (item.name === 'Iron Shield') imgName = 'ironshield';
@@ -29005,7 +29024,12 @@ window.playGlobalSound = function(src) {
   try {
     const sound = new Audio(src);
     sound.volume = game.settings.sfxVolume; // Use new sfxVolume setting
-    sound.play();
+    const playPromise = sound.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch((e) => {
+        console.warn("Could not play sound", src, e);
+      });
+    }
   } catch (e) {
     console.warn("Could not play sound", src, e);
   }
@@ -30480,7 +30504,7 @@ function renderInspectEquipment(equipment, frame) {
         slotEl.innerHTML = `<img src="images/${imgName}.png" alt="${slotType}" loading="eager" style="${isTwoHandedBlock ? 'opacity: 0.5; filter: grayscale(50%);' : ''} ${extraStyle}">`;
           if (item) {
             const enchantLvl = item.enchantLevel || 0;
-            if (item.name === 'Gold Crown' || item.name === 'Elegant Black Cape') {
+            if (isLegendaryItemName(item.name)) {
                 slotEl.classList.add('legendary-glow');
             } else if (enchantLvl > 0) {
                 slotEl.classList.add(`enchant-glow-${enchantLvl}`);
@@ -31032,7 +31056,7 @@ function renderInspectTrophyRoomEquipmentFrame(equipment, frame) {
 
         if (displayedItem) {
             const enchantLevel = Number(displayedItem.enchantLevel || 0);
-            if (displayedItem.name === 'Gold Crown' || displayedItem.name === 'Elegant Black Cape') slotEl.classList.add('legendary-glow');
+            if (isLegendaryItemName(displayedItem.name)) slotEl.classList.add('legendary-glow');
             else if (enchantLevel > 0) slotEl.classList.add(`enchant-glow-${enchantLevel}`);
 
             if (enchantLevel > 0) {
@@ -31313,6 +31337,12 @@ async function attemptSteal(instanceId) {
     if (targetIndex === -1) return;
 
     const target = game.thievingTargets[targetIndex];
+    if (game.backgroundActionInfo && typeof stopBackgroundGenericAction === 'function') {
+        stopBackgroundGenericAction();
+    }
+    if (game.cookingActive && typeof stopActiveCookingTaskForSwitch === 'function') {
+        stopActiveCookingTaskForSwitch();
+    }
     const roll = Math.random() * 100;
 
     if (roll < target.failRate) {
@@ -36698,7 +36728,7 @@ window.getCraftJsonDebugSnapshot = function(){
   function openJsonRecipe(recipe){
     const backgroundActionTaskKey = getBackgroundActionTaskKeyForRecipe(recipe);
     const cookingTaskKey = recipe.section === 'cooking' ? 'json:' + String(recipe.id || '') : null;
-    const preserveCurrentCooking = !!(recipe && recipe.section === 'cooking' && shouldPreserveCookingWhileOpeningRecipe());
+    const preserveCurrentCooking = shouldPreserveCookingWhileOpeningRecipe();
     const preserveCurrentBackgroundAction = shouldPreserveBackgroundAction();
     game.shopOpen = false;
     hideTooltip();
@@ -36790,6 +36820,8 @@ window.getCraftJsonDebugSnapshot = function(){
     showMainScreen('hubDynamic', (preserveCurrentCooking || preserveCurrentBackgroundAction) ? { stopActions: false } : undefined);
     if (recipe.section === 'cooking') {
       syncCookingForegroundUi(cookingTaskKey, 'jsonRecipeProgress', 'jsonRecipeStartBtn', 'jsonRecipeStopBtn', Number(recipe.time || 0));
+    } else {
+      setCookingForegroundTask(null);
     }
     if (backgroundActionTaskKey) {
       syncBackgroundActionForegroundUi(backgroundActionTaskKey, 'jsonRecipeProgress', 'jsonRecipeStartBtn', 'jsonRecipeStopBtn', Number(recipe.time || 0));
@@ -37226,7 +37258,6 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
-
 
 
 
