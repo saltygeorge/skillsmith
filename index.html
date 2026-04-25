@@ -2938,8 +2938,9 @@ button.primary:hover { background: var(--accent-hover); }
               </div>
               <img id="trophyRoomActionIcon" src="images/equipmenticon.png" alt="Trophy Rooms" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openTrophyRoomHub()">
               <img id="huntingBoardActionIcon" src="images/huntingboard.jpeg" alt="Hunting Board" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
-              <img id="personalFarmActionIcon" src="images/farmicon.jpeg" alt="My Farm" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openPersonalFarmHub()">
+              <img id="personalFarmActionIcon" src="images/farmicon.jpeg" alt="My Farm" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="backToActions()">
               <img id="petYardActionIcon" src="images/petyardicon.jpeg" alt="Pet Yard" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openPetYardHub()">
+              <img id="employeesActionIcon" src="images/firecamp.png" alt="Employees" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;" onclick="openFarmEmployeesHub()">
               <img id="alchemyActionIcon" src="images/alchemyicon.jpeg" alt="Alchemy Table" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="tailoringActionIcon" src="images/tailoringtable.png" alt="Tailoring Table" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
               <img id="kilnActionIcon" src="images/kilnicon.png" alt="Charcoal Kiln" style="margin-top: 10px; cursor: pointer; width: 60px; height: 60px; object-fit: contain;">
@@ -3358,7 +3359,7 @@ button.primary:hover { background: var(--accent-hover); }
                 </div>
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
-              <button id="hubBarn_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="openPersonalFarmHub()">Return</button>
+              <button id="hubBarn_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="backToActions()">Return</button>
             </div>
           </div>
 
@@ -3378,7 +3379,7 @@ button.primary:hover { background: var(--accent-hover); }
                 </div>
 
             <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
-              <button id="hubChickenCoop_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="openPersonalFarmHub()">Return</button>
+              <button id="hubChickenCoop_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="backToActions()">Return</button>
             </div>
           </div>
 
@@ -3398,7 +3399,16 @@ button.primary:hover { background: var(--accent-hover); }
             </div>
           </div>
 
-          <div id="hubQuestLine" class="hub-screen">
+                    <div id="hubFarmEmployees" class="hub-screen">
+            <h2>Employees</h2>
+            <div style="margin-top:8px; color:#efe3cf;">Hire helpers to keep your camp working in the background.</div>
+            <div id="farmEmployeesContent" style="margin-top:12px; width:100%; max-width:560px; margin-left:auto; margin-right:auto; max-height:520px; overflow-y:auto; padding-right:4px; box-sizing:border-box;"></div>
+            <div class="action-buttons" style="margin-top: auto; padding-bottom: 10px;">
+              <button id="hubFarmEmployees_ReturnBtn" class="primary" style="background:#666;" type="button" onclick="backToActions()">Return</button>
+            </div>
+          </div>
+
+<div id="hubQuestLine" class="hub-screen">
             <h2 id="questLineTitle" style="color: #fff; flex-shrink: 0;">Quest Line Title</h2>
                   <div class="quest-scroll-container">
                           <div id="activeQuestContainer" style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--accent);">
@@ -4338,6 +4348,7 @@ const game = {
     gardenTomb: createDefaultGardenTombState(),
     seedBagStorage: createDefaultSeedBagStorage(),
     siloStorage: createDefaultSiloStorage(),
+    employees: createDefaultFarmEmployeesState(),
     buildings: { coop: false, barn: false, well: false, garden: false, secondField: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
   },
   
@@ -6478,8 +6489,8 @@ const ITEM_SELL_PRICES = {
   '1tapper': 0,
   'Silver Fangs of the Fallen Monarch': 25000,
   'Iron Battleaxe': 5000,
-  'Iron Shield': 5000,
-  'Gold Shield': 50000,
+  'Iron Shield': 1500,
+  'Gold Shield': 15000,
 
   // Armor
   'Copper Helmet': 20,
@@ -8466,7 +8477,18 @@ function triggerAutoEat() {
         return true; 
     }
 
-    return false; 
+    return false;
+}
+
+function getFuelItemTooltipHtml(itemName, qty = 1) {
+  const fuelCfg =
+    getCookingFuelConfig(itemName) ||
+    getBlacksmithFuelConfig(itemName) ||
+    getCraftingFuelConfig(itemName) ||
+    getAlchemyFuelConfig(itemName);
+  if (!fuelCfg || !fuelCfg.durationMs) return '';
+  const totalQty = Math.max(1, Math.floor(Number(qty || 0)));
+  return `<div style="color:#ffcf7a;">Fuel: ${formatCookingFuelTime(fuelCfg.durationMs)} each</div><div style="color:#ffcf7a;">Total fuel: ${formatCookingFuelTime(fuelCfg.durationMs * totalQty)} heat</div>`;
 }
 
 function renderInventoryGrid(){
@@ -8738,6 +8760,7 @@ function renderInventoryGrid(){
         clickAction = '<div style="color:#aaa; margin-top: 5px; font-size:11px;">Used automatically while fishing</div>';
       }
 
+      itemStats += getFuelItemTooltipHtml(itemName, item.qty);
       const tooltipContent = `
         <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${itemName} ${item.enchantLevel > 0 ? '+' + item.enchantLevel : ''}</div>
         <div style="color:#fff; font-size:12px;">Amount: ${item.qty.toLocaleString()}</div>
@@ -16181,6 +16204,491 @@ function getFarmingHarvestMultiplier() {
 function getFarmAnimalYieldMultiplier() {
   return game.farming && game.farming.level >= 60 ? 2 : 1;
 }
+function createDefaultFarmEmployeeEntry() {
+  return { hired: false, active: true, accMs: 0 };
+}
+
+const FARM_EMPLOYEE_STORAGE_SIZE = 12;
+
+function createDefaultFarmEmployeeStorage() {
+  return Array.from({ length: 12 }, () => null);
+}
+
+function createDefaultFarmEmployeesState() {
+  return {
+    lastCalcTime: Date.now(),
+    foodType: null,
+    foodQty: 0,
+    foodUsedUnits: 0,
+    foodProgressMs: 0,
+    storage: createDefaultFarmEmployeeStorage(),
+    farmer: createDefaultFarmEmployeeEntry(),
+    healer: createDefaultFarmEmployeeEntry(),
+    miner: createDefaultFarmEmployeeEntry(),
+    trainer: createDefaultFarmEmployeeEntry(),
+    milker: createDefaultFarmEmployeeEntry(),
+    gatherer: createDefaultFarmEmployeeEntry(),
+    lumberjack: createDefaultFarmEmployeeEntry()
+  };
+}
+
+const FARM_EMPLOYEE_CONFIG = {
+  farmer: { name: 'Farmer', price: 250000, img: 'farmingskillicon.jpeg', desc: 'Crop growth speed +50%.' },
+  healer: { name: 'Healer', price: 175000, img: 'vitalitypotion.png', desc: 'Restores 1 HP every 30s.' },
+  miner: { name: 'Miner', price: 300000, img: 'miningskillicon.png', desc: 'Finds 1 random ore every 30s.' },
+  trainer: { name: 'Trainer', price: 225000, img: 'petmasteryskillicon.jpeg', desc: 'Grants 1 XP per minute to your equipped pet.' },
+  milker: { name: 'Milker', price: 200000, img: 'bucketofmilk.png', desc: 'Automatically collects ready milk.' },
+  gatherer: { name: 'Gatherer', price: 150000, img: 'wildherb.png', desc: 'Finds 1 Wild Herb every 5 min.' },
+  lumberjack: { name: 'Lumberjack', price: 275000, img: 'woodcuttingskillicon.jpeg', desc: 'Finds 1 random wood every min.' }
+};
+
+const FARM_EMPLOYEE_INTERVALS = {
+  healer: 30000,
+  miner: 30000,
+  trainer: 60000,
+  milker: 30000,
+  gatherer: 300000,
+  lumberjack: 60000
+};
+
+const FARM_EMPLOYEE_RESOURCE_POOLS = {
+  miner: ['Copper Ore', 'Coal Ore', 'Iron Ore', 'Silver Ore', 'Gold Ore'],
+  lumberjack: ['Softwood', 'Oak', 'Birch', 'Maple', 'Mahogany']
+};
+
+const FARM_EMPLOYEE_FOOD_INTERVAL_MS = 300000;
+const FARM_EMPLOYEE_FOOD_UNITS_PER_EMPLOYEE = 10;
+
+function getFarmEmployeeFoodUnits(itemName) {
+  if (!itemName) return 0;
+  const def = typeof getJsonItemDefinition === 'function' ? getJsonItemDefinition(itemName) : null;
+  const healAmount = Number((def && def.effects && def.effects.heal) || getFoodHealAmount(itemName) || 0);
+  return Math.max(0, Math.floor(healAmount));
+}
+
+function isFarmEmployeeFoodItem(itemName) {
+  return getFarmEmployeeFoodUnits(itemName) > 0;
+}
+
+function formatFarmEmployeeFuelTime(ms) {
+  const safeMs = Math.max(0, Number(ms || 0));
+  const totalSec = Math.ceil(safeMs / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function normalizeFarmEmployeeFoodState() {
+  const employees = game.farm.employees;
+  if (!employees) return;
+
+  employees.foodType = employees.foodType ? String(employees.foodType) : null;
+  employees.foodQty = Math.max(0, Math.floor(employees.foodQty || 0));
+  employees.foodUsedUnits = Math.max(0, Math.floor(employees.foodUsedUnits || 0));
+  employees.foodProgressMs = Math.max(0, Number(employees.foodProgressMs || 0));
+
+  const unitsPerItem = getFarmEmployeeFoodUnits(employees.foodType);
+  if (!employees.foodType || unitsPerItem <= 0 || employees.foodQty <= 0) {
+    employees.foodType = null;
+    employees.foodQty = 0;
+    employees.foodUsedUnits = 0;
+    employees.foodProgressMs = 0;
+    return;
+  }
+
+  while (employees.foodQty > 0 && employees.foodUsedUnits >= unitsPerItem) {
+    employees.foodUsedUnits -= unitsPerItem;
+    employees.foodQty -= 1;
+  }
+
+  if (employees.foodQty <= 0) {
+    employees.foodType = null;
+    employees.foodQty = 0;
+    employees.foodUsedUnits = 0;
+    employees.foodProgressMs = 0;
+  }
+}
+
+function normalizeFarmEmployeeStorage() {
+  const employees = game && game.farm && game.farm.employees;
+  if (!employees) return;
+  const normalized = createDefaultFarmEmployeeStorage();
+  const rawStorage = Array.isArray(employees.storage) ? employees.storage : [];
+  for (let i = 0; i < Math.min(FARM_EMPLOYEE_STORAGE_SIZE, rawStorage.length); i++) {
+    const slot = rawStorage[i];
+    if (!slot || !slot.name || Number(slot.qty || 0) <= 0) continue;
+    const normalizedDye = normalizeItemDyeColor(slot.dyeColor);
+    normalized[i] = {
+      name: String(slot.name),
+      qty: Math.max(1, Math.floor(Number(slot.qty || 0))),
+      enchantLevel: Number(slot.enchantLevel || 0),
+      ...(normalizedDye ? { dyeColor: normalizedDye } : {})
+    };
+  }
+  employees.storage = normalized;
+}
+
+function canReceiveFarmEmployeeStorageItem(itemName, enchantLevel = 0, dyeColor = null) {
+  ensureFarmState();
+  ensureFarmEmployeesState();
+  const storage = Array.isArray(game.farm.employees.storage) ? game.farm.employees.storage : [];
+  for (const slot of storage) {
+    if (slot === null) return true;
+    if (itemsMatchForStack(slot, itemName, enchantLevel, dyeColor)) return true;
+  }
+  return false;
+}
+
+function addFarmEmployeeStorageItem(name, qty = 1, enchantLevel = 0, dyeColor = null) {
+  ensureFarmState();
+  ensureFarmEmployeesState();
+  const storage = game.farm.employees.storage;
+  const amountToAdd = Math.max(0, Math.floor(Number(qty || 0)));
+  if (!name || amountToAdd <= 0) return 0;
+
+  for (const slot of storage) {
+    if (itemsMatchForStack(slot, name, enchantLevel, dyeColor)) {
+      slot.qty += amountToAdd;
+      game.isDirty = true;
+      return amountToAdd;
+    }
+  }
+
+  const emptyIndex = storage.findIndex(slot => slot === null);
+  if (emptyIndex === -1) return 0;
+
+  const normalizedDye = normalizeItemDyeColor(dyeColor);
+  storage[emptyIndex] = {
+    name,
+    qty: amountToAdd,
+    enchantLevel: Number(enchantLevel || 0),
+    ...(normalizedDye ? { dyeColor: normalizedDye } : {})
+  };
+  game.isDirty = true;
+  return amountToAdd;
+}
+
+function getFarmEmployeeAvailableFoodUnits() {
+  ensureFarmState();
+  normalizeFarmEmployeeFoodState();
+  const employees = game.farm.employees;
+  const unitsPerItem = getFarmEmployeeFoodUnits(employees.foodType);
+  if (!employees.foodType || unitsPerItem <= 0 || employees.foodQty <= 0) return 0;
+  return Math.max(0, (employees.foodQty * unitsPerItem) - employees.foodUsedUnits);
+}
+
+function getFarmEmployeeActiveWorkerCount() {
+  ensureFarmState();
+  return Object.keys(FARM_EMPLOYEE_CONFIG).reduce((count, key) => {
+    const entry = game.farm.employees[key] || createDefaultFarmEmployeeEntry();
+    return count + (entry.hired && entry.active ? 1 : 0);
+  }, 0);
+}
+
+function getFarmEmployeeRemainingReserveMs() {
+  ensureFarmState();
+  normalizeFarmEmployeeFoodState();
+  const availableUnits = getFarmEmployeeAvailableFoodUnits();
+  if (availableUnits <= 0) return 0;
+  const employeeFuelUnitMs = FARM_EMPLOYEE_FOOD_INTERVAL_MS / FARM_EMPLOYEE_FOOD_UNITS_PER_EMPLOYEE;
+  return Math.max(0, (availableUnits * employeeFuelUnitMs) - Number(game.farm.employees.foodProgressMs || 0));
+}
+
+function getFarmEmployeeRemainingRuntimeMs(activeCount = getFarmEmployeeActiveWorkerCount()) {
+  if (activeCount <= 0) return 0;
+  return Math.floor(getFarmEmployeeRemainingReserveMs() / activeCount);
+}
+
+function consumeFarmEmployeeFoodUnits(unitsToConsume) {
+  ensureFarmState();
+  normalizeFarmEmployeeFoodState();
+  const employees = game.farm.employees;
+  const availableUnits = getFarmEmployeeAvailableFoodUnits();
+  const consumeUnits = Math.max(0, Math.min(availableUnits, Math.floor(unitsToConsume || 0)));
+  if (consumeUnits <= 0) return 0;
+  employees.foodUsedUnits = Math.max(0, Number(employees.foodUsedUnits || 0)) + consumeUnits;
+  normalizeFarmEmployeeFoodState();
+  game.isDirty = true;
+  return consumeUnits;
+}
+
+function getFarmEmployeePoweredElapsedMs(elapsed) {
+  ensureFarmState();
+  normalizeFarmEmployeeFoodState();
+  const employees = game.farm.employees;
+  const activeCount = getFarmEmployeeActiveWorkerCount();
+  if (activeCount <= 0) {
+    return 0;
+  }
+
+  const reserveEmployeeMs = getFarmEmployeeRemainingReserveMs();
+  if (reserveEmployeeMs <= 0) {
+    employees.foodProgressMs = 0;
+    return 0;
+  }
+
+  const requestedEmployeeMs = Math.max(0, Number(elapsed || 0)) * activeCount;
+  const actualEmployeeMs = Math.min(requestedEmployeeMs, reserveEmployeeMs);
+  if (actualEmployeeMs <= 0) return 0;
+
+  employees.foodProgressMs = Math.max(0, Number(employees.foodProgressMs || 0)) + actualEmployeeMs;
+  const employeeFuelUnitMs = FARM_EMPLOYEE_FOOD_INTERVAL_MS / FARM_EMPLOYEE_FOOD_UNITS_PER_EMPLOYEE;
+  const consumedUnits = Math.floor(employees.foodProgressMs / employeeFuelUnitMs);
+  if (consumedUnits > 0) {
+    consumeFarmEmployeeFoodUnits(consumedUnits);
+    employees.foodProgressMs = Math.max(0, Number(employees.foodProgressMs || 0) - (consumedUnits * employeeFuelUnitMs));
+  }
+  game.isDirty = true;
+  return actualEmployeeMs / activeCount;
+}
+
+function getFarmEmployeeDisplayState(employeeKey) {
+  ensureFarmState();
+  const entry = game.farm.employees[employeeKey] || createDefaultFarmEmployeeEntry();
+  if (!entry.hired) return { text: 'Not hired', color: '#ccc', active: false };
+  if (!entry.active) return { text: 'Paused', color: '#d7c09b', active: false };
+  if (getFarmEmployeeAvailableFoodUnits() <= 0) return { text: 'Idle - No food in slot', color: '#ff8888', active: false };
+  return { text: 'Working', color: '#8fd18f', active: true };
+}
+
+function addFarmEmployeeFood(itemName, qty) {
+  ensureFarmState();
+  const employees = game.farm.employees;
+  const amount = Math.max(0, Math.floor(qty || 0));
+  if (!itemName || amount <= 0 || !isFarmEmployeeFoodItem(itemName)) return false;
+  normalizeFarmEmployeeFoodState();
+  if (employees.foodType && employees.foodType !== itemName) return false;
+  employees.foodType = itemName;
+  employees.foodQty = Math.max(0, Math.floor(employees.foodQty || 0)) + amount;
+  game.isDirty = true;
+  return true;
+}
+
+async function handleFarmEmployeeFoodDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const slot = document.getElementById('farmEmployeeFoodSlot');
+  if (slot) slot.classList.remove('drag-over');
+
+  ensureFarmState();
+  normalizeFarmEmployeeFoodState();
+
+  let dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+  if ((dragIndex === null || dragIndex < 0) && e.dataTransfer) {
+    const dragPayload = e.dataTransfer.getData('text/plain') || '';
+    const match = dragPayload.match(/^inventory_slot:(\d+)$/);
+    if (match) dragIndex = parseInt(match[1], 10);
+  }
+
+  const src = (dragIndex !== null && dragIndex >= 0 ? game.inventory[dragIndex] : null) || window.__lastInventoryDragSnapshot?.item || null;
+  if (!src || !src.name || src.qty < 1) return;
+
+  if (!isFarmEmployeeFoodItem(src.name)) {
+    await showGameAlert('Invalid Food', 'Only healing food can be used in the employee food slot.');
+    return;
+  }
+
+  const currentType = game.farm.employees.foodType;
+  if (currentType && currentType !== src.name) {
+    await showGameAlert('Food Slot Busy', `The employee food slot already contains ${currentType}. Collect it first or add more of the same food.`);
+    return;
+  }
+
+  const amount = Math.floor(src.qty || 0);
+  if (amount <= 0) return;
+  if (!removeItem(src.name, amount, Number(src.enchantLevel || 0), src.dyeColor || null)) return;
+  addFarmEmployeeFood(src.name, amount);
+
+  const draggingEl = document.querySelector('#inventoryGrid .inv-slot.dragging');
+  if (draggingEl) draggingEl.classList.remove('dragging');
+  window.__draggedInventoryIndex = null;
+  window.__lastInventoryDragSnapshot = null;
+  game.isDragging = false;
+
+  renderInventoryGrid();
+  renderFarmEmployeesHub();
+}
+
+function applyFarmEmployeeGrowthBoost(extraMs) {
+  ensureFarmState();
+  const boostMs = Math.max(0, Number(extraMs || 0));
+  if (boostMs <= 0) return;
+  const applyBoostToSlot = (slot, requiresWater = false) => {
+    if (!slot) return;
+    if (requiresWater && !slot.watered) return;
+    if (!slot.waterTime) return;
+    slot.waterTime = Number(slot.waterTime) - boostMs;
+  };
+  [game.farm.garden, game.farm.garden2].forEach(field => {
+    if (!Array.isArray(field)) return;
+    field.forEach(slot => applyBoostToSlot(slot, true));
+  });
+  if (Array.isArray(game.farm.cellar)) {
+    game.farm.cellar.forEach(slot => applyBoostToSlot(slot, false));
+  }
+  game.isDirty = true;
+}
+
+async function collectFarmEmployeeFood() {
+  ensureFarmState();
+  normalizeFarmEmployeeFoodState();
+  const employees = game.farm.employees;
+  const itemName = employees.foodType;
+  if (!itemName || employees.foodQty <= 0) return;
+  const hasPartialItem = Number(employees.foodUsedUnits || 0) > 0 || Number(employees.foodProgressMs || 0) > 0;
+  const returnQty = Math.max(0, Math.floor(employees.foodQty || 0) - (hasPartialItem ? 1 : 0));
+  if (returnQty <= 0) return;
+  if (!canReceiveItem(itemName)) {
+    await showGameAlert('Inventory Full', `You need room to collect ${itemName}.`);
+    return;
+  }
+  addItem(itemName, returnQty);
+  employees.foodQty = Math.max(0, Math.floor(employees.foodQty || 0) - returnQty);
+  if (employees.foodQty <= 0) {
+    employees.foodType = null;
+    employees.foodQty = 0;
+    employees.foodUsedUnits = 0;
+    employees.foodProgressMs = 0;
+  }
+  game.isDirty = true;
+  renderFarmEmployeesHub();
+  renderInventoryGrid();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+async function toggleFarmEmployeeActive(employeeKey) {
+  ensureFarmState();
+  const entry = game.farm.employees && game.farm.employees[employeeKey];
+  const meta = FARM_EMPLOYEE_CONFIG[employeeKey];
+  if (!entry || !meta || !entry.hired) return;
+  entry.active = !entry.active;
+  game.farm.employees.lastCalcTime = Date.now();
+  game.isDirty = true;
+  renderFarmEmployeesHub();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+async function collectFarmEmployeeStorageSlot(slotIndex) {
+  ensureFarmState();
+  ensureFarmEmployeesState();
+  normalizeFarmEmployeeStorage();
+  const storage = game.farm.employees.storage;
+  const safeIndex = Math.max(0, Math.min(FARM_EMPLOYEE_STORAGE_SIZE - 1, Number(slotIndex || 0)));
+  const slot = storage[safeIndex];
+  if (!slot) return;
+  if (!canReceiveItem(slot.name, slot.enchantLevel || 0, slot.dyeColor || null)) {
+    await showGameAlert('Inventory Full', `You need room to collect ${slot.name}.`);
+    return;
+  }
+  addItem(slot.name, Number(slot.qty || 0), slot.enchantLevel || 0, slot.dyeColor || null);
+  storage[safeIndex] = null;
+  game.isDirty = true;
+  renderFarmEmployeesHub();
+  renderInventoryGrid();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+}
+
+async function collectAllFarmEmployeeStorage() {
+  ensureFarmState();
+  ensureFarmEmployeesState();
+  normalizeFarmEmployeeStorage();
+  const storage = game.farm.employees.storage;
+  let movedAnything = false;
+  let blockedAnything = false;
+  for (let i = 0; i < storage.length; i++) {
+    const slot = storage[i];
+    if (!slot) continue;
+    if (!canReceiveItem(slot.name, slot.enchantLevel || 0, slot.dyeColor || null)) {
+      blockedAnything = true;
+      continue;
+    }
+    addItem(slot.name, Number(slot.qty || 0), slot.enchantLevel || 0, slot.dyeColor || null);
+    storage[i] = null;
+    movedAnything = true;
+  }
+  if (!movedAnything && blockedAnything) {
+    await showGameAlert('Inventory Full', 'You need room to collect employee resources.');
+    return;
+  }
+  if (movedAnything) {
+    game.isDirty = true;
+    renderFarmEmployeesHub();
+    renderInventoryGrid();
+    if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  }
+}
+
+function bindFarmEmployeeFoodSlotEvents() {
+  const slot = document.getElementById('farmEmployeeFoodSlot');
+  if (!slot) return;
+  const updateDropState = (e) => {
+    const dragIndex = (typeof window.__draggedInventoryIndex === 'number') ? window.__draggedInventoryIndex : null;
+    const draggedItem = (dragIndex !== null && dragIndex >= 0) ? game.inventory[dragIndex] : (window.__lastInventoryDragSnapshot?.item || null);
+    const currentType = game.farm && game.farm.employees ? game.farm.employees.foodType : null;
+    const isValidFoodDrag = !!draggedItem && isFarmEmployeeFoodItem(draggedItem.name) && draggedItem.qty > 0 && (!currentType || currentType === draggedItem.name);
+    if (isValidFoodDrag) {
+      e.preventDefault();
+      slot.classList.add('drag-over');
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    } else {
+      slot.classList.remove('drag-over');
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'none';
+    }
+  };
+
+  slot.addEventListener('dragenter', updateDropState);
+  slot.addEventListener('dragover', updateDropState);
+  slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+  slot.addEventListener('drop', (e) => {
+    slot.classList.remove('drag-over');
+    handleFarmEmployeeFoodDrop(e);
+  });
+  slot.addEventListener('click', () => { collectFarmEmployeeFood(); });
+}
+
+function getRandomArrayEntry(list) {
+  if (!Array.isArray(list) || list.length <= 0) return null;
+  return list[Math.floor(Math.random() * list.length)] || null;
+}
+
+function canReceiveAnyNamedItem(itemNames) {
+  return Array.isArray(itemNames) && itemNames.some(itemName => canReceiveItem(itemName));
+}
+
+function ensureFarmEmployeesState() {
+  if (!game.farm) game.farm = {};
+  if (!game.farm.employees) game.farm.employees = createDefaultFarmEmployeesState();
+  if (typeof game.farm.employees.lastCalcTime !== 'number') game.farm.employees.lastCalcTime = Date.now();
+  if (typeof game.farm.employees.foodType !== 'string') game.farm.employees.foodType = game.farm.employees.foodType ? String(game.farm.employees.foodType) : null;
+  if (typeof game.farm.employees.foodQty !== 'number') game.farm.employees.foodQty = 0;
+  if (typeof game.farm.employees.foodUsedUnits !== 'number') game.farm.employees.foodUsedUnits = 0;
+  if (typeof game.farm.employees.foodProgressMs !== 'number') game.farm.employees.foodProgressMs = 0;
+  if (!Array.isArray(game.farm.employees.storage)) game.farm.employees.storage = createDefaultFarmEmployeeStorage();
+  Object.keys(FARM_EMPLOYEE_CONFIG).forEach(key => {
+    if (!game.farm.employees[key]) game.farm.employees[key] = createDefaultFarmEmployeeEntry();
+    if (typeof game.farm.employees[key].hired !== 'boolean') game.farm.employees[key].hired = !!game.farm.employees[key].hired;
+    if (typeof game.farm.employees[key].active !== 'boolean') game.farm.employees[key].active = true;
+    if (typeof game.farm.employees[key].accMs !== 'number') game.farm.employees[key].accMs = 0;
+  });
+  normalizeFarmEmployeeFoodState();
+  normalizeFarmEmployeeStorage();
+}
+
+function isFarmEmployeeHired(employeeKey) {
+  ensureFarmState();
+  return !!(game.farm.employees && game.farm.employees[employeeKey] && game.farm.employees[employeeKey].hired);
+}
+
+function getFarmGrowthSpeedMultiplier() {
+  return 1;
+}
+
+function getFarmGrowthElapsedMs(startTime, now = Date.now()) {
+  if (!startTime) return 0;
+  return Math.max(0, Number(now) - Number(startTime));
+}
 
 // +++ NEW: FARM BUILDING COSTS +++
 const COOP_COST = 75000;
@@ -16366,6 +16874,119 @@ function getPersonalFarmImageSrc() {
   return game.farm.buildings.silo ? 'images/personalfarmupgraded.webp' : 'images/personalfarm.webp';
 }
 
+
+async function hireFarmEmployee(employeeKey) {
+  ensureFarmState();
+  const meta = FARM_EMPLOYEE_CONFIG[employeeKey];
+  if (!meta) return;
+  if (isFarmEmployeeHired(employeeKey)) {
+    await showGameAlert('Already Hired', `${meta.name} is already working for your camp.`);
+    return;
+  }
+  const confirmed = await showGameConfirm('Hire Employee', `Hire ${meta.name} for ${formatAmount(meta.price)} Gold?`);
+  if (!confirmed) return;
+  if (Number(game.gold || 0) < Number(meta.price || 0)) {
+    await showGameAlert('Not Enough Gold', `You need ${formatAmount(meta.price)} Gold.`);
+    return;
+  }
+  addGold(-Number(meta.price || 0));
+  game.farm.employees[employeeKey].hired = true;
+  game.farm.employees[employeeKey].active = true;
+  game.farm.employees[employeeKey].accMs = 0;
+  game.farm.employees.lastCalcTime = Date.now();
+  game.isDirty = true;
+  renderFarmUpgradePanels();
+  if (document.getElementById('hubFarmEmployees')?.classList.contains('active')) renderFarmEmployeesHub();
+  if (typeof window.savePlayerData === 'function') window.savePlayerData();
+  await showGameAlert('Employee Hired', `${meta.name} joined your camp. Load food in the shared slot, then toggle them Active when you want them working.`);
+}
+
+function renderFarmEmployeesHub() {
+  ensureFarmState();
+  normalizeFarmEmployeeFoodState();
+  normalizeFarmEmployeeStorage();
+  const container = document.getElementById('farmEmployeesContent');
+  if (!container) return;
+
+  const employees = game.farm.employees;
+  const foodType = employees.foodType;
+  const foodQty = Math.max(0, Math.floor(employees.foodQty || 0));
+  const foodUnits = getFarmEmployeeAvailableFoodUnits();
+  const activeCount = getFarmEmployeeActiveWorkerCount();
+  const remainingRuntimeMs = getFarmEmployeeRemainingRuntimeMs(activeCount);
+  const storage = Array.isArray(employees.storage) ? employees.storage : createDefaultFarmEmployeeStorage();
+  const usedStorageSlots = storage.filter(Boolean).length;
+  const storedItemCount = storage.reduce((sum, slot) => sum + (slot ? Number(slot.qty || 0) : 0), 0);
+  const foodBodyHtml = foodType && foodQty > 0
+    ? `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; pointer-events:none;"><img src="images/${getItemRenderImageName(foodType)}.png" draggable="false" style="pointer-events:none;"><div class="inv-amount" style="pointer-events:none;">${formatAmount(foodQty)}</div></div>`
+    : `<div style="color:#888; font-size:12px; text-align:center; pointer-events:none;">Drop Food</div>`;
+  const storageSlotsHtml = storage.map((slot, index) => {
+    if (!slot) {
+      return `<div class="inv-slot" style="margin:0 auto; width:var(--slot-size); height:var(--slot-size); opacity:0.65; border:1px solid rgba(255,255,255,0.18); background:rgba(0,0,0,0.18);"></div>`;
+    }
+    const slotTitle = `${slot.name} x${formatAmount(slot.qty)} - Click to collect`;
+    return `<div class="inv-slot" title="${slotTitle}" onclick="collectFarmEmployeeStorageSlot(${index})" style="margin:0 auto; width:var(--slot-size); height:var(--slot-size); cursor:pointer; border:2px solid #8a6b4a; background:rgba(0,0,0,0.2);"><div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; pointer-events:none;"><img src="images/${getItemRenderImageName(slot)}.png" draggable="false" style="pointer-events:none;"><div class="inv-amount" style="pointer-events:none;">${formatAmount(slot.qty)}</div></div></div>`;
+  }).join('');
+
+  const cards = Object.entries(FARM_EMPLOYEE_CONFIG).map(([key, meta]) => {
+    const entry = game.farm.employees[key] || createDefaultFarmEmployeeEntry();
+    const hired = !!entry.hired;
+    const statusMeta = getFarmEmployeeDisplayState(key);
+    const toggleLabel = entry.active ? 'Active' : 'Paused';
+    const toggleBg = entry.active ? '#557755' : '#666';
+    const toggleBorder = entry.active ? '#8fd18f' : '#999';
+    return `
+      <div style="display:flex; flex-direction:column; gap:6px; background:rgba(0,0,0,0.2); border:1px solid ${hired ? '#8fd18f' : 'var(--accent)'}; border-radius:8px; padding:8px; width:100%; box-sizing:border-box; min-width:0;">
+        <div style="display:flex; align-items:flex-start; gap:8px; min-width:0;">
+          <img src="images/${meta.img}" alt="${meta.name}" style="width:28px; height:28px; object-fit:contain; ${hired ? '' : 'filter:grayscale(20%); opacity:0.95;'}">
+          <div style="flex:1; min-width:0;">
+            <div style="color:var(--gold); font-weight:bold; font-size:12px;">${meta.name}</div>
+            <div style="font-size:10px; color:#ddd;">${meta.desc}</div>
+            <div style="font-size:10px; color:${hired ? statusMeta.color : '#ccc'}; margin-top:2px;">${hired ? statusMeta.text : `${formatAmount(meta.price)} Gold`}</div>
+          </div>
+          ${hired
+            ? `<button class="primary" style="padding:4px 8px; font-size:10px; background:${toggleBg}; border-color:${toggleBorder};" onclick="toggleFarmEmployeeActive('${key}')">${toggleLabel}</button>`
+            : `<button class="primary" style="padding:4px 8px; font-size:10px;" onclick="hireFarmEmployee('${key}')">Hire</button>`}
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:10px; width:100%; box-sizing:border-box;">
+      <div style="display:flex; align-items:center; gap:10px; background:rgba(0,0,0,0.2); border:1px solid var(--accent); border-radius:8px; padding:10px; width:100%; box-sizing:border-box; min-width:0;">
+        <div id="farmEmployeeFoodSlot" class="inv-slot" style="width:var(--slot-size); height:var(--slot-size); margin:0; border:2px solid #8a6b4a; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; border-radius:8px; cursor:pointer; flex-shrink:0;">${foodBodyHtml}</div>
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:3px;">
+          <div style="color:var(--gold); font-weight:bold; font-size:12px;">Shared Food</div>
+          <div style="font-size:10px; color:#ddd;">10 food units = 1 active employee for 5 minutes.</div>
+          <div style="font-size:10px; color:#efe3cf;">${foodType ? `${foodType} | ${foodUnits} food unit${foodUnits === 1 ? '' : 's'} left` : 'No food loaded'}</div>
+          <div style="font-size:10px; color:#b89b76;">Active employees: ${activeCount}</div>
+          <div style="font-size:10px; color:${foodType && activeCount > 0 ? '#8fd18f' : '#ccc'};">${foodType && activeCount > 0 ? `Runtime at current load: ${formatFarmEmployeeFuelTime(remainingRuntimeMs)}` : 'Runtime: waiting for food or active employees'}</div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px; background:rgba(0,0,0,0.2); border:1px solid var(--accent); border-radius:8px; padding:10px; width:100%; box-sizing:border-box; min-width:0;">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; min-width:0;">
+          <div style="flex:1; min-width:0;">
+            <div style="color:var(--gold); font-weight:bold; font-size:12px;">Temporary Storage</div>
+            <div style="font-size:10px; color:#ddd;">Miner, Gatherer and Lumberjack place their finds here.</div>
+            <div style="font-size:10px; color:#b89b76; margin-top:2px;">Slots used: ${usedStorageSlots}/${FARM_EMPLOYEE_STORAGE_SIZE} | Items stored: ${formatAmount(storedItemCount)}</div>
+          </div>
+          <button class="primary" style="padding:4px 8px; font-size:10px; white-space:nowrap;" onclick="collectAllFarmEmployeeStorage()">Collect All</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:6px; width:100%;">${storageSlotsHtml}</div>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; width:100%;">${cards}</div>
+    </div>`;
+
+  bindFarmEmployeeFoodSlotEvents();
+}
+
+function renderFarmEmployeePanel() {
+  const stationsPanel = document.getElementById('farmStationsPanel');
+  if (!stationsPanel) return;
+  stationsPanel.innerHTML = '';
+  stationsPanel.style.display = 'none';
+}
+
 function renderFarmUpgradePanels() {
   ensureFarmState();
 
@@ -16405,11 +17026,7 @@ function renderFarmUpgradePanels() {
     farmPanel.style.rowGap = '4px';
     farmPanel.style.alignItems = 'stretch';
   }
-  const stationsPanel = document.getElementById('farmStationsPanel');
-  if (stationsPanel) {
-    stationsPanel.innerHTML = '';
-    stationsPanel.style.display = 'none';
-  }
+  renderFarmEmployeePanel();
 
   const seedPanel = document.getElementById('gardenSeedBagPanel');
   if (seedPanel) {
@@ -16660,6 +17277,7 @@ function ensureFarmState() {
       gardenTomb: createDefaultGardenTombState(),
       seedBagStorage: createDefaultSeedBagStorage(),
       siloStorage: createDefaultSiloStorage(),
+    employees: createDefaultFarmEmployeesState(),
       buildings: { coop: false, barn: false, well: false, garden: false, secondField: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
     };
   }
@@ -16691,6 +17309,8 @@ function ensureFarmState() {
   });
 
   if (!game.farm.buildings.secondField && game.farm.activeGardenField === 2) game.farm.activeGardenField = 1;
+
+  ensureFarmEmployeesState();
 
   if (typeof game.farm.mill.inputWheat !== 'number') game.farm.mill.inputWheat = 0;
   if (typeof game.farm.mill.outputFlour !== 'number') game.farm.mill.outputFlour = 0;
@@ -17477,10 +18097,18 @@ async function rescueFarmCat() {
 }
 
 function openPersonalFarmHub() {
-  showMainScreen('hubPersonalFarm');
+  const navOptions = shouldPreserveTimedActionForNavigation() ? { stopActions: false } : undefined;
+  showMainScreen('hubPersonalFarm', navOptions);
   maybeSpawnFarmCat();
   renderFarmCatOverlay();
   renderFarmUpgradePanels();
+}
+
+function openFarmEmployeesHub() {
+  ensureFarmState();
+  const navOptions = shouldPreserveTimedActionForNavigation() ? { stopActions: false } : undefined;
+  showMainScreen('hubFarmEmployees', navOptions);
+  renderFarmEmployeesHub();
 }
 
 function openPetYardHub() {
@@ -17920,9 +18548,6 @@ async function handleCellarClick() {
                game.isDirty = true;
                await showGameAlert("Success", "You now have access to the Cellar!");
                         // Open after purchase
-               stopMining();
-               stopBlacksmithing();
-               stopCombat();
                openCellarHub();
            } else {
                await showGameAlert("Not Enough Gold", `You need ${formatAmount(CELLAR_BUILDING_COST)} Gold.`);
@@ -17932,9 +18557,6 @@ async function handleCellarClick() {
    }
 
    // If already owned
-   stopMining();
-   stopBlacksmithing();
-   stopCombat();
    openCellarHub();
 }
 
@@ -17943,7 +18565,8 @@ function openCellarHub() {
   const returnBtn = document.getElementById('hubCellar_ReturnBtn');
   if (returnBtn) returnBtn.onclick = openPersonalFarmHub;
 
-  showMainScreen('hubCellar');
+  const navOptions = shouldPreserveTimedActionForNavigation() ? { stopActions: false } : undefined;
+  showMainScreen('hubCellar', navOptions);
 }
 
 
@@ -18377,7 +19000,7 @@ function renderGarden() {
 
     if (slotData) {
       const cropDef = CROPS[slotData.crop];
-      const elapsed = slotData.watered ? (Date.now() - slotData.waterTime) : 0;
+      const elapsed = slotData.watered ? getFarmGrowthElapsedMs(slotData.waterTime) : 0;
       let stageIndex = 0;
       if (slotData.watered) {
         if (elapsed >= FARM_STAGE_3_TIME) stageIndex = 2;
@@ -18439,7 +19062,7 @@ function renderCellar() {
 
     if (slotData) {
       const shroomDef = MUSHROOMS[slotData.crop];
-      const elapsed = Date.now() - slotData.waterTime; 
+      const elapsed = getFarmGrowthElapsedMs(slotData.waterTime); 
       let stageIndex = 0;
 
       if (elapsed >= FARM_STAGE_3_TIME) stageIndex = 2;
@@ -18501,7 +19124,7 @@ async function handleCellarSlotClick(e, index) {
     }
     showMushroomMenu(e, index);
   } else {
-    const elapsed = Date.now() - slotData.waterTime;
+    const elapsed = getFarmGrowthElapsedMs(slotData.waterTime);
     if (elapsed >= FARM_HARVEST_TIME) {
       harvestMushroom(index);
     }
@@ -18586,7 +19209,7 @@ function showShroomTooltip(e, index) {
         const slot = (game.farm.cellar && game.farm.cellar[index]) ? game.farm.cellar[index] : null;
         if (!slot) return null;
 
-        const elapsed = Date.now() - slot.waterTime;
+        const elapsed = getFarmGrowthElapsedMs(slot.waterTime);
         let remaining = 0;
         let statusText = "";
 
@@ -18678,7 +19301,7 @@ async function handleGardenSlotClick(e, index) {
   } else if (!slotData.watered) {
     waterCrop(e, index);
   } else {
-    const elapsed = Date.now() - slotData.waterTime;
+    const elapsed = getFarmGrowthElapsedMs(slotData.waterTime);
     if (elapsed >= FARM_HARVEST_TIME) {
       harvestCrop(index);
     }
@@ -18793,7 +19416,7 @@ function harvestCrop(index) {
   if (!slotData) return;
 
   const cropDef = CROPS[slotData.crop];
-  const elapsed = Date.now() - slotData.waterTime;
+  const elapsed = getFarmGrowthElapsedMs(slotData.waterTime);
   if (elapsed < FARM_HARVEST_TIME) return;
 
   if (!canReceiveItem(cropDef.productName)) {
@@ -18844,7 +19467,7 @@ function processGardenGrowth(now) {
     if (!fieldSlots) return;
     fieldSlots.forEach(slot => {
       if (slot && slot.watered) {
-        const elapsed = now - slot.waterTime;
+        const elapsed = getFarmGrowthElapsedMs(slot.waterTime, now);
         let calculatedStage = 0;
         if (elapsed >= FARM_STAGE_3_TIME) calculatedStage = 2;
         else if (elapsed >= FARM_STAGE_2_TIME) calculatedStage = 1;
@@ -19007,7 +19630,7 @@ function showCropTooltip(e, index) {
         if (!slot || !slot.watered) return null;
 
         const cropDef = CROPS[slot.crop];
-        const elapsed = Date.now() - slot.waterTime;
+        const elapsed = getFarmGrowthElapsedMs(slot.waterTime);
         let remaining = 0;
         let statusText = "";
         let timerColor = "#fff";
@@ -19124,6 +19747,131 @@ function showChickenTooltip(e, index) {
     }, 100);
 }
 
+function processFarmEmployees(now) {
+    ensureFarmState();
+    const employees = game.farm.employees;
+    const elapsed = Math.max(0, Number(now) - Number(employees.lastCalcTime || now));
+    employees.lastCalcTime = now;
+    if (elapsed <= 0) return;
+
+    const activeMs = getFarmEmployeePoweredElapsedMs(elapsed);
+    if (activeMs > 0) {
+        Object.keys(FARM_EMPLOYEE_CONFIG).forEach(key => {
+            if (!employees[key]) employees[key] = createDefaultFarmEmployeeEntry();
+            if (!employees[key].hired || !employees[key].active) return;
+            if (key === 'farmer') {
+                applyFarmEmployeeGrowthBoost(activeMs * 0.5);
+            } else {
+                employees[key].accMs = Number(employees[key].accMs || 0) + activeMs;
+            }
+        });
+    }
+
+    if (employees.healer && employees.healer.hired && employees.healer.active) {
+        const interval = FARM_EMPLOYEE_INTERVALS.healer;
+        const cycles = Math.floor(employees.healer.accMs / interval);
+        if (cycles > 0) {
+            employees.healer.accMs -= cycles * interval;
+            if (Number(game.hp || 0) > 0 && Number(game.hp || 0) < Number(game.maxHP || 0)) {
+                applyPlayerHealing(cycles);
+            }
+        }
+    }
+
+    if (employees.miner && employees.miner.hired && employees.miner.active) {
+        const interval = FARM_EMPLOYEE_INTERVALS.miner;
+        let cycles = Math.floor(employees.miner.accMs / interval);
+        let processedCycles = 0;
+        while (cycles > 0) {
+            const orePool = (FARM_EMPLOYEE_RESOURCE_POOLS.miner || []).filter(itemName => canReceiveFarmEmployeeStorageItem(itemName));
+            if (orePool.length <= 0) break;
+            const oreName = getRandomArrayEntry(orePool);
+            if (!oreName || addFarmEmployeeStorageItem(oreName, 1) <= 0) break;
+            processedCycles++;
+            cycles--;
+        }
+        if (processedCycles > 0) {
+            employees.miner.accMs -= processedCycles * interval;
+        }
+    }
+
+    if (employees.trainer && employees.trainer.hired && employees.trainer.active) {
+        const interval = FARM_EMPLOYEE_INTERVALS.trainer;
+        const cycles = Math.floor(employees.trainer.accMs / interval);
+        if (cycles > 0) {
+            employees.trainer.accMs -= cycles * interval;
+            const pet = getEquippedActivePetData();
+            if (pet && pet.level < 50) {
+                pet.xp += cycles;
+                processPetLevelUps(pet);
+                refreshEquippedPetBonusesUI();
+                const yard = document.getElementById('hubPetYard');
+                const petContent = document.getElementById('petYardContent');
+                if (yard && yard.classList.contains('active') && petContent && petContent.dataset.activeTab === 'pets') {
+                    renderPetYard('pets');
+                }
+                game.isDirty = true;
+            }
+        }
+    }
+
+    if (employees.milker && employees.milker.hired && employees.milker.active) {
+        const interval = FARM_EMPLOYEE_INTERVALS.milker;
+        const cycles = Math.floor(employees.milker.accMs / interval);
+        if (cycles > 0) {
+            employees.milker.accMs -= cycles * interval;
+            const perCowYield = getFarmAnimalYieldMultiplier();
+            const readyCows = (game.farm.cows || []).filter(cow => cow && cow.hasMilk);
+            if (readyCows.length > 0 && canReceiveItem('Bucket of Milk')) {
+                const milkQty = readyCows.length * perCowYield;
+                addItem('Bucket of Milk', milkQty);
+                readyCows.forEach(cow => {
+                    cow.hasMilk = false;
+                    cow.milkTimer = 0;
+                });
+                const barnHub = document.getElementById('hubBarn');
+                if (barnHub && barnHub.classList.contains('active')) updateBarnUI();
+                game.isDirty = true;
+            }
+        }
+    }
+
+    if (employees.gatherer && employees.gatherer.hired && employees.gatherer.active) {
+        const interval = FARM_EMPLOYEE_INTERVALS.gatherer;
+        let cycles = Math.floor(employees.gatherer.accMs / interval);
+        let processedCycles = 0;
+        while (cycles > 0 && canReceiveFarmEmployeeStorageItem('Wild Herb')) {
+            if (addFarmEmployeeStorageItem('Wild Herb', 1) <= 0) break;
+            processedCycles++;
+            cycles--;
+        }
+        if (processedCycles > 0) {
+            employees.gatherer.accMs -= processedCycles * interval;
+        }
+    }
+
+    if (employees.lumberjack && employees.lumberjack.hired && employees.lumberjack.active) {
+        const interval = FARM_EMPLOYEE_INTERVALS.lumberjack;
+        let cycles = Math.floor(employees.lumberjack.accMs / interval);
+        let processedCycles = 0;
+        while (cycles > 0) {
+            const woodPool = (FARM_EMPLOYEE_RESOURCE_POOLS.lumberjack || []).filter(itemName => canReceiveFarmEmployeeStorageItem(itemName));
+            if (woodPool.length <= 0) break;
+            const woodName = getRandomArrayEntry(woodPool);
+            if (!woodName || addFarmEmployeeStorageItem(woodName, 1) <= 0) break;
+            processedCycles++;
+            cycles--;
+        }
+        if (processedCycles > 0) {
+            employees.lumberjack.accMs -= processedCycles * interval;
+        }
+    }
+
+    const employeesHub = document.getElementById('hubFarmEmployees');
+    if (employeesHub && employeesHub.classList.contains('active') && !game.isDragging) {
+        renderFarmEmployeesHub();
+    }
+}
 // --- FARM LOOP (Runs every 1s via master loop) ---
 function processFarmLogic() {
     ensureFarmState();
@@ -19201,7 +19949,10 @@ function processFarmLogic() {
         if (cowUpdate) updateBarnUI();
     }
 
-    // 3. Process Mill
+    // 3. Process Employees
+    processFarmEmployees(now);
+
+    // 4. Process Mill
     if (game.farm && game.farm.buildings && game.farm.buildings.mill && game.farm.mill) {
         const mill = game.farm.mill;
         const elapsed = now - (mill.lastCalcTime || now);
@@ -19223,7 +19974,7 @@ function processFarmLogic() {
         }
     }
 
-    // 4. Process Kiln
+    // 5. Process Kiln
     if (game.farm && game.farm.kiln) {
         const kiln = game.farm.kiln;
         const elapsed = now - (kiln.lastCalcTime || now);
@@ -19253,7 +20004,7 @@ function processFarmLogic() {
         }
     }
 
-    // 5. Process Garden & Cellar
+    // 6. Process Garden & Cellar
     processGardenGrowth(now);
     processCellarGrowth(now);
 
@@ -19281,7 +20032,7 @@ function processCellarGrowth(now) {
   const isCellarOpen = document.getElementById('hubCellar').classList.contains('active');
   game.farm.cellar.forEach(slot => {
     if (slot) {
-      const elapsed = now - slot.waterTime;
+      const elapsed = getFarmGrowthElapsedMs(slot.waterTime, now);
       let calculatedStage = 0;
       if (elapsed >= FARM_STAGE_3_TIME) calculatedStage = 2;
       else if (elapsed >= FARM_STAGE_2_TIME) calculatedStage = 1;
@@ -19340,11 +20091,6 @@ function startMillUiTicker() {
 }
 function openMillHub() {
   ensureFarmState();
-
-  game.shopOpen = false;
-  hideTooltip();
-  stopTimedDetailNavigationActivities();
-  if (!shouldPreserveBackgroundCooking()) stopCookingChicken();
 
   const wrapper = document.getElementById('hubWindmill');
   if (!wrapper) return;
@@ -19424,7 +20170,8 @@ function openMillHub() {
   document.getElementById('hubWindmill_ReturnBtn').onclick = () => { stopMillUiTicker(); openPersonalFarmHub(); };
 
   updateMillUI();
-  showMainScreen('hubWindmill');
+  const navOptions = shouldPreserveTimedActionForNavigation() ? { stopActions: false } : undefined;
+  showMainScreen('hubWindmill', navOptions);
   startMillUiTicker();
 }
 function handleMillInDragStart(e) {
@@ -19650,11 +20397,6 @@ function openKilnHub() {
   dismissFarmCat();
   ensureFarmState();
 
-  game.shopOpen = false;
-  hideTooltip();
-  stopTimedDetailNavigationActivities();
-  if (!shouldPreserveBackgroundCooking()) stopCookingChicken();
-
   const wrapper = document.getElementById('hubKiln');
   if (!wrapper) return;
 
@@ -19739,7 +20481,8 @@ function openKilnHub() {
   document.getElementById('hubKiln_ReturnBtn').onclick = () => { stopKilnUiTicker(); backToActions(); };
 
   updateKilnUI();
-  showMainScreen('hubKiln');
+  const navOptions = shouldPreserveTimedActionForNavigation() ? { stopActions: false } : undefined;
+  showMainScreen('hubKiln', navOptions);
   startKilnUiTicker();
 }
 
@@ -20702,7 +21445,7 @@ function getBackgroundActionStopLabelForRecipe(recipe) {
 }
 
 function shouldPreserveBackgroundAction() {
-  return !!(game && game.backgroundActionInfo && game.backgroundActionPanelActive && game.settings && game.settings.returnStopsAction === false);
+  return !!(game && game.backgroundActionInfo && game.settings && game.settings.returnStopsAction === false);
 }
 
 
@@ -27173,6 +27916,24 @@ function getRandomLotteryTeaserItem(variant = getCurrentLotteryVariant(), jackpo
     return getRandomLotteryFiller(variant);
 }
 
+function canTriggerLotteryFromSpacebar() {
+    const hub = document.getElementById('hubLottery');
+    const buyBtn = document.getElementById('buyTicketBtn');
+    if (!hub || !hub.classList.contains('active') || !buyBtn || buyBtn.disabled) return false;
+    if (document.getElementById('gameModalOverlay')) return false;
+    const target = document.activeElement;
+    const tagName = target && target.tagName ? String(target.tagName).toUpperCase() : '';
+    if (target && (target.isContentEditable || tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT' || tagName === 'BUTTON')) return false;
+    return true;
+}
+
+function handleLotterySpacebarKeydown(e) {
+    const isSpaceKey = e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar';
+    if (!isSpaceKey || e.repeat || e.defaultPrevented) return;
+    if (!canTriggerLotteryFromSpacebar()) return;
+    e.preventDefault();
+    document.getElementById('buyTicketBtn')?.click();
+}
 function openLotteryHub() {
     showMainScreen('hubLottery');
     const reel = document.getElementById('lotteryReel');
@@ -28080,6 +28841,7 @@ function renderBankGrid() {
         if (itemName === 'Mapple Fishing Pole') itemStats += `<div style="color:#7fd3ff;">-5s Fishing Time</div>`;
       }
 
+      itemStats += getFuelItemTooltipHtml(itemName, item.qty);
       const tooltipContent = `
         <div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${itemName} ${item.enchantLevel > 0 ? '+' + item.enchantLevel : ''}</div>
         <div style="font-size:12px;">Amount: ${item.qty.toLocaleString()}</div>
@@ -28643,6 +29405,7 @@ function resetGameState() {
     gardenTomb: createDefaultGardenTombState(),
     seedBagStorage: createDefaultSeedBagStorage(),
     siloStorage: createDefaultSiloStorage(),
+    employees: createDefaultFarmEmployeesState(),
     buildings: { coop: false, barn: false, well: false, garden: false, secondField: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false },
   };
 
@@ -28847,7 +29610,7 @@ window.closeSettings = closeSettings;
  */
 // +++ NEW: Hub Screen Toggler Function +++
 // +++ ADDED hubWell +++
-const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubAchievements', 'hubEventJournal', 'hubTrophyRoom', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubKiln', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting'];
+const hubScreenIds = ['hubActions', 'hubMine', 'hubCrystalMine', 'hubBlacksmith', 'hubFletching', 'hubCrafting', 'hubElementalForge', 'hubForest', 'hubKitchen', 'hubCombat', 'hubBestiary', 'hubFarm', 'hubCave', 'hubMadmaxCastle', 'hubDragonNest', 'hubShop', 'hubBank', 'hubDynamic', 'hubFishingAreas', 'hubOcean', 'hubRiver', 'hubLottery', 'hubQuests', 'hubQuestLine', 'hubAchievements', 'hubEventJournal', 'hubTrophyRoom', 'hubHuntingBoard', 'hubPersonalFarm', 'hubGarden', 'hubBarn', 'hubChickenCoop', 'hubWindmill', 'hubKiln', 'hubWell', 'hubActiveCombat', 'hubPetYard', 'hubCellar', 'hubNormalForest', 'hubDarkForest', 'hubAlchemy', 'hubThieving', 'hubTailoring', 'hubEnchanting', 'hubFarmEmployees'];
 function shouldStopActionsOnReturn() {
   return !game || !game.settings || game.settings.returnStopsAction !== false;
 }
@@ -29536,6 +30299,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('hubPetYard_ReturnBtn').onclick = backToActions;
   document.getElementById('petYardActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Pet Yard</div>Manage your pets');
   document.getElementById('petYardActionIcon').onmouseleave = hideTooltip;
+document.getElementById('employeesActionIcon').onclick = openFarmEmployeesHub;
+document.getElementById('employeesActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Employees</div>Hire passive camp workers');
+document.getElementById('employeesActionIcon').onmouseleave = hideTooltip;
   
   // Listeners for inside the Farm buildings (Return to the Farm view)
   document.getElementById('hubBarn_ReturnBtn').onclick = openPersonalFarmHub;
@@ -29558,6 +30324,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('hubLottery_ReturnBtn').onclick = backToActions;
   document.getElementById('lotteryActionIcon').onmouseenter = (e) => showTooltip(e, '<div style="font-weight:bold; color:var(--gold);">Lottery</div>Win Rare Prizes!');
   document.getElementById('lotteryActionIcon').onmouseleave = hideTooltip;
+  if (!window.__lotterySpacebarBound) {
+    document.addEventListener('keydown', handleLotterySpacebarKeydown);
+    window.__lotterySpacebarBound = true;
+  }
   if (!hubScreenIds.includes('hubLottery')) hubScreenIds.push('hubLottery');
   
 // --- Tooltips for Hub Crystal Mine ---
@@ -30652,6 +31422,8 @@ function getInspectItemTooltipHtml(item) {
     if (qty > 1) details.push(`<div style="color:#ddd;">Qty: ${qty.toLocaleString()}</div>`);
     if (enchantLevel > 0) details.push(`<div style="color:#8fd18f;">Enchant: +${enchantLevel}</div>`);
     if (normalizeItemDyeColor(item.dyeColor)) details.push(`<div style="color:#ddd;">Dye: ${formatDyeColorLabel(item.dyeColor)}</div>`);
+    const fuelTooltipHtml = getFuelItemTooltipHtml(item.name, item.qty);
+    if (fuelTooltipHtml) details.push(fuelTooltipHtml);
     return `<div style="font-weight:bold; color:var(--gold); margin-bottom:4px;">${getItemDisplayTitle(item)}</div>${details.join("") || `<div style="color:#ccc;">No extra data</div>`}`;
 }
 
@@ -32959,6 +33731,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             gardenTomb: createDefaultGardenTombState(),
             seedBagStorage: createDefaultSeedBagStorage(),
             siloStorage: createDefaultSiloStorage(),
+    employees: createDefaultFarmEmployeesState(),
             buildings: { coop: false, barn: false, well: false, garden: false, secondField: false, cellar: false, mill: false, seedbag: false, silo: false, handPumpWell: false }
         };
         ensureFarmState();
@@ -33732,7 +34505,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
             }
 
             // Case A: Give to Self
-            if (targetName === game.name.toLowerCase()) {
+            if (targetName === 'me' || targetName === game.name.toLowerCase()) {
                 if (typeof window.addGold === 'function') {
                     window.addGold(amount);
                     await window.savePlayerData();
@@ -33827,7 +34600,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
                 return true;
             }
 
-            if (targetName === game.name.toLowerCase()) {
+            if (targetName === 'me' || targetName === game.name.toLowerCase()) {
                 game.pets = Array.isArray(game.pets) ? game.pets : [];
                 if (isPetYardFull()) {
                     addLocalChatMessage('Your Pet Yard is full (' + formatPetYardCapacity() + ').', 'error');
@@ -34442,7 +35215,7 @@ window.inspectPlayer = async function(playerName, preferredView = 'equipment') {
 
             const newTotalXP = (window.getTotalXPForLevel) ? window.getTotalXPForLevel(level) : 0; 
             const newSkillData = { level: level, xp: 0, totalXP: newTotalXP };            // Self
-            if (targetName === game.name.toLowerCase()) {
+            if (targetName === 'me' || targetName === game.name.toLowerCase()) {
                 game[skill] = newSkillData; 
                 if(window.updateSkillUI) window.updateSkillUI();
                 if(window.updateHPUI) window.updateHPUI();
@@ -34559,6 +35332,22 @@ function getChatCommandMatches(value) {
   const command = (parts[0] || '').toLowerCase();
   const normalizedCommand = normalizeStaffCommandName(command);
   if (command && !canCurrentUserRunStaffCommand(normalizedCommand)) return [];
+
+  if (command === 'givegold') {
+    const prefix = '/givegold ';
+    const rest = trimmed.slice(prefix.length);
+    if (!rest.length) {
+      return [{ command: prefix + 'me ', desc: 'Your character' }].concat(
+        getCachedAdminPlayerNameMatches('').map(name => ({ command: prefix + name + ' ', desc: 'Player name' }))
+      );
+    }
+
+    const firstSpace = rest.indexOf(' ');
+    if (firstSpace === -1) {
+      const meMatches = 'me'.startsWith(rest.toLowerCase()) ? [{ command: prefix + 'me ', desc: 'Your character' }] : [];
+      return meMatches.concat(getCachedAdminPlayerNameMatches(rest).map(name => ({ command: prefix + name + ' ', desc: 'Player name' })));
+    }
+  }
 
   const playerCommands = new Set(['givegold', 'inspect', 'inspectlottery', 'inspectdeath', 'disconnect', 'clearforcedisconnect', 'clear', 'removebuff']);
   if (playerCommands.has(normalizedCommand)) {
@@ -35938,14 +36727,15 @@ async function sendChatMessage() {
 <script>
 (function(){
   function getSkillLevelNow(skillKey){
-    if (typeof game === 'undefined') return 1;
+    const g = globalThis.game || window.game || null;
+    if (!g) return 1;
 
-    if (game[skillKey] && typeof game[skillKey].level === 'number') {
-      return game[skillKey].level;
+    if (g[skillKey] && typeof g[skillKey].level === 'number') {
+      return g[skillKey].level;
     }
 
-    if (game.skills && game.skills[skillKey] && typeof game.skills[skillKey].level === 'number') {
-      return game.skills[skillKey].level;
+    if (g.skills && g.skills[skillKey] && typeof g.skills[skillKey].level === 'number') {
+      return g.skills[skillKey].level;
     }
 
     return 1;
@@ -35992,19 +36782,31 @@ async function sendChatMessage() {
     }
   }
 
-  function syncCraftHubLevels(){
+  function getCurrentCraftHubSyncSignature(levels){
+    const activeHub = ['hubCrafting', 'hubFletching', 'hubTailoring', 'hubBlacksmith']
+      .find(id => document.getElementById(id)?.classList.contains('active')) || 'none';
+    const smithTab = activeHub === 'hubBlacksmith'
+      ? ((document.querySelector('#hubBlacksmith .tabs button.active')?.textContent || window.currentSmithMetal || 'copper').trim().toLowerCase())
+      : '';
+    return JSON.stringify({ activeHub, smithTab, levels });
+  }
+
+  function syncCraftHubLevels(force = false){
     const levels = {
       crafting: getSkillLevelNow('crafting'),
       fletching: getSkillLevelNow('fletching'),
       tailoring: getSkillLevelNow('tailoring'),
       blacksmith: getSkillLevelNow('blacksmith')
     };
+    const signature = getCurrentCraftHubSyncSignature(levels);
+    if (!force && window.__lastCraftHubSyncSignature === signature) return;
+    window.__lastCraftHubSyncSignature = signature;
     window.__lastCraftJsonLevels = levels; window.__lastCraftJsonSkillSources = (typeof getSkillSourcesSnapshot === 'function' ? getSkillSourcesSnapshot() : null);
     rerenderCurrentCraftHub();
   }
 
   // Force rerender after save/game load timing settles
-  setTimeout(syncCraftHubLevels, 50);
+  setTimeout(() => syncCraftHubLevels(true), 50);
   setTimeout(syncCraftHubLevels, 250);
   setTimeout(syncCraftHubLevels, 750);
   setTimeout(syncCraftHubLevels, 1500);
@@ -36018,25 +36820,25 @@ async function sendChatMessage() {
   const oldOpenCraftingHub = window.openCraftingHub;
   window.openCraftingHub = function(){
     if (typeof oldOpenCraftingHub === 'function') oldOpenCraftingHub();
-    setTimeout(syncCraftHubLevels, 0);
+    setTimeout(() => syncCraftHubLevels(true), 0);
   };
 
   const oldOpenFletchingHub = window.openFletchingHub;
   window.openFletchingHub = function(){
     if (typeof oldOpenFletchingHub === 'function') oldOpenFletchingHub();
-    setTimeout(syncCraftHubLevels, 0);
+    setTimeout(() => syncCraftHubLevels(true), 0);
   };
 
   const oldOpenTailoringHub = window.openTailoringHub;
   window.openTailoringHub = function(){
     if (typeof oldOpenTailoringHub === 'function') oldOpenTailoringHub();
-    setTimeout(syncCraftHubLevels, 0);
+    setTimeout(() => syncCraftHubLevels(true), 0);
   };
 
   const oldOpenBlacksmithHub2 = window.openBlacksmithHub;
   window.openBlacksmithHub = function(){
     if (typeof oldOpenBlacksmithHub2 === 'function') oldOpenBlacksmithHub2();
-    setTimeout(syncCraftHubLevels, 0);
+    setTimeout(() => syncCraftHubLevels(true), 0);
   };
 })();
 </script>
@@ -37245,9 +38047,7 @@ window.getCraftJsonDebugSnapshot = function(){
   if (typeof loadJsonCraftingData === 'function') {
     loadJsonCraftingData().then(() => {
       bindSmithTabs();
-      setTimeout(rerenderCurrentHub, 100);
-      setTimeout(rerenderCurrentHub, 500);
-      setInterval(rerenderCurrentHub, 1500);
+      rerenderCurrentHub();
     });
   } else {
     console.warn('[CRAFT JSON] loadCraftingJsonData unavailable during background action bootstrap');
@@ -37258,6 +38058,23 @@ window.getCraftJsonDebugSnapshot = function(){
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
